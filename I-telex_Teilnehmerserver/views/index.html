@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <script src="/javascripts/jquery-3.1.0.min.js"></script>
+    <script src="/javascripts/main.js"></script>
+  </head>
+  <body>
+    <table id="table">
+    </table>
+    <button id="new">new entry</button>
+    <div style="display: none;" id="dialogbox">
+      <div style="display: none;" id="newentrydialog">
+        <input placeholder="rufnummer" id="rufnummernewentrydialog"></input>
+        <input placeholder="name" id="namenewentrydialog"></input>
+        <input placeholder="typ" id="typnewentrydialog"></input>
+        <input placeholder="hostname" id="hostnamenewentrydialog"></input>
+        <input placeholder="ipadresse" id="ipadressenewentrydialog"></input>
+        <input placeholder="port" id="portnewentrydialog"></input>
+        <input placeholder="durchwahl" id="durchwahlnewentrydialog"></input>
+        <input placeholder="pin" id="pinnewentrydialog"></input>
+        <input type="checkbox" id="gesperrtnewentrydialog">gesperrt</input>
+      </div>
+      <div style="display: none;" id="editdialog">
+        <input placeholder="rufnummer" id="rufnummereditdialog"></input>
+        <input placeholder="name" id="nameeditdialog"></input>
+        <input placeholder="typ" id="typeditdialog"></input>
+        <input placeholder="hostname" id="hostnameeditdialog"></input>
+        <input placeholder="ipadresse" id="ipadresseeditdialog"></input>
+        <input placeholder="port" id="porteditdialog"></input>
+        <input placeholder="durchwahl" id="durchwahleditdialog"></input>
+        <input type="checkbox" id="gesperrteditdialog">gesperrt</input>
+      </div>
+      <div style="display: none;" id="deletedialog">
+        <p id="pdeletedialog"></p>
+        <span id="rufnummerdeletedialog">test</span>
+      </div>
+      <input type="password" placeholder="password" id="passworddialog"></input>
+      <button id="submitdialog">submit</button>
+      <button id="abortdialog">abort</button>
+    </div>
+    </br>
+    <span id="log"></span>
+  </body>
+</html>

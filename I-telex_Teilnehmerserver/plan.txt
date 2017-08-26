@@ -1,0 +1,22 @@
+Process: MAIN
+--------------------------------
+Function SendChanges:
+	get changed Entries;
+	if changed Entries > 0:
+		for all new Entries:
+			for all Servers:
+				add to queue;
+--------------------------------
+
+
+Process: QUEUE-WATCHDOG
+--------------------------------
+Interval ?? min:
+	query queue
+	if last try ?? min ago:
+    send queue!
+       success:
+          remove queue entry
+       error:
+          don't remove queue entry
+--------------------------------
