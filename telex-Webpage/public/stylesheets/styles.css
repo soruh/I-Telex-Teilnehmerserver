@@ -1,0 +1,86 @@
+#out{
+  border: 1px solid black;
+  width: auto;
+}
+select:invalid{
+  color:gray;
+}
+#table{
+  border: 1px solid black;
+}
+#table tr{
+  border: 1px solid black;
+}
+#table td{
+  border: 1px solid black;
+}
+#table th{
+  border: 1px solid black;
+}
+.edit{
+  width: 22px !important;
+  height: 22px;
+  background-color: yellow;
+  background-image: url("/images/Edit_Notepad_Icon.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.remove{
+  width: 22px !important;
+  height: 22px;
+  background-color: red;
+  background-image: url("/images/Trash_font_awesome.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+#new{
+
+}
+#dialogbox{
+  position: fixed;
+  width: 50%;
+  height: 50%;
+  left: 25%;
+  top: 25%;
+  border: 1px solid black;
+  border-radius: 10px;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+}
+#submitdialog{
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+#abortdialog{
+  position: absolute;
+  bottom: 5px;
+  right: 65px;
+}
+#passworddialog{
+  position: absolute;
+  bottom: 50px;
+  right: 25%;
+  width: 50%;
+}
+#gesperrtnewentrydialog{
+  vertical-align: middle;
+  border: 1px solid gray;
+}
+#editdialog{
+  width: 100%;
+  height: 100%;
+}
+#deletedialog{
+  width: 100%;
+  height: 100%;
+}
+#newentrydialog{
+  width: 100%;
+  height: 100%;
+}
