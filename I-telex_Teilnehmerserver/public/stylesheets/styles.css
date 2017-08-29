@@ -7,12 +7,14 @@ select:invalid{
 }
 #table{
   border: 1px solid black;
+  border-collapse: collapse;
 }
 #table tr{
   border: 1px solid black;
 }
 #table td{
   border: 1px solid black;
+  padding: 2px 4px;
 }
 #table th{
   border: 1px solid black;
@@ -83,4 +85,49 @@ select:invalid{
 #newentrydialog{
   width: 100%;
   height: 100%;
+}
+.shown{
+  margin-bottom: 0px;
+  color:rgba(0,0,0,255);
+}
+.hidden{
+  margin-bottom: -15px;
+  color:rgba(0,0,0,0);
+}
+.nametag{
+  display:block;
+  transition:all 0.5s;
+}
+.input-container{
+  display: inline-block;
+  height: 50px;
+}
+#search-button{
+  background: url("/images/search-icon-hi.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
+  border: none;
+  padding-bottom: 6px;
+  cursor: pointer;
+  height: 21px;
+  width: 21px;
+}
+#search-container{
+  display: block;
+  float: right;
+  border: none;
+  margin: 10px;
+}
+#loc-dropdown-parent{
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+#loc-dropdown-children{
+  border: 1px solid black;
+}
+#loc-dropdown-child{
+  cursor: pointer;
 }

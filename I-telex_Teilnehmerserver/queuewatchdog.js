@@ -91,7 +91,7 @@ function SendQueue(callback){
 		if(err){
 			throw err;
 		}
-		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){
+		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
 			if(err) console.log(err);
 			if(results.length>0){
 				var servers = {};
@@ -105,6 +105,9 @@ function SendQueue(callback){
 				async.eachSeries(servers,function(server,cb){
 					console.log(FgMagenta,server,FgWhite);
 					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
+						if(err){
+							throw err;
+						}
 						var serverinf = result2[0];
 						console.log(FgCyan,serverinf,FgWhite);
 						try{
@@ -185,7 +188,7 @@ function handlePacket(obj,cnum,dbcon,connection){
 		console.log(FgRed+"packagetype ["+FgCyan+obj.packagetype+FgRed+" ] not supported in state ["+FgCyan+connections[cnum]["state"]+FgRed+"]"+FgWhite);
 	}
 }
-function encPacket(obj) {
+function encPacket(obj){
 	console.log(BgYellow,FgBlue,obj,FgWhite,BgBlack);
 	var data = obj.data;
 	switch(obj.packagetype){
@@ -243,7 +246,7 @@ function encPacket(obj) {
 	console.log(FgRed,Buffer.from(header.concat(array)),FgWhite);
 	return(Buffer.from(header.concat(array)));
 }
-function decPacket(packagetype,buffer) {
+function decPacket(packagetype,buffer){
 	switch(packagetype){
 		case 1:
 			var data = {
@@ -352,9 +355,11 @@ function ConcatByteArray(arr,type){
 	}else if(type==="string"){
 		var str = "";
 		for (i=0;i<arr.length;i++){
-			str += String.fromCharCode(arr[i]);
+			if(arr[i] > 0){
+				str += String.fromCharCode(arr[i]);
+			}
 		}
-		return(str.replace(/(\u0000)/g,""));
+		return(str/*.replace(/(\u0000)/g,"")*/);
 	}
 }
 function deConcatValue(value,size){
@@ -365,6 +370,7 @@ function deConcatValue(value,size){
 		for(i=0;i<value.length;i++){
 			array[i] = value.charCodeAt(i);
 		}
+		array[array.length] = 0;
 	}else if(typeof value === "number"){
 		//console.log("number");
 		while(value>0){

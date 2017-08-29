@@ -1,25 +1,19 @@
 var express = require('express');
 var router = express.Router();
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index');
 });
-
 module.exports = router;
-
 var mysql = require('mysql');
-
 var con = mysql.createConnection({
   host: "localhost",
   user: "telefonbuch",
   password: "amesads"
 });
-
 con.connect(function(err) {
   if (err) throw err;
   console.log("Connected!");
-
   router.get('/stats', function(req, res){
     res.header("Content-Type", "application/json; charset=utf-8");
     con.query("SELECT * FROM telefonbuch.teilnehmer", function (err, result) {
@@ -29,10 +23,13 @@ con.connect(function(err) {
         //console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
         var resultnopin = [];
         for(a in result){
-          resultnopin[a] = {};
-          for(b in result[a]){
-            if(b != "pin" && b != "uid"){
-              resultnopin[a][b] = result[a][b];
+          if(result[a].gesperrt==0){
+            var i=resultnopin.length
+            resultnopin[i] = {};
+            for(b in result[i]){
+              if(b != "pin" && b != "uid" && b != "changed"&& != "gesperrt"){
+                resultnopin[i][b] = result[i][b];
+              }
             }
           }
         }
@@ -40,7 +37,6 @@ con.connect(function(err) {
       }
     });
   });
-
   router.post('/edit', function(req, res){
     res.header("Content-Type", "application/json; charset=utf-8");
     if(req.body.password=="password"){

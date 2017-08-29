@@ -5,11 +5,54 @@
     <script src="/javascripts/main.js"></script>
   </head>
   <body>
-    <table id="table">
-    </table>
-    <button id="new">new entry</button>
+    <span id="XXYXX"></span>
+    <div id="search-container">
+      <di id="search-box-placeholder" style="display:none;"></div>
+      <input id="search-box"></input>
+      <button id="search-button"></button>
+    </div>
+    <button id="new"></button>
+    <div id="loc-container">
+      <div id="loc-dropdown-parent"></div>
+      <div id="loc-dropdown-children" style="display:none;"></div>
+    </div>
+    <table id="table"></table>
     <div style="display: none;" id="dialogbox">
       <div style="display: none;" id="newentrydialog">
+        <div class="input-container">
+          <span class="nametag hidden">rufnummer</span>
+          <input class="input" id=rufnummernewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">name</span>
+          <input class="input" id=namenewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">typ</span>
+          <input class="input" id=typnewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">hostname</span>
+          <input class="input" id=hostnamenewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">ipadresse</span>
+          <input class="input" id=ipadressenewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">port</span>
+          <input class="input" id=portnewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">durchwahl</span>
+          <input class="input" id=durchwahlnewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">pin</span>
+          <input class="input" id=pinnewentrydialog></input>
+        </div>
+        <input type="checkbox" id="gesperrtnewentrydialog">gesperrt</input>
+        <!--
         <input placeholder="rufnummer" id="rufnummernewentrydialog"></input>
         <input placeholder="name" id="namenewentrydialog"></input>
         <input placeholder="typ" id="typnewentrydialog"></input>
@@ -18,9 +61,39 @@
         <input placeholder="port" id="portnewentrydialog"></input>
         <input placeholder="durchwahl" id="durchwahlnewentrydialog"></input>
         <input placeholder="pin" id="pinnewentrydialog"></input>
-        <input type="checkbox" id="gesperrtnewentrydialog">gesperrt</input>
+        -->
       </div>
       <div style="display: none;" id="editdialog">
+        <div class="input-container">
+          <span class="nametag hidden">rufnummer</span>
+          <input class="input" id=rufnummereditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">name</span>
+          <input class="input" id=nameeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">typ</span>
+          <input class="input" id=typeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">hostname</span>
+          <input class="input" id=hostnameeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">ipadresse</span>
+          <input class="input" id=ipadresseeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">port</span>
+          <input class="input" id=porteditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">durchwahl</span>
+          <input class="input" id=durchwahleditdialog></input>
+        </div>
+        <input type="checkbox" id="gesperrteditdialog">gesperrt</input>
+        <!--
         <input placeholder="rufnummer" id="rufnummereditdialog"></input>
         <input placeholder="name" id="nameeditdialog"></input>
         <input placeholder="typ" id="typeditdialog"></input>
@@ -28,10 +101,10 @@
         <input placeholder="ipadresse" id="ipadresseeditdialog"></input>
         <input placeholder="port" id="porteditdialog"></input>
         <input placeholder="durchwahl" id="durchwahleditdialog"></input>
-        <input type="checkbox" id="gesperrteditdialog">gesperrt</input>
+        -->
       </div>
       <div style="display: none;" id="deletedialog">
-        <p id="pdeletedialog"></p>
+        <p id="deletedialog"></p>
         <span id="rufnummerdeletedialog">test</span>
       </div>
       <input type="password" placeholder="password" id="passworddialog"></input>

@@ -29,7 +29,7 @@ const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
 
-const QUEUEUPDTATEINTERVAL = 10000
+const QUEUEUPDTATEINTERVAL = 10000;
 //<STATES>
 const STANDBY = 0;
 const RESPONDING = 1;
@@ -58,7 +58,7 @@ Peer_search: 10
 var connections = [];
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
-
+//handes[packagetype][state of this connection]
 //handles[2][STANDBY] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 //handles[4][WAITING] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
@@ -70,7 +70,7 @@ handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
 		if(result_a&&(result_a!=[])){
 			var res = result_a[0];
 			console.log(res);
-			if(res.pin==pin&&res.port==port){
+			if(res.pin==pin&&res.port==port/*???*/){
 				dbcon.query("UPDATE telefonbuch.teilnehmer SET ipaddresse='"+connection.remoteAddress+"' WHERE rufnummer="+number,function(err_b,result_b){
 					dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_c,result_c){
 						try{
@@ -186,17 +186,21 @@ handles[6][STANDBY] = (obj,cnum,dbcon,connection)=>{
 				if((result[0]!=undefined)&&(result!=[])&&pin==serverpin){
 					connections[cnum].writebuffer = result;
 					connections[cnum].state = RESPONDING;
+					handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection);
 				}else{
 					connection.write(encPacket({packagetype:9,datalength:0}));
 				}
 			}
 		});
 	}
-};
+}; //TODO: send stuff?
 handles[7][STANDBY] = (obj,cnum,dbcon,connection)=>{
 	if(obj.pin == serverpin){
 		connection.write(encPacket({packagetype:8,datalength:0}));
 		connections[cnum].state = LOGIN;
+		handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection);
+	}else{
+		connection.end();
 	}
 };
 handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
@@ -596,7 +600,7 @@ function UpdateQueue(){
 			}
 		});
 	});
-}
+} //TODO: call!
 var qwdec;
 function StartQWD(){
 	qwd=cp.spawn('node',["queuewatchdog.js"]);
