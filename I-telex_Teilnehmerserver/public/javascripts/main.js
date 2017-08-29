@@ -147,10 +147,7 @@ function sort(usli){
 }
 var languages = {
   german:{
-    "loc-dropdown-child-german":"deutsch",
-    "loc-dropdown-child-english":"englisch",
-    "loc-dropdown-parent":"deutsch",
-    "XXYXX":"POPEL",
+    "XXYXX":"GER",
     "table-th-rufnummer":"telex-nummer",
     "table-th-name":"name",
     "table-th-typ":"typ",
@@ -160,13 +157,10 @@ var languages = {
     "table-th-extention":"durchwahl",
     "table-th-gesperrt":"gesperrt",
     "table-th-moddate":"letzte Änderung",
-    "search-box-placeholder":"suchen",
+    "search-box":"suchen|placeholder",
     "new":"neuer eintrag"
   },english:{
-    "loc-dropdown-child-english":"english",
-    "loc-dropdown-child-german":"german",
-    "loc-dropdown-parent":"english",
-    "XXYXX":"TEST",
+    "XXYXX":"ENG",
     "table-th-rufnummer":"telex-number",
     "table-th-name":"name",
     "table-th-typ":"type",
@@ -176,17 +170,20 @@ var languages = {
     "table-th-extention":"extention",
     "table-th-gesperrt":"lcoked",
     "table-th-moddate":"last change",
-    "search-box-placeholder":"search",
+    "search-box":"search|placeholder",
     "new":"new entry"
   }
 };
-var language = "";
 function setLanguage(l){
   if(languages[l]){
     for(i in languages[l]){
-      $("#"+i).html(languages[l][i]);
+      if(languages[l][i].split("|").length>1){
+        $("#"+i).prop(languages[l][i].split("|")[1],languages[l][i].split("|")[0]);
+      }else{
+        $("#"+i).html(languages[l][i]);
+      }
     }
-    document.getElementById("search-box").placeholder = document.getElementById("search-box-placeholder").innerHTML;
+    document.getElementById("loc-dropdown-parent").style = "cursor:pointer;background-image:url(/images/"+l+".svg);width:100;height:60;background-size:contain;background-repeat:no-repeat;";
   }
 }
 function initloc(){
@@ -200,7 +197,7 @@ function initloc(){
   for(i in languages){
     var child=document.createElement("div");
     child.id="loc-dropdown-child-"+i;
-    child.style="cursor:pointer;";
+    child.style="cursor:pointer;background-image:url(/images/"+i+".svg);width:120px;height:60px;background-size:contain;background-repeat:no-repeat;";
     child.onclick = function(){
       setLanguage(this.id.split("-")[this.id.split("-").length-1]);
     };

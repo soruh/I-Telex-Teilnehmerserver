@@ -124,9 +124,11 @@ select:invalid{
   cursor: pointer;
   background-repeat: no-repeat;
   background-size: contain;
+  height: 60px;
+  width: 120px;
 }
 #loc-dropdown-children{
-  border: 1px solid black;
+  border: 0px solid black;
 }
 #loc-dropdown-child{
   cursor: pointer;

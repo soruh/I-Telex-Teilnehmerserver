@@ -27,7 +27,7 @@ con.connect(function(err) {
             var i=resultnopin.length
             resultnopin[i] = {};
             for(b in result[i]){
-              if(b != "pin" && b != "uid" && b != "changed"&& != "gesperrt"){
+              if(b != "pin" && b != "uid" && b != "changed"&&b != "gesperrt"){
                 resultnopin[i][b] = result[i][b];
               }
             }

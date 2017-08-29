@@ -1,4 +1,0 @@
-- Database offline response
-- Catch error in connection -> terminate connection
-- make sql statements secure !!!
-- check if no search result found with serch_query send end of list or not found

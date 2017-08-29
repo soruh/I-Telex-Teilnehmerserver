@@ -29,6 +29,7 @@ const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
 
+const PORT = 11811;
 const QUEUEUPDTATEINTERVAL = 10000;
 //<STATES>
 const STANDBY = 0;
@@ -552,7 +553,7 @@ function init(){
 		//console.log(FgYellow+"Disconnected client "+FgCyan+cnum+FgYellow+" from database!"+FgWhite);
 		});
 	});
-	server.listen(11811, function() {
+	server.listen(PORT, function() {
 		console.log('server is listening');
 	});
 }
