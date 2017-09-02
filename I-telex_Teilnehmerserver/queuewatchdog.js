@@ -21,22 +21,27 @@ var BgBlue = "\x1b[44m";
 var BgMagenta = "\x1b[45m";
 var BgCyan = "\x1b[46m";
 var BgWhite = "\x1b[47m";
+
+var functions=require("./functions.js");
+eval(functions)
+
 const STANDBY = 0;
 const RESPONDING = 1;
 const FULLQUERY = 2;
 const LOGIN = 3;
-const QUEUE_SEND_INTERVAL = 60000
+const QUEUE_SEND_INTERVAL = 60000;
 
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
-const validatepin = 3451414;
+const serverpin = 118120815;
 
 var connections = [];
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
 handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
+	console.log(FgMagenta,connections[cnum].writebuffer,FgWhite);
 	var dbcon = mysql.createConnection({
 		host: "localhost",
 		user: "telefonbuch",
@@ -52,7 +57,7 @@ handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
 				if(err){
 					throw err;
 				}else if(res.affectedRows > 0){
-					console.log(FgGreen+"deleted queue entry "+FgCyan+connections[cnum].writebuffer[0].uid+FgGreen+" from queue"+FgWhite);
+					console.log(FgGreen+"deleted queue entry "+FgCyan+connections[cnum].writebuffer[0].name+FgGreen+" from queue"+FgWhite);
 					connections[cnum].writebuffer = connections[cnum].writebuffer.splice(1);
 				}
 			});
@@ -66,7 +71,6 @@ handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
 		connections[cnum].state = STANDBY;
 	}
 };
-
 var sendInt = setInterval(SendQueue,QUEUE_SEND_INTERVAL);
 process.stdin.on('data',(data)=>{
 	if(data.toString() === "sendqueue"){
@@ -122,7 +126,7 @@ function SendQueue(callback){
 										scb();
 									});
 								},()=>{
-									client.write(encPacket({packagetype:7,datalength:5,data:{serverpin:validatepin,version:1}}),()=>{
+									client.write(encPacket({packagetype:7,datalength:5,data:{serverpin:serverpin,version:1}}),()=>{
 										connections[cnum].state = RESPONDING;
 										cb();
 									});
@@ -144,247 +148,4 @@ function SendQueue(callback){
 			}
 		});
 	});
-}
-function connect(dbcon,cb,options,callback){
-	console.log(FgWhite,options);
-	try {
-		var socket = new net.Socket();
-		var cnum = -1;
-		for(i=0;i<connections.length;i++){
-			if(connections[i] == null){
-				cnum = i;
-			}
-		}
-		if(cnum == -1){
-			cnum = connections.length;
-		}
-		connections[cnum] = {/*connection:socket,*/state:STANDBY};
-		socket.on('data',(data)=>{
-			handlePacket(decData(data),cnum,dbcon,socket);
-		});
-		socket.on('error',(error)=>{
-			console.log(FgRed,error,FgWhite);
-			socket.end();
-			cb();
-		});
-		socket.connect(options,(connection)=>{
-			return(callback(socket,cnum));
-		});
-	}catch(e){
-		throw e;
-		//cb();
-	}
-}
-function handlePacket(obj,cnum,dbcon,connection){
-	console.log(FgMagenta+"state: "+FgCyan+connections[cnum]["state"]+FgWhite);
-	console.log(BgYellow,FgRed,obj,FgWhite,BgBlack);
-	if(typeof handles[obj.packagetype][connections[cnum]["state"]] === "function"){
-		try{
-			handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection);
-		}catch(e){
-			console.log(FgRed,e,FgWhite);
-		}
-	}else{
-		console.log(FgRed+"packagetype ["+FgCyan+obj.packagetype+FgRed+" ] not supported in state ["+FgCyan+connections[cnum]["state"]+FgRed+"]"+FgWhite);
-	}
-}
-function encPacket(obj){
-	console.log(BgYellow,FgBlue,obj,FgWhite,BgBlack);
-	var data = obj.data;
-	switch(obj.packagetype){
-		case 1:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.pin,2))
-			.concat(deConcatValue(data.port,2));
-			break;
-		case 2:
-			var array = deConcatValue(data.ipaddresse,4);
-			break;
-		case 3:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.version,1));
-			break;
-		case 4:
-		var array = [];
-			break;
-		case 5:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.name,40))
-			.concat(deConcatValue(data.flags,2))
-			.concat(deConcatValue(data.typ,1))
-			.concat(deConcatValue(data.hostname,40))
-			.concat(deConcatValue(data.ipaddresse,4))
-			.concat(deConcatValue(parseInt(data.port),2))
-			.concat(deConcatValue(data.extention,1))
-			.concat(deConcatValue(parseInt(data.pin),2))
-			.concat(deConcatValue(parseInt(data.moddate),4));
-			break;
-		case 6:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.serverpin,4));
-			break;
-		case 7:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.serverpin,4));
-			break;
-		case 8:
-			var array = [];
-			break;
-		case 9:
-			var array = [];
-			break;
-		case 10:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.pattern,40));
-			break;
-	}
-	var header = [obj.packagetype,array.length];
-	if(array.length > obj.datalength){
-		throw "Buffer bigger than expected:\n"+
-		array.length+" > "+obj.datalength;
-	}
-	console.log(FgRed,Buffer.from(header.concat(array)),FgWhite);
-	return(Buffer.from(header.concat(array)));
-}
-function decPacket(packagetype,buffer){
-	switch(packagetype){
-		case 1:
-			var data = {
-				rufnummer:ConcatByteArray(buffer.slice(0,4),"number"),
-				pin:ConcatByteArray(buffer.slice(4,6),"number"),
-				port:ConcatByteArray(buffer.slice(6,8),"number")
-			};
-			return(data);
-			break;
-		case 2:
-			var data = {
-				ipaddresse:ConcatByteArray(buffer.slice(0,4),"string")
-			};
-			return(data);
-			break;
-		//The Address_confirm(0x02) packet is not supposed to be sent to the server
-		case 3:
-			var data = {
- 				rufnummer:ConcatByteArray(buffer.slice(0,4),"number")
- 			};
-			if(buffer.slice(4,5).length > 0){
-				data["version"] = ConcatByteArray(buffer.slice(4,5),"number");
-			}else{
-				data["version"] = 1;
-			}
- 			return(data);
-			break;
-		case 4:
-			var data = {};
-			return(data);
-			break;
-		case 5:
-			var data = {
-				rufnummer:ConcatByteArray(buffer.slice(0,4),"number"),
-				name:ConcatByteArray(buffer.slice(4,44),"string"),
-				flags:ConcatByteArray(buffer.slice(44,46),"number"),
-				typ:ConcatByteArray(buffer.slice(46,47),"number"),
-				addresse:ConcatByteArray(buffer.slice(47,87),"string"),
-				ipaddresse:ConcatByteArray(buffer.slice(87,91),"string"),
-				port:ConcatByteArray(buffer.slice(91,93),"number"),
-				durchwahl:ConcatByteArray(buffer.slice(93,94),"number"),
-				pin:ConcatByteArray(buffer.slice(94,96),"number"),
-				timestamp:ConcatByteArray(buffer.slice(96,100),"number")
-			};
-			return(data);
-			break;
-		case 6:
-			var data = {
-				version:ConcatByteArray(buffer.slice(0,1),"number"),
-				serverpin:ConcatByteArray(buffer.slice(1,5),"number")
-			};
-			return(data);
-			break;
-		case 7:
-			var data = {
-				version:ConcatByteArray(buffer.slice(0,1),"number"),
-				serverpin:ConcatByteArray(buffer.slice(1,5),"number")
-			};
-			return(data);
-			break;
-		case 8:
-			var data = {};
-			return(data);
-			break;
-		case 9:
-			var data = {};
-			return(data);
-			break;
-		case 10:
-			var data = {
-				version:ConcatByteArray(buffer.slice(0,1),"number"),
-				pattern:ConcatByteArray(buffer.slice(1,41),"string")
-			};
-			return(data);
-			break;
-	}
-}
-function decData(buffer){
-	var typepos = 0;
-	var outarr = [];
-	while(typepos<buffer.length-1){
-		var packagetype = parseInt(buffer[typepos],10);
-		var datalength = parseInt(buffer[typepos+1],10);
-		var blockdata = [];
-		for(i=0;i<datalength;i++){
-			blockdata[i] = buffer[typepos+2+i];
-		}
-		var data=decPacket(packagetype,blockdata);
-		outarr[outarr.length] = {
-			packagetype:packagetype,
-			datalength,datalength,
-			data:data
-		};
-		typepos += datalength+2;
-	}
-	return(outarr/**/[0]/**/);//array of objects => only returning first
-}
-function ConcatByteArray(arr,type){
-	if(type==="number"){
-		var num = 0;
-		for (i=arr.length-1;i>=0;i--){
-			num*=256;
-			num += arr[i];
-		}
-		return(num)
-	}else if(type==="string"){
-		var str = "";
-		for (i=0;i<arr.length;i++){
-			if(arr[i] > 0){
-				str += String.fromCharCode(arr[i]);
-			}
-		}
-		return(str/*.replace(/(\u0000)/g,"")*/);
-	}
-}
-function deConcatValue(value,size){
-	//console.log(value);
-	var array = [];
-	if(typeof value === "string"){
-		//console.log("string");
-		for(i=0;i<value.length;i++){
-			array[i] = value.charCodeAt(i);
-		}
-		array[array.length] = 0;
-	}else if(typeof value === "number"){
-		//console.log("number");
-		while(value>0){
-			array[array.length] = value%256;
-			value = Math.floor(value/256);
-		}
-	}else if(typeof value === "undefined"){
-		//console.log("undefined");
-	}
-	if(array.length>size){
-		throw	"Value turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size;
-	}
-	while(array.length<size){
-		array[array.length] = 0;
-	}
-	return(array);
 }

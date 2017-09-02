@@ -22,7 +22,10 @@ var BgMagenta = "\x1b[45m";
 var BgCyan = "\x1b[46m";
 var BgWhite = "\x1b[47m";
 
-const serverpin = 3451414;
+var functions=require("./functions.js");
+eval(functions)
+
+const serverpin = 118120815;
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
@@ -30,7 +33,7 @@ const cp = require('child_process');
 const fs = require('fs');
 
 const PORT = 11811;
-const QUEUEUPDTATEINTERVAL = 10000;
+const UPDATEQUEUEINTERVAL = 10000;
 //<STATES>
 const STANDBY = 0;
 const RESPONDING = 1;
@@ -111,24 +114,15 @@ handles[3][STANDBY] = (obj,cnum,dbcon,connection)=>{
 	}
 };
 handles[5][FULLQUERY] = (obj,cnum,dbcon,connection)=>{
-	if(obj.version == 1){
-		console.log(obj);
-		dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer="+obj.rufnummer+";",(err,res)=>{
-			if(err){
-				throw err
-			}else{
-				if(res.length == 1){
-					if(obj.timestamp > res.moddate){
-						dbcon.query("UPDATE telefonbuch.teilnehmer SET rufnummer = "+obj.rufnummer+",name = "+obj.name+",typ = "+obj.typ+",hostname = "+obj.hostname+",ipadresse = "+obj.ipadresse+",port = "+obj.port+",extention = "+obj.extention+",pin = "+obj.pin+",gesperrt = "+obj.gesperrt+",moddate = "+obj.moddate+",changed = "+0+"WHERE rufnummer="+obj.rufnummer+";",(err,res2)=>{
-							if(err){
-								throw err;
-							}else{
-								connection.write(encPacket({packagetype:8,datalength:0}));
-							}
-						});
-					}
-				}else if(res.length == 0){
-					dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+obj.rufnummer+","+obj.name+","+obj.typ+","+obj.hostname+","+obj.ipadresse+","+obj.port+","+obj.extention+","+obj.pin+","+obj.gesperrt+","+obj.moddate+","+0+");",(err,res2)=>{
+	console.log(obj);
+	dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer="+mysql.escape(obj.data.rufnummer)+";",(err,res)=>{
+		if(err){
+			throw err
+		}else{
+			if(res.length == 1){
+				if(obj.data.timestamp > res.moddate){
+					console.log(obj.data.timestamp+" > "+res.moddate);
+					dbcon.query("UPDATE telefonbuch.teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+mysql.escape(obj.data.name)+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+mysql.escape(obj.data.addresse)+",ipadresse = "+mysql.escape(obj.data.ipaddresse)+",port = "+mysql.escape(obj.data.port)+",extention = "+mysql.escape(obj.data.durchwahl)+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+mysql.escape(obj.data.flags)+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+mysql.escape(0)+"WHERE rufnummer="+mysql.escape(obj.data.rufnummer)+";",(err,res2)=>{
 						if(err){
 							throw err;
 						}else{
@@ -136,24 +130,32 @@ handles[5][FULLQUERY] = (obj,cnum,dbcon,connection)=>{
 						}
 					});
 				}else{
-					throw 'Something really strange happened, the "rufnummer" field should be unique!';
+					connection.write(encPacket({packagetype:8,datalength:0}));
 				}
+			}else if(res.length == 0){
+				dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name)+","+mysql.escape(obj.data.typ)+","+mysql.escape(obj.data.addresse)+","+mysql.escape(obj.data.ipaddresse)+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl)+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.flags)+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");",(err,res2)=>{
+					if(err){
+						throw err;
+					}else{
+						connection.write(encPacket({packagetype:8,datalength:0}));
+					}
+				});
+			}else{
+				throw 'Something really strange happened, the "rufnummer" field should be unique!';
 			}
-		});
-	}else{
-		console.log(FgRed,"unsupported package version",FgWhite);
-	}
+		}
+	});
 };
 handles[5][LOGIN] = (obj,cnum,dbcon,connection)=>{
-	if(obj.version == 1){
+	if(obj.data.data.version == 1){
 		console.log(obj);
-		dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer="+obj.rufnummer+";",(err,res)=>{
+		dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer="+obj.data.data.rufnummer+";",(err,res)=>{
 			if(err){
 				throw err
 			}else{
 				if(res.length == 1){
-					if(obj.timestamp > res.moddate){
-						dbcon.query("UPDATE telefonbuch.teilnehmerSETrufnummer = "+obj.rufnummer+",name = "+obj.name+",typ = "+obj.typ+",hostname = "+obj.hostname+",ipadresse = "+obj.ipadresse+",port = "+obj.port+",extention = "+obj.extention+",pin = "+obj.pin+",gesperrt = "+obj.gesperrt+",moddate = "+obj.moddate+",changed = "+0+"WHERE rufnummer="+obj.rufnummer+";",(err,res2)=>{
+					if(obj.data.data.timestamp > res.moddate){
+						dbcon.query("UPDATE telefonbuch.teilnehmerSETrufnummer = "+obj.data.data.rufnummer+",name = "+obj.data.data.name+",typ = "+obj.data.data.typ+",hostname = "+obj.data.data.hostname+",ipadresse = "+obj.data.data.ipadresse+",port = "+obj.data.data.port+",extention = "+obj.data.data.extention+",pin = "+obj.data.data.pin+",gesperrt = "+obj.data.data.gesperrt+",moddate = "+obj.data.data.moddate+",changed = "+0+"WHERE rufnummer="+obj.data.data.rufnummer+";",(err,res2)=>{
 							if(err){
 								throw err;
 							}else{
@@ -162,7 +164,7 @@ handles[5][LOGIN] = (obj,cnum,dbcon,connection)=>{
 						});
 					}
 				}else if(res.length == 0){
-					dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+obj.rufnummer+","+obj.name+","+obj.typ+","+obj.hostname+","+obj.ipadresse+","+obj.port+","+obj.extention+","+obj.pin+","+obj.gesperrt+","+obj.moddate+","+0+");",(err,res2)=>{
+					dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+obj.data.data.rufnummer+","+obj.data.data.name+","+obj.data.data.typ+","+obj.data.data.hostname+","+obj.data.data.ipadresse+","+obj.data.data.port+","+obj.data.data.extention+","+obj.data.data.pin+","+obj.data.data.gesperrt+","+obj.data.data.moddate+","+0+");",(err,res2)=>{
 						if(err){
 							throw err;
 						}else{
@@ -179,7 +181,7 @@ handles[5][LOGIN] = (obj,cnum,dbcon,connection)=>{
 	}
 };
 handles[6][STANDBY] = (obj,cnum,dbcon,connection)=>{
-	if(obj.pin == serverpin){
+	if(obj.data.pin == serverpin){
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer",function(err,result){
 			if(err){
 				console.log(FgRed,err,FgWhite);
@@ -196,7 +198,7 @@ handles[6][STANDBY] = (obj,cnum,dbcon,connection)=>{
 	}
 }; //TODO: send stuff?
 handles[7][STANDBY] = (obj,cnum,dbcon,connection)=>{
-	if(obj.pin == serverpin){
+	if(obj.data.pin == serverpin){
 		connection.write(encPacket({packagetype:8,datalength:0}));
 		connections[cnum].state = LOGIN;
 		handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection);
@@ -217,14 +219,15 @@ handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
 };
 handles[9][FULLQUERY] = (obj,cnum,dbcon,connection)=>{
 	connections[cnum].state = STANDBY;
+	connections[cnum].cb();
 };
 handles[9][LOGIN] = (obj,cnum,dbcon,connection)=>{
 	connections[cnum].state = STANDBY;
 };
 handles[10][STANDBY] = (obj,cnum,dbcon,connection)=>{
 	console.log(obj);
-	var version = obj.data.version;
-	var query = obj.data.pattern;
+	var version = obj.data.data.version;
+	var query = obj.data.data.pattern;
 	var searchstring = "SELECT * FROM telefonbuch.teilnehmer WHERE";
 	queryarr = query.split(" ");
 	for(i in queryarr){
@@ -248,211 +251,6 @@ handles[10][STANDBY] = (obj,cnum,dbcon,connection)=>{
 		}
 	});
 };
-function handlePacket(obj,cnum,dbcon,connection){
-	console.log(FgMagenta+"state: "+FgCyan+connections[cnum]["state"]+FgWhite);
-	console.log(BgYellow,FgRed,obj,FgWhite,BgBlack);
-	try{
-		if(handles[obj.packagetype][connections[cnum]["state"]]){
-			handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection);
-		}else{
-			console.log(FgRed+"packagetype ["+FgCyan+obj.packagetype+FgRed+" ] not supported in state ["+FgCyan+connections[cnum]["state"]+FgRed+"]"+FgWhite);
-		}
-	}catch(e){
-		throw e;
-	}
-}
-function encPacket(obj) {
-	console.log(BgYellow,FgBlue,obj,FgWhite,BgBlack);
-	var data = obj.data;
-	switch(obj.packagetype){
-		case 1:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.pin,2))
-			.concat(deConcatValue(data.port,2));
-			break;
-		case 2:
-			var array = deConcatValue(data.ipaddresse,4);
-			break;
-		case 3:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.version,1));
-			break;
-		case 4:
-		var array = [];
-			break;
-		case 5:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.name,40))
-			.concat(deConcatValue(data.flags,2))
-			.concat(deConcatValue(data.typ,1))
-			.concat(deConcatValue(data.addresse,40))
-			.concat(deConcatValue(data.ipaddresse,4))
-			.concat(deConcatValue(data.port,2))
-			.concat(deConcatValue(data.durchwahl,1))
-			.concat(deConcatValue(data.pin,2))
-			.concat(deConcatValue(data.timestamp,4));
-			break;
-		case 6:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.serverpin,4));
-			break;
-		case 7:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.serverpin,4));
-			break;
-		case 8:
-			var array = [];
-			break;
-		case 9:
-			var array = [];
-			break;
-		case 10:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.pattern,40));
-			break;
-	}
-	var header = [obj.packagetype,array.length];
-	if(array.length > obj.datalength){
-		throw "Buffer bigger than expected:\n"+
-		array.length+" > "+obj.datalength;
-	}
-	console.log(FgRed,Buffer.from(header.concat(array)),FgWhite);
-	return(Buffer.from(header.concat(array)));
-}
-function decPacket(packagetype,buffer){
-	switch(packagetype){
-		case 1:
-			var data = {
-				rufnummer:ConcatByteArray(buffer.slice(0,4),"number"),
-				pin:ConcatByteArray(buffer.slice(4,6),"number"),
-				port:ConcatByteArray(buffer.slice(6,8),"number")
-			};
-			return(data);
-			break;
-		case 2:
-			var data = {
-				ipaddresse:ConcatByteArray(buffer.slice(0,4),"string")
-			};
-			return(data);
-			break;
-		//The 2(0x02) packet is not supposed to be sent to the server
-		case 3:
-			var data = {
- 				rufnummer:ConcatByteArray(buffer.slice(0,4),"number")
- 			};
-			if(buffer.slice(4,5).length > 0){
-				data["version"] = ConcatByteArray(buffer.slice(4,5),"number");
-			}else{
-				data["version"] = 1;
-			}
- 			return(data);
-			break;
-		case 4:
-			var data = {};
-			return(data);
-			break;
-		case 5:
-			var data = {
-				rufnummer:ConcatByteArray(buffer.slice(0,4),"number"),
-				name:ConcatByteArray(buffer.slice(4,44),"string"),
-				flags:ConcatByteArray(buffer.slice(44,46),"number"),
-				typ:ConcatByteArray(buffer.slice(46,47),"number"),
-				addresse:ConcatByteArray(buffer.slice(47,87),"string"),
-				ipaddresse:ConcatByteArray(buffer.slice(87,91),"string"),
-				port:ConcatByteArray(buffer.slice(91,93),"number"),
-				durchwahl:ConcatByteArray(buffer.slice(93,94),"number"),
-				pin:ConcatByteArray(buffer.slice(94,96),"number"),
-				timestamp:ConcatByteArray(buffer.slice(96,100),"number")
-			};
-			return(data);
-			break;
-		case 6:
-			var data = {
-				version:ConcatByteArray(buffer.slice(0,1),"number"),
-				serverpin:ConcatByteArray(buffer.slice(1,5),"number")
-			};
-			return(data);
-			break;
-		case 7:
-			var data = {
-				version:ConcatByteArray(buffer.slice(0,1),"number"),
-				serverpin:ConcatByteArray(buffer.slice(1,5),"number")
-			};
-			return(data);
-			break;
-		case 8:
-			var data = {};
-			return(data);
-			break;
-		case 9:
-			var data = {};
-			return(data);
-			break;
-		case 10:
-			var data = {
-				version:ConcatByteArray(buffer.slice(0,1),"number"),
-				pattern:ConcatByteArray(buffer.slice(1,41),"string")
-			};
-			return(data);
-			break;
-	}
-}
-function decData(buffer){
-	var typepos = 0;
-	var outarr = [];
-	while(typepos<buffer.length-1){
-		var packagetype = parseInt(buffer[typepos],10);
-		var datalength = parseInt(buffer[typepos+1],10);
-		var blockdata = [];
-		for(i=0;i<datalength;i++){
-			blockdata[i] = buffer[typepos+2+i];
-		}
-		var data=decPacket(packagetype,blockdata);
-		outarr[outarr.length] = {
-			packagetype:packagetype,
-			datalength,datalength,
-			data:data
-		};
-		typepos += datalength+2;
-	}
-	return(outarr/**/[0]/**/);//array of objects => only returning first
-}
-function ConcatByteArray(arr,type){
-	if(type==="number"){
-		var num = 0;
-		for (i=arr.length-1;i>=0;i--){
-			num*=256;
-			num += arr[i];
-		}
-		return(num)
-	}else if(type==="string"){
-		var str = "";
-		for (i=0;i<arr.length;i++){
-			str += String.fromCharCode(arr[i]);
-		}
-		return(str.replace(/(\u0000)/g,""));
-	}
-}
-function deConcatValue(value,size){
-	var array = [];
-	if(typeof value === "string"){
-		for(i=0;i<value.length;i++){
-			array[i] = value.charCodeAt(i);
-		}
-	}else if(typeof value === "number"){
-		while(value>0){
-			array[array.length] = value%256;
-			value = Math.floor(value/256);
-		}
-	}
-	if(array.length>size){
-		throw	"Value turned into a bigger than expecte Bytearray!";
-	}
-	while(array.length<size){
-		array[array.length] = 0;
-	}
-	return(array);
-}
 function init(){
 	var server = net.createServer(function(connection) {
 		var cnum = -1;
@@ -557,7 +355,7 @@ function init(){
 		console.log('server is listening');
 	});
 }
-function UpdateQueue(){
+function updateQueue(){
 	var dbcon = mysql.createConnection({
 		host: "localhost",
 		user: "telefonbuch",
@@ -587,6 +385,7 @@ function UpdateQueue(){
 						dbcon.end(()=>{
 							qwd.stdin.write("sendqueue");
 							console.log(FgYellow+"Disconnected from server database!"+FgWhite);
+							setTimeout(updateQueue,UPDATEQUEUEINTERVAL);
 						});
 					});
 				});
@@ -598,17 +397,40 @@ function UpdateQueue(){
 					qwdec = "unknown";
 					qwd.stdin.write("sendqueue");
 				}
+				setTimeout(updateQueue,UPDATEQUEUEINTERVAL);
 			}
 		});
 	});
 } //TODO: call!
+function getFullQuery(){
+	var dbcon = mysql.createConnection({
+		host: "localhost",
+		user: "telefonbuch",
+		password: "amesads"
+	});
+	dbcon.connect(()=>{
+			dbcon.query("SELECT * FROM telefonbuch.servers",(err,res)=>{
+				if(err){
+					throw err;
+				}
+				async.eachSeries(res,(r,cb)=>{
+					connect(dbcon,()=>{},{port:r.port,host:r.addresse},(client,cnum)=>{
+						client.write(encPacket({packagetype:6,datalength:5,data:{serverpin:serverpin,version:1}}),()=>{
+							connections[cnum].state = FULLQUERY;
+							connections[cnum].cb=cb;
+						});
+					});
+				});
+			});
+	});
+}
 var qwdec;
-function StartQWD(){
+function startQWD(){
 	qwd=cp.spawn('node',["queuewatchdog.js"]);
 	qwd.on('exit',(ec)=>{
 		qwdec = ec;
 		console.log("qwd process exited with code "+ec);
-		StartQWD();
+		startQWD();
 	});
 	qwd.stdout.on('data',(data)=>{
 		if(qwd_stdout_log == ""){
@@ -633,238 +455,11 @@ function StartQWD(){
 		}
 	});
 }
+
 if(module.parent === null){
 	console.log(FgMagenta+"Initialising!"+FgWhite);
-	init();
-	StartQWD();
-	UpdateQueue();
-	var UpdateQueueInt = setInterval(UpdateQueue,QUEUEUPDTATEINTERVAL);
+	//init();
+	startQWD();
+	updateQueue();
+	getFullQuery();
 }
-//<ALT>
-/*
-function StringToHex(str){
-	var arr = [];
-	for(i in str.split("")){
-		arr[i] = str.charCodeAt(i);
-	}
-	return(arr);
-}
-function hexify(num){
-	var arr = num.toString(16).split("");
-	var str = "";
-	for (i=arr.length-1;i>=0;i--){
-		str += arr[i].toString(16);
-	}
-	return(str);
-}
-function nulsarr(num){
-	var arr = [];
-	for(i=0;i<num;i++){
-		arr[i] = 0x00;
-	}
-	return(arr);
-}
-function hextostring(data){
-	var str = "";
-	for (i in data){
-		//if(data[i].toString(16) != "0" || true){
-		str += String.fromCharCode(data[i]);
-		//}
-	}
-	return(str);
-}
-*/
-//</ALT>
-/*
-console.log(data+" | "+typeof data);
-console.log("length: "+length);
-var outarr = [];
-if(data == undefined){
-outarr = nulsarr(length);
-}else{
-if(typeof data == "string"){
-outarr = StringToHex(data);
-outarr = outarr.concat(nulsarr(length-StringToHex(data).length));
-}else{
-hexstring = data.toString(16);
-console.log("hexstring: "+hexstring);
-for(i=hexstring.length-1;i>=0;i-=2){
-if(hexstring[i-1]){
-outarr[outarr.length] = parseInt(hexstring[i-1]+hexstring[i],16);
-}else{
-outarr[outarr.length] = parseInt("0"+hexstring[i],16);
-}
-}
-outarr = outarr.concat(nulsarr(length-hexstring.length));
-}
-}
-console.log(outarr);
-console.log("\n");
-return(outarr);
-}
-*/
-/*
-function OLD(){
-	switch(obj.packagetype){
-		case 1:
-		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_a,result_a){
-			if(result_a&&(result_a!=[])){
-				var res = result_a[0];
-				console.log(res);
-				if(res.pin==pin&&res.port==port){
-					dbcon.query("UPDATE telefonbuch.teilnehmer SET ipaddresse='"+connection.remoteAddress+"' WHERE rufnummer="+number,function(err_b,result_b){
-						dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_c,result_c){
-							console.log(Buffer.from(result_c[0].ipaddresse));
-							connection.write(Buffer.from([0x02,0x04].concat(StringToHex(result_c[0].ipaddresse))),"binary");
-						});
-					});
-				}else if(res.pin!=pin){
-					connection.end();
-				}else if(res.pin==pin&&res.port!=port){
-
-				}
-			}
-		});
-		break;
-	case 3:
-		var rufnummer = ConcatByteArray(blockdata.slice(0,4));
-		var version = ConcatByteArray(blockdata.slice(4,5));
-		console.log("rufnummer: "+rufnummer);
-		console.log("version: "+version);
-		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+rufnummer+";",function(err,result){
-			console.log("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+rufnummer+";");
-			console.log(result);
-			if(err){
-				console.log(err);
-			}else{
-				if((result[0]!=undefined)&&(result!=[])){
-					5(result[0],connection);
-				}else{
-					^^.from([0x04,0x00]),"binary");
-				}
-			}
-		});
-		break;
-	case 8:
-		if(queryresult != [] && queryresultpos != -1){
-			switch(state){
-				case "standby":
-					5(queryresult[queryresultpos],connection);
-					break;
-				case "FullQuery":
-					5(queryresult[queryresultpos],connection,serverpin);
-					break;
-				case "Login":
-					5(queryresult[queryresultpos],connection,serverpin);
-					break;
-				default:
-					5(queryresult[queryresultpos],connection);
-			}//state = "standby";
-			if(queryresultpos<queryresult.length-1){
-				queryresultpos++;
-			}else{
-				queryresult = []
-				queryresultpos = -1;
-				state = "standby";
-				connection.write(Buffer.from([0x09,0x00]));
-			}
-		}
-		break;
-	case 10:
-		var version = ConcatByteArray(blockdata.slice(0,1));
-		var query = hextostring(blockdata.slice(1,41));
-		console.log("version: "+version);
-		console.log("query: "+query);
-		var searchstring = "SELECT * FROM telefonbuch.teilnehmer WHERE name LIKE '%%'";
-		queryarr = query.split(" ");
-		for(i in queryarr){
-			queryarr[i] = queryarr[i].replace(new RegExp(String.fromCharCode(0x00),"g"),"");
-			searchstring += " AND name LIKE '%"+queryarr[i]+"%'";
-		}
-		searchstring +=";"
-		console.log(searchstring);
-		dbcon.query(searchstring,function(err,result){
-			if(err){
-				console.log(err);
-			}else{
-				console.log(result);
-				if((result[0]!=undefined)&&(result!=[])){
-					queryresultpos = 0;
-					queryresult = result;
-					console.log(queryresult);
-					5(queryresult[queryresultpos],connection);
-					queryresultpos++;
-				}else{
-					connection.write(Buffer.from([0x09,0x00]));
-				}
-			}
-		});
-		break;
-	//server communication
-	case 6:
-			var pin = ConcatByteArray(blockdata.slice(1,5));
-			console.log("pin: "+pin);
-			if(pin == serverpin){
-				connectionpin = pin;
-			dbcon.query("SELECT * FROM telefonbuch.teilnehmer",function(err,result){
-				if(err){
-					console.log(err);
-				}else{
-					if((result[0]!=undefined)&&(result!=[])){
-						queryresultpos = 0;
-						queryresult = result;
-						state = "FullQuery";
-						console.log(queryresult);
-						5(queryresult[queryresultpos],connection,pin);
-						queryresultpos++;
-					}else{
-						connection.write(Buffer.from([0x09,0x00]));
-					}
-				}
-			});
-		}
-		break;
-	case 7:
-		var pin = ConcatByteArray(blockdata.slice(1,5));
-		console.log("pin: "+pin);
-		if(pin == serverpin){
-			connection.write(Buffer.from([0x08,0x00]));
-			state = "Login";
-		}
-		break;
-	case 5:
-		var pin = ConcatByteArray(blockdata.slice(94,96));
-		if(pin == serverpin){
-			switch(state){
-				default://////////////////////////////////////////TODO
-					console.log(blockdata);
-					var rufnummer = ConcatByteArray(blockdata.slice(0,4));
-					var name = ConcatByteArray(blockdata.slice(4,44));
-					var typ = ConcatByteArray(blockdata.slice(46,47));
-					var hostname = ConcatByteArray(blockdata.slice(47,87));
-					var ipaddresse = ConcatByteArray(blockdata.slice(87,91));
-					var port = ConcatByteArray(blockdata.slice(91,93));
-					var extention = ConcatByteArray(blockdata.slice(93,94));
-					var gesperrt = 0;//TODO 46,44
-					var moddate = ConcatByteArray(blockdata.slice(96,100));
-					dbcon.query("UPDATE telefonbuch.teilnehmer SET rufnummer= "+rufnummer+",name='"+name+"',typ="+typ+",hostname='"+hostname+"',ipaddresse='"+ipaddresse+"',port='"+port+"',extention='"+extention+"',gesperrt="+gesperrt+", moddate = "+moddate+" WHERE rufnummer="+rufnummer, function (err, result) {
-						if(err){
-							console.log(err);
-						}else{
-							console.log(result);
-						}
-					});
-				break;
-			}
-		}
-		break;
-		case 9:
-		state = "standby";
-		break;
-	}
-}
-*/
-/*
-console.log("decData",serverpin);
-console.log("hex",serverpin.toString(16));
-console.log(hexify(serverpin));*/
