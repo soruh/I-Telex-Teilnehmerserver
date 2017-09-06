@@ -1,3 +1,14 @@
+var hrDate = true;
+var showAllDateInfo = false;
+
+function UtcToString(Utc){
+  var d = new Date(parseInt(Utc)*1000);
+  if(showAllDateInfo){
+    return(d.toString());
+  }else{
+    return(d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear()+" "+d.getSeconds()+":"+d.getMinutes()+":"+d.getHours());
+  }
+}
 function getlist(callback) {
   $.ajax({
     url: "/stats",
@@ -22,7 +33,14 @@ function updatetable(usli,cb){
     var th = document.createElement("th");
     th.id = "table-th-"+b;
     table.lastChild.appendChild(th);
-    //table.lastChild.lastChild.innerHTML = b;
+    $("#table-th-"+b).click(function(){
+      sortby=this.id.split('-')[2];
+      getlist((li)=>{
+        updatetable(li,()=>{
+          setLanguage(language);
+        });
+      });
+    });
   }
   for(a in list){
     var tr = document.createElement("tr");
@@ -30,7 +48,11 @@ function updatetable(usli,cb){
     for(b in list[a]){
       var td = document.createElement("td");
       table.lastChild.appendChild(td);
-      table.lastChild.lastChild.innerHTML = list[a][b];
+      if(b==="moddate"&&hrDate){
+        table.lastChild.lastChild.innerHTML = UtcToString(list[a][b]);
+      }else{
+        table.lastChild.lastChild.innerHTML = list[a][b];
+      }
     }
     var td = document.createElement("td");
     table.lastChild.appendChild(td);
@@ -80,6 +102,7 @@ function updatetable(usli,cb){
       $("#pdeletedialog").html(str);
     }
   }
+  setLanguage(language);
   if(typeof cb==="function"){cb();}
 }
 function edit(vals){
@@ -99,7 +122,6 @@ function edit(vals){
 }
 function search(str,callback){
   var regex = new RegExp("("+str.replace(/ /g,"&")+")","gi");
-  console.log("searching for: ",regex);
   getlist((list)=>{
     var returnlist = [];
     for(row of list){
@@ -116,7 +138,6 @@ function search(str,callback){
         returnlist[returnlist.length] = row;
       }
     }
-    console.log("found: ",returnlist);
     callback(returnlist);
   });
 }
@@ -134,20 +155,27 @@ function resetforms(){
   $("#editdialog").hide();
   $("#deletedialog").hide();
 }
-var sortby = "";
+sortby="";
 function sort(usli){
   if(sortby === ""){
     return(usli);
   }else{
-    if(/**/true/**/){
-      console.error(sortby+" is not a collumn name!");
+    var iskey = false;
+    for(k in usli[0]){
+      if(k === sortby){
+        iskey = true;
+      }
+    }
+    if(iskey){
+      return(usli.sort((x,y)=>{return(comp=x[sortby].toString().localeCompare(y[sortby].toString()));}));
+    }else{
+      console.log(sortby+" is not a collumn name!");
       return(usli);
     }
   }
 }
 var languages = {
   german:{
-    "XXYXX":"GER",
     "table-th-rufnummer":"telex-nummer",
     "table-th-name":"name",
     "table-th-typ":"typ",
@@ -160,7 +188,6 @@ var languages = {
     "search-box":"suchen|placeholder",
     "new":"neuer eintrag"
   },english:{
-    "XXYXX":"ENG",
     "table-th-rufnummer":"telex-number",
     "table-th-name":"name",
     "table-th-typ":"type",
@@ -174,8 +201,10 @@ var languages = {
     "new":"new entry"
   }
 };
+var language = "german";
 function setLanguage(l){
   if(languages[l]){
+    language=l;
     for(i in languages[l]){
       if(languages[l][i].split("|").length>1){
         $("#"+i).prop(languages[l][i].split("|")[1],languages[l][i].split("|")[0]);
@@ -204,13 +233,13 @@ function initloc(){
     document.getElementById("loc-dropdown-children").appendChild(child);
   }
 }
-$(document).ready(function(){
+$(document).ready(()=>{
   getlist((li)=>{
     updatetable(li,()=>{
       initloc();
-      setLanguage("german");
     })
   });
+
   $("#search-button").click(()=>{
     search($("#search-box").val(),(list)=>{
       updatetable(list);

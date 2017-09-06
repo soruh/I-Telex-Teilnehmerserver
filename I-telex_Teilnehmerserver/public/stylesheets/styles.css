@@ -27,6 +27,7 @@ select:invalid{
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  cursor: pointer;
 }
 .remove{
   width: 22px !important;
@@ -36,9 +37,10 @@ select:invalid{
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  cursor: pointer;
 }
 #new{
-
+  cursor: pointer;
 }
 #dialogbox{
   position: fixed;
@@ -131,5 +133,8 @@ select:invalid{
   border: 0px solid black;
 }
 #loc-dropdown-child{
+  cursor: pointer;
+}
+#table th{
   cursor: pointer;
 }

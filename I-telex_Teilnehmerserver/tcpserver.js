@@ -32,8 +32,8 @@ const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
 
-const PORT = 11811;
-const UPDATEQUEUEINTERVAL = 10000;
+const PORT = 11812;
+const UPDATEQUEUEINTERVAL = 60000;
 //<STATES>
 const STANDBY = 0;
 const RESPONDING = 1;
@@ -458,8 +458,8 @@ function startQWD(){
 
 if(module.parent === null){
 	console.log(FgMagenta+"Initialising!"+FgWhite);
-	//init();
+	init();
 	startQWD();
 	updateQueue();
-	getFullQuery();
+	//getFullQuery();
 }
