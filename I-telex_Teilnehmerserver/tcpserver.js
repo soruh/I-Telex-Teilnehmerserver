@@ -354,14 +354,14 @@ function init(){
 		});
 	});
 	server.listen(PORT, function() {
-		console.log('server is listening');
+		console.log('server is listening on port '+PORT);
 	});
 }
 function updateQueue(){
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.connect(function(err){
 		if(err){
-			console.log(FgRed+"Connection to database threw an error:\n",err,FgWhite);
+			throw(FgRed+"Connection to database threw an error:\n",err,FgWhite);
 			return;
 		}
 		console.log(FgGreen+"Connected to database for server syncronisation!"+FgWhite);
