@@ -24,6 +24,11 @@ var BgWhite = "\x1b[47m";
 
 var functions=require("./functions.js");
 eval(functions)
+const mySqlConnectionOptions = {
+	host: "localhost",
+	user: "telefonbuch",
+	password: "amesads"
+};
 
 const STANDBY = 0;
 const RESPONDING = 1;
@@ -42,11 +47,7 @@ for(i=1;i<=10;i++){handles[i] = {};}
 
 handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
 	console.log(FgMagenta,connections[cnum].writebuffer,FgWhite);
-	var dbcon = mysql.createConnection({
-		host: "localhost",
-		user: "telefonbuch",
-		password: "amesads"
-	});
+	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	if(connections[cnum].writebuffer.length > 0){
 		console.log("writing!");
 		var b = connection.write(encPacket({packagetype:5,datalength:100,data:connections[cnum].writebuffer[0]}));
@@ -86,11 +87,7 @@ process.stdin.on('data',(data)=>{
 });*/
 function SendQueue(callback){
 	console.log(FgCyan+"Sending Queue!"+FgWhite);
-	var dbcon = mysql.createConnection({
-		host: "localhost",
-		user: "telefonbuch",
-		password: "amesads"
-	});
+	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
 		if(err){
 			throw err;

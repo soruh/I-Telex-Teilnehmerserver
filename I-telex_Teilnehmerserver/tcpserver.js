@@ -23,8 +23,14 @@ var BgCyan = "\x1b[46m";
 var BgWhite = "\x1b[47m";
 
 var functions=require("./functions.js");
-eval(functions)
+eval(functions);
 
+
+const mySqlConnectionOptions = {
+	host: "localhost",
+	user: "telefonbuch",
+	password: "amesads"
+};
 const serverpin = 118120815;
 const net = require('net');
 const mysql = require('mysql');
@@ -263,11 +269,7 @@ function init(){
 			cnum = connections.length;
 		}
 		connections[cnum] = {connection:connection,state:STANDBY};
-		var dbcon = mysql.createConnection({
-			host: "localhost",
-			user: "telefonbuch",
-			password: "amesads"
-		});
+		var dbcon = mysql.createConnection(mySqlConnectionOptions);
 		console.log(FgGreen+"client "+FgCyan+cnum+FgGreen+" connected"+FgWhite);
 		dbcon.connect(function(err){
 			if(err){
@@ -356,11 +358,7 @@ function init(){
 	});
 }
 function updateQueue(){
-	var dbcon = mysql.createConnection({
-		host: "localhost",
-		user: "telefonbuch",
-		password: "amesads"
-	});
+	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.connect(function(err){
 		if(err){
 			console.log(FgRed+"Connection to database threw an error:\n",err,FgWhite);
@@ -403,11 +401,7 @@ function updateQueue(){
 	});
 } //TODO: call!
 function getFullQuery(){
-	var dbcon = mysql.createConnection({
-		host: "localhost",
-		user: "telefonbuch",
-		password: "amesads"
-	});
+	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.connect(()=>{
 			dbcon.query("SELECT * FROM telefonbuch.servers",(err,res)=>{
 				if(err){
