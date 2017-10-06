@@ -52,7 +52,8 @@ con.connect(function(err) {
           break;
 
         case "new":
-          con.query("INSERT INTO telefonbuch.teilnehmer (rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate) VALUES ("+req.body.rufnummer+",'"+req.body.name+"',"+req.body.typ+",'"+req.body.hostname+"','"+req.body.ipadresse+"','"+req.body.port+"','"+req.body.extention+"','"+req.body.pin+"',"+req.body.gesperrt+",'"+d.getTime()+"')",
+          con.query("INSERT INTO telefonbuch.teilnehmer (rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate) VALUES ("+req.body.rufnummer+",'"+req.body.name+"',"+req.body.typ+",'"+req.body.hostname+"','"+req.body.ipadresse+"','"+req.body.port+"','"+req.body.extention+"','"+req.body.pin+"',"+req.body.gesperrt+",'"
+          +Math.round(new Date().getTime()/1000)+"')",
            function (err, result) {
             if(err){
               res.json(err);
