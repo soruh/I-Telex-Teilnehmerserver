@@ -199,7 +199,7 @@ function decPacket(packagetype,buffer){
 			return(data);
 			break;
 		case 113:
-		console.log(FgCyan,buffer,FgWhite);
+		console.log(FgCyan,buffer.toString(),FgWhite);
 			break;
 		default:
 			return(buffer);
