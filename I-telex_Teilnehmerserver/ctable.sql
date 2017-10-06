@@ -19,7 +19,7 @@ CREATE TABLE `teilnehmer` (
   `name` tinytext CHARACTER SET utf8,
   `typ` int(8) DEFAULT NULL,
   `hostname` tinytext CHARACTER SET utf8,
-  `ipadresse` tinytext CHARACTER SET utf8,
+  `ipaddresse` tinytext CHARACTER SET utf8,
   `port` tinytext CHARACTER SET utf8,
   `extention` tinytext CHARACTER SET utf8,
   `pin` tinytext CHARACTER SET utf8,

@@ -32,6 +32,7 @@ function connect(dbcon,cb,options,callback){
 function handlePacket(obj,cnum,dbcon,connection){
 	console.log(FgMagenta+"state: "+FgCyan+connections[cnum]["state"]+FgWhite);
 	console.log(BgYellow,FgRed,obj,FgWhite,BgBlack);
+	console.log(con.remoteAddress);
 		if(obj.packagetype==0xff){
 			console.log(obj.data);
 			throw FgRed+Buffer.from(obj.data).toString();
