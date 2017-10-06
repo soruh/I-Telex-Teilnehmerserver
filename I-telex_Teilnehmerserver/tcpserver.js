@@ -319,7 +319,7 @@ function init(){
 								throw err;
 							}else{
 								if(result.length == 0){
-									var send = "\n\rfail\n\r";
+									var send = "fail\n\r";
 									send += number+"\n\r";
 									send += "unknown\n\r";
 									send += "+++\n\r";
@@ -330,7 +330,7 @@ function init(){
 										}
 									});
 								}else{
-									var send = "\n\rok\n\r";
+									var send = "ok\n\r";
 									send += result[0]["rufnummer"]+"\n\r";
 									send += result[0]["name"]+"\n\r";
 									send += result[0]["typ"]+"\n\r";
