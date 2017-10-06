@@ -42,7 +42,7 @@ con.connect(function(err) {
     if(req.body.password=="password"){
       switch(req.body.typekey){
         case "edit":
-          con.query("UPDATE telefonbuch.teilnehmer SET rufnummer= "+req.body.rufnummer+",name='"+req.body.name+"',typ="+req.body.typ+",hostname='"+req.body.hostname+"',ipadresse='"+req.body.ipadresse+"',port='"+req.body.port+"',extention='"+req.body.extention+"',gesperrt="+req.body.gesperrt+", moddate="+Math.round(new Date().getTime()/1000)+" WHERE rufnummer="+req.body.rufnummer, (err, result)=>{
+          con.query("UPDATE telefonbuch.teilnehmer SET rufnummer= "+req.body.rufnummer+",name='"+req.body.name+"',typ="+req.body.typ+",hostname='"+req.body.hostname+"',ipaddresse='"+req.body.ipaddresse+"',port='"+req.body.port+"',extention='"+req.body.extention+"',gesperrt="+req.body.gesperrt+", moddate="+Math.round(new Date().getTime()/1000)+" WHERE rufnummer="+req.body.rufnummer, (err, result)=>{
             if(err){
               res.json(err);
             }else{
@@ -52,7 +52,7 @@ con.connect(function(err) {
           break;
 
         case "new":
-          con.query("INSERT INTO telefonbuch.teilnehmer (rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate) VALUES ("+req.body.rufnummer+",'"+req.body.name+"',"+req.body.typ+",'"+req.body.hostname+"','"+req.body.ipadresse+"','"+req.body.port+"','"+req.body.extention+"','"+req.body.pin+"',"+req.body.gesperrt+",'"
+          con.query("INSERT INTO telefonbuch.teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate) VALUES ("+req.body.rufnummer+",'"+req.body.name+"',"+req.body.typ+",'"+req.body.hostname+"','"+req.body.ipaddresse+"','"+req.body.port+"','"+req.body.extention+"','"+req.body.pin+"',"+req.body.gesperrt+",'"
           +Math.round(new Date().getTime()/1000)+"')",
            function (err, result) {
             if(err){
@@ -85,7 +85,7 @@ con.connect(function(err) {
   });
 });
 /*
-//INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipadresse,port,extention,pin,gesperrt,moddate) VALUES ("a","b",2,"c","d","e","f","g",0,2);
+//INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate) VALUES ("a","b",2,"c","d","e","f","g",0,2);
 var net = require('net');
 
 const server = net.createServer((socket) => {
