@@ -24,6 +24,7 @@ var BgWhite = "\x1b[47m";
 
 var functions=require("./functions.js");
 eval(functions)
+
 const mySqlConnectionOptions = {
 	host: "localhost",
 	user: "telefonbuch",
