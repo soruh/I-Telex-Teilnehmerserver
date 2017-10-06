@@ -111,9 +111,6 @@ function encPacket(obj) {
 		throw "Buffer bigger than expected:\n"+
 		array.length+" > "+obj.datalength;
 	}
-	console.log(array,typeof array);
-	console.log(header,typeof header);
-	console.log(header.concat(array),typeof header.concat(array));
 	console.log(FgBlue,Buffer.from(header.concat(array)),FgWhite);
 	return(Buffer.from(header.concat(array)));
 }
