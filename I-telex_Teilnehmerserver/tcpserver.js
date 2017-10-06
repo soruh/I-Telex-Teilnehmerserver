@@ -277,7 +277,9 @@ function init(){
 			connection.on('data', function(data) {
 				console.log(FgMagenta,data,FgWhite);
 				console.log(FgBlue,data.toString(),FgWhite);
-				if(data[0]==0x71&&/*true||*/(data[data.length-2]==0x0D&&data[data.length-1]==0x0A)){
+				handlePacket(decData(data),cnum,dbcon,connection);
+				/*
+				if(data[0]==0x71&&(data[data.length-2]==0x0D&&data[data.length-1]==0x0A)){
 					//<ascii>
 					var number = "";
 					for(i=0;i<data.length;i++){
@@ -325,6 +327,7 @@ function init(){
 				}else{
 					handlePacket(decData(data),cnum,dbcon,connection); //TCP
 				}
+				*/
 			});
 		//console.log(FgYellow+"Disconnected client "+FgCyan+cnum+FgYellow+" from database!"+FgWhite);
 		});

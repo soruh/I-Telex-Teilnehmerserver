@@ -198,6 +198,9 @@ function decPacket(packagetype,buffer){
 			};
 			return(data);
 			break;
+		case 113:
+		console.log(FgCyan,buffer,FgWhite);
+			break;
 		default:
 			return(buffer);
 			break;
