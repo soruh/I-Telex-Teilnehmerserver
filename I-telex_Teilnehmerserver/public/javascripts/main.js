@@ -78,8 +78,8 @@ function updatetable(usli,cb){
       document.getElementById("typeditdialog").onkeydown();
       $("#hostnameeditdialog").val(siblings[3].innerHTML);
       document.getElementById("hostnameeditdialog").onkeydown();
-      $("#ipadresseeditdialog").val(siblings[4].innerHTML);
-      document.getElementById("ipadresseeditdialog").onkeydown();
+      $("#ipaddresseeditdialog").val(siblings[4].innerHTML);
+      document.getElementById("ipaddresseeditdialog").onkeydown();
       $("#porteditdialog").val(siblings[5].innerHTML);
       document.getElementById("porteditdialog").onkeydown();
       $("#durchwahleditdialog").val(siblings[6].innerHTML);
@@ -146,9 +146,9 @@ function resetforms(){
   $("#newentrydialog checkbox").prop("checked",false);
   /*
   $("#newentrydialog").html(
-    '<input placeholder="rufnummer" id="rufnummernewentrydialog"></input><input placeholder="name" id="namenewentrydialog"></input><input placeholder="typ" id="typnewentrydialog"></input><input placeholder="hostname" id="hostnamenewentrydialog"></input><input placeholder="ipadresse" id="ipadressenewentrydialog"></input><input placeholder="port"id="portnewentrydialog"></input><input placeholder="durchwahl" id="durchwahlnewentrydialog"></input><input placeholder="pin" id="pinnewentrydialog"></input><input type="checkbox" id="gesperrtnewentrydialog">gesperrt</input></div>');
+    '<input placeholder="rufnummer" id="rufnummernewentrydialog"></input><input placeholder="name" id="namenewentrydialog"></input><input placeholder="typ" id="typnewentrydialog"></input><input placeholder="hostname" id="hostnamenewentrydialog"></input><input placeholder="ipaddresse" id="ipaddressenewentrydialog"></input><input placeholder="port"id="portnewentrydialog"></input><input placeholder="durchwahl" id="durchwahlnewentrydialog"></input><input placeholder="pin" id="pinnewentrydialog"></input><input type="checkbox" id="gesperrtnewentrydialog">gesperrt</input></div>');
   $("#editdialog").html(
-    '<input placeholder="rufnummer" id="rufnummereditdialog"></input><input placeholder="name" id="nameeditdialog"></input><input placeholder="typ" id="typeditdialog"></input><input placeholder="hostname" id="hostnameeditdialog"></input><input placeholder="ipadresse" id="ipadresseeditdialog"></input><input placeholder="port" id="porteditdialog"></input><input placeholder="durchwahl" id="durchwahleditdialog"></input><input type="checkbox" id="gesperrteditdialog">gesperrt</input></div>');
+    '<input placeholder="rufnummer" id="rufnummereditdialog"></input><input placeholder="name" id="nameeditdialog"></input><input placeholder="typ" id="typeditdialog"></input><input placeholder="hostname" id="hostnameeditdialog"></input><input placeholder="ipaddresse" id="ipaddresseeditdialog"></input><input placeholder="port" id="porteditdialog"></input><input placeholder="durchwahl" id="durchwahleditdialog"></input><input type="checkbox" id="gesperrteditdialog">gesperrt</input></div>');
   $("#deletedialog").html(
     '<p id="pdeletedialog"></p><span id="rufnummerdeletedialog">test</span></div>');*/
   $("#newentrydialog").hide();
@@ -180,7 +180,7 @@ var languages = {
     "table-th-name":"name",
     "table-th-typ":"typ",
     "table-th-hostname":"hostname",
-    "table-th-ipadresse":"ipadresse",
+    "table-th-ipaddresse":"ipaddresse",
     "table-th-port":"port",
     "table-th-extention":"durchwahl",
     "table-th-gesperrt":"gesperrt",
@@ -192,7 +192,7 @@ var languages = {
     "table-th-name":"name",
     "table-th-typ":"type",
     "table-th-hostname":"hostname",
-    "table-th-ipadresse":"ipaddress",
+    "table-th-ipaddresse":"ipaddress",
     "table-th-port":"port",
     "table-th-extention":"extention",
     "table-th-gesperrt":"lcoked",
@@ -268,7 +268,7 @@ $(document).ready(()=>{
           name: $("#namenewentrydialog").val(),
           typ: $("#typnewentrydialog").val(),
           hostname: $("#hostnamenewentrydialog").val(),
-          ipadresse: $("#ipadressenewentrydialog").val(),
+          ipaddresse: $("#ipaddressenewentrydialog").val(),
           port: $("#portnewentrydialog").val(),
           durchwahl: $("#durchwahlnewentrydialog").val(),
           gesperrt: locked,
@@ -292,7 +292,7 @@ $(document).ready(()=>{
             name: $("#nameeditdialog").val(),
             typ: $("#typeditdialog").val(),
             hostname: $("#hostnameeditdialog").val(),
-            ipadresse: $("#ipadresseeditdialog").val(),
+            ipaddresse: $("#ipaddresseeditdialog").val(),
             port: $("#porteditdialog").val(),
             durchwahl: $("#durchwahleditdialog").val(),
             gesperrt: locked,
