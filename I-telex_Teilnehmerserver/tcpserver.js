@@ -278,7 +278,7 @@ function init(){
 				console.log(FgMagenta,data,FgWhite);
 				console.log(FgBlue,data.toString(),FgWhite);
 				if(data[0]==0x71/*&&(data[data.length-2]==0x0D&&data[data.length-1]==0x0A)*/){
-					ascii(data);
+					ascii(data,connection,dbcon);
 				}else{
 					handlePacket(decData(data),cnum,dbcon,connection); //TCP
 				}

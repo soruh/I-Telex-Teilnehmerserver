@@ -260,7 +260,7 @@ function deConcatValue(value,size){
 	}
 	return(array);
 }
-function ascii(data){
+function ascii(data,connection,dbcon){
 	var number = "";
 	for(i=0;i<data.length;i++){
 		//console.log(String.fromCharCode(data[i]));
