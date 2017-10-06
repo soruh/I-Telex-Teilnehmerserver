@@ -324,6 +324,7 @@ function init(){
 									send += "unknown\n\r";
 									send += "+++\n\r";
 									connection.write(send,function(b){
+										console.log(b);
 										if(b||true){
 											console.log(FgRed+"Entry not found\n=> sent:"+FgWhite+send);
 										}
@@ -338,6 +339,7 @@ function init(){
 									send += result[0]["extention"]+"\n\r";
 									send += "+++\n\r";
 									connection.write(send,function(b){
+										console.log(b);
 										if(b||true){
 											console.log(FgGreen+"Entry found\n=> sent:"+FgWhite+send);
 										}
