@@ -77,9 +77,8 @@ handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
 	var pin = obj.data.pin;
 	var port = obj.data.port;
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_a,result_a){
-		console.log(err_a,result_a);
-		console.log(result_a&&(result_a!=[]),"result_a&&(result_a!=[])");
-		if(result_a&&(result_a!=[])){
+		console.log(result_a.length);
+		if(result_a&&(result_a.length>0)){
 			var res = result_a[0];
 			console.log(res);
 			if(res.pin==pin&&res.port==port/*???*/){
