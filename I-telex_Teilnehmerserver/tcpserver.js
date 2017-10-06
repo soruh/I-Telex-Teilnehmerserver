@@ -124,14 +124,14 @@ handles[5][FULLQUERY] = (obj,cnum,dbcon,connection)=>{
 	console.log(obj);
 	dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer="+mysql.escape(obj.data.rufnummer)+";",(err,res)=>{
 		if(err){
-			throw err
+			debug(err)
 		}else{
 			if(res.length == 1){
 				if(obj.data.timestamp > res.moddate){
 					console.log(obj.data.timestamp+" > "+res.moddate);
 					dbcon.query("UPDATE telefonbuch.teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+mysql.escape(obj.data.name)+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+mysql.escape(obj.data.addresse)+",ipaddresse = "+mysql.escape(obj.data.ipaddresse)+",port = "+mysql.escape(obj.data.port)+",extention = "+mysql.escape(obj.data.durchwahl)+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+mysql.escape(obj.data.flags)+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+mysql.escape(0)+"WHERE rufnummer="+mysql.escape(obj.data.rufnummer)+";",(err,res2)=>{
 						if(err){
-							throw err;
+							debug(err);
 						}else{
 							connection.write(encPacket({packagetype:8,datalength:0}));
 						}
@@ -142,13 +142,13 @@ handles[5][FULLQUERY] = (obj,cnum,dbcon,connection)=>{
 			}else if(res.length == 0){
 				dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name)+","+mysql.escape(obj.data.typ)+","+mysql.escape(obj.data.addresse)+","+mysql.escape(obj.data.ipaddresse)+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl)+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.flags)+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");",(err,res2)=>{
 					if(err){
-						throw err;
+						debug(err);
 					}else{
 						connection.write(encPacket({packagetype:8,datalength:0}));
 					}
 				});
 			}else{
-				throw 'Something really strange happened, the "rufnummer" field should be unique!';
+				debug('Something really strange happened, the "rufnummer" field should be unique!');
 			}
 		}
 	});
@@ -158,13 +158,13 @@ handles[5][LOGIN] = (obj,cnum,dbcon,connection)=>{
 		console.log(obj);
 		dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer="+obj.data.data.rufnummer+";",(err,res)=>{
 			if(err){
-				throw err
+				debug(err)
 			}else{
 				if(res.length == 1){
 					if(obj.data.data.timestamp > res.moddate){
 						dbcon.query("UPDATE telefonbuch.teilnehmerSETrufnummer = "+obj.data.data.rufnummer+",name = "+obj.data.data.name+",typ = "+obj.data.data.typ+",hostname = "+obj.data.data.hostname+",ipaddresse = "+obj.data.data.ipaddresse+",port = "+obj.data.data.port+",extention = "+obj.data.data.extention+",pin = "+obj.data.data.pin+",gesperrt = "+obj.data.data.gesperrt+",moddate = "+obj.data.data.moddate+",changed = "+0+"WHERE rufnummer="+obj.data.data.rufnummer+";",(err,res2)=>{
 							if(err){
-								throw err;
+								debug(err);
 							}else{
 								connection.write(encPacket({packagetype:8,datalength:0}));
 							}
@@ -173,13 +173,13 @@ handles[5][LOGIN] = (obj,cnum,dbcon,connection)=>{
 				}else if(res.length == 0){
 					dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+obj.data.data.rufnummer+","+obj.data.data.name+","+obj.data.data.typ+","+obj.data.data.hostname+","+obj.data.data.ipaddresse+","+obj.data.data.port+","+obj.data.data.extention+","+obj.data.data.pin+","+obj.data.data.gesperrt+","+obj.data.data.moddate+","+0+");",(err,res2)=>{
 						if(err){
-							throw err;
+							debug(err);
 						}else{
 							connection.write(encPacket({packagetype:8,datalength:0}));
 						}
 					});
 				}else{
-					throw 'Something really strange happened, the "rufnummer" field should be unique!';
+					debug('Something really strange happened, the "rufnummer" field should be unique!');
 				}
 			}
 		});
@@ -316,18 +316,15 @@ function init(){
 						console.log(FgGreen+"starting lookup for: "+FgCyan+number+FgWhite);
 						dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number, function (err, result){
 							if(err){
-								throw err;
+								debug(err);
 							}else{
 								if(result.length == 0){
 									var send = "fail\n\r";
 									send += number+"\n\r";
 									send += "unknown\n\r";
 									send += "+++\n\r";
-									connection.write(send,function(b){
-										console.log(b);
-										if(b||true){
-											console.log(FgRed+"Entry not found\n=> sent:"+FgWhite+send);
-										}
+									connection.write(send,function(){
+										console.log(FgRed+"Entry not found\n=> sent:"+FgWhite+send);
 									});
 								}else{
 									var send = "ok\n\r";
@@ -338,11 +335,8 @@ function init(){
 									send += result[0]["port"]+"\n\r";
 									send += result[0]["extention"]+"\n\r";
 									send += "+++\n\r";
-									connection.write(send,function(b){
-										console.log(b);
-										if(b||true){
-											console.log(FgGreen+"Entry found\n=> sent:"+FgWhite+send);
-										}
+									connection.write(send,function(){
+										console.log(FgGreen+"Entry found\n=> sent:"+FgWhite+send);
 									});
 								}
 							}
@@ -364,7 +358,7 @@ function updateQueue(){
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.connect(function(err){
 		if(err){
-			throw(FgRed+"Connection to database threw an error:\n",err,FgWhite);
+			debug(FgRed+"Connection to database threw an error:\n",err,FgWhite);
 			return;
 		}
 		console.log(FgGreen+"Connected to database for server syncronisation!"+FgWhite);
@@ -408,7 +402,7 @@ function getFullQuery(){
 	dbcon.connect(()=>{
 			dbcon.query("SELECT * FROM telefonbuch.servers",(err,res)=>{
 				if(err){
-					throw err;
+					debug(err);
 				}
 				async.eachSeries(res,function(r,cb){
 					connect(dbcon,function(){},{port:r.port,host:r.addresse},function(client,cnum){

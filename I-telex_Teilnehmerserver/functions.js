@@ -1,3 +1,6 @@
+function debug(x){
+	console.error(FgRed,x,FgWhite);
+}
 function connect(dbcon,cb,options,callback){
 	console.log(FgWhite,options);
 	try {
@@ -25,7 +28,7 @@ function connect(dbcon,cb,options,callback){
 			return(callback(socket,cnum));
 		});
 	}catch(e){
-		throw e;
+		debug(e);
 		//cb();
 	}
 }
@@ -34,7 +37,7 @@ function handlePacket(obj,cnum,dbcon,connection){
 	console.log(BgYellow,FgRed,obj,FgWhite,BgBlack);
 		if(obj.packagetype==0xff){
 			console.log(obj.data);
-			throw FgRed+Buffer.from(obj.data).toString();
+			debug(FgRed+Buffer.from(obj.data).toString());
 		}
 		try{
 			if(handles[obj.packagetype]!=undefined){
@@ -108,8 +111,7 @@ function encPacket(obj) {
 	}
 	var header = [obj.packagetype,array.length];
 	if(array.length > obj.datalength){
-		throw "Buffer bigger than expected:\n"+
-		array.length+" > "+obj.datalength;
+		debug("Buffer bigger than expected:\n"+array.length+" > "+obj.datalength);
 	}
 	console.log(FgBlue,Buffer.from(header.concat(array)),FgWhite);
 	return(Buffer.from(header.concat(array)));
@@ -251,7 +253,7 @@ function deConcatValue(value,size){
 		}
 	}
 	if(array.length>size||array.length==undefined){
-		throw	"Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size;
+		debug("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
 	}
 	while(array.length<size){
 		array[array.length] = 0;
@@ -260,6 +262,7 @@ function deConcatValue(value,size){
 }
 
 module.exports=
+debug.toString()+
 connect.toString()+
 handlePacket.toString()+
 encPacket.toString()+

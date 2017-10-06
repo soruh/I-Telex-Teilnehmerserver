@@ -56,15 +56,14 @@ handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
 			console.log(connections[cnum].writebuffer[0]);
 			dbcon.query("DELETE FROM telefonbuch.queue WHERE message="+connections[cnum].writebuffer[0].uid+" AND server="+connections[cnum].servernum+";",function(err,res) {
 				if(err){
-					throw err;
+					debug(err);
 				}else if(res.affectedRows > 0){
 					console.log(FgGreen+"deleted queue entry "+FgCyan+connections[cnum].writebuffer[0].name+FgGreen+" from queue"+FgWhite);
 					connections[cnum].writebuffer = connections[cnum].writebuffer.splice(1);
 				}
 			});
 		}else{
-			//throw "error writing";
-			console.log("error writing");
+			debug("error writing");
 		}
 	}else if(connections[cnum].writebuffer.length <= 0){
 		connection.write(encPacket({packagetype:9,datalength:0}));
@@ -90,7 +89,7 @@ function SendQueue(callback){
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
 		if(err){
-			throw err;
+			debug(err);
 		}
 		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
 			if(err) console.log(err);
@@ -107,7 +106,7 @@ function SendQueue(callback){
 					console.log(FgMagenta,server,FgWhite);
 					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
 						if(err){
-							throw err;
+							debug(err);
 						}
 						var serverinf = result2[0];
 						console.log(FgCyan,serverinf,FgWhite);
@@ -130,7 +129,7 @@ function SendQueue(callback){
 								});
 							});
 						}catch(e){
-							throw e;
+							debug(e);
 							//cb();
 						}
 					})
