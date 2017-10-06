@@ -33,6 +33,7 @@ con.connect(function(err) {
             }
           }
         }
+        console.log(resultnopin);
         res.json(resultnopin);
       }
     });
