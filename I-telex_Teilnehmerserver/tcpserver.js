@@ -277,57 +277,11 @@ function init(){
 			connection.on('data', function(data) {
 				console.log(FgMagenta,data,FgWhite);
 				console.log(FgBlue,data.toString(),FgWhite);
-				handlePacket(decData(data),cnum,dbcon,connection);
-				/*
-				if(data[0]==0x71&&(data[data.length-2]==0x0D&&data[data.length-1]==0x0A)){
-					//<ascii>
-					var number = "";
-					for(i=0;i<data.length;i++){
-						//console.log(String.fromCharCode(data[i]));
-						if(/([0-9])/.test(String.fromCharCode(data[i]))){
-							number += String.fromCharCode(data[i]);
-						}
-					}
-					if(number!=""){number = parseInt(number);}
-					if(number!=NaN&&number!=""){
-						console.log(FgGreen+"starting lookup for: "+FgCyan+number+FgWhite);
-						dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number, function (err, result){
-							if(err){
-								debug(err);
-							}else{
-								if(result.length == 0){
-									var send = "fail\n\r";
-									send += number+"\n\r";
-									send += "unknown\n\r";
-									send += "+++\n\r";
-									connection.write(send,function(){
-										console.log(FgRed+"Entry not found\n=> sent:\n"+FgWhite+send);
-									});
-								}else{
-									var send = "ok\n\r";
-									send += result[0]["rufnummer"]+"\n\r";
-									send += result[0]["name"]+"\n\r";
-									send += result[0]["typ"]+"\n\r";
-									if(result[0]["typ"]==5){
-										send += result[0]["ipaddresse"]+"\n\r";
-									}else{
-										send += result[0]["hostname"]+"\n\r";
-									}
-									send += result[0]["port"]+"\n\r";
-									send += result[0]["extention"]+"\n\r";
-									send += "+++\n\r";
-									connection.write(send,function(){
-										console.log(FgGreen+"Entry found\n=> sent:\n"+FgWhite+send);
-									});
-								}
-							}
-						});
-					}
-					//</ascii>
+				if(data[0]==0x71/*&&(data[data.length-2]==0x0D&&data[data.length-1]==0x0A)*/){
+					ascii(data);
 				}else{
 					handlePacket(decData(data),cnum,dbcon,connection); //TCP
 				}
-				*/
 			});
 		//console.log(FgYellow+"Disconnected client "+FgCyan+cnum+FgYellow+" from database!"+FgWhite);
 		});
