@@ -82,6 +82,7 @@ handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
 			if(res.pin==pin&&res.port==port/*???*/){
 				dbcon.query("UPDATE telefonbuch.teilnehmer SET ipaddresse='"+connection.remoteAddress+"' WHERE rufnummer="+number,function(err_b,result_b){
 					dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_c,result_c){
+						console.log(err_c,result_c);
 						try{
 							connection.write(encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");
 						}catch(e){
