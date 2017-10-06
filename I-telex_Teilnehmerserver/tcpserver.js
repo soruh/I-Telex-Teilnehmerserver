@@ -453,7 +453,7 @@ function startQWD(){
 if(module.parent === null){
 	console.log(FgMagenta+"Initialising!"+FgWhite);
 	init();
-	startQWD();
-	updateQueue();
+	//startQWD();
+	//updateQueue();
 	//getFullQuery();
 }
