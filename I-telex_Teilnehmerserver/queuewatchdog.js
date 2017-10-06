@@ -23,7 +23,7 @@ var BgCyan = "\x1b[46m";
 var BgWhite = "\x1b[47m";
 
 var functions=require("./functions.js");
-eval(functions)
+eval(functions);
 
 const mySqlConnectionOptions = {
 	host: "localhost",
