@@ -323,8 +323,8 @@ function init(){
 									send += number+"\n\r";
 									send += "unknown\n\r";
 									send += "+++\n\r";
-									connection.write(send,(b)=>{
-										if(b){
+									connection.write(send,function(b){
+										if(b||true){
 											console.log(FgRed+"Entry not found\n=> sent:"+FgWhite+send);
 										}
 									});
@@ -337,8 +337,8 @@ function init(){
 									send += result[0]["port"]+"\n\r";
 									send += result[0]["extention"]+"\n\r";
 									send += "+++\n\r";
-									connection.write(send,(b)=>{
-										if(b){
+									connection.write(send,function(b){
+										if(b||true){
 											console.log(FgGreen+"Entry found\n=> sent:"+FgWhite+send);
 										}
 									});
