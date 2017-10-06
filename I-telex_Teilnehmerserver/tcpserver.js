@@ -406,9 +406,9 @@ function getFullQuery(){
 				if(err){
 					throw err;
 				}
-				async.eachSeries(res,(r,cb)=>{
-					connect(dbcon,()=>{},{port:r.port,host:r.addresse},(client,cnum)=>{
-						client.write(encPacket({packagetype:6,datalength:5,data:{serverpin:serverpin,version:1}}),()=>{
+				async.eachSeries(res,function(r,cb){
+					connect(dbcon,function(){},{port:r.port,host:r.addresse},function(client,cnum){
+						client.write(encPacket({packagetype:6,datalength:5,data:{serverpin:serverpin,version:1}}),function(){
 							connections[cnum].state = FULLQUERY;
 							connections[cnum].cb=cb;
 						});
