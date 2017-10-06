@@ -94,6 +94,8 @@ handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
 			}else if(res.pin==pin&&res.port!=port){
 
 			}
+		}else{
+			connection.end();
 		}
 	});
 };
