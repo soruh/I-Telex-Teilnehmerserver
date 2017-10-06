@@ -20,6 +20,7 @@ con.connect(function(err) {
       if(err){
         res.json(err);
       }else{
+        console.log(result);
         //console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
         var resultnopin = [];
         for(a in result){
@@ -33,7 +34,6 @@ con.connect(function(err) {
             }
           }
         }
-        console.log(resultnopin);
         res.json(resultnopin);
       }
     });
