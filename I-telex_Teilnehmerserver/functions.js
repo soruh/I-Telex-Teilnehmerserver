@@ -56,7 +56,7 @@ function encPacket(obj) {
 			.concat(deConcatValue(data.port,2));
 			break;
 		case 2:
-			var iparr = data.ipadresse.split(".");
+			var iparr = data.ipaddresse.split(".");
 			var numip=0
 			for(i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
@@ -71,7 +71,7 @@ function encPacket(obj) {
 		var array = [];
 			break;
 		case 5:
-			var iparr = data.ipadresse.split(".");
+			var iparr = data.ipaddresse.split(".");
 			var numip=0
 			for(i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
