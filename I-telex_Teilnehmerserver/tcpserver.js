@@ -72,12 +72,10 @@ for(i=1;i<=10;i++){handles[i] = {};}
 //handles[2][STANDBY] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 //handles[4][WAITING] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
-	console.log(obj.data);
 	var number = obj.data.rufnummer;
 	var pin = obj.data.pin;
 	var port = obj.data.port;
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_a,result_a){
-		console.log(result_a.length);
 		if(result_a&&(result_a.length>0)){
 			var res = result_a[0];
 			console.log(res);
@@ -454,7 +452,7 @@ function startQWD(){
 if(module.parent === null){
 	console.log(FgMagenta+"Initialising!"+FgWhite);
 	init();
-	//startQWD();
-	//updateQueue();
-	//getFullQuery();
+	startQWD();
+	updateQueue();
+	getFullQuery();
 }
