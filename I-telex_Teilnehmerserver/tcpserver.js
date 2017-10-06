@@ -80,7 +80,7 @@ handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
 			var res = result_a[0];
 			console.log(res);
 			if(res.pin==pin&&res.port==port/*???*/){
-				dbcon.query("UPDATE telefonbuch.teilnehmer SET ipaddresse='"+connection.remoteAddress+"' WHERE rufnummer="+number,function(err_b,result_b){
+				dbcon.query("UPDATE telefonbuch.teilnehmer SET ipaddresse='"+connection.remoteAddress.replace(/^.*:/,'')+"' WHERE rufnummer="+number,function(err_b,result_b){
 					dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_c,result_c){
 						try{
 							connection.write(encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");
@@ -271,7 +271,7 @@ function init(){
 		}
 		connections[cnum] = {connection:connection,state:STANDBY};
 		var dbcon = mysql.createConnection(mySqlConnectionOptions);
-		console.log(FgGreen+"client "+FgCyan+cnum+FgGreen+" connected"+FgWhite);
+		console.log(FgGreen+"client "+FgCyan+cnum+FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+FgWhite);
 		dbcon.connect(function(err){
 			if(err){
 				console.log(FgRed+"Connection of client "+FgCyan+cnum+FgRed+" to database threw an error:\n",err,FgWhite);
