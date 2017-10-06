@@ -86,6 +86,7 @@ handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
 						try{
 							connection.write(encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");
 						}catch(e){
+							console.log("error");
 							console.log(FgRed,e,FgWhite);
 						}
 					});
