@@ -308,10 +308,8 @@ function init(){
 							number += String.fromCharCode(data[i]);
 						}
 					}
-					if(number != ""){
-						number = parseInt(number);
-					}
-					if(number != NaN && number != ""){
+					if(number!=""){number = parseInt(number);}
+					if(number!=NaN&&number!=""){
 						console.log(FgGreen+"starting lookup for: "+FgCyan+number+FgWhite);
 						dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number, function (err, result){
 							if(err){
@@ -330,7 +328,11 @@ function init(){
 									send += result[0]["rufnummer"]+"\n\r";
 									send += result[0]["name"]+"\n\r";
 									send += result[0]["typ"]+"\n\r";
-									send += result[0]["hostname"]+"\n\r";
+									if(result[0]["typ"]==5){
+										send += result[0]["ipaddresse"]+"\n\r";
+									}else{
+										send += result[0]["hostname"]+"\n\r";
+									}
 									send += result[0]["port"]+"\n\r";
 									send += result[0]["extention"]+"\n\r";
 									send += "+++\n\r";
