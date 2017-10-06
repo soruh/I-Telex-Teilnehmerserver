@@ -74,12 +74,10 @@ for(i=1;i<=10;i++){handles[i] = {};}
 handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
 	console.log(obj.data);
 	var number = obj.data.rufnummer;
-	console.log(number);
 	var pin = obj.data.pin;
-	console.log(pin);
 	var port = obj.data.port;
-	console.log(port);
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_a,result_a){
+		console.log(err_a,result_a);
 		if(result_a&&(result_a!=[])){
 			var res = result_a[0];
 			console.log(res);
