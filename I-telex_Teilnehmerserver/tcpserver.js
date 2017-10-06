@@ -72,7 +72,11 @@ for(i=1;i<=10;i++){handles[i] = {};}
 //handles[2][STANDBY] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 //handles[4][WAITING] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 handles[1][STANDBY] = (obj,cnum,dbcon,connection)=>{
+<<<<<<< HEAD
 	console.log(obj.data);
+=======
+	console.log(obj);
+>>>>>>> 60f5f628c1bf3da5c6b42bad3e79f4ce5bc6b610
 	var number = obj.data.rufnummer;
 	var pin = obj.data.pin;
 	var port = obj.data.port;
