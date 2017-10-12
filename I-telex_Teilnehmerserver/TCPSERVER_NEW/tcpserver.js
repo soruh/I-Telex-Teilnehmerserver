@@ -332,7 +332,7 @@ function getFullQuery(){
 				}
 				async.eachSeries(res,function(r,cb){
 					ITelexCom.connect(dbcon,function(){},{port:r.port,host:r.addresse},handles,function(client,cnum){
-						client.write(ITelexCom.encPacket({packagetype:6,datalength:5,data:{ITelexCom.SERVERPIN:ITelexCom.SERVERPIN,version:1}}),function(){
+						client.write(ITelexCom.encPacket({packagetype:6,datalength:5,data:{serverpin:ITelexCom.SERVERPIN,version:1}}),function(){
 							connections[cnum].state = ITelexCom.states.FULLQUERY;
 							connections[cnum].cb = cb;
 						});
