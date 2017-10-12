@@ -22,6 +22,7 @@ const BgMagenta = "\x1b[45m";
 const BgCyan = "\x1b[46m";
 const BgWhite = "\x1b[47m";
 
+const ITelexCom = require("./ITelexCom.js");
 const mySqlConnectionOptions = {
 	host: "localhost",
 	user: "telefonbuch",
@@ -38,7 +39,6 @@ const mysql = require('mysql');
 const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
-const ITelexCom = require("./ITelexCom.js");
 
 const PORT = 11811;
 const UPDATEQUEUEINTERVAL = 60000;

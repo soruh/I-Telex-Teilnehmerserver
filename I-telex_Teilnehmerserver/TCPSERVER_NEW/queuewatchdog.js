@@ -43,7 +43,7 @@ const ITelexCom=require("./ITelexCom.js");
 
 const serverpin = 118120815;
 
-var connections = [];
+
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
@@ -73,12 +73,12 @@ handles[8][RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 		connections[cnum].state = STANDBY;
 	}
 };
-var sendInt = setInterval(SendQueue,QUEUE_SEND_INTERVAL);
+var sendInt = setInterval(ITelexCom.SendQueue,QUEUE_SEND_INTERVAL);
 process.stdin.on('data',(data)=>{
 	if(data.toString() === "sendqueue"){
 		clearInterval(sendInt);
-		SendQueue(()=>{
-			sendInt = setInterval(SendQueue,QUEUE_SEND_INTERVAL);
+		ITelexCom.SendQueue(()=>{
+			sendInt = setInterval(ITelexCom.SendQueue,QUEUE_SEND_INTERVAL);
 		});
 	}
 	console.log("stdin: "+data);
@@ -86,64 +86,3 @@ process.stdin.on('data',(data)=>{
 /*dbcon.query("DELETE FROM telefonbuch.queue WHERE uid="+row.uid, function (err, result2) {
 	console.log(FgGreen+"deleted queue entry "+FgCyan+result2.uid+FgGreen+" from queue"+FgWhite);
 });*/
-function SendQueue(callback){
-	console.log(FgCyan+"Sending Queue!"+FgWhite);
-	var dbcon = mysql.createConnection(mySqlConnectionOptions);
-	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
-		if(err){
-			console.log(err);
-		}
-		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
-			if(err) console.log(err);
-			if(results.length>0){
-				var servers = {};
-				for(i in results){
-					if(!servers[results[i].server]){
-						servers[results[i].server] = [];
-					}
-					servers[results[i].server][servers[results[i].server].length] = results[i];
-				}
-				console.log(BgMagenta,FgBlack,servers,BgBlack,FgWhite);
-				async.eachSeries(servers,function(server,cb){
-					console.log(FgMagenta,server,FgWhite);
-					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
-						if(err){
-							console.log(err);
-						}
-						var serverinf = result2[0];
-						console.log(FgCyan,serverinf,FgWhite);
-						try{
-							ITelexCom.connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
-								connections[cnum].servernum = server[0].server;
-								console.log(FgGreen+'connected to server: '+serverinf.addresse+" on port: "+serverinf.port+FgWhite);
-								connections[cnum].writebuffer = [];
-								async.each(server,(serverdata,scb)=>{
-									console.log(FgCyan,serverdata,FgWhite);
-									dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
-										connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
-										scb();
-									});
-								},()=>{
-									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{serverpin:serverpin,version:1}}),()=>{
-										connections[cnum].state = RESPONDING;
-										cb();
-									});
-								});
-							});
-						}catch(e){
-							console.log(e);
-							//cb();
-						}
-					})
-				},()=>{
-					console.log("done");
-					dbcon.end();
-					try{callback();}catch(e){}
-				});
-			}else{
-				console.log(FgYellow,"No queue!",FgWhite);
-				try{callback();}catch(e){}
-			}
-		});
-	});
-}
