@@ -43,7 +43,7 @@ function handlePacket(obj,cnum,dbcon,connection){
 			if(handles[obj.packagetype]!=undefined){
 				handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection);
 			}else{
-				FgRed+"packagetype ["+FgCyan+obj.packagetype+FgRed+" ] not supported in state ["+FgCyan+connections[cnum]["state"]+FgRed+"]"+FgWhite
+				debug(FgRed+"packagetype ["+FgCyan+obj.packagetype+FgRed+" ] not supported in state ["+FgCyan+connections[cnum]["state"]+FgRed+"]"+FgWhite);
 			}
 		}catch(e){
 			console.log(FgRed,e,FgWhite);
