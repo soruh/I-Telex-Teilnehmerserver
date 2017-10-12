@@ -155,12 +155,12 @@ handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 	}
 };
 handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
-	if(obj.data.pin  ==  serverpin){
+	if(obj.data.pin  ==  ITelexCom.SERVERPIN){
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer",function(err,result){
 			if(err){
 				console.log(FgRed,err,COLORS.FgWhite);
 			}else{
-				if((result[0] != undefined)&&(result != [])&&pin == serverpin){
+				if((result[0] != undefined)&&(result != [])&&pin == ITelexCom.SERVERPIN){
 					connections[cnum].writebuffer = result;
 					connections[cnum].state = ITelexCom.states.RESPONDING;
 					ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
@@ -172,7 +172,7 @@ handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	}
 }; //TODO: send stuff?
 handles[7][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
-	if(obj.data.pin  ==  serverpin){
+	if(obj.data.pin  ==  ITelexCom.SERVERPIN){
 		connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
 		connections[cnum].state = ITelexCom.states.LOGIN;
 		ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
@@ -332,7 +332,7 @@ function getFullQuery(){
 				}
 				async.eachSeries(res,function(r,cb){
 					ITelexCom.connect(dbcon,function(){},{port:r.port,host:r.addresse},handles,function(client,cnum){
-						client.write(ITelexCom.encPacket({packagetype:6,datalength:5,data:{serverpin:serverpin,version:1}}),function(){
+						client.write(ITelexCom.encPacket({packagetype:6,datalength:5,data:{ITelexCom.SERVERPIN:ITelexCom.SERVERPIN,version:1}}),function(){
 							connections[cnum].state = ITelexCom.states.FULLQUERY;
 							connections[cnum].cb = cb;
 						});

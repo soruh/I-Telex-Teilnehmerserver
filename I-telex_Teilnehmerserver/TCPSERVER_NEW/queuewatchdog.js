@@ -3,7 +3,6 @@ const ITelexCom=require("./ITelexCom.js");
 const COLORS = require("./colors.js")
 
 const QUEUE_SEND_INTERVAL = 60000;
-const serverpin = 118120815;
 const mySqlConnectionOptions = {
 	host: "localhost",
 	user: "telefonbuch",

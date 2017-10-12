@@ -8,7 +8,7 @@ const mySqlConnectionOptions = {
 	user: "telefonbuch",
 	password: "amesads"
 };
-const serverpin = 118120815;
+const SERVERPIN = 118120815;
 
 //<STATES>
 const STANDBY = 0;
@@ -109,11 +109,11 @@ function encPacket(obj) {
 			break;
 		case 6:
 			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.serverpin,4));
+			.concat(deConcatValue(data.SERVERPIN,4));
 			break;
 		case 7:
 			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.serverpin,4));
+			.concat(deConcatValue(data.SERVERPIN,4));
 			break;
 		case 8:
 			var array = [];
@@ -189,14 +189,14 @@ function decPacket(packagetype,buffer){
 		case 6:
 			var data = {
 				version:concatByteArray(buffer.slice(0,1),"number"),
-				serverpin:concatByteArray(buffer.slice(1,5),"number")
+				SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
 		case 7:
 			var data = {
 				version:concatByteArray(buffer.slice(0,1),"number"),
-				serverpin:concatByteArray(buffer.slice(1,5),"number")
+				SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
@@ -359,7 +359,7 @@ function SendQueue(callback){
 										scb();
 									});
 								},()=>{
-									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{serverpin:serverpin,version:1}}),()=>{
+									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{SERVERPIN:SERVERPIN,version:1}}),()=>{
 										connections[cnum].state = RESPONDING;
 										cb();
 									});
@@ -398,3 +398,4 @@ module.exports.states = {
 	FULLQUERY:FULLQUERY,
 	LOGIN:LOGIN
 };
+module.exports.SERVERPIN = SERVERPIN;
