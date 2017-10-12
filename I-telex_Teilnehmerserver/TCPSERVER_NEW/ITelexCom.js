@@ -22,6 +22,10 @@ const BgMagenta = "\x1b[45m";
 const BgCyan = "\x1b[46m";
 const BgWhite = "\x1b[47m";
 
+const net = require('net');
+const mysql = require('mysql');
+const async = require('async');
+
 const mySqlConnectionOptions = {
 	host: "localhost",
 	user: "telefonbuch",

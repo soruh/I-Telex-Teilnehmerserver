@@ -36,9 +36,8 @@ const LOGIN = 3;
 
 const QUEUE_SEND_INTERVAL = 60000;
 
-const net = require('net');
+
 const mysql = require('mysql');
-const async = require('async');
 const ITelexCom=require("./ITelexCom.js");
 
 const serverpin = 118120815;
