@@ -23,10 +23,6 @@ const BgCyan = "\x1b[46m";
 const BgWhite = "\x1b[47m";
 
 var ITelexCom=require("./ITelexCom.js");
-<<<<<<< HEAD
-=======
-eval(ITelexCom);
->>>>>>> 360ffc37ea4d10e3a3dd952befea3777d38c1a28
 
 const mySqlConnectionOptions = {
 	host: "localhost",
