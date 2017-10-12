@@ -52,7 +52,7 @@ handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 						try{
 							connection.write(ITelexCom.encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");
 						}catch(e){
-							console.log(FgRed,e,COLORS.FgWhite);
+							console.log(COLORS.FgRed,e,COLORS.FgWhite);
 						}
 					});
 				});
@@ -70,10 +70,10 @@ handles[3][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.version  ==  1){
 		var rufnummer = obj.data.rufnummer;
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+rufnummer+";",function(err,result){
-			console.log(FgYellow,"SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+rufnummer+";",COLORS.FgWhite);
+			console.log(COLORS.FgYellow,"SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+rufnummer+";",COLORS.FgWhite);
 			console.log(COLORS.FgCyan,result,COLORS.FgWhite);
 			if(err){
-				console.log(FgRed,err,COLORS.FgWhite);
+				console.log(COLORS.FgRed,err,COLORS.FgWhite);
 			}else{
 				if((result[0] != undefined)&&(result != [])){
 					connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:result[0]}));
@@ -83,7 +83,7 @@ handles[3][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 			}
 		});
 	}else{
-		console.log(FgRed,"unsupported packet version, sending '4' packet",COLORS.FgWhite);
+		console.log(COLORS.FgRed,"unsupported packet version, sending '4' packet",COLORS.FgWhite);
 		connection.write(ITelexCom.encPacket({packagetype:4,datalength:0}));
 	}
 };
@@ -151,14 +151,14 @@ handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 			}
 		});
 	}else{
-		console.log(FgRed,"unsupported package version",COLORS.FgWhite);
+		console.log(COLORS.FgRed,"unsupported package version",COLORS.FgWhite);
 	}
 };
 handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.pin  ==  ITelexCom.SERVERPIN){
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer",function(err,result){
 			if(err){
-				console.log(FgRed,err,COLORS.FgWhite);
+				console.log(COLORS.FgRed,err,COLORS.FgWhite);
 			}else{
 				if((result[0] != undefined)&&(result != [])&&pin == ITelexCom.SERVERPIN){
 					connections[cnum].writebuffer = result;
@@ -209,10 +209,10 @@ handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	}
 	searchstring += ";"
 	searchstring = searchstring.replace("WHERE AND","WHERE");
-	console.log(FgGreen,searchstring,COLORS.FgWhite);
+	console.log(COLORS.FgGreen,searchstring,COLORS.FgWhite);
 	dbcon.query(searchstring,function(err,result){
 		if(err){
-			console.log(FgRed,err,COLORS.FgWhite);
+			console.log(COLORS.FgRed,err,COLORS.FgWhite);
 		}else{
 			if((result[0] != undefined)&&(result != [])){
 				connections[cnum].writebuffer = result;
@@ -238,30 +238,30 @@ function init(){
 		}
 		connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
 		var dbcon = mysql.createConnection(mySqlConnectionOptions);
-		console.log(FgGreen+"client "+COLORS.FgCyan+cnum+FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+COLORS.FgWhite);
+		console.log(COLORS.FgGreen+"client "+COLORS.FgCyan+cnum+COLORS.FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+COLORS.FgWhite);
 		dbcon.connect(function(err){
 			if(err){
-				console.log(FgRed+"Connection of client "+COLORS.FgCyan+cnum+FgRed+" to database threw an error:\n",err,COLORS.FgWhite);
-				connection.end(()=>{console.log(FgRed+"Terminated connection with client "+COLORS.FgCyan+cnum+COLORS.FgWhite);});
+				console.log(COLORS.FgRed+"Connection of client "+COLORS.FgCyan+cnum+COLORS.FgRed+" to database threw an error:\n",err,COLORS.FgWhite);
+				connection.end(()=>{console.log(COLORS.FgRed+"Terminated connection with client "+COLORS.FgCyan+cnum+COLORS.FgWhite);});
 				return;
 			}
 			//console.log(connection);
-			console.log(FgGreen+"Connected client "+COLORS.FgCyan+cnum+FgGreen+" to database"+COLORS.FgWhite);
+			console.log(COLORS.FgGreen+"Connected client "+COLORS.FgCyan+cnum+COLORS.FgGreen+" to database"+COLORS.FgWhite);
 			var queryresultpos = -1;
 			var queryresult = [];
 			var connectionpin;
 			connection.on('end', function() {
-				console.log(FgYellow+"client "+COLORS.FgCyan+cnum+FgYellow+" disconnected"+COLORS.FgWhite);
+				console.log(COLORS.FgYellow+"client "+COLORS.FgCyan+cnum+COLORS.FgYellow+" disconnected"+COLORS.FgWhite);
 				connections[cnum] = null;
 				dbcon.end(()=>{
-					console.log(FgYellow+"Disconnected client "+COLORS.FgCyan+cnum+FgYellow+" from database"+COLORS.FgWhite);
+					console.log(COLORS.FgYellow+"Disconnected client "+COLORS.FgCyan+cnum+COLORS.FgYellow+" from database"+COLORS.FgWhite);
 				});
 			});
 			connection.on('error', function(err) {
-				console.log(FgRed+"client "+COLORS.FgCyan+cnum+FgRed+" had an error:\n",err,COLORS.FgWhite);
+				console.log(COLORS.FgRed+"client "+COLORS.FgCyan+cnum+COLORS.FgRed+" had an error:\n",err,COLORS.FgWhite);
 				connections[cnum] = null;
 				dbcon.end(()=>{
-					console.log(FgYellow+"Disconnected client "+COLORS.FgCyan+cnum+FgYellow+" from database"+COLORS.FgWhite);
+					console.log(COLORS.FgYellow+"Disconnected client "+COLORS.FgCyan+cnum+COLORS.FgYellow+" from database"+COLORS.FgWhite);
 				});
 			});
 			connection.on('data', function(data) {
@@ -273,7 +273,7 @@ function init(){
 					ITelexCom.handlePacket(ITelexCom.decData(data),cnum,dbcon,connection,handles); //TCP
 				}
 			});
-		//console.log(FgYellow+"Disconnected client "+COLORS.FgCyan+cnum+FgYellow+" from database!"+COLORS.FgWhite);
+		//console.log(COLORS.FgYellow+"Disconnected client "+COLORS.FgCyan+cnum+COLORS.FgYellow+" from database!"+COLORS.FgWhite);
 		});
 	});
 	server.listen(PORT, function() {
@@ -284,13 +284,13 @@ function updateQueue(){
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.connect(function(err){
 		if(err){
-			console.log(FgRed+"Connection to database threw an error:\n",err,COLORS.FgWhite);
+			console.log(COLORS.FgRed+"Connection to database threw an error:\n",err,COLORS.FgWhite);
 			return;
 		}
-		console.log(FgGreen+"Connected to database for server syncronisation!"+COLORS.FgWhite);
+		console.log(COLORS.FgGreen+"Connected to database for server syncronisation!"+COLORS.FgWhite);
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE changed = "+1, function(err, result1){
 			dbcon.query("UPDATE telefonbuch.teilnehmer SET changed = 0;", function(err, result3) {
-				console.log(FgGreen+result3.changedRows+" rows were updated!"+COLORS.FgWhite);
+				console.log(COLORS.FgGreen+result3.changedRows+" rows were updated!"+COLORS.FgWhite);
 			});
 			if(result1.length > 0){
 				console.log(COLORS.FgCyan,result1);
@@ -305,14 +305,14 @@ function updateQueue(){
 					},()=>{
 						dbcon.end(()=>{
 							qwd.stdin.write("sendqueue");
-							console.log(FgYellow+"Disconnected from server database!"+COLORS.FgWhite);
+							console.log(COLORS.FgYellow+"Disconnected from server database!"+COLORS.FgWhite);
 							setTimeout(updateQueue,UPDATEQUEUEINTERVAL);
 						});
 					});
 				});
 			}else{
-				console.log(FgYellow+"no rows to update"+COLORS.FgWhite);
-					dbcon.end(()=>{console.log(FgYellow+"Disconnected from server database!"+COLORS.FgWhite);
+				console.log(COLORS.FgYellow+"no rows to update"+COLORS.FgWhite);
+					dbcon.end(()=>{console.log(COLORS.FgYellow+"Disconnected from server database!"+COLORS.FgWhite);
 				});
 				if(qwdec  ==  null){
 					qwdec = "unknown";
@@ -362,12 +362,12 @@ function startQWD(){
 	});
 	qwd.stderr.on('data',(data)=>{
 		if(QWD_STDERR_LOG  ==  ""){
-			console.log(FgRed+'qwd stderr: '+COLORS.FgWhite+data);
+			console.log(COLORS.FgRed+'qwd stderr: '+COLORS.FgWhite+data);
 		}else if(QWD_STDOUT_LOG  ==  "-"){}else{
 			try{
 				fs.appendFileSync(QWD_STDERR_LOG,data);
 			}catch(e){
-				console.log(FgRed+'qwd stderr: '+COLORS.FgWhite+data);
+				console.log(COLORS.FgRed+'qwd stderr: '+COLORS.FgWhite+data);
 			}
 		}
 	});
