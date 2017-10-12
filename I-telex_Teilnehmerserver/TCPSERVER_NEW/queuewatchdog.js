@@ -10,9 +10,6 @@ const mySqlConnectionOptions = {
 	password: "amesads"
 };
 
-
-
-
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
