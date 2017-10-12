@@ -39,7 +39,7 @@ const mySqlConnectionOptions = {
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
-handles[8][ITelexCom.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
+handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 	console.log(FgMagenta,connections[cnum].writebuffer,FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	if(connections[cnum].writebuffer.length > 0){
@@ -62,7 +62,7 @@ handles[8][ITelexCom.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 	}else if(connections[cnum].writebuffer.length <= 0){
 		connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
 		connections[cnum].writebuffer = [];
-		connections[cnum].state = ITelexCom.STANDBY;
+		connections[cnum].state = ITelexCom.states.STANDBY;
 	}
 };
 var sendInt = setInterval(ITelexCom.SendQueue,QUEUE_SEND_INTERVAL);

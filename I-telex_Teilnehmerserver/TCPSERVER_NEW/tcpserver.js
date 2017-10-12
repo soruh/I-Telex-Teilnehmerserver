@@ -59,9 +59,9 @@ Peer_search: 10
 var handles = {};	//functions for handeling packages
 for(i = 1;i <= 10;i++){handles[i] = {};}
 //handes[packagetype][state of this connection]
-//handles[2][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection)=>{}; NOT USED
+//handles[2][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 //handles[4][WAITING] = (obj,cnum,dbcon,connection)=>{}; NOT USED
-handles[1][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	var number = obj.data.rufnummer;
 	var pin = obj.data.pin;
 	var port = obj.data.port;
@@ -89,7 +89,7 @@ handles[1][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		}
 	});
 };
-handles[3][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[3][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.version  ==  1){
 		var rufnummer = obj.data.rufnummer;
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+rufnummer+";",function(err,result){
@@ -110,7 +110,7 @@ handles[3][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		connection.write(ITelexCom.encPacket({packagetype:4,datalength:0}));
 	}
 };
-handles[5][ITelexCom.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[5][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
 	console.log(obj);
 	dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",(err,res)=>{
 		if(err){
@@ -143,7 +143,7 @@ handles[5][ITelexCom.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
 		}
 	});
 };
-handles[5][ITelexCom.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
+handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.data.version  ==  1){
 		console.log(obj);
 		dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer = "+obj.data.data.rufnummer+";",(err,res)=>{
@@ -177,7 +177,7 @@ handles[5][ITelexCom.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 		console.log(FgRed,"unsupported package version",FgWhite);
 	}
 };
-handles[6][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.pin  ==  serverpin){
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer",function(err,result){
 			if(err){
@@ -185,7 +185,7 @@ handles[6][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 			}else{
 				if((result[0] != undefined)&&(result != [])&&pin == serverpin){
 					connections[cnum].writebuffer = result;
-					connections[cnum].state = ITelexCom.RESPONDING;
+					connections[cnum].state = ITelexCom.states.RESPONDING;
 					ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
 				}else{
 					connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
@@ -194,16 +194,16 @@ handles[6][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		});
 	}
 }; //TODO: send stuff?
-handles[7][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[7][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.pin  ==  serverpin){
 		connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
-		connections[cnum].state = ITelexCom.LOGIN;
+		connections[cnum].state = ITelexCom.states.LOGIN;
 		ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
 	}else{
 		connection.end();
 	}
 };
-handles[8][ITelexCom.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
+handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 	if(connections[cnum].writebuffer.length > 0){
 		connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:connections[cnum].writebuffer[0]}),()=>{
 			connections[cnum].writebuffer = connections[cnum].writebuffer.splice(1);
@@ -211,17 +211,17 @@ handles[8][ITelexCom.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 	}else if(connections[cnum].writebuffer.length  <=  0){
 		connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
 		connections[cnum].writebuffer = [];
-		connections[cnum].state = ITelexCom.STANDBY;
+		connections[cnum].state = ITelexCom.states.STANDBY;
 	}
 };
-handles[9][ITelexCom.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
-	connections[cnum].state = ITelexCom.STANDBY;
+handles[9][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
+	connections[cnum].state = ITelexCom.states.STANDBY;
 	connections[cnum].cb();
 };
-handles[9][ITelexCom.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
-	connections[cnum].state = ITelexCom.STANDBY;
+handles[9][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
+	connections[cnum].state = ITelexCom.states.STANDBY;
 };
-handles[10][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	console.log(obj);
 	var version = obj.data.data.version;
 	var query = obj.data.data.pattern;
@@ -240,7 +240,7 @@ handles[10][ITelexCom.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 			if((result[0] != undefined)&&(result != [])){
 				connections[cnum].writebuffer = result;
 				console.log(FgBlue,connections[cnum].writebuffer,FgWhite);
-				connections[cnum].state = ITelexCom.RESPONDING;
+				connections[cnum].state = ITelexCom.states.RESPONDING;
 				ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
 			}else{
 				connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
@@ -259,7 +259,7 @@ function init(){
 		if(cnum  ==  -1){
 			cnum = connections.length;
 		}
-		connections[cnum] = {connection:connection,state:ITelexCom.STANDBY};
+		connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
 		var dbcon = mysql.createConnection(mySqlConnectionOptions);
 		console.log(FgGreen+"client "+FgCyan+cnum+FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+FgWhite);
 		dbcon.connect(function(err){
@@ -356,7 +356,7 @@ function getFullQuery(){
 				async.eachSeries(res,function(r,cb){
 					ITelexCom.connect(dbcon,function(){},{port:r.port,host:r.addresse},handles,function(client,cnum){
 						client.write(ITelexCom.encPacket({packagetype:6,datalength:5,data:{serverpin:serverpin,version:1}}),function(){
-							connections[cnum].state = ITelexCom.FULLQUERY;
+							connections[cnum].state = ITelexCom.states.FULLQUERY;
 							connections[cnum].cb = cb;
 						});
 					});

@@ -415,7 +415,9 @@ module.exports.decData=decData;
 module.exports.concatByteArray=concatByteArray;
 module.exports.deConcatValue=deConcatValue;
 module.exports.SendQueue=SendQueue;
-module.exports.STANDBY = STANDBY;
-module.exports.RESPONDING = RESPONDING;
-module.exports.FULLQUERY = FULLQUERY;
-module.exports.LOGIN = LOGIN;
+module.exports.states = {
+	STANDBY:STANDBY,
+	RESPONDING:RESPONDING,
+	FULLQUERY:FULLQUERY,
+	LOGIN:LOGIN
+};
