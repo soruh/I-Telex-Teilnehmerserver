@@ -1,7 +1,28 @@
-const Reset="\x1b[0m",Bright="\x1b[1m",Dim="\x1b[2m",Underscore="\x1b[4m",Blink="\x1b[5m",Reverse="\x1b[7m",Hidden="\x1b[8m",FgBlack="\x1b[30m",FgRed="\x1b[31m",FgGreen="\x1b[32m",FgYellow="\x1b[33m",FgBlue="\x1b[34m",FgMagenta="\x1b[35m",FgCyan="\x1b[36m",FgWhite="\x1b[37m",BgBlack="\x1b[40m",BgRed="\x1b[41m",BgGreen="\x1b[42m",BgYellow="\x1b[43m",BgBlue="\x1b[44m",BgMagenta="\x1b[45m",BgCyan="\x1b[46m",BgWhite="\x1b[47m";
+const Reset = "\x1b[0m";
+const Bright = "\x1b[1m";
+const Dim = "\x1b[2m";
+const Underscore = "\x1b[4m";
+const Blink = "\x1b[5m";
+const Reverse = "\x1b[7m";
+const Hidden = "\x1b[8m";
+const FgBlack = "\x1b[30m";
+const FgRed = "\x1b[31m";
+const FgGreen = "\x1b[32m";
+const FgYellow = "\x1b[33m";
+const FgBlue = "\x1b[34m";
+const FgMagenta = "\x1b[35m";
+const FgCyan = "\x1b[36m";
+const FgWhite = "\x1b[37m";
+const BgBlack = "\x1b[40m";
+const BgRed = "\x1b[41m";
+const BgGreen = "\x1b[42m";
+const BgYellow = "\x1b[43m";
+const BgBlue = "\x1b[44m";
+const BgMagenta = "\x1b[45m";
+const BgCyan = "\x1b[46m";
+const BgWhite = "\x1b[47m";
 
-var functions=require("./functions.js");
-eval(functions);
+var ITelexCom=require("./ITelexCom.js");
 
 const mySqlConnectionOptions = {
 	host: "localhost",
@@ -24,28 +45,28 @@ var connections = [];
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
-handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
+handles[8][RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 	console.log(FgMagenta,connections[cnum].writebuffer,FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	if(connections[cnum].writebuffer.length > 0){
 		console.log("writing!");
-		var b = connection.write(encPacket({packagetype:5,datalength:100,data:connections[cnum].writebuffer[0]}));
+		var b = connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:connections[cnum].writebuffer[0]}));
 		if(b){
 			console.log("wrote!");
 			console.log(connections[cnum].writebuffer[0]);
 			dbcon.query("DELETE FROM telefonbuch.queue WHERE message="+connections[cnum].writebuffer[0].uid+" AND server="+connections[cnum].servernum+";",function(err,res) {
 				if(err){
-					debug(err);
+					console.log(err);
 				}else if(res.affectedRows > 0){
 					console.log(FgGreen+"deleted queue entry "+FgCyan+connections[cnum].writebuffer[0].name+FgGreen+" from queue"+FgWhite);
 					connections[cnum].writebuffer = connections[cnum].writebuffer.splice(1);
 				}
 			});
 		}else{
-			debug("error writing");
+			console.log("error writing");
 		}
 	}else if(connections[cnum].writebuffer.length <= 0){
-		connection.write(encPacket({packagetype:9,datalength:0}));
+		connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
 		connections[cnum].writebuffer = [];
 		connections[cnum].state = STANDBY;
 	}
@@ -68,7 +89,7 @@ function SendQueue(callback){
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
 		if(err){
-			debug(err);
+			console.log(err);
 		}
 		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
 			if(err) console.log(err);
@@ -85,12 +106,12 @@ function SendQueue(callback){
 					console.log(FgMagenta,server,FgWhite);
 					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
 						if(err){
-							debug(err);
+							console.log(err);
 						}
 						var serverinf = result2[0];
 						console.log(FgCyan,serverinf,FgWhite);
 						try{
-							connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},function(client,cnum){
+							ITelexCom.connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
 								connections[cnum].servernum = server[0].server;
 								console.log(FgGreen+'connected to server: '+serverinf.addresse+" on port: "+serverinf.port+FgWhite);
 								connections[cnum].writebuffer = [];
@@ -101,14 +122,14 @@ function SendQueue(callback){
 										scb();
 									});
 								},()=>{
-									client.write(encPacket({packagetype:7,datalength:5,data:{serverpin:serverpin,version:1}}),()=>{
+									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{serverpin:serverpin,version:1}}),()=>{
 										connections[cnum].state = RESPONDING;
 										cb();
 									});
 								});
 							});
 						}catch(e){
-							debug(e);
+							console.log(e);
 							//cb();
 						}
 					})
