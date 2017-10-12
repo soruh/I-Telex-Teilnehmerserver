@@ -22,31 +22,24 @@ const BgMagenta = "\x1b[45m";
 const BgCyan = "\x1b[46m";
 const BgWhite = "\x1b[47m";
 
+const mysql = require('mysql');
+const ITelexCom=require("./ITelexCom.js");
 
+const QUEUE_SEND_INTERVAL = 60000;
+const serverpin = 118120815;
 const mySqlConnectionOptions = {
 	host: "localhost",
 	user: "telefonbuch",
 	password: "amesads"
 };
 
-const STANDBY = 0;
-const RESPONDING = 1;
-const FULLQUERY = 2;
-const LOGIN = 3;
 
-const QUEUE_SEND_INTERVAL = 60000;
-
-
-const mysql = require('mysql');
-const ITelexCom=require("./ITelexCom.js");
-
-const serverpin = 118120815;
 
 
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
-handles[8][RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
+handles[8][ITelexCom.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 	console.log(FgMagenta,connections[cnum].writebuffer,FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	if(connections[cnum].writebuffer.length > 0){
@@ -69,7 +62,7 @@ handles[8][RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 	}else if(connections[cnum].writebuffer.length <= 0){
 		connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
 		connections[cnum].writebuffer = [];
-		connections[cnum].state = STANDBY;
+		connections[cnum].state = ITelexCom.STANDBY;
 	}
 };
 var sendInt = setInterval(ITelexCom.SendQueue,QUEUE_SEND_INTERVAL);
