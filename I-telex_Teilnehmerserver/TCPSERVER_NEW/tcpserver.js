@@ -24,6 +24,11 @@ const BgWhite = "\x1b[47m";
 
 var ITelexCom = require("./ITelexCom.js");
 
+const STANDBY = 0;
+const RESPONDING = 1;
+const FULLQUERY = 2;
+const LOGIN = 3;
+
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');

@@ -34,6 +34,7 @@ const STANDBY = 0;
 const RESPONDING = 1;
 const FULLQUERY = 2;
 const LOGIN = 3;
+
 const QUEUE_SEND_INTERVAL = 60000;
 
 const net = require('net');
