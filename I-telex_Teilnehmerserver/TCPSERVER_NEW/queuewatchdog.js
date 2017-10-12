@@ -22,7 +22,6 @@ const BgMagenta = "\x1b[45m";
 const BgCyan = "\x1b[46m";
 const BgWhite = "\x1b[47m";
 
-var ITelexCom=require("./ITelexCom.js");
 
 const mySqlConnectionOptions = {
 	host: "localhost",
@@ -40,6 +39,8 @@ const QUEUE_SEND_INTERVAL = 60000;
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
+const ITelexCom=require("./ITelexCom.js");
+
 const serverpin = 118120815;
 
 var connections = [];
