@@ -23,6 +23,7 @@ con.connect(function(err) {
         console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
         var resultnopin = [];
         for(a in result){
+          console.log(result[a].gesperrt);
           if(result[a].gesperrt==0){
             var i=resultnopin.length;
             resultnopin[i] = {};
