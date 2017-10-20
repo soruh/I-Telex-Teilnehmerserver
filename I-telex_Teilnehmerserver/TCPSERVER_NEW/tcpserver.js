@@ -45,14 +45,14 @@ handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+number,function(err_a,result_a){
 		if(result_a&&(result_a.length>0)){
 			var res = result_a[0];
-			console.log(res);
+			if(cv(2)) console.log(res);
 			if(res.pin == pin&&res.port == port/*???*/){
 				dbcon.query("UPDATE telefonbuch.teilnehmer SET ipaddresse = '"+connection.remoteAddress.replace(/^.*:/,'')+"' WHERE rufnummer = "+number,function(err_b,result_b){
 					dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+number,function(err_c,result_c){
 						try{
 							connection.write(ITelexCom.encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");
 						}catch(e){
-							console.log(colors.FgRed,e,colors.FgWhite);
+							if(cv(0)) console.log(colors.FgRed,e,colors.FgWhite);
 						}
 					});
 				});
@@ -70,10 +70,10 @@ handles[3][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.version  ==  1){
 		var rufnummer = obj.data.rufnummer;
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+rufnummer+";",function(err,result){
-			console.log(colors.FgYellow,"SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+rufnummer+";",colors.FgWhite);
-			console.log(colors.FgCyan,result,colors.FgWhite);
+			if(cv(2)) console.log(colors.FgYellow,"SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer = "+rufnummer+";",colors.FgWhite);
+			if(cv(2)) console.log(colors.FgCyan,result,colors.FgWhite);
 			if(err){
-				console.log(colors.FgRed,err,colors.FgWhite);
+				if(cv(0)) console.log(colors.FgRed,err,colors.FgWhite);
 			}else{
 				if((result[0] != undefined)&&(result != [])){
 					connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:result[0]}));
@@ -83,22 +83,22 @@ handles[3][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 			}
 		});
 	}else{
-		console.log(colors.FgRed,"unsupported packet version, sending '4' packet",colors.FgWhite);
+		if(cv(0)) console.log(colors.FgRed,"unsupported packet version, sending '0x04' packet",colors.FgWhite);
 		connection.write(ITelexCom.encPacket({packagetype:4,datalength:0}));
 	}
 };
 handles[5][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
-	console.log(obj);
+	if(cv(2)) console.log(obj);
 	dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",(err,res)=>{
 		if(err){
-			console.log(err)
+			if(cv(0)) console.log(err)
 		}else{
 			if(res.length  ==  1){
 				if(obj.data.timestamp > res.moddate){
-					console.log(obj.data.timestamp+" > "+res.moddate);
+					if(cv(0)) console.log(obj.data.timestamp+" > "+res.moddate);
 					dbcon.query("UPDATE telefonbuch.teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+mysql.escape(obj.data.name)+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+mysql.escape(obj.data.addresse)+",ipaddresse = "+mysql.escape(obj.data.ipaddresse)+",port = "+mysql.escape(obj.data.port)+",extention = "+mysql.escape(obj.data.durchwahl)+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+mysql.escape(obj.data.flags)+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+mysql.escape(0)+"WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",(err,res2)=>{
 						if(err){
-							console.log(err);
+							if(cv(0)) console.log(err);
 						}else{
 							connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
 						}
@@ -109,29 +109,29 @@ handles[5][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
 			}else if(res.length  ==  0){
 				dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name)+","+mysql.escape(obj.data.typ)+","+mysql.escape(obj.data.addresse)+","+mysql.escape(obj.data.ipaddresse)+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl)+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.flags)+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");",(err,res2)=>{
 					if(err){
-						console.log(err);
+						if(cv(0)) console.log(err);
 					}else{
 						connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
 					}
 				});
 			}else{
-				console.log('Something really strange happened, the "rufnummer" field should be unique!');
+				if(cv(0)) console.log('Something really strange happened, the "rufnummer" field should be unique!');
 			}
 		}
 	});
 };
 handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.data.version  ==  1){
-		console.log(obj);
+		if(cv(2)) console.log(obj);
 		dbcon.query("SELECT * from telefonbuch.teilnehmer WHERE rufnummer = "+obj.data.data.rufnummer+";",(err,res)=>{
 			if(err){
-				console.log(err)
+				if(cv(0)) console.log(err)
 			}else{
 				if(res.length  ==  1){
 					if(obj.data.data.timestamp > res.moddate){
 						dbcon.query("UPDATE telefonbuch.teilnehmerSETrufnummer = "+obj.data.data.rufnummer+",name = "+obj.data.data.name+",typ = "+obj.data.data.typ+",hostname = "+obj.data.data.hostname+",ipaddresse = "+obj.data.data.ipaddresse+",port = "+obj.data.data.port+",extention = "+obj.data.data.extention+",pin = "+obj.data.data.pin+",gesperrt = "+obj.data.data.gesperrt+",moddate = "+obj.data.data.moddate+",changed = "+0+"WHERE rufnummer = "+obj.data.data.rufnummer+";",(err,res2)=>{
 							if(err){
-								console.log(err);
+								if(cv(0)) console.log(err);
 							}else{
 								connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
 							}
@@ -140,25 +140,25 @@ handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 				}else if(res.length  ==  0){
 					dbcon.query("INSERT INTO telefonbuch.teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate,changed)VALUES("+obj.data.data.rufnummer+","+obj.data.data.name+","+obj.data.data.typ+","+obj.data.data.hostname+","+obj.data.data.ipaddresse+","+obj.data.data.port+","+obj.data.data.extention+","+obj.data.data.pin+","+obj.data.data.gesperrt+","+obj.data.data.moddate+","+0+");",(err,res2)=>{
 						if(err){
-							console.log(err);
+							if(cv(0)) console.log(err);
 						}else{
 							connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
 						}
 					});
 				}else{
-					console.log('Something really strange happened, the "rufnummer" field should be unique!');
+					if(cv(0)) console.log('Something really strange happened, the "rufnummer" field should be unique!');
 				}
 			}
 		});
 	}else{
-		console.log(colors.FgRed,"unsupported package version",colors.FgWhite);
+		if(cv(0)) console.log(colors.FgRed,"unsupported package version",colors.FgWhite);
 	}
 };
 handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.pin  ==  ITelexCom.SERVERPIN){
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer",function(err,result){
 			if(err){
-				console.log(colors.FgRed,err,colors.FgWhite);
+				if(cv(0)) console.log(colors.FgRed,err,colors.FgWhite);
 			}else{
 				if((result[0] != undefined)&&(result != [])&&pin == ITelexCom.SERVERPIN){
 					connections[cnum].writebuffer = result;
@@ -199,7 +199,7 @@ handles[9][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 	connections[cnum].state = ITelexCom.states.STANDBY;
 };
 handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
-	console.log(obj);
+	if(cv(2)) console.log(obj);
 	var version = obj.data.data.version;
 	var query = obj.data.data.pattern;
 	var searchstring = "SELECT * FROM telefonbuch.teilnehmer WHERE";
@@ -209,14 +209,14 @@ handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	}
 	searchstring += ";"
 	searchstring = searchstring.replace("WHERE AND","WHERE");
-	console.log(colors.FgGreen,searchstring,colors.FgWhite);
+	if(cv(2)) console.log(colors.FgGreen,searchstring,colors.FgWhite);
 	dbcon.query(searchstring,function(err,result){
 		if(err){
-			console.log(colors.FgRed,err,colors.FgWhite);
+			if(cv(0)) console.log(colors.FgRed,err,colors.FgWhite);
 		}else{
 			if((result[0] != undefined)&&(result != [])){
 				connections[cnum].writebuffer = result;
-				console.log(colors.FgBlue,connections[cnum].writebuffer,colors.FgWhite);
+				if(cv(2)) console.log(colors.FgBlue,connections[cnum].writebuffer,colors.FgWhite);
 				connections[cnum].state = ITelexCom.states.RESPONDING;
 				ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
 			}else{
@@ -238,63 +238,62 @@ function init(){
 		}
 		connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
 		var dbcon = mysql.createConnection(mySqlConnectionOptions);
-		console.log(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+colors.FgWhite);
+		if(cv(1)) console.log(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+colors.FgWhite);
 		dbcon.connect(function(err){
 			if(err){
-				console.log(colors.FgRed+"Connection of client "+colors.FgCyan+cnum+colors.FgRed+" to database threw an error:\n",err,colors.FgWhite);
-				connection.end(()=>{console.log(colors.FgRed+"Terminated connection with client "+colors.FgCyan+cnum+colors.FgWhite);});
+				if(cv(0)) console.log(colors.FgRed+"Connection of client "+colors.FgCyan+cnum+colors.FgRed+" to database threw an error:\n",err,colors.FgWhite);
+				connection.end(()=>{if(cv(1)) console.log(colors.FgRed+"Terminated connection with client "+colors.FgCyan+cnum+colors.FgWhite);});
 				return;
 			}
-			//console.log(connection);
-			console.log(colors.FgGreen+"Connected client "+colors.FgCyan+cnum+colors.FgGreen+" to database"+colors.FgWhite);
+			//if(cv(2)) console.log(connection);
+			if(cv(1)) console.log(colors.FgGreen+"Connected client "+colors.FgCyan+cnum+colors.FgGreen+" to database"+colors.FgWhite);
 			var queryresultpos = -1;
 			var queryresult = [];
 			var connectionpin;
 			connection.on('end', function() {
-				console.log(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.FgWhite);
+				if(cv(1)) console.log(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.FgWhite);
 				connections[cnum] = null;
 				dbcon.end(()=>{
-					console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
+					if(cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
 				});
 			});
 			connection.on('error', function(err) {
-				console.log(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.FgWhite);
+				if(cv(1)) console.log(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.FgWhite);
 				connections[cnum] = null;
 				dbcon.end(()=>{
-					console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
+					if(cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
 				});
 			});
 			connection.on('data', function(data) {
-				console.log(colors.FgMagenta,data,colors.FgWhite);
-				console.log(colors.FgBlue,data.toString(),colors.FgWhite);
+				if(cv(2)) console.log(colors.FgMagenta,data,colors.FgWhite);
+				if(cv(2)) console.log(colors.FgBlue,data.toString(),colors.FgWhite);
 				if(data[0] == 0x71/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
 					ITelexCom.ascii(data,connection,dbcon);
 				}else{
 					ITelexCom.handlePacket(ITelexCom.decData(data),cnum,dbcon,connection,handles); //TCP
 				}
 			});
-		//console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database!"+colors.FgWhite);
 		});
 	});
 	server.listen(PORT, function() {
-		console.log('server is listening on port '+PORT);
+		if(cv(9)) console.log('server is listening on port '+PORT);
 	});
 }
 function updateQueue(){
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.connect(function(err){
 		if(err){
-			console.log(colors.FgRed+"Connection to database threw an error:\n",err,colors.FgWhite);
+			if(cv(0)) console.log(colors.FgRed+"Connection to database threw an error:\n",err,colors.FgWhite);
 			return;
 		}
-		console.log(colors.FgGreen+"Connected to database for server syncronisation!"+colors.FgWhite);
+		if(cv(2)) console.log(colors.FgGreen+"Connected to database for server syncronisation!"+colors.FgWhite);
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE changed = "+1, function(err, result1){
 			dbcon.query("UPDATE telefonbuch.teilnehmer SET changed = 0;", function(err, result3) {
-				console.log(colors.FgGreen+result3.changedRows+" rows were updated!"+colors.FgWhite);
+				if(cv(1)) console.log(colors.FgGreen+result3.changedRows+" rows were updated!"+colors.FgWhite);
 			});
 			if(result1.length > 0){
-				console.log(colors.FgCyan,result1);
-				console.log("rows to update: "+result1.length);
+				if(cv(2)) console.log(colors.FgCyan,result1);
+				if(cv(1)) console.log("rows to update: "+result1.length);
 				dbcon.query("SELECT * FROM telefonbuch.servers", function (err, result2) {
 					async.each(result2,(server,cb1)=>{
 						async.each(result1,(message,cb2)=>{
@@ -305,14 +304,14 @@ function updateQueue(){
 					},()=>{
 						dbcon.end(()=>{
 							qwd.stdin.write("sendqueue");
-							console.log(colors.FgYellow+"Disconnected from server database!"+colors.FgWhite);
+							if(cv(2)) console.log(colors.FgYellow+"Disconnected from server database!"+colors.FgWhite);
 							setTimeout(updateQueue,UPDATEQUEUEINTERVAL);
 						});
 					});
 				});
 			}else{
-				console.log(colors.FgYellow+"no rows to update"+colors.FgWhite);
-					dbcon.end(()=>{console.log(colors.FgYellow+"Disconnected from server database!"+colors.FgWhite);
+				if(cv(2)) console.log(colors.FgYellow+"no rows to update"+colors.FgWhite);
+					dbcon.end(()=>{if(cv(2)) console.log(colors.FgYellow+"Disconnected from server database!"+colors.FgWhite);
 				});
 				if(qwdec  ==  null){
 					qwdec = "unknown";
@@ -328,7 +327,7 @@ function getFullQuery(){
 	dbcon.connect(()=>{
 			dbcon.query("SELECT * FROM telefonbuch.servers",(err,res)=>{
 				if(err){
-					console.log(err);
+					if(cv(0)) console.log(err);
 				}
 				async.eachSeries(res,function(r,cb){
 					ITelexCom.connect(dbcon,function(){},{port:r.port,host:r.addresse},handles,function(client,cnum){
@@ -346,35 +345,35 @@ function startQWD(){
 	qwd = cp.spawn('node',["queuewatchdog.js"]);
 	qwd.on('exit',(ec)=>{
 		qwdec = ec;
-		console.log("qwd process exited with code "+ec);
+		if(cv(0)) console.log("qwd process exited with code "+ec);
 		startQWD();
 	});
 	qwd.stdout.on('data',(data)=>{
 		if(QWD_STDOUT_LOG  ==  ""){
-			console.log(colors.FgBlue+'qwd stdout: '+colors.FgWhite+data);
+			if(cv(0)) console.log(colors.FgBlue+'qwd stdout: '+colors.FgWhite+data);
 		}else if(QWD_STDOUT_LOG  ==  "-"){}else{
 			try{
 				fs.appendFileSync(QWD_STDOUT_LOG,data);
 			}catch(e){
-				console.log(colors.FgBlue+'qwd stdout: '+colors.FgWhite+data);
+				if(cv(0)) console.log(colors.FgBlue+'qwd stdout: '+colors.FgWhite+data);
 			}
 		}
 	});
 	qwd.stderr.on('data',(data)=>{
 		if(QWD_STDERR_LOG  ==  ""){
-			console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
+			if(cv(0)) console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
 		}else if(QWD_STDOUT_LOG  ==  "-"){}else{
 			try{
 				fs.appendFileSync(QWD_STDERR_LOG,data);
 			}catch(e){
-				console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
+				if(cv(0)) console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
 			}
 		}
 	});
 }
 
 if(module.parent === null){
-	console.log(colors.FgMagenta+"Initialising!"+colors.FgWhite);
+	if(cv(0)) console.log(colors.FgMagenta+"Initialising!"+colors.FgWhite);
 	init();
 	startQWD();
 	updateQueue();

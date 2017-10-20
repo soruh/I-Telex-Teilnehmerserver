@@ -19,7 +19,7 @@ const LOGIN = 3;
 var connections = [];	//list of active connections
 
 function connect(dbcon,cb,options,handles,callback){
-	console.log(colors.FgWhite,options);
+	if(cv(2)) console.log(colors.FgWhite,options);
 	try {
 		var socket = new net.Socket();
 		var cnum = -1;
@@ -33,11 +33,11 @@ function connect(dbcon,cb,options,handles,callback){
 		}
 		connections[cnum] = {/*connection:socket,*/state:STANDBY};
 		socket.on('data',(data)=>{
-			console.log(colors.FgCyan,data,"\n",data.toString(),colors.FgWhite);
+			if(cv(2)) console.log(colors.FgCyan,data,"\n",data.toString(),colors.FgWhite);
 			handlePacket(decData(data),cnum,dbcon,socket,handles);
 		});
 		socket.on('error',(error)=>{
-			console.log(colors.FgRed,error,colors.FgWhite);
+			if(cv(0)) console.log(colors.FgRed,error,colors.FgWhite);
 			socket.end();
 			cb();
 		});
@@ -45,29 +45,29 @@ function connect(dbcon,cb,options,handles,callback){
 			return(callback(socket,cnum));
 		});
 	}catch(e){
-		console.log(e);
+		if(cv(0)) console.log(e);
 		//cb();
 	}
 }
 function handlePacket(obj,cnum,dbcon,connection,handles){
-	console.log(colors.FgMagenta+"state: "+colors.FgCyan+connections[cnum]["state"]+colors.FgWhite);
-	console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
+	if(cv(2)) console.log(colors.FgMagenta+"state: "+colors.FgCyan+connections[cnum]["state"]+colors.FgWhite);
+	if(cv(2)) console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
 		if(obj.packagetype==0xff){
-			console.log(obj.data);
-			console.log(colors.FgRed+Buffer.from(obj.data).toString());
+			if(cv(2)) console.log(obj.data);
+			if(cv(2)) console.log(colors.FgRed+Buffer.from(obj.data).toString());
 		}
 		try{
 			if(handles[obj.packagetype]!=undefined){
 				handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
 			}else{
-				console.log(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
+				if(cv(0)) console.log(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
 			}
 		}catch(e){
-			console.log(colors.FgRed,e,colors.FgWhite);
+			if(cv(0)) console.log(colors.FgRed,e,colors.FgWhite);
 		}
 }
 function encPacket(obj) {
-	console.log(colors.BgYellow,colors.FgBlue,obj,colors.FgWhite,colors.BgBlack);
+	if(cv(2)) console.log(colors.BgYellow,colors.FgBlue,obj,colors.FgWhite,colors.BgBlack);
 	var data = obj.data;
 	switch(obj.packagetype){
 		case 1:
@@ -128,9 +128,9 @@ function encPacket(obj) {
 	}
 	var header = [obj.packagetype,array.length];
 	if(array.length > obj.datalength){
-		console.log("Buffer bigger than expected:\n"+array.length+" > "+obj.datalength);
+		if(cv(0)) console.log("Buffer bigger than expected:\n"+array.length+" > "+obj.datalength);
 	}
-	console.log(colors.FgBlue,Buffer.from(header.concat(array)),colors.FgWhite);
+	if(cv(2)) console.log(colors.FgBlue,Buffer.from(header.concat(array)),colors.FgWhite);
 	return(Buffer.from(header.concat(array)));
 }
 function decPacket(packagetype,buffer){
@@ -257,7 +257,7 @@ function concatByteArray(arr,type){
 	}
 }
 function deConcatValue(value,size){
-	console.log(value);
+	if(cv(2)) console.log(value);
 	var array = [];
 	if(typeof value === "string"){
 		for(i=0;i<value.length;i++){
@@ -270,7 +270,7 @@ function deConcatValue(value,size){
 		}
 	}
 	if(array.length>size||array.length==undefined){
-		console.log("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
+		if(cv(0)) console.log("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
 	}
 	while(array.length<size){
 		array[array.length] = 0;
@@ -280,17 +280,17 @@ function deConcatValue(value,size){
 function ascii(data,connection,dbcon){
 	var number = "";
 	for(i=0;i<data.length;i++){
-		//console.log(String.fromCharCode(data[i]));
+		//if(cv(2)) console.log(String.fromCharCode(data[i]));
 		if(/([0-9])/.test(String.fromCharCode(data[i]))){
 			number += String.fromCharCode(data[i]);
 		}
 	}
 	if(number!=""){number = parseInt(number);}
 	if(number!=NaN&&number!=""){
-		console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
+		if(cv(1)) console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number, function (err, result){
 			if(err){
-				console.log(err);
+				if(cv(0)) console.log(err);
 			}else{
 				if(result.length == 0){
 					var send = "fail\n\r";
@@ -298,7 +298,7 @@ function ascii(data,connection,dbcon){
 					send += "unknown\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
-						console.log(colors.FgRed+"Entry not found\n=> sent:\n"+colors.FgWhite+send);
+						if(cv(1)) console.log(colors.FgRed+"Entry not found\n=> sent:\n"+colors.FgWhite+send);
 					});
 				}else{
 					var send = "ok\n\r";
@@ -314,7 +314,7 @@ function ascii(data,connection,dbcon){
 					send += result[0]["extention"]+"\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
-						console.log(colors.FgGreen+"Entry found\n=> sent:\n"+colors.FgWhite+send);
+						if(cv(1)) console.log(colors.FgGreen+"Entry found\n=> sent:\n"+colors.FgWhite+send);
 					});
 				}
 			}
@@ -322,11 +322,11 @@ function ascii(data,connection,dbcon){
 	}
 }
 function SendQueue(callback){
-	console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
+	if(cv(2)) console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
 		if(err){
-			console.log(err);
+			if(cv(0)) console.log(err);
 		}
 		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
 			if(err) throw(err);
@@ -338,22 +338,22 @@ function SendQueue(callback){
 					}
 					servers[results[i].server][servers[results[i].server].length] = results[i];
 				}
-				console.log(colors.BgMagenta,colors.FgBlack,servers,colors.BgBlack,colors.FgWhite);
+				if(cv(2)) console.log(colors.BgMagenta,colors.FgBlack,servers,colors.BgBlack,colors.FgWhite);
 				async.eachSeries(servers,function(server,cb){
-					console.log(colors.FgMagenta,server,colors.FgWhite);
+					if(cv(2)) console.log(colors.FgMagenta,server,colors.FgWhite);
 					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
 						if(err){
-							console.log(err);
+							if(cv(0)) console.log(err);
 						}
 						var serverinf = result2[0];
-						console.log(colors.FgCyan,serverinf,colors.FgWhite);
+						if(cv(2)) console.log(colors.FgCyan,serverinf,colors.FgWhite);
 						try{
 							ITelexCom.connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
 								connections[cnum].servernum = server[0].server;
-								console.log(colors.FgGreen+'connected to server: '+serverinf.addresse+" on port: "+serverinf.port+colors.FgWhite);
+								if(cv(1)) console.log(colors.FgGreen+'connected to server: '+serverinf.addresse+" on port: "+serverinf.port+colors.FgWhite);
 								connections[cnum].writebuffer = [];
 								async.each(server,(serverdata,scb)=>{
-									console.log(colors.FgCyan,serverdata,colors.FgWhite);
+									if(cv(2)) console.log(colors.FgCyan,serverdata,colors.FgWhite);
 									dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
 										connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
 										scb();
@@ -366,21 +366,24 @@ function SendQueue(callback){
 								});
 							});
 						}catch(e){
-							console.log(e);
+							if(cv(0)) console.log(e);
 							//cb();
 						}
 					})
 				},()=>{
-					console.log("done");
+					if(cv(2)) console.log("done");
 					dbcon.end();
 					try{callback();}catch(e){}
 				});
 			}else{
-				console.log(colors.FgYellow,"No queue!",colors.FgWhite);
+				if(cv(2)) console.log(colors.FgYellow,"No queue!",colors.FgWhite);
 				try{callback();}catch(e){}
 			}
 		});
 	});
+}
+function cv(level){ //check verbosity
+	return(level >= config.LOGGING_VERBOSITY);
 }
 
 module.exports.ascii=ascii;
