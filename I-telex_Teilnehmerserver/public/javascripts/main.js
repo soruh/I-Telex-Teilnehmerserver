@@ -259,7 +259,7 @@ $(document).ready(()=>{
   $("#submitdialog").click(function(){
     switch(actionkey){
       case "new":
-        var locked = $("#gesperrtnewentrydialog").val() ? 0 : 1;
+        var locked = $("#gesperrtnewentrydialog").val() ? 1 : 0;
         edit({
           typekey:"new",
           password: $("#passworddialog").val(),
