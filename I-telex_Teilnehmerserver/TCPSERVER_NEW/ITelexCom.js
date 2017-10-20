@@ -3,12 +3,12 @@ const mysql = require('mysql');
 const async = require('async');
 const colors = require("./colors.js")
 const config = require('./config.js');
-
 const mySqlConnectionOptions = {
 	host: config.SQL_host,
 	user: config.SQL_user,
 	password: config.SQL_password
 };
+console.log(colors.FgCyan,config);
 console.log(colors.FgCyan,mySqlConnectionOptions);
 const SERVERPIN = config.SERVERPIN;
 

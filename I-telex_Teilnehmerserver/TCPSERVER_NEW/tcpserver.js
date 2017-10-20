@@ -14,6 +14,7 @@ const mySqlConnectionOptions = {
 	user: config.SQL_user,
 	password: config.SQL_password
 };
+console.log(colors.FgCyan,config);
 console.log(colors.FgCyan,mySqlConnectionOptions);
 // "" => log to console
 // "-" => don't log
