@@ -383,7 +383,7 @@ function SendQueue(callback){
 	});
 }
 function cv(level){ //check verbosity
-	return(level >= config.LOGGING_VERBOSITY);
+	return(level <= config.LOGGING_VERBOSITY);
 }
 
 module.exports.ascii=ascii;

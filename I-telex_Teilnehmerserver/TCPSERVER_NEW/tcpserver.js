@@ -289,7 +289,7 @@ function updateQueue(){
 		if(ITelexCom.cv(2)) console.log(colors.FgGreen+"Connected to database for server syncronisation!"+colors.FgWhite);
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE changed = "+1, function(err, result1){
 			dbcon.query("UPDATE telefonbuch.teilnehmer SET changed = 0;", function(err, result3) {
-				if(ITelexCom.cv(1)) console.log(colors.FgGreen+result3.changedRows+" rows were updated!"+colors.FgWhite);
+				if(ITelexCom.cv(2)) console.log(colors.FgGreen+result3.changedRows+" rows were updated!"+colors.FgWhite);
 			});
 			if(result1.length > 0){
 				if(ITelexCom.cv(2)) console.log(colors.FgCyan,result1);
