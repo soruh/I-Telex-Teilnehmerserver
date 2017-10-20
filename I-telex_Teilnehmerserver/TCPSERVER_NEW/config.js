@@ -20,6 +20,7 @@ for(o of arr){
     content+=comments[0];
   }
 }
+console.log(content);
 var lines = content.replace(/(\r\n)/g,"").split(";");
 for(l of lines){
   if(l.split(" ")[0] != ""){
