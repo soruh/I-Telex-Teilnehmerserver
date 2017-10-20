@@ -21,7 +21,7 @@ for(o of arr){
   }
 }
 console.log(content);
-var lines = content.replace(/(\r\n)/g,"").split(";");
+var lines = content.split(";"); //.replace(/(\r\n)/g,"")
 console.log(lines);
 for(l of lines){
   if(l.split(" ")[0] != ""){
