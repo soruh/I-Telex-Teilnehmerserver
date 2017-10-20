@@ -1,14 +1,23 @@
 function parse(x){
   if(x==""){
     return("");
-  }else if(parseInt(x) != NaN){
-    return(parseInt(x));
-  }else{
+  }else if(isNaN(parseInt(x))){
     return(x);
+  }else{
+    return(parseInt(x));
   }
 }
-
-var content = require('fs').readFileSync('CONFIG',"utf-8");
+var raw = require('fs').readFileSync('CONFIG',"utf-8");
+var arr = raw.split("/*");
+var content = "";
+for(o of arr){
+  comments = o.split("*/");
+  if(comments.length>1){
+    content+=comments[1];
+  }else{
+    content+=comments[0];
+  }
+}
 var lines = content.replace(/(\r\n)/g,"").split(";");
 for(l of lines){
   if(l.split(" ")[0] != ""){

@@ -2,8 +2,9 @@ UPDATEQUEUEINTERVAL 60000;
 QUEUE_SEND_INTERVAL 60000;
 SERVERPIN 118120815;
 PORT 11811;
-QWD_STDOUT_LOG ;
-QWD_STDERR_LOG ;
-SQL_host: localhost;
-SQL_user: telefonbuch;
-SQL_password: amesads;
+QWD_STDOUT_LOG ;/*  => log to console */
+QWD_STDERR_LOG ;/* - => don't log */
+SQL_host localhost;
+SQL_user telefonbuch;
+SQL_password amesads;
+LOGGING_VERBOSITY 0;
