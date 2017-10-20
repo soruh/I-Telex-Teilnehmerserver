@@ -161,8 +161,8 @@ handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 				if(ITelexCom.cv(0)) console.log(colors.FgRed,err,colors.FgWhite);
 			}else{
 				if((result[0] != undefined)&&(result != [])&&pin == ITelexCom.SERVERPIN){
-					connections[cnum].writebuffer = result;
-					connections[cnum].state = ITelexCom.states.RESPONDING;
+					ITelexCom.connections[cnum].writebuffer = result;
+					ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
 					ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
 				}else{
 					connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
@@ -174,29 +174,29 @@ handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 handles[7][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(obj.data.pin  ==  ITelexCom.SERVERPIN){
 		connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
-		connections[cnum].state = ITelexCom.states.LOGIN;
+		ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
 		ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
 	}else{
 		connection.end();
 	}
 };
 handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
-	if(connections[cnum].writebuffer.length > 0){
-		connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:connections[cnum].writebuffer[0]}),()=>{
-			connections[cnum].writebuffer = connections[cnum].writebuffer.splice(1);
+	if(ITelexCom.connections[cnum].writebuffer.length > 0){
+		connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),()=>{
+			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(1);
 		});
-	}else if(connections[cnum].writebuffer.length  <=  0){
+	}else if(ITelexCom.connections[cnum].writebuffer.length  <=  0){
 		connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
-		connections[cnum].writebuffer = [];
-		connections[cnum].state = ITelexCom.states.STANDBY;
+		ITelexCom.connections[cnum].writebuffer = [];
+		ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 	}
 };
 handles[9][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
-	connections[cnum].state = ITelexCom.states.STANDBY;
-	connections[cnum].cb();
+	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
+	ITelexCom.connections[cnum].cb();
 };
 handles[9][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
-	connections[cnum].state = ITelexCom.states.STANDBY;
+	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 };
 handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(ITelexCom.cv(2)) console.log(obj);
@@ -215,9 +215,9 @@ handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 			if(ITelexCom.cv(0)) console.log(colors.FgRed,err,colors.FgWhite);
 		}else{
 			if((result[0] != undefined)&&(result != [])){
-				connections[cnum].writebuffer = result;
-				if(ITelexCom.cv(2)) console.log(colors.FgBlue,connections[cnum].writebuffer,colors.FgWhite);
-				connections[cnum].state = ITelexCom.states.RESPONDING;
+				ITelexCom.connections[cnum].writebuffer = result;
+				if(ITelexCom.cv(2)) console.log(colors.FgBlue,ITelexCom.connections[cnum].writebuffer,colors.FgWhite);
+				ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
 				ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);
 			}else{
 				connection.write(ITelexCom.encPacket({packagetype:9,datalength:0}));
@@ -228,15 +228,15 @@ handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 function init(){
 	var server = net.createServer(function(connection) {
 		var cnum = -1;
-		for(i = 0;i<connections.length;i++){
-			if(connections[i]  ==  null){
+		for(i = 0;i<ITelexCom.connections.length;i++){
+			if(ITelexCom.connections[i]  ==  null){
 				cnum = i;
 			}
 		}
 		if(cnum  ==  -1){
-			cnum = connections.length;
+			cnum = ITelexCom.connections.length;
 		}
-		connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
+		ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
 		var dbcon = mysql.createConnection(mySqlConnectionOptions);
 		if(ITelexCom.cv(1)) console.log(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+colors.FgWhite);
 		dbcon.connect(function(err){
@@ -252,14 +252,14 @@ function init(){
 			var connectionpin;
 			connection.on('end', function() {
 				if(ITelexCom.cv(1)) console.log(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.FgWhite);
-				connections[cnum] = null;
+				ITelexCom.connections[cnum] = null;
 				dbcon.end(()=>{
 					if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
 				});
 			});
 			connection.on('error', function(err) {
 				if(ITelexCom.cv(1)) console.log(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.FgWhite);
-				connections[cnum] = null;
+				ITelexCom.connections[cnum] = null;
 				dbcon.end(()=>{
 					if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
 				});
@@ -332,8 +332,8 @@ function getFullQuery(){
 				async.eachSeries(res,function(r,cb){
 					ITelexCom.connect(dbcon,function(){},{port:r.port,host:r.addresse},handles,function(client,cnum){
 						client.write(ITelexCom.encPacket({packagetype:6,datalength:5,data:{serverpin:ITelexCom.SERVERPIN,version:1}}),function(){
-							connections[cnum].state = ITelexCom.states.FULLQUERY;
-							connections[cnum].cb = cb;
+							ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
+							ITelexCom.connections[cnum].cb = cb;
 						});
 					});
 				});
