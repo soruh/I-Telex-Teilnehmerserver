@@ -51,10 +51,10 @@ function connect(dbcon,cb,options,handles,callback){
 }
 function handlePacket(obj,cnum,dbcon,connection,handles){
 	if(!obj){
-		if(cv(0)) console.log("handle packet missing obj");
+		if(cv(0)) console.log(colors.FgRed+"'handlePacket' missing obj"+colors.FgWhite);
 	}else{
 		if(cv(2)) console.log(colors.FgMagenta+"state: "+colors.FgCyan+connections[cnum]["state"]+colors.FgWhite);
-		if(cv(0)) console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
+		if(cv(2)) console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
 		if(obj.packagetype==0xff){
 			if(cv(2)) console.log(obj.data);
 			if(cv(2)) console.log(colors.FgRed+Buffer.from(obj.data).toString());
