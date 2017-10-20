@@ -1,4 +1,3 @@
-console.log("config");
 function parse(x){
   if(x==""){
     return("");
@@ -20,9 +19,7 @@ for(o of arr){
     content+=comments[0];
   }
 }
-console.log(content);
 var lines = content.replace(/\n/g,"").split(";");
-console.log(lines);
 for(l of lines){
   if(l.split(" ")[0] != ""){
     exp[l.split(" ")[0]] = parse(l.split(" ")[1]);
