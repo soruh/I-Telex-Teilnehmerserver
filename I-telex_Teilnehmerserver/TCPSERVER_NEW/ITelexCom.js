@@ -193,14 +193,14 @@ function decPacket(packagetype,buffer){
 		case 6:
 			var data = {
 				version:concatByteArray(buffer.slice(0,1),"number"),
-				config.SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
+				serverpin:concatByteArray(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
 		case 7:
 			var data = {
 				version:concatByteArray(buffer.slice(0,1),"number"),
-				config.SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
+				serverpin:concatByteArray(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
