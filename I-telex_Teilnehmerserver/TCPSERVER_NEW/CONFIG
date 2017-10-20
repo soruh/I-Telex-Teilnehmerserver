@@ -7,4 +7,4 @@ QWD_STDERR_LOG ;/* - => don't log */
 SQL_host localhost;
 SQL_user telefonbuch;
 SQL_password amesads;
-LOGGING_VERBOSITY 1;/*0-all, 1-all but interval, 2-minimal*/
+LOGGING_VERBOSITY 1;/*0-minimal, 1-only relevant, 2-all*/
