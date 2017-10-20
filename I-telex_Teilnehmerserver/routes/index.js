@@ -20,12 +20,13 @@ con.connect(function(err) {
       if(err){
         res.json(err);
       }else{
-        console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
+        //console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
         var resultnopin = [];
         for(a in result){
           if(result[a].gesperrt==0){
             var i=resultnopin.length;
             resultnopin[i] = {};
+            console.log(result[i]);
             for(b in result[i]){
               console.log(b);
               if(b != "pin" && b != "uid" && b != "changed"&&b != "gesperrt"){
