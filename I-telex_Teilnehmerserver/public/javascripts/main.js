@@ -259,7 +259,9 @@ $(document).ready(()=>{
   $("#submitdialog").click(function(){
     switch(actionkey){
       case "new":
-        var locked = $("#gesperrtnewentrydialog").val() ? 1 : 0;
+        var locked = $("#gesperrtnewentrydialog").prop('checked') ? 1 : 0;
+alert(locked);
+return;
         edit({
           typekey:"new",
           password: $("#passworddialog").val(),
@@ -283,7 +285,9 @@ $(document).ready(()=>{
         });
         break;
       case "edit":
-        var locked = $("#gesperrteditdialog").val() ? 1 : 0;
+        var locked = $("#gesperrteditdialog").prop('checked') ? 1 : 0;
+alert(locked);
+return;
         edit({
           typekey:"edit",
           password: $("#passworddialog").val(),
