@@ -1,19 +1,20 @@
 const mysql = require('mysql');
 const ITelexCom=require("./ITelexCom.js");
-const COLORS = require("./colors.js")
+const colors = require("./colors.js");
+const config = require('../config.js');
 
-const QUEUE_SEND_INTERVAL = 60000;
+const QUEUE_SEND_INTERVAL = config.QUEUE_SEND_INTERVAL;
 const mySqlConnectionOptions = {
-	host: "localhost",
-	user: "telefonbuch",
-	password: "amesads"
+	host: config.SQL_host,
+	user: config.SQL_user,
+	password: config.SQL_password
 };
 
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
 handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
-	console.log(COLORS.FgMagenta,connections[cnum].writebuffer,COLORS.FgWhite);
+	console.log(colors.FgMagenta,connections[cnum].writebuffer,colors.FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	if(connections[cnum].writebuffer.length > 0){
 		console.log("writing!");
@@ -25,7 +26,7 @@ handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 				if(err){
 					console.log(err);
 				}else if(res.affectedRows > 0){
-					console.log(COLORS.FgGreen+"deleted queue entry "+COLORS.FgCyan+connections[cnum].writebuffer[0].name+COLORS.FgGreen+" from queue"+COLORS.FgWhite);
+					console.log(colors.FgGreen+"deleted queue entry "+colors.FgCyan+connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.FgWhite);
 					connections[cnum].writebuffer = connections[cnum].writebuffer.splice(1);
 				}
 			});
@@ -49,5 +50,5 @@ process.stdin.on('data',(data)=>{
 	console.log("stdin: "+data);
 });
 /*dbcon.query("DELETE FROM telefonbuch.queue WHERE uid="+row.uid, function (err, result2) {
-	console.log(COLORS.FgGreen+"deleted queue entry "+COLORS.FgCyan+result2.uid+COLORS.FgGreen+" from queue"+COLORS.FgWhite);
+	console.log(colors.FgGreen+"deleted queue entry "+colors.FgCyan+result2.uid+colors.FgGreen+" from queue"+colors.FgWhite);
 });*/

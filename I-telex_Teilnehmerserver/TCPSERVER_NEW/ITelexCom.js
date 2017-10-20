@@ -1,14 +1,15 @@
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
-const COLORS = require("./colors.js")
+const colors = require("./colors.js")
+const config = require('../config.js');
 
 const mySqlConnectionOptions = {
-	host: "localhost",
-	user: "telefonbuch",
-	password: "amesads"
+	host: config.SQL_host,
+	user: config.SQL_user,
+	password: config.SQL_password
 };
-const SERVERPIN = 118120815;
+const SERVERPIN = config.SERVERPIN;
 
 //<STATES>
 const STANDBY = 0;
@@ -19,7 +20,7 @@ const LOGIN = 3;
 var connections = [];	//list of active connections
 
 function connect(dbcon,cb,options,handles,callback){
-	console.log(COLORS.FgWhite,options);
+	console.log(colors.FgWhite,options);
 	try {
 		var socket = new net.Socket();
 		var cnum = -1;
@@ -33,11 +34,11 @@ function connect(dbcon,cb,options,handles,callback){
 		}
 		connections[cnum] = {/*connection:socket,*/state:STANDBY};
 		socket.on('data',(data)=>{
-			console.log(COLORS.FgCyan,data,"\n",data.toString(),COLORS.FgWhite);
+			console.log(colors.FgCyan,data,"\n",data.toString(),colors.FgWhite);
 			handlePacket(decData(data),cnum,dbcon,socket,handles);
 		});
 		socket.on('error',(error)=>{
-			console.log(COLORS.FgRed,error,COLORS.FgWhite);
+			console.log(colors.FgRed,error,colors.FgWhite);
 			socket.end();
 			cb();
 		});
@@ -50,24 +51,24 @@ function connect(dbcon,cb,options,handles,callback){
 	}
 }
 function handlePacket(obj,cnum,dbcon,connection,handles){
-	console.log(COLORS.FgMagenta+"state: "+COLORS.FgCyan+connections[cnum]["state"]+COLORS.FgWhite);
-	console.log(COLORS.BgYellow,COLORS.FgRed,obj,COLORS.FgWhite,COLORS.BgBlack);
+	console.log(colors.FgMagenta+"state: "+colors.FgCyan+connections[cnum]["state"]+colors.FgWhite);
+	console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
 		if(obj.packagetype==0xff){
 			console.log(obj.data);
-			console.log(COLORS.FgRed+Buffer.from(obj.data).toString());
+			console.log(colors.FgRed+Buffer.from(obj.data).toString());
 		}
 		try{
 			if(handles[obj.packagetype]!=undefined){
 				handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
 			}else{
-				console.log(COLORS.FgRed+"packagetype ["+COLORS.FgCyan+obj.packagetype+COLORS.FgRed+" ] not supported in state ["+COLORS.FgCyan+connections[cnum]["state"]+COLORS.FgRed+"]"+COLORS.FgWhite);
+				console.log(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
 			}
 		}catch(e){
-			console.log(COLORS.FgRed,e,COLORS.FgWhite);
+			console.log(colors.FgRed,e,colors.FgWhite);
 		}
 }
 function encPacket(obj) {
-	console.log(COLORS.BgYellow,COLORS.FgBlue,obj,COLORS.FgWhite,COLORS.BgBlack);
+	console.log(colors.BgYellow,colors.FgBlue,obj,colors.FgWhite,colors.BgBlack);
 	var data = obj.data;
 	switch(obj.packagetype){
 		case 1:
@@ -130,7 +131,7 @@ function encPacket(obj) {
 	if(array.length > obj.datalength){
 		console.log("Buffer bigger than expected:\n"+array.length+" > "+obj.datalength);
 	}
-	console.log(COLORS.FgBlue,Buffer.from(header.concat(array)),COLORS.FgWhite);
+	console.log(colors.FgBlue,Buffer.from(header.concat(array)),colors.FgWhite);
 	return(Buffer.from(header.concat(array)));
 }
 function decPacket(packagetype,buffer){
@@ -287,7 +288,7 @@ function ascii(data,connection,dbcon){
 	}
 	if(number!=""){number = parseInt(number);}
 	if(number!=NaN&&number!=""){
-		console.log(COLORS.FgGreen+"starting lookup for: "+COLORS.FgCyan+number+COLORS.FgWhite);
+		console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
 		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number, function (err, result){
 			if(err){
 				console.log(err);
@@ -298,7 +299,7 @@ function ascii(data,connection,dbcon){
 					send += "unknown\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
-						console.log(COLORS.FgRed+"Entry not found\n=> sent:\n"+COLORS.FgWhite+send);
+						console.log(colors.FgRed+"Entry not found\n=> sent:\n"+colors.FgWhite+send);
 					});
 				}else{
 					var send = "ok\n\r";
@@ -314,7 +315,7 @@ function ascii(data,connection,dbcon){
 					send += result[0]["extention"]+"\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
-						console.log(COLORS.FgGreen+"Entry found\n=> sent:\n"+COLORS.FgWhite+send);
+						console.log(colors.FgGreen+"Entry found\n=> sent:\n"+colors.FgWhite+send);
 					});
 				}
 			}
@@ -322,7 +323,7 @@ function ascii(data,connection,dbcon){
 	}
 }
 function SendQueue(callback){
-	console.log(COLORS.FgCyan+"Sending Queue!"+COLORS.FgWhite);
+	console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
 		if(err){
@@ -338,22 +339,22 @@ function SendQueue(callback){
 					}
 					servers[results[i].server][servers[results[i].server].length] = results[i];
 				}
-				console.log(COLORS.BgMagenta,COLORS.FgBlack,servers,COLORS.BgBlack,COLORS.FgWhite);
+				console.log(colors.BgMagenta,colors.FgBlack,servers,colors.BgBlack,colors.FgWhite);
 				async.eachSeries(servers,function(server,cb){
-					console.log(COLORS.FgMagenta,server,COLORS.FgWhite);
+					console.log(colors.FgMagenta,server,colors.FgWhite);
 					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
 						if(err){
 							console.log(err);
 						}
 						var serverinf = result2[0];
-						console.log(COLORS.FgCyan,serverinf,COLORS.FgWhite);
+						console.log(colors.FgCyan,serverinf,colors.FgWhite);
 						try{
 							ITelexCom.connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
 								connections[cnum].servernum = server[0].server;
-								console.log(COLORS.FgGreen+'connected to server: '+serverinf.addresse+" on port: "+serverinf.port+COLORS.FgWhite);
+								console.log(colors.FgGreen+'connected to server: '+serverinf.addresse+" on port: "+serverinf.port+colors.FgWhite);
 								connections[cnum].writebuffer = [];
 								async.each(server,(serverdata,scb)=>{
-									console.log(COLORS.FgCyan,serverdata,COLORS.FgWhite);
+									console.log(colors.FgCyan,serverdata,colors.FgWhite);
 									dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
 										connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
 										scb();
@@ -376,7 +377,7 @@ function SendQueue(callback){
 					try{callback();}catch(e){}
 				});
 			}else{
-				console.log(COLORS.FgYellow,"No queue!",COLORS.FgWhite);
+				console.log(colors.FgYellow,"No queue!",colors.FgWhite);
 				try{callback();}catch(e){}
 			}
 		});
