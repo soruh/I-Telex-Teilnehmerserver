@@ -7,7 +7,7 @@ function parse(x){
     return(parseInt(x));
   }
 }
-var raw = require('fs').readFileSync('CONFIG',"utf-8");
+var raw = require('fs').readFileSync('./CONFIG',"utf-8");
 var arr = raw.split("/*");
 var content = "";
 for(o of arr){
