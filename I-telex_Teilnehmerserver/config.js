@@ -1,3 +1,4 @@
+console.log("config");
 function parse(x){
   if(x==""){
     return("");
