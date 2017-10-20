@@ -24,7 +24,7 @@ con.connect(function(err) {
         var resultnopin = [];
         for(a in result){
           console.log(result[a].gesperrt);
-          if(result[a].gesperrt==0){
+          if(result[a].gesperrt==1){
             var i=resultnopin.length;
             resultnopin[i] = {};
             for(b in result[i]){
