@@ -7,8 +7,6 @@ const ITelexCom = require("./ITelexCom.js");
 const colors = require("./colors.js");
 const config = require('./config.js');
 
-
-
 const mySqlConnectionOptions = {
 	host: config.SQL_host,
 	user: config.SQL_user,
