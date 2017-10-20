@@ -22,7 +22,12 @@ for(o of arr){
 var lines = content.replace(/\n/g,"").split(";");
 for(l of lines){
   if(l.split(" ")[0] != ""){
-    exp[l.split(" ")[0]] = parse(l.split(" ")[1]);
+    var str="";
+    var sp=l.split(" ");
+    for(i=1;i<sp.length;i++){
+      str+=sp[i];
+    }
+    exp[sp[0]] = parse(sp[1]);
   }
 }
 module.exports = exp;
