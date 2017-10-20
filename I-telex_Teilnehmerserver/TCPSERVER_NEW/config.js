@@ -11,6 +11,7 @@ function parse(x){
 var raw = require('fs').readFileSync('./CONFIG',"utf-8");
 var arr = raw.split("/*");
 var content = "";
+var exp = {};
 for(o of arr){
   comments = o.split("*/");
   if(comments.length>1){
@@ -22,6 +23,7 @@ for(o of arr){
 var lines = content.replace(/(\r\n)/g,"").split(";");
 for(l of lines){
   if(l.split(" ")[0] != ""){
-    module.exports[l.split(" ")[0]] = parse(l.split(" ")[1]);
+    exp[l.split(" ")[0]] = parse(l.split(" ")[1]);
   }
 }
+module.exports = exp;
