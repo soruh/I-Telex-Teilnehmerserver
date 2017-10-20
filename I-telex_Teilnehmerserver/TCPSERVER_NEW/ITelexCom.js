@@ -9,6 +9,7 @@ const mySqlConnectionOptions = {
 	user: config.SQL_user,
 	password: config.SQL_password
 };
+console.log(mySqlConnectionOptions);
 const SERVERPIN = config.SERVERPIN;
 
 //<STATES>

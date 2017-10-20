@@ -9,7 +9,7 @@ const mySqlConnectionOptions = {
 	user: config.SQL_user,
 	password: config.SQL_password
 };
-
+console.log(mySqlConnectionOptions);
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 

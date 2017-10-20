@@ -14,7 +14,7 @@ const mySqlConnectionOptions = {
 	user: config.SQL_user,
 	password: config.SQL_password
 };
-
+console.log(mySqlConnectionOptions);
 // "" => log to console
 // "-" => don't log
 const QWD_STDOUT_LOG = config.QWD_STDOUT_LOG;
