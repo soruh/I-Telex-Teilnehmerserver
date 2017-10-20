@@ -363,7 +363,7 @@ function SendQueue(callback){
 										scb();
 									});
 								},()=>{
-									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{config.SERVERPIN:config.SERVERPIN,version:1}}),()=>{
+									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{serverpin:config.SERVERPIN,version:1}}),()=>{
 										connections[cnum].state = RESPONDING;
 										cb();
 									});
