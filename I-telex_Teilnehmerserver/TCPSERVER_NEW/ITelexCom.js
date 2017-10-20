@@ -395,6 +395,7 @@ module.exports.decData=decData;
 module.exports.concatByteArray=concatByteArray;
 module.exports.deConcatValue=deConcatValue;
 module.exports.SendQueue=SendQueue;
+module.exports.cv=cv;
 module.exports.states = {
 	STANDBY:STANDBY,
 	RESPONDING:RESPONDING,
