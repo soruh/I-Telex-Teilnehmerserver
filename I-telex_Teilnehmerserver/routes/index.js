@@ -20,7 +20,7 @@ con.connect(function(err) {
       if(err){
         res.json(err);
       }else{
-        console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
+//        console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
         var resultnopin = [];
         for(a in result){
           if(result[a].gesperrt==0){
@@ -33,6 +33,7 @@ con.connect(function(err) {
             }
           }
         }
+        console.log(resultnopin);
         res.json(resultnopin);
       }
     });
