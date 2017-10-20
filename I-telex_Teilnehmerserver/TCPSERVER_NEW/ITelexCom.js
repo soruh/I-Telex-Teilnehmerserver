@@ -331,7 +331,7 @@ function SendQueue(callback){
 			console.log(err);
 		}
 		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
-			if(err) console.log(err);
+			if(err) throw(err);
 			if(results.length>0){
 				var servers = {};
 				for(i in results){
