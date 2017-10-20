@@ -239,7 +239,6 @@ $(document).ready(()=>{
       initloc();
     })
   });
-
   $("#search-button").click(()=>{
     search($("#search-box").val(),(list)=>{
       updatetable(list);
@@ -260,7 +259,7 @@ $(document).ready(()=>{
   $("#submitdialog").click(function(){
     switch(actionkey){
       case "new":
-        var locked = $("#gesperrtnewentrydialog").val() ? 1 : 0;
+        var locked = $("#gesperrtnewentrydialog").val() ? 0 : 1;
         edit({
           typekey:"new",
           password: $("#passworddialog").val(),
@@ -276,30 +275,30 @@ $(document).ready(()=>{
           pin: $("#pinnewentrydialog").val(),
         });
         break;
-        case "delete":
-          edit({
-            typekey:"delete",
-            password: $("#passworddialog").val(),
-            rufnummer: parseInt($("#rufnummerdeletedialog").html()),
-          });
-          break;
-        case "edit":
-          var locked = $("#gesperrteditdialog").val() ? 1 : 0;
-          edit({
-            typekey:"edit",
-            password: $("#passworddialog").val(),
-            rufnummer: $("#rufnummereditdialog").val(),
-            name: $("#nameeditdialog").val(),
-            typ: $("#typeditdialog").val(),
-            hostname: $("#hostnameeditdialog").val(),
-            ipaddresse: $("#ipaddresseeditdialog").val(),
-            port: $("#porteditdialog").val(),
-            durchwahl: $("#durchwahleditdialog").val(),
-            gesperrt: locked,
-            moddate: $("#moddateeditdialog").val(),
-            pin: $("#pineditdialog").val(),
-          });
-          break;
+      case "delete":
+        edit({
+          typekey:"delete",
+          password: $("#passworddialog").val(),
+          rufnummer: parseInt($("#rufnummerdeletedialog").html()),
+        });
+        break;
+      case "edit":
+        var locked = $("#gesperrteditdialog").val() ? 1 : 0;
+        edit({
+          typekey:"edit",
+          password: $("#passworddialog").val(),
+          rufnummer: $("#rufnummereditdialog").val(),
+          name: $("#nameeditdialog").val(),
+          typ: $("#typeditdialog").val(),
+          hostname: $("#hostnameeditdialog").val(),
+          ipaddresse: $("#ipaddresseeditdialog").val(),
+          port: $("#porteditdialog").val(),
+          durchwahl: $("#durchwahleditdialog").val(),
+          gesperrt: locked,
+          moddate: $("#moddateeditdialog").val(),
+          pin: $("#pineditdialog").val(),
+        });
+        break;
     }
     $("#dialogbox").hide();
     resetforms();
@@ -314,7 +313,7 @@ $(document).ready(()=>{
       var nametag = input.parentNode.children;
       for(i=0;i<nametag.length;i++){
         if(nametag[i].className.split(" ").find((str)=>{return(str === "nametag");})==="nametag"){
-          nametag = nametag[i]
+          nametag = nametag[i];
         }
       }
       input.placeholder = nametag.innerHTML;
