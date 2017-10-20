@@ -298,7 +298,7 @@ function ascii(data,connection,dbcon){
 					send += "unknown\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
-						if(cv(1)) console.log(colors.FgRed+"Entry not found\n=> sent:\n"+colors.FgWhite+send);
+						if(cv(1)) console.log(colors.FgRed+"Entry not found, sent:\n"+colors.FgWhite+send);
 					});
 				}else{
 					var send = "ok\n\r";
@@ -314,7 +314,7 @@ function ascii(data,connection,dbcon){
 					send += result[0]["extention"]+"\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
-						if(cv(1)) console.log(colors.FgGreen+"Entry found\n=> sent:\n"+colors.FgWhite+send);
+						if(cv(1)) console.log(colors.FgGreen+"Entry found, sent:\n"+colors.FgWhite+send);
 					});
 				}
 			}
