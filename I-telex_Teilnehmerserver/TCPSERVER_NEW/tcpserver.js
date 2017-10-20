@@ -7,8 +7,8 @@ const ITelexCom = require("./ITelexCom.js");
 const colors = require("./colors.js");
 const config = require('./config.js');
 
-const PORT = config.PORT;
-const UPDATEQUEUEINTERVAL = config.UPDATEQUEUEINTERVAL;
+
+
 const mySqlConnectionOptions = {
 	host: config.SQL_host,
 	user: config.SQL_user,
@@ -16,10 +16,8 @@ const mySqlConnectionOptions = {
 };
 // "" => log to console
 // "-" => don't log
-const QWD_STDOUT_LOG = config.QWD_STDOUT_LOG;
-const QWD_STDERR_LOG = config.QWD_STDERR_LOG;
-//const QWD_STDOUT_LOG = "./QWD_STDOUT_LOG";
-//const QWD_STDERR_LOG  = ."/QWD_STDERR_LOG";
+//const config.QWD_STDOUT_LOG = "./config.QWD_STDOUT_LOG";
+//const config.QWD_STDERR_LOG  = ."/config.QWD_STDERR_LOG";
 
 /*<PKGTYPES>
 Client_update: 1
@@ -275,8 +273,8 @@ function init(){
 			});
 		});
 	});
-	server.listen(PORT, function() {
-		if(ITelexCom.cv(9)) console.log('server is listening on port '+PORT);
+	server.listen(config.PORT, function() {
+		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.PORT);
 	});
 }
 function updateQueue(){
@@ -305,7 +303,7 @@ function updateQueue(){
 						dbcon.end(()=>{
 							qwd.stdin.write("sendqueue");
 							if(ITelexCom.cv(2)) console.log(colors.FgYellow+"Disconnected from server database!"+colors.FgWhite);
-							setTimeout(updateQueue,UPDATEQUEUEINTERVAL);
+							setTimeout(updateQueue,config.UPDATEQUEUEINTERVAL);
 						});
 					});
 				});
@@ -317,7 +315,7 @@ function updateQueue(){
 					qwdec = "unknown";
 					qwd.stdin.write("sendqueue");
 				}
-				setTimeout(updateQueue,UPDATEQUEUEINTERVAL);
+				setTimeout(updateQueue,config.UPDATEQUEUEINTERVAL);
 			}
 		});
 	});
@@ -349,22 +347,22 @@ function startQWD(){
 		startQWD();
 	});
 	qwd.stdout.on('data',(data)=>{
-		if(QWD_STDOUT_LOG  ==  ""){
+		if(config.QWD_STDOUT_LOG  ==  ""){
 			if(ITelexCom.cv(0)) console.log(colors.FgBlue+'qwd stdout: '+colors.FgWhite+data);
-		}else if(QWD_STDOUT_LOG  ==  "-"){}else{
+		}else if(config.QWD_STDOUT_LOG  ==  "-"){}else{
 			try{
-				fs.appendFileSync(QWD_STDOUT_LOG,data);
+				fs.appendFileSync(config.QWD_STDOUT_LOG,data);
 			}catch(e){
 				if(ITelexCom.cv(0)) console.log(colors.FgBlue+'qwd stdout: '+colors.FgWhite+data);
 			}
 		}
 	});
 	qwd.stderr.on('data',(data)=>{
-		if(QWD_STDERR_LOG  ==  ""){
+		if(config.QWD_STDERR_LOG  ==  ""){
 			if(ITelexCom.cv(0)) console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
-		}else if(QWD_STDOUT_LOG  ==  "-"){}else{
+		}else if(config.QWD_STDOUT_LOG  ==  "-"){}else{
 			try{
-				fs.appendFileSync(QWD_STDERR_LOG,data);
+				fs.appendFileSync(config.QWD_STDERR_LOG,data);
 			}catch(e){
 				if(ITelexCom.cv(0)) console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
 			}

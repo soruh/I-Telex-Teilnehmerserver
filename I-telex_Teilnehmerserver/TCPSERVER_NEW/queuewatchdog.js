@@ -3,7 +3,7 @@ const ITelexCom=require("./ITelexCom.js");
 const colors = require("./colors.js");
 const config = require('./config.js');
 
-const QUEUE_SEND_INTERVAL = config.QUEUE_SEND_INTERVAL;
+
 const mySqlConnectionOptions = {
 	host: config.SQL_host,
 	user: config.SQL_user,
@@ -38,12 +38,12 @@ handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 		ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 	}
 };
-var sendInt = setInterval(ITelexCom.SendQueue,QUEUE_SEND_INTERVAL);
+var sendInt = setInterval(ITelexCom.SendQueue,config.QUEUE_SEND_INTERVAL);
 process.stdin.on('data',(data)=>{
 	if(data.toString() === "sendqueue"){
 		clearInterval(sendInt);
 		ITelexCom.SendQueue(()=>{
-			sendInt = setInterval(ITelexCom.SendQueue,QUEUE_SEND_INTERVAL);
+			sendInt = setInterval(ITelexCom.SendQueue,config.QUEUE_SEND_INTERVAL);
 		});
 	}
 	console.log("stdin: "+data);

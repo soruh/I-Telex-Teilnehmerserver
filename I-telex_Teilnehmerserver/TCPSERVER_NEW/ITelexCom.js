@@ -8,7 +8,7 @@ const mySqlConnectionOptions = {
 	user: config.SQL_user,
 	password: config.SQL_password
 };
-const SERVERPIN = config.SERVERPIN;
+
 
 //<STATES>
 const STANDBY = 0;
@@ -20,7 +20,7 @@ var connections = [];	//list of active connections
 
 function connect(dbcon,cb,options,handles,callback){
 	if(cv(2)) console.log(colors.FgWhite,options);
-	try {
+	try{
 		var socket = new net.Socket();
 		var cnum = -1;
 		for(i=0;i<connections.length;i++){
@@ -113,11 +113,11 @@ function encPacket(obj) {
 			break;
 		case 6:
 			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.SERVERPIN,4));
+			.concat(deConcatValue(data.config.SERVERPIN,4));
 			break;
 		case 7:
 			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.SERVERPIN,4));
+			.concat(deConcatValue(data.config.SERVERPIN,4));
 			break;
 		case 8:
 			var array = [];
@@ -193,14 +193,14 @@ function decPacket(packagetype,buffer){
 		case 6:
 			var data = {
 				version:concatByteArray(buffer.slice(0,1),"number"),
-				SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
+				config.SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
 		case 7:
 			var data = {
 				version:concatByteArray(buffer.slice(0,1),"number"),
-				SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
+				config.SERVERPIN:concatByteArray(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
@@ -363,7 +363,7 @@ function SendQueue(callback){
 										scb();
 									});
 								},()=>{
-									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{SERVERPIN:SERVERPIN,version:1}}),()=>{
+									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{config.SERVERPIN:config.SERVERPIN,version:1}}),()=>{
 										connections[cnum].state = RESPONDING;
 										cb();
 									});
@@ -407,4 +407,4 @@ module.exports.states = {
 	FULLQUERY:FULLQUERY,
 	LOGIN:LOGIN
 };
-module.exports.SERVERPIN = SERVERPIN;
+module.exports.SERVERPIN = config.SERVERPIN;
