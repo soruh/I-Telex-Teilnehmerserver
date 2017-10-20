@@ -7,7 +7,7 @@ router.get('/', function(req, res, next) {
 module.exports = router;
 var mysql = require('mysql');
 var con = mysql.createConnection({
-  host: "localhost",
+  host: "skelett.de",
   user: "telefonbuch",
   password: "amesads"
 });

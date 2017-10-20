@@ -55,11 +55,18 @@ function updatetable(usli,cb){
       }
     }
     var td = document.createElement("td");
+    td.innerHTML='<span class="btn  btn-primary btn-sm glyphicon glyphicon-pencil edit"></span>';
+    td.title="edit";
+    td.className = "edit_td";
     table.lastChild.appendChild(td);
-    table.lastChild.lastChild.className = "edit";
+
     var td = document.createElement("td");
+    td.innerHTML='<span class="glyphicon glyphicon-trash btn  btn-primary btn-sm remove"></span>';
+    td.title="remove";
+    td.className = "remove_td";
     table.lastChild.appendChild(td);
-    table.lastChild.lastChild.className = "remove";
+
+
   }
   for(i in document.getElementsByClassName("edit")){
     document.getElementsByClassName("edit")[i].onclick = function(){
@@ -176,29 +183,33 @@ function sort(usli){
 }
 var languages = {
   german:{
-    "table-th-rufnummer":"telex-nummer",
-    "table-th-name":"name",
-    "table-th-typ":"typ",
-    "table-th-hostname":"hostname",
-    "table-th-ipaddresse":"ipaddresse",
-    "table-th-port":"port",
-    "table-th-extention":"durchwahl",
-    "table-th-gesperrt":"gesperrt",
-    "table-th-moddate":"letzte Änderung",
-    "search-box":"suchen|placeholder",
-    "new":"neuer eintrag"
+    "#table-th-rufnummer":"telex-nummer",
+    "#table-th-name":"name",
+    "#table-th-typ":"typ",
+    "#table-th-hostname":"hostname",
+    "#table-th-ipaddresse":"ipaddresse",
+    "#table-th-port":"port",
+    "#table-th-extention":"durchwahl",
+    "#table-th-gesperrt":"gesperrt",
+    "#table-th-moddate":"letzte Änderung",
+    "#search-box":"suchen|placeholder",
+    "#new":"neuer eintrag",
+    ".edit":"bearbeiten|title",
+    ".remove":"entfernen|title"
   },english:{
-    "table-th-rufnummer":"telex-number",
-    "table-th-name":"name",
-    "table-th-typ":"type",
-    "table-th-hostname":"hostname",
-    "table-th-ipaddresse":"ipaddress",
-    "table-th-port":"port",
-    "table-th-extention":"extention",
-    "table-th-gesperrt":"lcoked",
-    "table-th-moddate":"last change",
-    "search-box":"search|placeholder",
-    "new":"new entry"
+    "#table-th-rufnummer":"telex-number",
+    "#table-th-name":"name",
+    "#table-th-typ":"type",
+    "#table-th-hostname":"hostname",
+    "#table-th-ipaddresse":"ipaddress",
+    "#table-th-port":"port",
+    "#table-th-extention":"extention",
+    "#table-th-gesperrt":"lcoked",
+    "#table-th-moddate":"last changed",
+    "#search-box":"search|placeholder",
+    "#new":"new entry",
+    ".edit":"edit|title",
+    ".remove":"remove|title"
   }
 };
 var language = "german";
@@ -207,28 +218,26 @@ function setLanguage(l){
     language=l;
     for(i in languages[l]){
       if(languages[l][i].split("|").length>1){
-        $("#"+i).prop(languages[l][i].split("|")[1],languages[l][i].split("|")[0]);
+        $(i).prop(languages[l][i].split("|")[1],languages[l][i].split("|")[0]);
       }else{
-        $("#"+i).html(languages[l][i]);
+        $(i).html(languages[l][i]);
       }
     }
-    document.getElementById("loc-dropdown-parent").style = "cursor:pointer;background-image:url(/images/"+l+".svg);width:100;height:60;background-size:contain;background-repeat:no-repeat;";
+    document.getElementById("loc-dropdown-parent").style = "background-image:url(/images/"+l+".svg);";
   }
 }
 function initloc(){
-  $("#loc-dropdown-parent").click(()=>{
-    if(document.getElementById("loc-dropdown-children").style.display=="none"){
-      document.getElementById("loc-dropdown-children").style.display="block"
-    }else{
-      document.getElementById("loc-dropdown-children").style.display="none"
-    }
+  $("#loc-dropdown-parent").click(function(){
+    $("#loc-dropdown-children").fadeToggle(300);
   });
+
   for(i in languages){
     var child=document.createElement("div");
     child.id="loc-dropdown-child-"+i;
-    child.style="cursor:pointer;background-image:url(/images/"+i+".svg);width:120px;height:60px;background-size:contain;background-repeat:no-repeat;";
+    child.style="background-image:url(/images/"+i+".svg);";
     child.onclick = function(){
       setLanguage(this.id.split("-")[this.id.split("-").length-1]);
+      $("#loc-dropdown-children").fadeOut(300);
     };
     document.getElementById("loc-dropdown-children").appendChild(child);
   }
@@ -260,8 +269,6 @@ $(document).ready(()=>{
     switch(actionkey){
       case "new":
         var locked = $("#gesperrtnewentrydialog").prop('checked') ? 1 : 0;
-alert(locked);
-return;
         edit({
           typekey:"new",
           password: $("#passworddialog").val(),
@@ -286,8 +293,6 @@ return;
         break;
       case "edit":
         var locked = $("#gesperrteditdialog").prop('checked') ? 1 : 0;
-alert(locked);
-return;
         edit({
           typekey:"edit",
           password: $("#passworddialog").val(),
