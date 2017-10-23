@@ -1,4 +1,5 @@
 CREATE DATABASE `telefonbuch` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `telefonbuch`;
 CREATE TABLE `queue` (
   `uid` int(11) NOT NULL AUTO_INCREMENT,
   `server` int(11) DEFAULT NULL,
@@ -30,3 +31,5 @@ CREATE TABLE `teilnehmer` (
   UNIQUE KEY `uid_UNIQUE` (`uid`),
   UNIQUE KEY `rufnummer_UNIQUE` (`rufnummer`)
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci;
+CREATE USER 'telefonbuch' IDENTIFIED BY 'amesads';
+GRANT ALL ON telefonbuch.* TO 'telefonbuch';
