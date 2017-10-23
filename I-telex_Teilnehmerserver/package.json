@@ -3,13 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-     "start": "cd ./WEBSERVER/;pm2 start ./bin/webserver.js;cd ../TCPSERVER_NEW/;pm2 start ./tcpserver.js;",
-     "restart": "pm2 reload webserver;pm2 reload tcpserver;",
-     "stop": "pm2 delete webserver tcpserver;"
-},
+    "start": "cd ./WEBSERVER/;pm2 start ./bin/webserver.js;cd ../TCPSERVER_NEW/;pm2 start ./tcpserver.js;",
+    "restart": "pm2 reload webserver;pm2 reload tcpserver;",
+    "stop": "pm2 delete webserver tcpserver;"
+  },
   "dependencies": {
     "async": "^2.5.0",
     "body-parser": "~1.17.1",
+    "config": "^1.27.0",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",
     "express": "~4.15.2",

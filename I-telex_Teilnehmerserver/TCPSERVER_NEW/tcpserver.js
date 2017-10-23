@@ -5,7 +5,7 @@ const cp = require('child_process');
 const fs = require('fs');
 const ITelexCom = require("./ITelexCom.js");
 const colors = require("./colors.js");
-const config = require('./config.js');
+const config = require('../config.js');
 
 const mySqlConnectionOptions = {
 	host: config.SQL_host,

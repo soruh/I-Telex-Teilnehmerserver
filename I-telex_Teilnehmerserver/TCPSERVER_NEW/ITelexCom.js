@@ -2,7 +2,7 @@ const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
 const colors = require("./colors.js")
-const config = require('./config.js');
+const config = require('../config.js');
 const mySqlConnectionOptions = {
 	host: config.SQL_host,
 	user: config.SQL_user,
