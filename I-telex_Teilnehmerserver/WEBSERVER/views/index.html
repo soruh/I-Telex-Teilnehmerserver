@@ -1,0 +1,192 @@
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="stylesheets/styles.css">
+
+
+    <script src="/javascripts/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="/javascripts/main.js"></script>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="/">Teilnehmix</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li class="inactive"><a href="/">Home</a></li>
+
+
+            <!--
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#">Action</a></li>
+                    <li><a href="#">Another action</a></li>
+                    <li><a href="#">Something else here</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li class="dropdown-header">Nav header</li>
+                    <li><a href="#">Separated link</a></li>
+                    <li><a href="#">One more separated link</a></li>
+                  </ul>
+                </li>
+    -->
+              </ul>
+
+              <ul class="nav navbar-nav navbar-right">
+<li>  <div id="search-container" class="panel ">
+    <div id="search-box-placeholder" style="display:none;"></div>
+    <input id="search-box"></input>
+    <button id="search-button"></button>
+  </div>
+</li>
+                <li><button id="new" class="btn btn-primary btn-sm"></button></li>
+
+                <li>  <div id="loc-container">
+                    <div id="loc-dropdown-parent"></div>
+                    <div id="loc-dropdown-children" style="display:none;"></div>
+                  </div></li>
+              <!--
+                <li><a href="../navbar/">Default</a></li>
+                <li><a href="../navbar-static-top/">Static top</a></li>
+                <li class="active"><a href="./">Fixed top <span class="sr-only">(current)</span></a></li>
+              -->
+              </ul>
+
+            </div><!--/.nav-collapse -->
+          </div>
+        </nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="container">
+    <table id="table"></table>
+</div>
+
+
+    <div style="display: none;" id="dialogbox">
+      <div style="display: none;" id="newentrydialog">
+        <div class="input-container">
+          <span class="nametag hidden">rufnummer</span>
+          <input class="input" id=rufnummernewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">name</span>
+          <input class="input" id=namenewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">typ</span>
+          <input class="input" id=typnewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">hostname</span>
+          <input class="input" id=hostnamenewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">ipadresse</span>
+          <input class="input" id=ipadressenewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">port</span>
+          <input class="input" id=portnewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">durchwahl</span>
+          <input class="input" id=durchwahlnewentrydialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">pin</span>
+          <input class="input" id=pinnewentrydialog></input>
+        </div>
+        <input type="checkbox" id="gesperrtnewentrydialog"></input>
+        <label for="gesperrtnewentrydialog">gesperrt</label>
+        <!--
+        <input placeholder="rufnummer" id="rufnummernewentrydialog"></input>
+        <input placeholder="name" id="namenewentrydialog"></input>
+        <input placeholder="typ" id="typnewentrydialog"></input>
+        <input placeholder="hostname" id="hostnamenewentrydialog"></input>
+        <input placeholder="ipadresse" id="ipadressenewentrydialog"></input>
+        <input placeholder="port" id="portnewentrydialog"></input>
+        <input placeholder="durchwahl" id="durchwahlnewentrydialog"></input>
+        <input placeholder="pin" id="pinnewentrydialog"></input>
+        -->
+      </div>
+      <div style="display: none;" id="editdialog">
+        <div class="input-container">
+          <span class="nametag hidden">rufnummer</span>
+          <input class="input" id=rufnummereditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">name</span>
+          <input class="input" id=nameeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">typ</span>
+          <input class="input" id=typeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">hostname</span>
+          <input class="input" id=hostnameeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">ipadresse</span>
+          <input class="input" id=ipadresseeditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">port</span>
+          <input class="input" id=porteditdialog></input>
+        </div>
+        <div class="input-container">
+          <span class="nametag hidden">durchwahl</span>
+          <input class="input" id=durchwahleditdialog></input>
+        </div>
+        <input type="checkbox" id="gesperrteditdialog"></input>
+        <label for="gesperrteditdialog">gesperrt</label>
+        <!--
+        <input placeholder="rufnummer" id="rufnummereditdialog"></input>
+        <input placeholder="name" id="nameeditdialog"></input>
+        <input placeholder="typ" id="typeditdialog"></input>
+        <input placeholder="hostname" id="hostnameeditdialog"></input>
+        <input placeholder="ipadresse" id="ipadresseeditdialog"></input>
+        <input placeholder="port" id="porteditdialog"></input>
+        <input placeholder="durchwahl" id="durchwahleditdialog"></input>
+        -->
+      </div>
+      <div style="display: none;" id="deletedialog">
+        <p id="deletedialog"></p>
+        <span id="rufnummerdeletedialog">test</span>
+      </div>
+      <input type="password" placeholder="password" id="passworddialog"></input>
+      <button id="submitdialog">submit</button>
+      <button id="abortdialog">abort</button>
+    </div>
+    </br>
+    <span id="log"></span>
+  </body>
+</html>
