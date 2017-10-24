@@ -1,192 +1,224 @@
 <html>
-  <head>
-    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-    <link rel="stylesheet" href="stylesheets/styles.css">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <link rel="stylesheet" href="stylesheets/input.css">
+  <link rel="stylesheet" href="stylesheets/main.css">
 
+  <script src="/javascripts/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="/javascripts/main.js"></script>
+</head>
 
-    <script src="/javascripts/jquery-3.2.1.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <script src="/javascripts/main.js"></script>
-  </head>
-  <body>
+<body>
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">Teilnehmix</a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="inactive"><a href="/">Home</a></li>
+          <!--
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li class="dropdown-header">Nav header</li>
+            <li><a href="#">Separated link</a></li>
+            <li><a href="#">One more separated link</a></li>
+            </ul>
+          </li>
+          -->
+        </ul>
 
-    <nav class="navbar navbar-default navbar-fixed-top">
-          <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="/">Teilnehmix</a>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <div id="search-container" class="panel ">
+              <div id="search-box-placeholder" style="display:none;"></div>
+              <input id="search-box" style="display:none;"></input>
+              <button id="search-button" class="glyphicon glyphicon-search btn btn-primary btn-sm"></button>
             </div>
-            <div id="navbar" class="navbar-collapse collapse">
-              <ul class="nav navbar-nav">
-                <li class="inactive"><a href="/">Home</a></li>
-
-
-            <!--
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-                  <ul class="dropdown-menu">
-                    <li><a href="#">Action</a></li>
-                    <li><a href="#">Another action</a></li>
-                    <li><a href="#">Something else here</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li class="dropdown-header">Nav header</li>
-                    <li><a href="#">Separated link</a></li>
-                    <li><a href="#">One more separated link</a></li>
-                  </ul>
-                </li>
-    -->
-              </ul>
-
-              <ul class="nav navbar-nav navbar-right">
-<li>  <div id="search-container" class="panel ">
-    <div id="search-box-placeholder" style="display:none;"></div>
-    <input id="search-box"></input>
-    <button id="search-button"></button>
-  </div>
-</li>
-                <li><button id="new" class="btn btn-primary btn-sm"></button></li>
-
-                <li>  <div id="loc-container">
-                    <div id="loc-dropdown-parent"></div>
-                    <div id="loc-dropdown-children" style="display:none;"></div>
-                  </div></li>
-              <!--
-                <li><a href="../navbar/">Default</a></li>
-                <li><a href="../navbar-static-top/">Static top</a></li>
-                <li class="active"><a href="./">Fixed top <span class="sr-only">(current)</span></a></li>
-              -->
-              </ul>
-
-            </div><!--/.nav-collapse -->
-          </div>
-        </nav>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="container">
-    <table id="table"></table>
-</div>
-
-
-    <div style="display: none;" id="dialogbox">
-      <div style="display: none;" id="newentrydialog">
-        <div class="input-container">
-          <span class="nametag hidden">rufnummer</span>
-          <input class="input" id=rufnummernewentrydialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">name</span>
-          <input class="input" id=namenewentrydialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">typ</span>
-          <input class="input" id=typnewentrydialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">hostname</span>
-          <input class="input" id=hostnamenewentrydialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">ipadresse</span>
-          <input class="input" id=ipadressenewentrydialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">port</span>
-          <input class="input" id=portnewentrydialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">durchwahl</span>
-          <input class="input" id=durchwahlnewentrydialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">pin</span>
-          <input class="input" id=pinnewentrydialog></input>
-        </div>
-        <input type="checkbox" id="gesperrtnewentrydialog"></input>
-        <label for="gesperrtnewentrydialog">gesperrt</label>
-        <!--
-        <input placeholder="rufnummer" id="rufnummernewentrydialog"></input>
-        <input placeholder="name" id="namenewentrydialog"></input>
-        <input placeholder="typ" id="typnewentrydialog"></input>
-        <input placeholder="hostname" id="hostnamenewentrydialog"></input>
-        <input placeholder="ipadresse" id="ipadressenewentrydialog"></input>
-        <input placeholder="port" id="portnewentrydialog"></input>
-        <input placeholder="durchwahl" id="durchwahlnewentrydialog"></input>
-        <input placeholder="pin" id="pinnewentrydialog"></input>
-        -->
+          </li>
+          <li>
+            <button id="new" style="display: none;" class="btn btn-primary btn-sm"></button>
+          </li>
+          <li>
+            <div id="loc-container">
+              <div id="loc-dropdown-parent"></div>
+              <div id="loc-dropdown-children" style="display:none;"></div>
+            </div>
+          </li>
+          <li>
+            <div id="loginout">
+              <button id="logout" onclick="logout();"; style="display: none;" class="btn btn-danger btn-sm"></button>
+              <button id="login" style="display: none;" class="btn btn-primary btn-sm"></button>
+            </div>
+          </li>
+          <!--
+          <li><a href="../navbar/">Default</a></li>
+          <li><a href="../navbar-static-top/">Static top</a></li>
+          <li class="active"><a href="./">Fixed top <span class="sr-only">(current)</span></a></li>
+          -->
+        </ul>
       </div>
-      <div style="display: none;" id="editdialog">
-        <div class="input-container">
-          <span class="nametag hidden">rufnummer</span>
-          <input class="input" id=rufnummereditdialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">name</span>
-          <input class="input" id=nameeditdialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">typ</span>
-          <input class="input" id=typeditdialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">hostname</span>
-          <input class="input" id=hostnameeditdialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">ipadresse</span>
-          <input class="input" id=ipadresseeditdialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">port</span>
-          <input class="input" id=porteditdialog></input>
-        </div>
-        <div class="input-container">
-          <span class="nametag hidden">durchwahl</span>
-          <input class="input" id=durchwahleditdialog></input>
-        </div>
-        <input type="checkbox" id="gesperrteditdialog"></input>
-        <label for="gesperrteditdialog">gesperrt</label>
-        <!--
-        <input placeholder="rufnummer" id="rufnummereditdialog"></input>
-        <input placeholder="name" id="nameeditdialog"></input>
-        <input placeholder="typ" id="typeditdialog"></input>
-        <input placeholder="hostname" id="hostnameeditdialog"></input>
-        <input placeholder="ipadresse" id="ipadresseeditdialog"></input>
-        <input placeholder="port" id="porteditdialog"></input>
-        <input placeholder="durchwahl" id="durchwahleditdialog"></input>
-        -->
-      </div>
-      <div style="display: none;" id="deletedialog">
-        <p id="deletedialog"></p>
-        <span id="rufnummerdeletedialog">test</span>
-      </div>
-      <input type="password" placeholder="password" id="passworddialog"></input>
-      <button id="submitdialog">submit</button>
-      <button id="abortdialog">abort</button>
+      <!--/.nav-collapse -->
     </div>
-    </br>
-    <span id="log"></span>
-  </body>
+  </nav>
+  <div class="container">
+    <table id="table"></table>
+  </div>
+  <div style="display: none;" id="dialogbox">
+    <div style="display: none;" id="passworddialog">
+      <div class="field--wrapper">
+        <label for="passwordfield" class="">passwordfield</label>
+        <input name="vorname" id="passwordfield" type="password">
+      </div>
+    </div>
+    <div style="display: none;" id="newentrydialog">
+      <div class="field--wrapper">
+        <label for="rufnummernewentrydialog" class="">rufnummernewentrydialog</label>
+        <input name="vorname" id="rufnummernewentrydialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="namenewentrydialog" class="">namenewentrydialog</label>
+        <input name="vorname" id="namenewentrydialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="typnewentrydialog" class="">typnewentrydialog</label>
+        <select class="input" id=typnewentrydialog>
+          <option value="0">typ 0</option>
+          <option value="1">typ 1</option>
+          <option value="2">typ 2</option>
+          <option value="3">typ 3</option>
+          <option value="4">typ 4</option>
+          <option value="5">typ 5</option>
+        </select>
+      </div>
+      <div class="field--wrapper">
+        <label for="hostnamenewentrydialog" class="">hostnamenewentrydialog</label>
+        <input name="vorname" id="hostnamenewentrydialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="hostnamenewentrydialog" class="">hostnamenewentrydialog</label>
+        <input name="vorname" id="hostnamenewentrydialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="ipadressenewentrydialog" class="">ipadressenewentrydialog</label>
+        <input name="vorname" id="ipadressenewentrydialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="portnewentrydialog" class="">portnewentrydialog</label>
+        <input name="vorname" id="portnewentrydialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="durchwahlnewentrydialog" class="">durchwahlnewentrydialog</label>
+        <input name="vorname" id="durchwahlnewentrydialog" type="text">
+      </div>
+      <label for="gesperrtnewentrydialog">gesperrtnewentrydialog</label>
+      <input type="checkbox" id="gesperrtnewentrydialog"></input>
+    </div>
+    <div style="display: none;" id="editdialog">
+      <div class="field--wrapper">
+        <label for="rufnummereditdialog" class="">rufnummereditdialog</label>
+        <input name="vorname" id="rufnummereditdialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="nameeditdialog" class="">nameeditdialog</label>
+        <input name="vorname" id="nameeditdialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="typeditdialog" class="">typeditdialog</label>
+        <select class="input" id=typeditdialog>
+          <option value="0">typ 0</option>
+          <option value="1">typ 1</option>
+          <option value="2">typ 2</option>
+          <option value="3">typ 3</option>
+          <option value="4">typ 4</option>
+          <option value="5">typ 5</option>
+        </select>
+      </div>
+      <div class="field--wrapper">
+        <label for="hostnameeditdialog" class="">hostnameeditdialog</label>
+        <input name="vorname" id="hostnameeditdialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="ipaddresseeditdialog" class="">ipaddresseeditdialog</label>
+        <input name="vorname" id="ipaddresseeditdialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="porteditdialog" class="">porteditdialog</label>
+        <input name="vorname" id="porteditdialog" type="text">
+      </div>
+      <div class="field--wrapper">
+        <label for="durchwahleditdialog" class="">durchwahleditdialog</label>
+        <input name="vorname" id="durchwahleditdialog" type="text">
+      </div>
+      <label for="gesperrteditdialog">gesperrteditdialog</label>
+      <input type="checkbox" id="gesperrteditdialog"></input>
+    </div>
+    <div style="display: none;" id="deletedialog">
+      <p id="deletedialog"></p>
+      <span id="rufnummerdeletedialog">test</span>
+    </div>
+    <button id="submitdialog">submit</button>
+    <button id="abortdialog">abort</button>
+  </div>
+  </br>
+  <span id="log"></span>
+
+  <!--
+  <div class="glpopup_outer" id="anmeldenZumNewsletter" style="display: block;">
+  		<div class="glpopup">
+  		<div class="glpopup_close"><img src="http://www.prds.rocks/4all/images/close_small_pink.png" alt="Close" width="12" height="12"></div>
+  			<div class="if_popup_subject"> prds.kitchen - Sign&nbsp;up&nbsp;for&nbsp;Newsletter</div>
+  			<div class="if_popup_divider"><img src="http://www.prds.rocks/4all/images/divider_gold.png" alt="Close"></div>
+  			<div class="if_popup_headline glmail_text">Newsletter</div>
+  			<div class="if_popup_subheadline glmail_text glmail_subject">Sign up</div>
+  			<div class="if_popup_body">Please leave your contact details below.</div>
+      	 	<div style="margin-bottom:5px;">
+
+  				<div class="field--wrapper">
+    					<label for="popupAnrede" class="">Salutation</label>
+    					<select name="anrede" id="popupAnrede">
+    					<option></option> <!-- empty Option for Label -->
+  <!--
+    						<option value="1">Mister</option>
+    						<option value="2">Mrs</option>
+    					</select>
+  				</div>
+
+  				<div class="field--wrapper">
+    					<label for="popupVorname" class="">First Name</label>
+    					<input name="vorname" id="popupVorname" type="text">
+  				</div>
+
+  				<div class="field--wrapper">
+    					<label for="popupNachname" class="">Last Name</label>
+    					<input name="nachname" id="popupNachname" type="text">
+  				</div>
+      	<div class="field--wrapper gl_required ">
+  					<label for="popupEmail" class="">eMail</label>
+  					<input name="eMail" id="popupEmail" style="color: rgb(210, 66, 145);" type="text">
+  				</div>
+    		</div>
+       	<div class="if_popup_buttontext">We'll send you notifications<br>
+  about <span class="underlayered" style="cursor: pointer;" onclick="subscribeToListFromPopup(46);return(false);"> – Sign up for Newsletter.</span><br>upcoming events.</div>
+  		</div>
+  	</div>
+-->
+
+</body>
 </html>

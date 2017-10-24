@@ -3,8 +3,11 @@ body{
 	font-size: 12px;
 	font-family: 'Roboto Mono', monospace;
 	padding-bottom: 200px;
+	background-color: #dddddd;
 }
-
+#loginout{
+	margin-top: 10px;
+}
 #out{
   border: 1px solid black;
   width: auto;
@@ -13,7 +16,6 @@ select:invalid{
   color:gray;
 }
 #table{
-  border-collapse: collapse;
   box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.65);
 }
 #table tr,#table td,#table th{
@@ -114,16 +116,18 @@ select:invalid{
   height: 50px;
 }
 #search-button{
-  background: url("/images/search-icon-hi.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  box-shadow: none;
-  border: none;
-  padding-bottom: 6px;
+  Xbackground: url("/images/search-icon-hi.png");
+  Xbackground-repeat: no-repeat;
+  Xbackground-position: center;
+  Xbackground-size: contain;
+  Xbox-shadow: none;
+  Xborder: none;
+  Xpadding-bottom: 6px;
   cursor: pointer;
-  height: 21px;
-  width: 21px;
+	margin-top: -2px;
+}
+#search-box{
+	margin-top: -2px;
 }
 #search-container{
   display: block;
@@ -133,8 +137,7 @@ select:invalid{
   position: relative;
 }
 #loc-dropdown-parent{
-  margin-top: 10px;
-  margin-left: 5px;
+  margin: 10px 10px 0 10px;
   cursor:pointer;
   background-position: center center;
   width:50px;

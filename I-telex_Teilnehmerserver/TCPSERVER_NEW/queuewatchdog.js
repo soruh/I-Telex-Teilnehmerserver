@@ -1,13 +1,16 @@
 const mysql = require('mysql');
 const ITelexCom=require("./ITelexCom.js");
-const colors = require("./colors.js");
-const config = require('../config.js');
+const colors = require("../colors.js");
+//const config = require('../config.js');
+const config = require('config');
 
-const mySqlConnectionOptions = {
+const mySqlConnectionOptions = config.get('mySqlConnectionOptions')
+
+/*const mySqlConnectionOptions = {
 	host: config.SQL_host,
 	user: config.SQL_user,
 	password: config.SQL_password
-};
+};*/
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 
@@ -20,7 +23,7 @@ handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 		if(b){
 			if(ITelexCom.cv(2)) console.log("wrote!");
 			if(ITelexCom.cv(1)) console.log(ITelexCom.connections[cnum].writebuffer[0]);
-			dbcon.query("DELETE FROM telefonbuch.queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(err,res) {
+			dbcon.query("DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(err,res) {
 				if(err){
 					if(ITelexCom.cv(0)) console.log(err);
 				}else if(res.affectedRows > 0){
@@ -37,16 +40,16 @@ handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 		ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 	}
 };
-var sendInt = setInterval(ITelexCom.SendQueue,config.QUEUE_SEND_INTERVAL);
+var sendInt = setInterval(ITelexCom.SendQueue,config.get("QUEUE_SEND_INTERVAL"));
 process.stdin.on('data',(data)=>{
 	if(data.toString() === "sendqueue"){
 		clearInterval(sendInt);
 		ITelexCom.SendQueue(()=>{
-			sendInt = setInterval(ITelexCom.SendQueue,config.QUEUE_SEND_INTERVAL);
+			sendInt = setInterval(ITelexCom.SendQueue,config.get("QUEUE_SEND_INTERVAL"));
 		});
 	}
 	console.log("stdin: "+data);
 });
-/*dbcon.query("DELETE FROM telefonbuch.queue WHERE uid="+row.uid, function (err, result2) {
+/*dbcon.query("DELETE FROM queue WHERE uid="+row.uid, function (err, result2) {
 	if(ITelexCom.cv(0)) console.log(colors.FgGreen+"deleted queue entry "+colors.FgCyan+result2.uid+colors.FgGreen+" from queue"+colors.FgWhite);
 });*/

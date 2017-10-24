@@ -1,6 +1,206 @@
 var hrDate = true;
 var showAllDateInfo = false;
+var pwdcorrect = false;
+var global_list={};
+const languages = {
+  german:{
+    "#table-th-rufnummer":"telex-nummer",
+    "#table-th-name":"name",
+    "#table-th-typ":"typ",
+    "#table-th-hostname":"hostname",
+    "#table-th-ipaddresse":"ipaddresse",
+    "#table-th-port":"port",
+    "#table-th-extention":"durchwahl",
+    "#table-th-gesperrt":"gesperrt",
+    "#table-th-moddate":"letzte Änderung",
+    "#search-box":"suchen|placeholder",
+    "#new":"neuer eintrag",
+    ".edit":"bearbeiten|title",
+    ".remove":"entfernen|title",
+    "#login":"einloggen",
+    "#logout":"ausloggen",
+  },
+  english:{
+    "#table-th-rufnummer":"telex-number",
+    "#table-th-name":"name",
+    "#table-th-typ":"type",
+    "#table-th-hostname":"hostname",
+    "#table-th-ipaddresse":"ipaddress",
+    "#table-th-port":"port",
+    "#table-th-extention":"extention",
+    "#table-th-gesperrt":"locked",
+    "#table-th-moddate":"last changed",
+    "#search-box":"search|placeholder",
+    "#new":"new entry",
+    ".edit":"edit|title",
+    ".remove":"remove|title",
+    "#login":"log in",
+    "#logout":"log out",
+  }
+};
+var language = "german";
+sortby="";
+$(document).ready(function(){
+  // jumping label
+  login(null,function(){
+    initloc();
+  });
+  jQuery("input,select,textarea").bind("checkval",function(){
+    if(jQuery(this).val() !== ""){
+      jQuery(this).prev("label").addClass("gl_label_filled");
+    }else{
+      jQuery(this).prev("label").removeClass("gl_label_filled");
+      jQuery(this).parents(".field--wrapper").removeClass("gl_missing");
+    }
+  }).on("change",function(){
+    jQuery(this).trigger("checkval");
+  }).on("keyup",function(){
+    jQuery(this).trigger("checkval");
+  }).on("focus",function(){
+    jQuery(this).prev("label").addClass("gl_label_focus");
+  }).on("blur",function(){
+      jQuery(this).prev("label").removeClass("gl_label_focus");
+      if(jQuery(this).val() !== "" && jQuery(this).parents(".field--wrapper").hasClass("gl_required")){
+      	jQuery(this).parents(".field--wrapper").addClass("gl_missing");
+      }else{
+      	jQuery(this).parents(".field--wrapper").removeClass("gl_missing");
+		}
+  }).trigger("checkval");
 
+  $("#search-box").val("");
+  jQuery("#search-button, #search-box").bind("search",function(){
+    search(global_list,$("#search-box").val(),function(list){
+      updatetable(list);
+    });
+  });
+  $("#search-box").on("change",function(){
+    jQuery(this).trigger("search");
+  }).on("keyup",function(){
+    jQuery(this).trigger("search");
+  }).on("focus",function(){
+    getlist();
+  })
+  $("#search-button").on("click",function(){
+    $("#search-box").fadeToggle();
+  });
+  /*
+  $("#search-button").click(function(){
+    jQuery(this).trigger("checkval");
+    search($("#search-box").val(),(list)=>{
+      updatetable(list);
+    });
+  });
+  $("#search-box").change(function(){
+    jQuery(this).trigger("checkval");
+    search($("#search-box").val(),(list)=>{
+      updatetable(list);
+    });
+  });*/
+  $("#login").click(function(){
+    $("#dialogbox").show();
+    $("#passworddialog").show();
+    $("#newentrydialog").hide();
+    $("#editdialog").hide();
+    $("#deletedialog").hide();
+    actionkey = "login";
+  });
+  $("#new").click(function(){
+    $("#dialogbox").show();
+    $("#newentrydialog").show();
+    $("#editdialog").hide();
+    $("#deletedialog").hide();
+    $("#passworddialog").hide();
+    actionkey = "new";
+  });
+  $("#submitdialog").click(function(){
+    switch(actionkey){
+      case "login":
+        login(atob($("#passwordfield").val()));
+        $("#passwordfield").val("");
+        $("#passwordfield").trigger('change');
+        break;
+      case "delete":
+        edit({
+          typekey:actionkey,
+          rufnummer: parseInt($("#rufnummerdeletedialog").html()),
+        });
+        break;
+      case "new":
+        var locked = $("#gesperrtnewentrydialog").prop('checked') ? 1 : 0;
+        edit({
+          typekey:actionkey,
+          rufnummer: $("#rufnummernewentrydialog").val(),
+          name: $("#namenewentrydialog").val(),
+          typ: $("#typnewentrydialog").val(),
+          hostname: $("#hostnamenewentrydialog").val(),
+          ipaddresse: $("#ipadressenewentrydialog").val(),
+          port: $("#portnewentrydialog").val(),
+          extention: $("#durchwahlnewentrydialog").val(),
+          gesperrt: locked,
+          moddate: $("#moddatenewentrydialog").val(),
+          pin: $("#pinnewentrydialog").val(),
+        });
+        break;
+      case "edit":
+        var locked = $("#gesperrteditdialog").prop('checked') ? 1 : 0;
+        edit({
+          typekey:actionkey,
+          rufnummer: $("#rufnummereditdialog").val(),
+          name: $("#nameeditdialog").val(),
+          typ: $("#typeditdialog").val(),
+          hostname: $("#hostnameeditdialog").val(),
+          ipaddresse: $("#ipaddresseeditdialog").val(),
+          port: $("#porteditdialog").val(),
+          extention: $("#durchwahleditdialog").val(),
+          gesperrt: locked,
+          moddate: $("#moddateeditdialog").val(),
+          pin: $("#pineditdialog").val(),
+        });
+        break;
+    }
+    resetforms();
+    getlist(updatetable);
+  });
+  $("#abortdialog").click(function(){
+    typekey="";
+    resetforms();
+    getlist(updatetable);
+  });
+});
+
+function login(pwd,callback){
+  if(pwd){
+    setCookie("pwd",pwd);
+  }
+  edit({
+    typekey:"checkpwd"
+  },function(result){
+    if(result.code==1){
+      pwdcorrect = true;
+      $("#login").hide();
+      $("#logout").show();
+      $("#new").show();
+      $(".remove_td").show();
+      $(".edit_td").show();
+    }else{
+      pwdcorrect = false;
+      $("#login").show();
+      $("#logout").hide();
+      $("#new").hide();
+      $(".remove_td").hide();
+      $(".edit_td").hide();
+    }
+    getlist(function(li){
+      updatetable(li,function(){
+        if(typeof callback==="function") callback();
+      });
+    });
+  });
+}
+function logout(){
+  setCookie("pwd","")
+  login();
+}
 function UtcToString(Utc){
   var d = new Date(parseInt(Utc)*1000);
   if(showAllDateInfo){
@@ -11,10 +211,17 @@ function UtcToString(Utc){
 }
 function getlist(callback) {
   $.ajax({
-    url: "/stats",
-    type: "GET",
-    success: function(response) {
-      callback(response);
+    url: "/list",
+    type: "POST",
+    dataType: "json",
+    data: {
+      "password":btoa(getCookie("pwd")),
+    },
+    success: function(response){
+      for(k in response){
+        global_list[response[k].uid]=response[k];
+      }
+      if(typeof callback==="function") callback(response);
     },
     error: function(error) {
       console.error(error);
@@ -22,6 +229,20 @@ function getlist(callback) {
   });
 }
 function updatetable(usli,cb){
+  if(pwdcorrect){
+    $("#new").show();
+    $(".remove_td").show();
+    $(".edit_td").show();
+    $("#login").hide();
+    $("#logout").show();
+  }else{
+    $("#new").hide();
+    $(".remove_td").hide();
+    $(".edit_td").hide();
+    $("#login").show();
+    $("#logout").hide();
+  }
+
   var list = sort(usli);
   var table = document.getElementById("table");
   while(table.firstChild){
@@ -30,123 +251,131 @@ function updatetable(usli,cb){
   var tr = document.createElement("tr");
   table.appendChild(tr);
   for(b in list[0]){
-    var th = document.createElement("th");
-    th.id = "table-th-"+b;
-    table.lastChild.appendChild(th);
-    $("#table-th-"+b).click(function(){
-      sortby=this.id.split('-')[2];
-      getlist((li)=>{
-        updatetable(li,()=>{
-          setLanguage(language);
+    if(b!="uid"){
+      var th = document.createElement("th");
+      th.id = "table-th-"+b;
+      table.lastChild.appendChild(th);
+      $("#table-th-"+b).click(function(){
+        sortby=this.id.split('-')[2];
+        getlist((li)=>{
+          updatetable(li,()=>{
+            setLanguage(language);
+          });
         });
       });
-    });
+    }
   }
+  if(list.length != 0){
+    var th = document.createElement("th");
+    table.lastChild.appendChild(th);
+    var th = document.createElement("th");
+    table.lastChild.appendChild(th);
+  }
+
   for(a in list){
     var tr = document.createElement("tr");
-    table.appendChild(tr);
     for(b in list[a]){
-      var td = document.createElement("td");
-      table.lastChild.appendChild(td);
-      if(b==="moddate"&&hrDate){
-        table.lastChild.lastChild.innerHTML = UtcToString(list[a][b]);
-      }else{
-        table.lastChild.lastChild.innerHTML = list[a][b];
+      if(b!="uid"){
+        var td = document.createElement("td");
+        if(b==="moddate"&&hrDate){
+          $(td).text(UtcToString(list[a][b]));
+        }else{
+          $(td).text(list[a][b]);
+        }
+        tr.appendChild(td);
       }
     }
     var td = document.createElement("td");
     td.innerHTML='<span class="btn  btn-primary btn-sm glyphicon glyphicon-pencil edit"></span>';
     td.title="edit";
     td.className = "edit_td";
-    table.lastChild.appendChild(td);
+    $(td).data("uid",list[a].uid);
+    tr.appendChild(td);
 
     var td = document.createElement("td");
     td.innerHTML='<span class="glyphicon glyphicon-trash btn  btn-primary btn-sm remove"></span>';
     td.title="remove";
     td.className = "remove_td";
-    table.lastChild.appendChild(td);
+    $(td).data("uid",list[a].uid);
+    tr.appendChild(td);
 
+    table.appendChild(tr);
+  }
+  $(".edit").click(function(){
+    $("#dialogbox").show();
+    $("#editdialog").show();
+    $("#deletedialog").hide();
+    $("#newentrydialog").hide();
+    $("#passworddialog").hide();
+    actionkey = "edit";
+    var uid = $(this).parent().data("uid");
 
-  }
-  for(i in document.getElementsByClassName("edit")){
-    document.getElementsByClassName("edit")[i].onclick = function(){
-      $("#dialogbox").show();
-      $("#editdialog").show();
-      $("#deletedialog").hide();
-      $("#newentrydialog").hide();
-      actionkey = "edit";
-      var siblings = this.parentElement.children;
-      var gesperrt = siblings[7].innerHTML ? true : false;
-      $("#rufnummereditdialog").val(siblings[0].innerHTML);
-      document.getElementById("rufnummereditdialog").onkeydown();
-      $("#nameeditdialog").val(siblings[1].innerHTML);
-      document.getElementById("nameeditdialog").onkeydown();
-      $("#typeditdialog").val(siblings[2].innerHTML);
-      document.getElementById("typeditdialog").onkeydown();
-      $("#hostnameeditdialog").val(siblings[3].innerHTML);
-      document.getElementById("hostnameeditdialog").onkeydown();
-      $("#ipaddresseeditdialog").val(siblings[4].innerHTML);
-      document.getElementById("ipaddresseeditdialog").onkeydown();
-      $("#porteditdialog").val(siblings[5].innerHTML);
-      document.getElementById("porteditdialog").onkeydown();
-      $("#durchwahleditdialog").val(siblings[6].innerHTML);
-      document.getElementById("durchwahleditdialog").onkeydown();
-      $("#gesperrteditdialog").prop('checked', gesperrt);
-    };
-  }
-  for(i in document.getElementsByClassName("remove")){
-    document.getElementsByClassName("remove")[i].onclick = function(){
-      $("#dialogbox").show();
-      $("#deletedialog").show();
-      $("#editdialog").hide();
-      $("#newentrydialog").hide();
-      actionkey = "delete";
-      var str = "really delete this entry?</br>";
-      for(i=0;i<this.parentElement.children.length-2;i++){
-        str += "</br>"+this.parentElement.children[i].innerHTML;
-      }
-      $("#rufnummerdeletedialog").html(this.parentElement.children[0].innerHTML);
-      $("#pdeletedialog").html(str);
+    $("#rufnummereditdialog").val(global_list[uid].rufnummer).trigger('change');
+    $("#nameeditdialog").val(global_list[uid].name).trigger('change');
+    $("#typeditdialog").val(global_list[uid].typ).trigger('change');
+    $("#hostnameeditdialog").val(global_list[uid].hostname).trigger('change');
+    $("#ipaddresseeditdialog").val(global_list[uid].ipaddresse).trigger('change');
+    $("#porteditdialog").val(global_list[uid].port).trigger('change');
+    $("#durchwahleditdialog").val(global_list[uid].extention).trigger('change');
+    $("#gesperrteditdialog").prop('checked', global_list[uid].gesperrt).trigger('change');
+    
+  });
+  $(".remove").click(function(){
+    $("#dialogbox").show();
+    $("#deletedialog").show();
+    $("#editdialog").hide();
+    $("#newentrydialog").hide();
+    $("#passworddialog").hide();
+    actionkey = "delete";
+    var str = "really delete this entry?</br>";
+    var uid = $(this).parent().data("uid");
+    for(i=0;i<this.parentElement.children.length-2;i++){
+      str += "</br>"+this.parentElement.children[i].innerHTML;
     }
-  }
+    $("#rufnummerdeletedialog").html(this.parentElement.children[0].innerHTML);
+    $("#deletedialog").html(str);
+  });
   setLanguage(language);
   if(typeof cb==="function"){cb();}
 }
-function edit(vals){
-  console.log(vals);
+function edit(vals, cb){
+  vals["password"] = btoa(getCookie("pwd"));
   $.ajax({
     url: "/edit",
     type: "POST",
     dataType: "json",
     data: vals,
     success: function(response) {
+      if(cb) cb(response);
       $("#log").html(JSON.stringify(response));
     },
     error: function(error) {
+      if(cb) cb(response);
       $("#log").html(JSON.stringify(error));
     }
   });
 }
-function search(str,callback){
-  var regex = new RegExp("("+str.replace(/ /g,"&")+")","gi");
-  getlist((list)=>{
-    var returnlist = [];
-    for(row of list){
-      var showrow = false;
-      for(i in row){
-        if(i!=="moddate"){
-          var val = row[i];
-          if(regex.test(val)){
-            showrow = true;
-          }
-        }
-      }
-      if(showrow){
-        returnlist[returnlist.length] = row;
+function search(list,str,callback){
+  var returnlist = [];
+  for(row of list){
+    var matches = true;
+    var rowstr = "";
+    for(key in row){
+      if((key==="moddate")&&hrDate){
+        rowstr += UtcToString(row[key])+" ";
+      }else{
+        rowstr += row[key]+" ";
       }
     }
-    callback(returnlist);
-  });
+    for(i in str.split(" ")){
+      var word = str.split(" ")[i];
+      if(!(new RegExp(word.replace(/[:.?*+^$[\]\\(){}|-]/g, "\\$&"),"gi").test(rowstr))){
+        matches = false;
+      }
+    }
+    if(matches) returnlist[returnlist.length] = row;
+  }
+  callback(returnlist);
 }
 function resetforms(){
   $("#newentrydialog input").val("");
@@ -160,9 +389,10 @@ function resetforms(){
     '<p id="pdeletedialog"></p><span id="rufnummerdeletedialog">test</span></div>');*/
   $("#newentrydialog").hide();
   $("#editdialog").hide();
-  $("#deletedialog").hide();
+  $("#deletedialog").hide()
+  $("#passworddialog").hide();
+  $("#dialogbox").hide();
 }
-sortby="";
 function sort(usli){
   if(sortby === ""){
     return(usli);
@@ -181,38 +411,6 @@ function sort(usli){
     }
   }
 }
-var languages = {
-  german:{
-    "#table-th-rufnummer":"telex-nummer",
-    "#table-th-name":"name",
-    "#table-th-typ":"typ",
-    "#table-th-hostname":"hostname",
-    "#table-th-ipaddresse":"ipaddresse",
-    "#table-th-port":"port",
-    "#table-th-extention":"durchwahl",
-    "#table-th-gesperrt":"gesperrt",
-    "#table-th-moddate":"letzte Änderung",
-    "#search-box":"suchen|placeholder",
-    "#new":"neuer eintrag",
-    ".edit":"bearbeiten|title",
-    ".remove":"entfernen|title"
-  },english:{
-    "#table-th-rufnummer":"telex-number",
-    "#table-th-name":"name",
-    "#table-th-typ":"type",
-    "#table-th-hostname":"hostname",
-    "#table-th-ipaddresse":"ipaddress",
-    "#table-th-port":"port",
-    "#table-th-extention":"extention",
-    "#table-th-gesperrt":"lcoked",
-    "#table-th-moddate":"last changed",
-    "#search-box":"search|placeholder",
-    "#new":"new entry",
-    ".edit":"edit|title",
-    ".remove":"remove|title"
-  }
-};
-var language = "german";
 function setLanguage(l){
   if(languages[l]){
     language=l;
@@ -242,98 +440,22 @@ function initloc(){
     document.getElementById("loc-dropdown-children").appendChild(child);
   }
 }
-$(document).ready(()=>{
-  getlist((li)=>{
-    updatetable(li,()=>{
-      initloc();
-    })
-  });
-  $("#search-button").click(()=>{
-    search($("#search-box").val(),(list)=>{
-      updatetable(list);
-    });
-  });
-  $("#search-box").change(()=>{
-    search($("#search-box").val(),(list)=>{
-      updatetable(list);
-    });
-  });
-  $("#new").click(function(){
-    $("#dialogbox").show();
-    $("#newentrydialog").show();
-    $("#editdialog").hide();
-    $("#deletedialog").hide();
-    actionkey = "new";
-  });
-  $("#submitdialog").click(function(){
-    switch(actionkey){
-      case "new":
-        var locked = $("#gesperrtnewentrydialog").prop('checked') ? 1 : 0;
-        edit({
-          typekey:"new",
-          password: $("#passworddialog").val(),
-          rufnummer: $("#rufnummernewentrydialog").val(),
-          name: $("#namenewentrydialog").val(),
-          typ: $("#typnewentrydialog").val(),
-          hostname: $("#hostnamenewentrydialog").val(),
-          ipaddresse: $("#ipaddressenewentrydialog").val(),
-          port: $("#portnewentrydialog").val(),
-          durchwahl: $("#durchwahlnewentrydialog").val(),
-          gesperrt: locked,
-          moddate: $("#moddatenewentrydialog").val(),
-          pin: $("#pinnewentrydialog").val(),
-        });
-        break;
-      case "delete":
-        edit({
-          typekey:"delete",
-          password: $("#passworddialog").val(),
-          rufnummer: parseInt($("#rufnummerdeletedialog").html()),
-        });
-        break;
-      case "edit":
-        var locked = $("#gesperrteditdialog").prop('checked') ? 1 : 0;
-        edit({
-          typekey:"edit",
-          password: $("#passworddialog").val(),
-          rufnummer: $("#rufnummereditdialog").val(),
-          name: $("#nameeditdialog").val(),
-          typ: $("#typeditdialog").val(),
-          hostname: $("#hostnameeditdialog").val(),
-          ipaddresse: $("#ipaddresseeditdialog").val(),
-          port: $("#porteditdialog").val(),
-          durchwahl: $("#durchwahleditdialog").val(),
-          gesperrt: locked,
-          moddate: $("#moddateeditdialog").val(),
-          pin: $("#pineditdialog").val(),
-        });
-        break;
+function setCookie(c_name,value,exdays){
+  var exdate = new Date();
+  exdate.setDate(exdate.getDate() + exdays);
+  var c_value = escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+  document.cookie=c_name + "=" + c_value;
+}
+
+function getCookie(c_name){
+  var i,x,y,ARRcookies=document.cookie.split(";");
+  for (i=0;i<ARRcookies.length;i++){
+    x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+    y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+    x=x.replace(/^\s+|\s+$/g,"");
+    if (x==c_name){
+      return unescape(y);
     }
-    $("#dialogbox").hide();
-    resetforms();
-    getlist(updatetable);
-  });
-  $("#abortdialog").click(function(){
-    $("#dialogbox").hide();
-    resetforms();
-    getlist(updatetable);
-  });
-  $.each(document.getElementsByClassName("input"), (index, input)=>{
-      var nametag = input.parentNode.children;
-      for(i=0;i<nametag.length;i++){
-        if(nametag[i].className.split(" ").find((str)=>{return(str === "nametag");})==="nametag"){
-          nametag = nametag[i];
-        }
-      }
-      input.placeholder = nametag.innerHTML;
-      input.onkeydown=function(){
-        setTimeout(()=>{
-          if(input.value.length==0){
-            nametag.className=nametag.className.replace("shown","hidden");
-          }else{
-            nametag.className=nametag.className.replace("hidden","shown");
-          }
-        },1);
-      };
-  });
-});
+  }
+  return("");
+}

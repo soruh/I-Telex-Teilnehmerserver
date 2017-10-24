@@ -1,15 +1,16 @@
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
-const colors = require("./colors.js")
-const config = require('../config.js');
-const mySqlConnectionOptions = {
+const colors = require("../colors.js")
+//const config = require('../config.js');
+const config = require('config');
+
+const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
+/*const mySqlConnectionOptions = {
 	host: config.SQL_host,
 	user: config.SQL_user,
 	password: config.SQL_password
-};
-
-
+};*/
 //<STATES>
 const STANDBY = 0;
 const RESPONDING = 1;
@@ -51,7 +52,7 @@ function connect(dbcon,cb,options,handles,callback){
 }
 function handlePacket(obj,cnum,dbcon,connection,handles){
 	if(!obj){
-		if(cv(0)) console.log(colors.FgRed+"'handlePacket' missing obj"+colors.FgWhite);
+		if(cv(0)) console.log(colors.FgRed+"no package to handle"+colors.FgWhite);
 	}else{
 		if(cv(2)) console.log(colors.FgMagenta+"state: "+colors.FgCyan+connections[cnum]["state"]+colors.FgWhite);
 		if(cv(2)) console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
@@ -113,7 +114,7 @@ function encPacket(obj) {
 			break;
 		case 6:
 			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.config.SERVERPIN,4));
+			.concat(deConcatValue(data.config.get("SERVERPIN"),4));
 			break;
 		case 7:
 			var array = deConcatValue(data.version,1)
@@ -292,7 +293,7 @@ function ascii(data,connection,dbcon){
 	if(number!=""){number = parseInt(number);}
 	if(number!=NaN&&number!=""){
 		if(cv(1)) console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
-		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number, function (err, result){
+		dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer="+number, function (err, result){
 			if(err){
 				if(cv(0)) console.log(err);
 			}else{
@@ -328,11 +329,11 @@ function ascii(data,connection,dbcon){
 function SendQueue(callback){
 	if(cv(2)) console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
-	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
+	dbcon.query("SELECT * FROM teilnehmer", function (err, teilnehmer){
 		if(err){
 			if(cv(0)) console.log(err);
 		}
-		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
+		dbcon.query("SELECT * FROM queue", function (err, results){//order by server
 			if(err) throw(err);
 			if(results.length>0){
 				var servers = {};
@@ -345,7 +346,7 @@ function SendQueue(callback){
 				if(cv(2)) console.log(colors.BgMagenta,colors.FgBlack,servers,colors.BgBlack,colors.FgWhite);
 				async.eachSeries(servers,function(server,cb){
 					if(cv(2)) console.log(colors.FgMagenta,server,colors.FgWhite);
-					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
+					dbcon.query("SELECT * FROM servers WHERE uid="+server[0].server+";",(err, result2)=>{
 						if(err){
 							if(cv(0)) console.log(err);
 						}
@@ -358,12 +359,12 @@ function SendQueue(callback){
 								connections[cnum].writebuffer = [];
 								async.each(server,(serverdata,scb)=>{
 									if(cv(2)) console.log(colors.FgCyan,serverdata,colors.FgWhite);
-									dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
+									dbcon.query("SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
 										connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
 										scb();
 									});
 								},()=>{
-									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{serverpin:config.SERVERPIN,version:1}}),()=>{
+									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
 										connections[cnum].state = RESPONDING;
 										cb();
 									});
@@ -387,7 +388,7 @@ function SendQueue(callback){
 	});
 }
 function cv(level){ //check verbosity
-	return(level <= config.LOGGING_VERBOSITY);
+	return(level <= config.get("LOGGING_VERBOSITY"));
 }
 
 module.exports.ascii=ascii;
@@ -407,4 +408,4 @@ module.exports.states = {
 	FULLQUERY:FULLQUERY,
 	LOGIN:LOGIN
 };
-module.exports.SERVERPIN = config.SERVERPIN;
+module.exports.SERVERPIN = config.get("SERVERPIN");
