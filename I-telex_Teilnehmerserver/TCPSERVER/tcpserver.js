@@ -284,8 +284,8 @@ function init(){
 			console.log(e);
 		}
 	});
-	server.listen(config.get("PORT"), function() {
-		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("PORT"));
+	server.listen(config.get("TCPPORT"), function() {
+		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("TCPPORT"));
 	});
 }
 function updateQueue(){
