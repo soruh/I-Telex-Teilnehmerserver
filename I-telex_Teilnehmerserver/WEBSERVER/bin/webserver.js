@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-
+const config = require('config');
 var app = require('../app');
 var debug = require('debug')('i-telex-teilnehmerserver:server');
 var http = require('http');
@@ -12,7 +12,7 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || debug.get("WEBSERVERPORT").toString());
+var port = normalizePort(process.env.PORT || config.get("WEBSERVERPORT").toString());
 app.set('port', port);
 
 /**
