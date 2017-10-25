@@ -311,9 +311,11 @@ function ascii(data,connection,dbcon){
 					send += result[0]["rufnummer"]+"\n\r";
 					send += result[0]["name"]+"\n\r";
 					send += result[0]["typ"]+"\n\r";
-					if(result[0]["typ"]==5){
+					if((result[0]["typ"]==2)||(result[0]["typ"]==4)||(result[0]["typ"]==5)){
 						send += result[0]["ipaddresse"]+"\n\r";
-					}else{
+					}else if((result[0]["typ"]==1)||(result[0]["typ"]==3)){
+						send += result[0]["hostname"]+"\n\r";
+					}else if(result[0]["typ"]==6){
 						send += result[0]["hostname"]+"\n\r";
 					}
 					send += result[0]["port"]+"\n\r";

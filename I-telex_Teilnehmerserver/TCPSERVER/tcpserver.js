@@ -44,9 +44,9 @@ handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		if(result_a&&(result_a.length>0)){
 			var res = result_a[0];
 			if(ITelexCom.cv(2)) console.log(res);
-			if(res.pin == pin&&res.port == port/*???*/){
-				dbcon.query("UPDATE teilnehmer SET ipaddresse = '"+connection.remoteAddress.replace(/^.*:/,'')+"' WHERE rufnummer = "+number,function(err_b,result_b){
-					dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer = "+number,function(err_c,result_c){
+			if(res.pin == pin){
+				dbcon.query("UPDATE teilnehmer SET port = '"+res.port+"' AND ipaddresse = '"+connection.remoteAddress.replace(/^.*:/,'')+"' WHERE rufnummer = "+number+";",function(err_b,result_b){
+					dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(err_c,result_c){
 						try{
 							connection.write(ITelexCom.encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");
 						}catch(e){
@@ -56,10 +56,17 @@ handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 				});
 			}else if(res.pin != pin){
 				connection.end();
-			}else if(res.pin == pin&&res.port != port){
-
 			}
 		}else{
+			dbcon.query("INSERT INTO teilnehmer (rufnummer,port,pin,ipaddresse,gesperrt) VALUES ("+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1');",function(err_b,result_b){
+				dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(err_c,result_c){
+					try{
+						connection.write(ITelexCom.encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");
+					}catch(e){
+						if(ITelexCom.cv(0)) console.log(colors.FgRed,e,colors.FgWhite);
+					}
+				});
+			});
 			connection.end();
 		}
 	});
