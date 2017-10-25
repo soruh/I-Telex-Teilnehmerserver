@@ -16,7 +16,7 @@ const STANDBY = 0;
 const RESPONDING = 1;
 const FULLQUERY = 2;
 const LOGIN = 3;
-//</STATES>
+//</STATES>"#wrongpwd":"Falsches Passwort",
 var connections = [];	//list of active connections
 
 function connect(dbcon,cb,options,handles,callback){
@@ -58,16 +58,17 @@ function handlePacket(obj,cnum,dbcon,connection,handles){
 		if(cv(2)) console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
 		if(obj.packagetype==0xff){
 			if(cv(2)) console.log(obj.data);
-			if(cv(2)) console.log(colors.FgRed+Buffer.from(obj.data).toString());
-		}
-		try{
-			if(handles[obj.packagetype]!=undefined){
-				handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
-			}else{
-				if(cv(0)) console.log(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
+			if(cv(0)) console.log("remote client had error:",colors.FgRed+Buffer.from(obj.data).toString());
+		}else{
+			try{
+				if(handles[obj.packagetype]!=undefined){
+					handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
+				}else{
+					if(cv(0)) console.log(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
+				}
+			}catch(e){
+				if(cv(0)) console.log(colors.FgRed,e,colors.FgWhite);
 			}
-		}catch(e){
-			if(cv(0)) console.log(colors.FgRed,e,colors.FgWhite);
 		}
 	}
 }

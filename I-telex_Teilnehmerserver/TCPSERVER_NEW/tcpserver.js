@@ -225,53 +225,57 @@ handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 };
 function init(){
 	var server = net.createServer(function(connection) {
-		var cnum = -1;
-		for(i = 0;i<ITelexCom.connections.length;i++){
-			if(ITelexCom.connections[i]  ==  null){
-				cnum = i;
-			}
-		}
-		if(cnum  ==  -1){
-			cnum = ITelexCom.connections.length;
-		}
-		ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
-		var dbcon = mysql.createConnection(mySqlConnectionOptions);
-		if(ITelexCom.cv(1)) console.log(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+colors.FgWhite);
-		dbcon.connect(function(err){
-			if(err){
-				if(ITelexCom.cv(0)) console.log(colors.FgRed+"Connection of client "+colors.FgCyan+cnum+colors.FgRed+" to database threw an error:\n",err,colors.FgWhite);
-				connection.end(()=>{if(ITelexCom.cv(1)) console.log(colors.FgRed+"Terminated connection with client "+colors.FgCyan+cnum+colors.FgWhite);});
-				return;
-			}
-			//if(ITelexCom.cv(2)) console.log(connection);
-			if(ITelexCom.cv(1)) console.log(colors.FgGreen+"Connected client "+colors.FgCyan+cnum+colors.FgGreen+" to database"+colors.FgWhite);
-			var queryresultpos = -1;
-			var queryresult = [];
-			var connectionpin;
-			connection.on('end', function() {
-				if(ITelexCom.cv(1)) console.log(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.FgWhite);
-				ITelexCom.connections[cnum] = null;
-				dbcon.end(()=>{
-					if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
-				});
-			});
-			connection.on('error', function(err) {
-				if(ITelexCom.cv(1)) console.log(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.FgWhite);
-				ITelexCom.connections[cnum] = null;
-				dbcon.end(()=>{
-					if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
-				});
-			});
-			connection.on('data', function(data) {
-				if(ITelexCom.cv(2)) console.log(colors.FgMagenta,data,colors.FgWhite);
-				if(ITelexCom.cv(2)) console.log(colors.FgBlue,data.toString(),colors.FgWhite);
-				if(data[0] == 0x71/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
-					ITelexCom.ascii(data,connection,dbcon);
-				}else{
-					ITelexCom.handlePacket(ITelexCom.decData(data),cnum,dbcon,connection,handles); //TCP
+		try{
+			var cnum = -1;
+			for(i = 0;i<ITelexCom.connections.length;i++){
+				if(ITelexCom.connections[i]  ==  null){
+					cnum = i;
 				}
+			}
+			if(cnum  ==  -1){
+				cnum = ITelexCom.connections.length;
+			}
+			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
+			var dbcon = mysql.createConnection(mySqlConnectionOptions);
+			if(ITelexCom.cv(1)) console.log(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+connection.remoteAddress.replace(/^.*:/,'')+colors.FgWhite);
+			dbcon.connect(function(err){
+				if(err){
+					if(ITelexCom.cv(0)) console.log(colors.FgRed+"Connection of client "+colors.FgCyan+cnum+colors.FgRed+" to database threw an error:\n",err,colors.FgWhite);
+					connection.end(()=>{if(ITelexCom.cv(1)) console.log(colors.FgRed+"Terminated connection with client "+colors.FgCyan+cnum+colors.FgWhite);});
+					return;
+				}
+				//if(ITelexCom.cv(2)) console.log(connection);
+				if(ITelexCom.cv(1)) console.log(colors.FgGreen+"Connected client "+colors.FgCyan+cnum+colors.FgGreen+" to database"+colors.FgWhite);
+				var queryresultpos = -1;
+				var queryresult = [];
+				var connectionpin;
+				connection.on('end', function() {
+					if(ITelexCom.cv(1)) console.log(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.FgWhite);
+					ITelexCom.connections[cnum] = null;
+					dbcon.end(()=>{
+						if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
+					});
+				});
+				connection.on('error', function(err) {
+					if(ITelexCom.cv(1)) console.log(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.FgWhite);
+					ITelexCom.connections[cnum] = null;
+					dbcon.end(()=>{
+						if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
+					});
+				});
+				connection.on('data', function(data) {
+					if(ITelexCom.cv(2)) console.log(colors.FgMagenta,data,colors.FgWhite);
+					if(ITelexCom.cv(2)) console.log(colors.FgBlue,data.toString(),colors.FgWhite);
+					if(data[0] == 0x71/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
+						ITelexCom.ascii(data,connection,dbcon);
+					}else{
+						ITelexCom.handlePacket(ITelexCom.decData(data),cnum,dbcon,connection,handles); //TCP
+					}
+				});
 			});
-		});
+		}catch(e){
+			console.log(e);
+		}
 	});
 	server.listen(config.get("PORT"), function() {
 		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("PORT"));

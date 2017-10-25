@@ -1,3 +1,9 @@
+/*1: peer able to support the “texting baudot” protocol, accessible by a host name (known by official DNS servers)
+2: peer able to support the “texting baudot” protocol, accessible by a given IP address (IPv4)
+3: peer only supporting “ascii texting” (or a standard telnet client), accessible by a host name (known by official DNS servers)
+4: peer only supporting “ascii texting” (or a standard telnet client), accessible by a given IP address (IPv4)
+5: same as 2, but IP address may change frequently
+6: not a real peer, but an “official” email address.*/
 var hrDate = true;
 var showAllDateInfo = false;
 var pwdcorrect = false;
@@ -19,6 +25,32 @@ const languages = {
     ".remove":"entfernen|title",
     "#login":"einloggen",
     "#logout":"ausloggen",
+    "#abortdialog":"abbrechen",
+    "#submitdialog":"absenden",
+    "#wrongpwd":"Falsches Passwort!",
+    ".typ_option_1":"Hostname Baudot (1)",
+    ".typ_option_2":"Ip Baudot (2)",
+    ".typ_option_3":"Hostname Ascii (3)",
+    ".typ_option_4":"Ip Ascii (4)",
+    ".typ_option_5":"DynIp Baudot (5)",
+    ".typ_option_6":"“offizielle” E-mail (6)",
+    "#passwordfield_label":"passwort",
+    "#rufnummer_newentry_dialog_label":"rufnummer",
+    "#name_newentry_dialog_label":"name",
+    "#typ_newentry_dialog_label":"typ",
+    "#hostname_newentry_dialog_label":"hostname",
+    "#ipaddresse_newentry_dialog_label":"ipaddresse",
+    "#port_newentry_dialog_label":"port",
+    "#durchwahl_newentry_dialog_label":"durchwahl",
+    "#gesperrt_newentry_dialog_label":"gesperrt",
+    "#rufnummer_edit_dialog_label":"rufnummer",
+    "#name_edit_dialog_label":"name",
+    "#typ_edit_dialog_label":"typ",
+    "#hostname_edit_dialog_label":"hostname",
+    "#ipaddresse_edit_dialog_label":"ipaddresse",
+    "#port_edit_dialog_label":"port",
+    "#durchwahl_edit_dialog_label":"durchwahl",
+    "#gesperrt_edit_dialog_label":"gesperrt",
   },
   english:{
     "#table-th-rufnummer":"telex-number",
@@ -36,12 +68,37 @@ const languages = {
     ".remove":"remove|title",
     "#login":"log in",
     "#logout":"log out",
+    "#abortdialog":"abort",
+    "#submitdialog":"submit",
+    "#wrongpwd":"Wrong password!",
+    ".typ_option_1":"hostname baudot (1)",
+    ".typ_option_2":"ip baudot (2)",
+    ".typ_option_3":"hostname ascii (3)",
+    ".typ_option_4":"ip ascii (4)",
+    ".typ_option_5":"DynIp baudot (5)",
+    ".typ_option_6":"“official” e-mail (6)",
+    "#passwordfield_label":"password",
+    "#rufnummer_newentry_dialog_label":"number",
+    "#name_newentry_dialog_label":"name",
+    "#typ_newentry_dialog_label":"type",
+    "#hostname_newentry_dialog_label":"hostname",
+    "#ipaddresse_newentry_dialog_label":"ipaddress",
+    "#port_newentry_dialog_label":"port",
+    "#durchwahl_newentry_dialog_label":"extention",
+    "#gesperrt_newentry_dialog_label":"locked",
+    "#rufnummer_edit_dialog_label":"rufnummer",
+    "#name_edit_dialog_label":"name",
+    "#typ_edit_dialog_label":"typ",
+    "#hostname_edit_dialog_label":"hostname",
+    "#ipaddresse_edit_dialog_label":"ipaddress",
+    "#port_edit_dialog_label":"port",
+    "#durchwahl_edit_dialog_label":"extention",
+    "#gesperrt_edit_dialog_label":"locked",
   }
 };
 var language = "german";
 sortby="";
 $(document).ready(function(){
-  // jumping label
   login(null,function(){
     initloc();
   });
@@ -97,64 +154,68 @@ $(document).ready(function(){
     });
   });*/
   $("#login").click(function(){
-    $("#dialogbox").show();
-    $("#passworddialog").show();
-    $("#newentrydialog").hide();
-    $("#editdialog").hide();
-    $("#deletedialog").hide();
+    $("#dialog_box").show();
+    $("#password_dialog").show();
+    $("#newentry_dialog").hide();
+    $("#edit_dialog").hide();
+    $("#delete_dialog").hide();
     actionkey = "login";
   });
   $("#new").click(function(){
-    $("#dialogbox").show();
-    $("#newentrydialog").show();
-    $("#editdialog").hide();
-    $("#deletedialog").hide();
-    $("#passworddialog").hide();
+    $("#dialog_box").show();
+    $("#newentry_dialog").show();
+    $("#edit_dialog").hide();
+    $("#delete_dialog").hide();
+    $("#password_dialog").hide();
     actionkey = "new";
   });
   $("#submitdialog").click(function(){
     switch(actionkey){
       case "login":
-        login(atob($("#passwordfield").val()));
+        login(atob($("#passwordfield").val()),function(successful){
+          if(!successful){
+            $("#wrongpwd").show().fadeOut(3000);
+          }
+        });
         $("#passwordfield").val("");
         $("#passwordfield").trigger('change');
         break;
       case "delete":
         edit({
           typekey:actionkey,
-          rufnummer: parseInt($("#rufnummerdeletedialog").html()),
+          rufnummer: parseInt($("#rufnummer_delete_dialog").html()),
         });
         break;
       case "new":
-        var locked = $("#gesperrtnewentrydialog").prop('checked') ? 1 : 0;
+        var gesperrt = $("#gesperrt_newentry_dialog").prop('checked') ? 1 : 0;
         edit({
           typekey:actionkey,
-          rufnummer: $("#rufnummernewentrydialog").val(),
-          name: $("#namenewentrydialog").val(),
-          typ: $("#typnewentrydialog").val(),
-          hostname: $("#hostnamenewentrydialog").val(),
-          ipaddresse: $("#ipadressenewentrydialog").val(),
-          port: $("#portnewentrydialog").val(),
-          extention: $("#durchwahlnewentrydialog").val(),
-          gesperrt: locked,
-          moddate: $("#moddatenewentrydialog").val(),
-          pin: $("#pinnewentrydialog").val(),
+          rufnummer: $("#rufnummer_newentry_dialog").val(),
+          name: $("#name_newentry_dialog").val(),
+          typ: $("#typ_newentry_dialog").val(),
+          hostname: $("#hostname_newentry_dialog").val(),
+          ipaddresse: $("#ipaddresse_newentry_dialog").val(),
+          port: $("#port_newentry_dialog").val(),
+          extention: $("#durchwahl_newentry_dialog").val(),
+          gesperrt: gesperrt,
+          moddate: $("#moddate_newentry_dialog").val(),
+          pin: $("#pin_newentry_dialog").val(),
         });
         break;
       case "edit":
-        var locked = $("#gesperrteditdialog").prop('checked') ? 1 : 0;
+        var gesperrt = $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0;
         edit({
           typekey:actionkey,
-          rufnummer: $("#rufnummereditdialog").val(),
-          name: $("#nameeditdialog").val(),
-          typ: $("#typeditdialog").val(),
-          hostname: $("#hostnameeditdialog").val(),
-          ipaddresse: $("#ipaddresseeditdialog").val(),
-          port: $("#porteditdialog").val(),
-          extention: $("#durchwahleditdialog").val(),
-          gesperrt: locked,
-          moddate: $("#moddateeditdialog").val(),
-          pin: $("#pineditdialog").val(),
+          rufnummer: $("#rufnummer_edit_dialog").val(),
+          name: $("#name_edit_dialog").val(),
+          typ: $("#typ_edit_dialog").val(),
+          hostname: $("#hostname_edit_dialog").val(),
+          ipaddresse: $("#ipaddresse_edit_dialog").val(),
+          port: $("#port_edit_dialog").val(),
+          extention: $("#durchwahl_edit_dialog").val(),
+          gesperrt: gesperrt,
+          moddate: $("#moddate_edit_dialog").val(),
+          pin: $("#pin_edit_dialog").val(),
         });
         break;
     }
@@ -164,7 +225,6 @@ $(document).ready(function(){
   $("#abortdialog").click(function(){
     typekey="";
     resetforms();
-    getlist(updatetable);
   });
 });
 
@@ -192,7 +252,7 @@ function login(pwd,callback){
     }
     getlist(function(li){
       updatetable(li,function(){
-        if(typeof callback==="function") callback();
+        if(typeof callback==="function") callback(result.code==1);
       });
     });
   });
@@ -302,38 +362,43 @@ function updatetable(usli,cb){
     table.appendChild(tr);
   }
   $(".edit").click(function(){
-    $("#dialogbox").show();
-    $("#editdialog").show();
-    $("#deletedialog").hide();
-    $("#newentrydialog").hide();
-    $("#passworddialog").hide();
+    $("#dialog_box").show();
+    $("#edit_dialog").show();
+    $("#delete_dialog").hide();
+    $("#newentry_dialog").hide();
+    $("#password_dialog").hide();
     actionkey = "edit";
-    var uid = $(this).parent().data("uid");
 
-    $("#rufnummereditdialog").val(global_list[uid].rufnummer).trigger('change');
-    $("#nameeditdialog").val(global_list[uid].name).trigger('change');
-    $("#typeditdialog").val(global_list[uid].typ).trigger('change');
-    $("#hostnameeditdialog").val(global_list[uid].hostname).trigger('change');
-    $("#ipaddresseeditdialog").val(global_list[uid].ipaddresse).trigger('change');
-    $("#porteditdialog").val(global_list[uid].port).trigger('change');
-    $("#durchwahleditdialog").val(global_list[uid].extention).trigger('change');
-    $("#gesperrteditdialog").prop('checked', global_list[uid].gesperrt).trigger('change');
-    
+    var uid = $(this).parent().data("uid");
+    $("#rufnummer_edit_dialog").val(global_list[uid].rufnummer).trigger('change');
+    $("#name_edit_dialog").val(global_list[uid].name).trigger('change');
+    $("#typ_edit_dialog").val(global_list[uid].typ).trigger('change');
+    $("#hostname_edit_dialog").val(global_list[uid].hostname).trigger('change');
+    $("#ipaddresse_edit_dialog").val(global_list[uid].ipaddresse).trigger('change');
+    $("#port_edit_dialog").val(global_list[uid].port).trigger('change');
+    $("#durchwahl_edit_dialog").val(global_list[uid].extention).trigger('change');
+    $("#gesperrt_edit_dialog").prop('checked', global_list[uid].gesperrt).trigger('change');
+
   });
   $(".remove").click(function(){
-    $("#dialogbox").show();
-    $("#deletedialog").show();
-    $("#editdialog").hide();
-    $("#newentrydialog").hide();
-    $("#passworddialog").hide();
+    $("#dialog_box").show();
+    $("#delete_dialog").show();
+    $("#edit_dialog").hide();
+    $("#newentry_dialog").hide();
+    $("#password_dialog").hide();
     actionkey = "delete";
-    var str = "really delete this entry?</br>";
+
     var uid = $(this).parent().data("uid");
-    for(i=0;i<this.parentElement.children.length-2;i++){
-      str += "</br>"+this.parentElement.children[i].innerHTML;
+    var str = "really delete this entry?</br>";
+    for(k in global_list[uid]){
+      if(k==="moddate"&&hrDate){
+        str += "</br>"+k+": "+UtcToString(global_list[uid][k]);
+      }else{
+        str += "</br>"+k+": "+global_list[uid][k];
+      }
     }
-    $("#rufnummerdeletedialog").html(this.parentElement.children[0].innerHTML);
-    $("#deletedialog").html(str);
+    $("#rufnummer_delete_dialog").html(global_list[uid].rufnummer);
+    $("#message_delete_dialog").html(str);
   });
   setLanguage(language);
   if(typeof cb==="function"){cb();}
@@ -348,9 +413,10 @@ function edit(vals, cb){
     success: function(response) {
       if(cb) cb(response);
       $("#log").html(JSON.stringify(response));
+      getlist(updatetable);
     },
     error: function(error) {
-      if(cb) cb(response);
+      if(cb) cb(error);
       $("#log").html(JSON.stringify(error));
     }
   });
@@ -378,20 +444,20 @@ function search(list,str,callback){
   callback(returnlist);
 }
 function resetforms(){
-  $("#newentrydialog input").val("");
-  $("#newentrydialog checkbox").prop("checked",false);
+  $("#newentry_dialog input").val("");
+  $("#newentry_dialog checkbox").prop("checked",false);
   /*
-  $("#newentrydialog").html(
-    '<input placeholder="rufnummer" id="rufnummernewentrydialog"></input><input placeholder="name" id="namenewentrydialog"></input><input placeholder="typ" id="typnewentrydialog"></input><input placeholder="hostname" id="hostnamenewentrydialog"></input><input placeholder="ipaddresse" id="ipaddressenewentrydialog"></input><input placeholder="port"id="portnewentrydialog"></input><input placeholder="durchwahl" id="durchwahlnewentrydialog"></input><input placeholder="pin" id="pinnewentrydialog"></input><input type="checkbox" id="gesperrtnewentrydialog">gesperrt</input></div>');
-  $("#editdialog").html(
-    '<input placeholder="rufnummer" id="rufnummereditdialog"></input><input placeholder="name" id="nameeditdialog"></input><input placeholder="typ" id="typeditdialog"></input><input placeholder="hostname" id="hostnameeditdialog"></input><input placeholder="ipaddresse" id="ipaddresseeditdialog"></input><input placeholder="port" id="porteditdialog"></input><input placeholder="durchwahl" id="durchwahleditdialog"></input><input type="checkbox" id="gesperrteditdialog">gesperrt</input></div>');
-  $("#deletedialog").html(
-    '<p id="pdeletedialog"></p><span id="rufnummerdeletedialog">test</span></div>');*/
-  $("#newentrydialog").hide();
-  $("#editdialog").hide();
-  $("#deletedialog").hide()
-  $("#passworddialog").hide();
-  $("#dialogbox").hide();
+  $("#newentry_dialog").html(
+    '<input placeholder="rufnummer" id="rufnummer_newentry_dialog"></input><input placeholder="name" id="name_newentry_dialog"></input><input placeholder="typ" id="typ_newentry_dialog"></input><input placeholder="hostname" id="hostname_newentry_dialog"></input><input placeholder="ipaddresse" id="ipaddresse_newentry_dialog"></input><input placeholder="port"id="port_newentry_dialog"></input><input placeholder="durchwahl" id="durchwahl_newentry_dialog"></input><input placeholder="pin" id="pin_newentry_dialog"></input><input type="checkbox" id="gesperrt_newentry_dialog">gesperrt</input></div>');
+  $("#edit_dialog").html(
+    '<input placeholder="rufnummer" id="rufnummer_edit_dialog"></input><input placeholder="name" id="name_edit_dialog"></input><input placeholder="typ" id="typ_edit_dialog"></input><input placeholder="hostname" id="hostname_edit_dialog"></input><input placeholder="ipaddresse" id="ipaddresse_edit_dialog"></input><input placeholder="port" id="port_edit_dialog"></input><input placeholder="durchwahl" id="durchwahl_edit_dialog"></input><input type="checkbox" id="gesperrt_edit_dialog">gesperrt</input></div>');
+  $("#delete_dialog").html(
+    '<p id="p_delete_dialog"></p><span id="rufnummer_delete_dialog">test</span></div>');*/
+  $("#newentry_dialog").hide();
+  $("#edit_dialog").hide();
+  $("#delete_dialog").hide()
+  $("#password_dialog").hide();
+  $("#dialog_box").hide();
 }
 function sort(usli){
   if(sortby === ""){

@@ -77,104 +77,101 @@
       <!--/.nav-collapse -->
     </div>
   </nav>
+  <div id="wrongpwd" style="display:none;"></div>
   <div class="container">
     <table id="table"></table>
   </div>
-  <div style="display: none;" id="dialogbox">
-    <div style="display: none;" id="passworddialog">
+  <div style="display: none;" id="dialog_box">
+    <div style="display: none;" id="password_dialog">
       <div class="field--wrapper">
-        <label for="passwordfield" class="">passwordfield</label>
+        <label for="passwordfield" id="passwordfield_label">passwordfield</label>
         <input name="vorname" id="passwordfield" type="password">
       </div>
     </div>
-    <div style="display: none;" id="newentrydialog">
+    <div style="display: none;" id=newentry_dialog>
       <div class="field--wrapper">
-        <label for="rufnummernewentrydialog" class="">rufnummernewentrydialog</label>
-        <input name="vorname" id="rufnummernewentrydialog" type="text">
+        <label for="rufnummer_newentry_dialog" id="rufnummer_newentry_dialog_label">rufnummer_newentry_dialog</label>
+        <input name="vorname" id="rufnummer_newentry_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="namenewentrydialog" class="">namenewentrydialog</label>
-        <input name="vorname" id="namenewentrydialog" type="text">
+        <label for="name_newentry_dialog" id="name_newentry_dialog_label">name_newentry_dialog</label>
+        <input name="vorname" id="name_newentry_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="typnewentrydialog" class="">typnewentrydialog</label>
-        <select class="input" id=typnewentrydialog>
-          <option value="0">typ 0</option>
-          <option value="1">typ 1</option>
-          <option value="2">typ 2</option>
-          <option value="3">typ 3</option>
-          <option value="4">typ 4</option>
-          <option value="5">typ 5</option>
+        <label for="typ_newentry_dialog" id="typ_newentry_dialog_label">typ_newentry_dialog</label>
+        <select class="input" id=typ_newentry_dialog>
+          <option class="typ_option_1" value="1"></option>
+          <option class="typ_option_2" value="2"></option>
+          <option class="typ_option_3" value="3"></option>
+          <option class="typ_option_4" value="4"></option>
+          <option class="typ_option_5" value="5"></option>
+          <option class="typ_option_6" value="6"></option>
         </select>
       </div>
       <div class="field--wrapper">
-        <label for="hostnamenewentrydialog" class="">hostnamenewentrydialog</label>
-        <input name="vorname" id="hostnamenewentrydialog" type="text">
+        <label for="hostname_newentry_dialog" id="hostname_newentry_dialog_label">hostname_newentry_dialog</label>
+        <input name="vorname" id="hostname_newentry_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="hostnamenewentrydialog" class="">hostnamenewentrydialog</label>
-        <input name="vorname" id="hostnamenewentrydialog" type="text">
+        <label for="ipaddresse_newentry_dialog" id="ipaddresse_newentry_dialog_label">ipaddresse_newentry_dialog</label>
+        <input name="vorname" id="ipaddresse_newentry_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="ipadressenewentrydialog" class="">ipadressenewentrydialog</label>
-        <input name="vorname" id="ipadressenewentrydialog" type="text">
+        <label for="port_newentry_dialog" id="port_newentry_dialog_label">port_newentry_dialog</label>
+        <input name="vorname" id="port_newentry_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="portnewentrydialog" class="">portnewentrydialog</label>
-        <input name="vorname" id="portnewentrydialog" type="text">
+        <label for="durchwahl_newentry_dialog" id="durchwahl_newentry_dialog_label">durchwahl_newentry_dialog</label>
+        <input name="vorname" id="durchwahl_newentry_dialog" type="text">
       </div>
-      <div class="field--wrapper">
-        <label for="durchwahlnewentrydialog" class="">durchwahlnewentrydialog</label>
-        <input name="vorname" id="durchwahlnewentrydialog" type="text">
-      </div>
-      <label for="gesperrtnewentrydialog">gesperrtnewentrydialog</label>
-      <input type="checkbox" id="gesperrtnewentrydialog"></input>
+      <label for="gesperrt_newentry_dialog" id="gesperrt_newentry_dialog_label">gesperrt_newentry_dialog</label>
+      <input type="checkbox" id="gesperrt_newentry_dialog"></input>
     </div>
-    <div style="display: none;" id="editdialog">
+    <div style="display: none;" id=edit_dialog>
       <div class="field--wrapper">
-        <label for="rufnummereditdialog" class="">rufnummereditdialog</label>
-        <input name="vorname" id="rufnummereditdialog" type="text">
+        <label for="rufnummer_edit_dialog" id="rufnummer_edit_dialog_label">rufnummer_edit_dialog</label>
+        <input name="vorname" id="rufnummer_edit_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="nameeditdialog" class="">nameeditdialog</label>
-        <input name="vorname" id="nameeditdialog" type="text">
+        <label for="name_edit_dialog" id="name_edit_dialog_label">name_edit_dialog</label>
+        <input name="vorname" id="name_edit_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="typeditdialog" class="">typeditdialog</label>
-        <select class="input" id=typeditdialog>
-          <option value="0">typ 0</option>
-          <option value="1">typ 1</option>
-          <option value="2">typ 2</option>
-          <option value="3">typ 3</option>
-          <option value="4">typ 4</option>
-          <option value="5">typ 5</option>
+        <label for="typ_edit_dialog" id="typ_edit_dialog_label">typ_edit_dialog</label>
+        <select class="input" id=typ_edit_dialog>
+          <option class="typ_option_1" value="1"></option>
+          <option class="typ_option_2" value="2"></option>
+          <option class="typ_option_3" value="3"></option>
+          <option class="typ_option_4" value="4"></option>
+          <option class="typ_option_5" value="5"></option>
+          <option class="typ_option_6" value="6"></option>
         </select>
       </div>
       <div class="field--wrapper">
-        <label for="hostnameeditdialog" class="">hostnameeditdialog</label>
-        <input name="vorname" id="hostnameeditdialog" type="text">
+        <label for="hostname_edit_dialog" id="hostname_edit_dialog_label">hostname_edit_dialog</label>
+        <input name="vorname" id="hostname_edit_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="ipaddresseeditdialog" class="">ipaddresseeditdialog</label>
-        <input name="vorname" id="ipaddresseeditdialog" type="text">
+        <label for="ipaddresse_edit_dialog" id="ipaddresse_edit_dialog_label">ipaddresse_edit_dialog</label>
+        <input name="vorname" id="ipaddresse_edit_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="porteditdialog" class="">porteditdialog</label>
-        <input name="vorname" id="porteditdialog" type="text">
+        <label for="port_edit_dialog" id="port_edit_dialog_label">port_edit_dialog</label>
+        <input name="vorname" id="port_edit_dialog" type="text">
       </div>
       <div class="field--wrapper">
-        <label for="durchwahleditdialog" class="">durchwahleditdialog</label>
-        <input name="vorname" id="durchwahleditdialog" type="text">
+        <label for="durchwahl_edit_dialog" id="durchwahl_edit_dialog_label">durchwahl_edit_dialog</label>
+        <input name="vorname" id="durchwahl_edit_dialog" type="text">
       </div>
-      <label for="gesperrteditdialog">gesperrteditdialog</label>
-      <input type="checkbox" id="gesperrteditdialog"></input>
+      <label for="gesperrt_edit_dialog" id="gesperrt_edit_dialog_label">gesperrt_edit_dialog</label>
+      <input type="checkbox" id="gesperrt_edit_dialog"></input>
     </div>
-    <div style="display: none;" id="deletedialog">
-      <p id="deletedialog"></p>
-      <span id="rufnummerdeletedialog">test</span>
+    <div style="display: none;" id=delete_dialog>
+      <p id="message_delete_dialog"></p>
+      <span id="rufnummer_delete_dialog" style="display:none;"></span>
     </div>
-    <button id="submitdialog">submit</button>
-    <button id="abortdialog">abort</button>
+    <button id="submitdialog" class="btn btn-primary btn-sm"></button>
+    <button id="abortdialog" class="btn btn-primary btn-sm"></button>
   </div>
   </br>
   <span id="log"></span>

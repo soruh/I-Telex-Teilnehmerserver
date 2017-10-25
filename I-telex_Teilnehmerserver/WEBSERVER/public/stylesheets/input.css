@@ -3,31 +3,21 @@ input[type="text"], input[type="email"], input[type="search"], input[type="passw
   -moz-appearance: caret; /* mobile firefox too! */
   -webkit-tap-highlight-color: transparent;
   color: #000000;
-  background: #ffffff none repeat scroll 0 0;
-  font-family: TisaScWeb,Georgia,"Times New Roman",Times,serif;
-  font-size: 22px;
-  line-height: 26px;
+  background-color: #dddddd;
   font-style: normal;
   text-align: left;
-  text-transform: lowercase;
   padding: 0 0 4px 0;
   margin: 0px;
   border: none;
-  border-bottom: 1px dashed #af9359;
   height: 22px;
   border-radius: 0;
+  -webkit-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
+  -moz-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
+  box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
 }
-
-input:focus,
-select:focus,
-textarea:focus,
-button:focus {
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-}
-select:-moz-focusring {
-    color: transparent;
-    text-shadow: 0 0 0 #000;
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 select::-ms-expand {
     display: none;
@@ -38,13 +28,11 @@ select,option{
 }
 
 /* jumping label */
-
 .field--wrapper {
  position:relative;
  margin-top:32px;
  margin-bottom:16px;
 }
-
 .field--wrapper label {
  position:absolute;
  transition: all 0.1s linear;
@@ -67,7 +55,6 @@ select,option{
 .gl_missing label{
  color: #e50952;
 }
-
 .gl_missing input,.gl_missing select,.gl_missing textarea{
  border-bottom-color: #d24291;
 }
@@ -75,51 +62,4 @@ select,option{
  content: "*";
  margin-left: 2px;
  color: #d24291;
-}
-/* css-checkbox */
-input[type=radio],input[type=checkbox]{
- position: absolute;
- z-index:-1000;
- left:-1000px;
- overflow: hidden;
- clip: rect(0 0 0 0);
- height:1px;
- width:1px;
- margin:-1px;
- padding:0;
- border:0;
-}
-
-input[type=radio] + label ,input[type=checkbox] + label{
- padding-left: 30px;
- min-height:24px;
- line-height: 22px;
- display:inline-block;
- background-repeat:no-repeat;
- background-position: 0 0;
- background-size: 18px 18px;
- vertical-align: middle;
- cursor:pointer;
- -webkit-touch-callout: none;
- -webkit-user-select: none;
- -khtml-user-select: none;
- -moz-user-select: none;
- -ms-user-select: none;
- user-select: none;
- position: static;
- margin-right: 24px;
- pointer-events: auto;
- transition: none !important;
-}
-input[type=radio] + label {
- background-image:url(../images/radiobutton.png);
-}
-input[type=radio]:checked + label {
- background-image:url(../images/radiobutton_active.png);
-}
-input[type=checkbox] + label {
- background-image:url(../images/checkbox.png);
-}
-input[type=checkbox]:checked + label {
- background-image:url(../images/checkbox_active.png);
 }
