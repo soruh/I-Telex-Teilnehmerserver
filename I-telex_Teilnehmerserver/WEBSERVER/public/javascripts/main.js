@@ -289,20 +289,6 @@ function getlist(callback) {
   });
 }
 function updatetable(usli,cb){
-  if(pwdcorrect){
-    $("#new").show();
-    $(".remove_td").show();
-    $(".edit_td").show();
-    $("#login").hide();
-    $("#logout").show();
-  }else{
-    $("#new").hide();
-    $(".remove_td").hide();
-    $(".edit_td").hide();
-    $("#login").show();
-    $("#logout").hide();
-  }
-
   var list = sort(usli);
   var table = document.getElementById("table");
   while(table.firstChild){
@@ -324,12 +310,6 @@ function updatetable(usli,cb){
         });
       });
     }
-  }
-  if(list.length != 0){
-    var th = document.createElement("th");
-    table.lastChild.appendChild(th);
-    var th = document.createElement("th");
-    table.lastChild.appendChild(th);
   }
 
   for(a in list){
@@ -401,7 +381,27 @@ function updatetable(usli,cb){
     $("#message_delete_dialog").html(str);
   });
   setLanguage(language);
+  if(pwdcorrect){
+    if(list.length != 0){
+      var th = document.createElement("th");
+      table.firstChild.appendChild(th);
+      var th = document.createElement("th");
+      table.firstChild.appendChild(th);
+    }
+    $("#new").show();
+    $(".remove_td").show();
+    $(".edit_td").show();
+    $("#login").hide();
+    $("#logout").show();
+  }else{
+    $("#new").hide();
+    $(".remove_td").hide();
+    $(".edit_td").hide();
+    $("#login").show();
+    $("#logout").hide();
+  }
   if(typeof cb==="function"){cb();}
+
 }
 function edit(vals, cb){
   vals["password"] = btoa(getCookie("pwd"));
