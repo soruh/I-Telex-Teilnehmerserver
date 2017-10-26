@@ -8,6 +8,24 @@ body{
 label{
 	font-weight: normal;
 }
+.table-th-label{
+	display: inline-block;
+}
+.table-th-arrow{
+	transition: all 0.35s ease;
+	transform:rotate(360deg);
+	opacity:0.25;
+	cursor: pointer;
+	display: inline-block;
+	margin-left: 2px;
+	margin-top: 2px;
+}
+.selected{
+	opacity: 1 !important;
+}
+.rotated{
+	transform: rotate(180deg) !important;
+}
 #wrongpwd{
 	background-color: #ff0000;
 	display: block;
@@ -30,15 +48,7 @@ label{
 select:invalid{
   color:gray;
 }
-#table{
-  box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.65);
-}
-#table tr,#table td,#table th{
-  border:4px solid white;
-  background-color: #eeeeee;
-  text-align: left;
-  vertical-align: top;
-}
+
 .edit_td, .remove_td{
   vertical-align: bottom;
 }
@@ -69,43 +79,30 @@ select:invalid{
   margin-top: 10px;
 }
 #dialog_box{
-  position: fixed;
-  width: 50%;
-  height: 50%;
-  left: 25%;
-  top: 25%;
   border: 1px solid black;
-  border-radius: 10px;
   background-color: white;
   padding: 10px;
   box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+	position: absolute;
+
 }
 #submitdialog, #abortdialog{
   float: right;
 }
 #password_dialog{
-  position: absolute;
-  bottom: 50px;
-  right: 25%;
-  width: 50%;
+
 }
-#gesperrtnewentrydialog{
-  vertical-align: middle;
-  border: 1px solid gray;
-}
+
 #edit_dialog{
-  width: 100%;
-  height: 100%;
+
 }
 #delete_dialog{
-  width: 100%;
-  height: 100%;
+
 }
 #newentry_dialog{
-  width: 100%;
-  height: 100%;
+
 }
 .shown{
   margin-bottom: 0px;
@@ -171,9 +168,60 @@ select:invalid{
   background-position: center center;
   background-repeat:no-repeat;
 }
-#table th{
-  cursor: pointer;
+.container{
+	text-align: center;
 }
-#table th ,#table td{
+#table{
+	box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.65);
+	background-color: red;
+	display: inline-block;
+}
+#table .td, #table .th{
+  border:4px solid white;
+  background-color: #eeeeee;
+  text-align: left;
+  vertical-align: top;
+}
+#table .th ,#table .td{
   padding: 4px 8px;
+}
+#table .tr{
+	border: 1px solid blue;
+}
+#table .td{
+	display: inline-block;
+}
+#table .th{
+	display: inline-block;
+}
+.cell{
+	width: 10%;
+	height: 60px;
+}
+.cell.cell-rufnummer{
+
+}
+.cell.cell-name{
+
+}
+.cell.cell-typ{
+
+}
+.cell.cell-hostname{
+
+}
+.cell.cell-ipaddresse{
+	width: 131px;
+}
+.cell.cell-port{
+
+}
+.cell.cell-extention{
+
+}
+.cell.cell-gesperrt{
+
+}
+.cell.cell-moddate{
+
 }

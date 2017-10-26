@@ -4,6 +4,7 @@
   "SERVERPIN":118120815,
   "TCPPORT":11811,
   "WEBSERVERPORT":3030,
+  "WEBINTERFACEPASSWORD":"password",
   "QWD_STDOUT_LOG":"",
   "QWD_STDERR_LOG":"",
   "mySqlConnectionOptions":{

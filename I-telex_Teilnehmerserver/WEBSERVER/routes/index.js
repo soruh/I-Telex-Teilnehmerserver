@@ -6,22 +6,22 @@ router.get('/', function(req, res, next) {
 });
 module.exports = router;
 const mysql = require('mysql');
-
 const config = require('config');
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
+const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 
 const pool  = mysql.createPool(mySqlConnectionOptions);
-
 router.post('/list', function(req, res){
+  console.log(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
   pool.query("SELECT * FROM telefonbuch.teilnehmer", function (err, result) {
     if(err){
       res.json(err);
     }else{
-      console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
+//      console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
       var resultnopin = [];
       for(a in result){
-        if(result[a].gesperrt==0||req.body.password=="password"){
+        if(result[a].gesperrt==0||req.body.password==WEBINTERFACEPASSWORD){
           var i=resultnopin.length;
           resultnopin[i] = {};
           for(b in result[i]){
@@ -39,7 +39,7 @@ router.post('/list', function(req, res){
 
 router.post('/edit', function(req, res){
   res.header("Content-Type", "application/json; charset=utf-8");
-  if(req.body.password=="password"){
+  if(req.body.password==WEBINTERFACEPASSWORD){
     switch(req.body.typekey){
       case "edit":
         pool.query("UPDATE telefonbuch.teilnehmer SET rufnummer= "+req.body.rufnummer+",name='"+req.body.name+"',typ="+req.body.typ+",hostname='"+req.body.hostname+"',ipaddresse='"+req.body.ipaddresse+"',port='"+req.body.port+"',extention='"+req.body.extention+"',gesperrt="+req.body.gesperrt+", moddate="+Math.round(new Date().getTime()/1000)+" WHERE rufnummer="+req.body.rufnummer, (err, result)=>{

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "cd ./WEBSERVER/;ln -sf ../config .;pm2 start ./bin/webserver.js;cd ../TCPSERVER/;ln -sf ../config .;pm2 start ./tcpserver.js;",
     "restart": "pm2 reload webserver;pm2 reload tcpserver;",
-    "stop": "pm2 delete webserver tcpserver;"
+    "stop": "pm2 delete webserver;pm2 delete tcpserver;"
   },
   "dependencies": {
     "async": "^2.5.0",

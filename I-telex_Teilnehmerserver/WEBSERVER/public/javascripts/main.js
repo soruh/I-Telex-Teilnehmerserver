@@ -4,21 +4,31 @@
 4: peer only supporting “ascii texting” (or a standard telnet client), accessible by a given IP address (IPv4)
 5: same as 2, but IP address may change frequently
 6: not a real peer, but an “official” email address.*/
-var hrDate = true;
-var showAllDateInfo = false;
+var UTCDATE = false;
+var SHOWALLDATEINFO = false;
+const SHOWTYPENUMBER = true;
 var pwdcorrect = false;
 var global_list={};
+const type_list = {
+  1:"I-Telex<br>hostname",
+  2:"I-Telex<br>static Ip",
+  3:"ASCII<br>hostname",
+  4:"ASCII<br>static Ip",
+  5:"I-Telex<br>dynamic Ip",
+  6:"E-mail",
+  7:"ASCII<br>dynamic Ip",
+}
 const languages = {
   german:{
-    "#table-th-rufnummer":"telex-nummer",
-    "#table-th-name":"name",
-    "#table-th-typ":"typ",
-    "#table-th-hostname":"hostname",
-    "#table-th-ipaddresse":"ipaddresse",
-    "#table-th-port":"port",
-    "#table-th-extention":"durchwahl",
-    "#table-th-gesperrt":"gesperrt",
-    "#table-th-moddate":"letzte Änderung",
+    "#table-th-label-rufnummer":"telex-nummer",
+    "#table-th-label-name":"name",
+    "#table-th-label-typ":"typ",
+    "#table-th-label-hostname":"hostname",
+    "#table-th-label-ipaddresse":"ipaddresse",
+    "#table-th-label-port":"port",
+    "#table-th-label-extention":"durchwahl",
+    "#table-th-label-gesperrt":"gesperrt",
+    "#table-th-label-moddate":"letzte Änderung",
     "#search-box":"suchen|placeholder",
     "#new":"neuer eintrag",
     ".edit":"bearbeiten|title",
@@ -53,15 +63,15 @@ const languages = {
     "#gesperrt_edit_dialog_label":"gesperrt",
   },
   english:{
-    "#table-th-rufnummer":"telex-number",
-    "#table-th-name":"name",
-    "#table-th-typ":"type",
-    "#table-th-hostname":"hostname",
-    "#table-th-ipaddresse":"ipaddress",
-    "#table-th-port":"port",
-    "#table-th-extention":"extention",
-    "#table-th-gesperrt":"locked",
-    "#table-th-moddate":"last changed",
+    "#table-th-label-rufnummer":"telex-number",
+    "#table-th-label-name":"name",
+    "#table-th-label-typ":"type",
+    "#table-th-label-hostname":"hostname",
+    "#table-th-label-ipaddresse":"ipaddress",
+    "#table-th-label-port":"port",
+    "#table-th-label-extention":"extention",
+    "#table-th-label-gesperrt":"locked",
+    "#table-th-label-moddate":"last changed",
     "#search-box":"search|placeholder",
     "#new":"new entry",
     ".edit":"edit|title",
@@ -78,7 +88,7 @@ const languages = {
     ".typ_option_5":"DynIp baudot (5)",
     ".typ_option_6":"“official” e-mail (6)",
     "#passwordfield_label":"password",
-    "#rufnummer_newentry_dialog_label":"number",
+    "#rufnummer_newentry_dialog_label":"telex-number",
     "#name_newentry_dialog_label":"name",
     "#typ_newentry_dialog_label":"type",
     "#hostname_newentry_dialog_label":"hostname",
@@ -86,9 +96,9 @@ const languages = {
     "#port_newentry_dialog_label":"port",
     "#durchwahl_newentry_dialog_label":"extention",
     "#gesperrt_newentry_dialog_label":"locked",
-    "#rufnummer_edit_dialog_label":"rufnummer",
+    "#rufnummer_edit_dialog_label":"telex-number",
     "#name_edit_dialog_label":"name",
-    "#typ_edit_dialog_label":"typ",
+    "#typ_edit_dialog_label":"type",
     "#hostname_edit_dialog_label":"hostname",
     "#ipaddresse_edit_dialog_label":"ipaddress",
     "#port_edit_dialog_label":"port",
@@ -97,8 +107,20 @@ const languages = {
   }
 };
 var language = "german";
-sortby="";
+var sortby="";
+var revsort=false;
 $(document).ready(function(){
+  (function($){
+    $.fn.extend({
+        center: function () {
+            return this.each(function() {
+                var top = $(window).scrollTop()+(($(window).height() - $(this).outerHeight()) / 2);
+                var left = $(window).scrollLeft()+(($(window).width() - $(this).outerWidth()) / 2);
+                $(this).css({position:'absolute', margin:0, top: (top > 0 ? top : 0)+'px', left: (left > 0 ? left : 0)+'px'});
+            });
+        }
+    });
+  })(jQuery);
   login(null,function(){
     initloc();
   });
@@ -125,9 +147,9 @@ $(document).ready(function(){
   }).trigger("checkval");
 
   $("#search-box").val("");
-  jQuery("#search-button, #search-box").bind("search",function(){
-    search(global_list,$("#search-box").val(),function(list){
-      updatetable(list);
+  jQuery("#search-box").bind("search",function(){
+    search(sort(global_list),$("#search-box").val(),function(list){
+      updateTable(list);
     });
   });
   $("#search-box").on("change",function(){
@@ -135,7 +157,7 @@ $(document).ready(function(){
   }).on("keyup",function(){
     jQuery(this).trigger("search");
   }).on("focus",function(){
-    getlist();
+    getList();
   })
   $("#search-button").on("click",function(){
     $("#search-box").fadeToggle();
@@ -144,18 +166,19 @@ $(document).ready(function(){
   $("#search-button").click(function(){
     jQuery(this).trigger("checkval");
     search($("#search-box").val(),(list)=>{
-      updatetable(list);
+      updateTable(list);
     });
   });
   $("#search-box").change(function(){
     jQuery(this).trigger("checkval");
     search($("#search-box").val(),(list)=>{
-      updatetable(list);
+      updateTable(list);
     });
   });*/
   $("#login").click(function(){
     $("#dialog_box").show();
     $("#password_dialog").show();
+    $("#passwordfield").focus();
     $("#newentry_dialog").hide();
     $("#edit_dialog").hide();
     $("#delete_dialog").hide();
@@ -220,7 +243,7 @@ $(document).ready(function(){
         break;
     }
     resetforms();
-    getlist(updatetable);
+    getList(updateTable);
   });
   $("#abortdialog").click(function(){
     typekey="";
@@ -235,23 +258,9 @@ function login(pwd,callback){
   edit({
     typekey:"checkpwd"
   },function(result){
-    if(result.code==1){
-      pwdcorrect = true;
-      $("#login").hide();
-      $("#logout").show();
-      $("#new").show();
-      $(".remove_td").show();
-      $(".edit_td").show();
-    }else{
-      pwdcorrect = false;
-      $("#login").show();
-      $("#logout").hide();
-      $("#new").hide();
-      $(".remove_td").hide();
-      $(".edit_td").hide();
-    }
-    getlist(function(li){
-      updatetable(li,function(){
+    pwdcorrect=(result.code==1);
+    getList(function(li){
+      updateTable(li,function(){
         if(typeof callback==="function") callback(result.code==1);
       });
     });
@@ -261,15 +270,23 @@ function logout(){
   setCookie("pwd","")
   login();
 }
-function UtcToString(Utc){
-  var d = new Date(parseInt(Utc)*1000);
-  if(showAllDateInfo){
-    return(d.toString());
+function twodigit(n){
+  if(n.toString().length<2){
+    return("0"+n.toString())
   }else{
-    return(d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear()+" "+d.getSeconds()+":"+d.getMinutes()+":"+d.getHours());
+    return(n.toString())
   }
 }
-function getlist(callback) {
+function UtcToString(Utc){
+  var d = new Date(parseInt(Utc)*1000);
+  if(SHOWALLDATEINFO){
+    return(d.toString());
+  }else{
+    return(twodigit(d.getDate())+"."+twodigit(d.getMonth()+1)+"."+twodigit(d.getFullYear())+" "+twodigit(d.getHours())+":"+twodigit(d.getMinutes()));
+  }
+}
+function getList(callback){
+  console.log("getList");
   $.ajax({
     url: "/list",
     type: "POST",
@@ -278,67 +295,117 @@ function getlist(callback) {
       "password":btoa(getCookie("pwd")),
     },
     success: function(response){
+      global_list={};
       for(k in response){
         global_list[response[k].uid]=response[k];
       }
-      if(typeof callback==="function") callback(response);
+      if(typeof callback==="function") callback(global_list);
     },
     error: function(error) {
       console.error(error);
     }
   });
 }
-function updatetable(usli,cb){
-  var list = sort(usli);
+function updateTable(usli,cb){
   var table = document.getElementById("table");
   while(table.firstChild){
     table.removeChild(table.firstChild);
   }
-  var tr = document.createElement("tr");
-  table.appendChild(tr);
-  for(b in list[0]){
+  var tr = document.createElement("div");
+  $(tr).addClass("tr");
+  for(b in usli[Object.keys(usli)[0]]){
     if(b!="uid"){
-      var th = document.createElement("th");
-      th.id = "table-th-"+b;
-      table.lastChild.appendChild(th);
-      $("#table-th-"+b).click(function(){
-        sortby=this.id.split('-')[2];
-        getlist((li)=>{
-          updatetable(li,()=>{
-            setLanguage(language);
-          });
-        });
+      var th = document.createElement("div");
+      $(th).addClass("th cell cell-"+b);
+      var div = document.createElement("div");
+      div.className = "table-th-label";
+      div.id = "table-th-label-"+b;
+      th.appendChild(div);
+
+      var div = document.createElement("div");
+      div.className = "table-th-arrow glyphicon glyphicon-chevron-down";
+      div.id = "table-th-arrow-"+b;
+      $(div).click(function(){
+        console.log(sortby+"!="+$(this).attr('id').split('-')[3]);
+        if(sortby!=$(this).attr('id').split('-')[3]){
+          $(".table-th-arrow").removeClass("selected").removeClass("rotated");
+          $(this).addClass("selected");
+          sortby=$(this).attr('id').split('-')[3];
+          revsort = false;
+        }else{
+          if($(this).hasClass("rotated")){
+            $(this).removeClass("rotated");
+            revsort = false;
+          }else{
+            $(this).addClass("rotated");
+            revsort = true;
+          }
+        }
+        console.log("sortby:",sortby, "revsort:",revsort, "selected:",$(this).hasClass("selected")," rotated:",$(this).hasClass("rotated"));
+        updateContent(global_list);
       });
+      th.appendChild(div);
+      tr.appendChild(th);
     }
   }
+  table.appendChild(tr);
+  updateContent(usli);
+  if(typeof cb==="function"){cb();}
 
+}
+function updateContent(usli){
+  var list = sort(usli);
+  var table = document.getElementById("table");
+  while(table.children.length > 1){
+    table.removeChild(table.lastChild);
+  }
   for(a in list){
-    var tr = document.createElement("tr");
+    var tr = document.createElement("div");
+    $(tr).addClass("tr");
     for(b in list[a]){
       if(b!="uid"){
-        var td = document.createElement("td");
-        if(b==="moddate"&&hrDate){
+        var td = document.createElement("div");
+        $(td).addClass("td cell cell-"+b);
+        if(b==="moddate"&&(!UTCDATE)){
           $(td).text(UtcToString(list[a][b]));
+        }else if(b==="gesperrt"){
+          if((list[a][b]==1)||(list[a][b]=="1")){
+            $(td).addClass("glyphicon glyphicon-ban-circle");
+            //$(td).addClass("glyphicon glyphicon-ok-circle");
+          }else{
+            //$(td).addClass("glyphicon glyphicon-remove-circle");
+          }
+        }else if(b==="typ"){
+          try{
+            $(td).html(type_list[list[a][b]]+(SHOWTYPENUMBER?"("+list[a][b]+")":""));
+          }catch(e){
+            $(td).text(list[a][b]);
+          }
         }else{
           $(td).text(list[a][b]);
         }
         tr.appendChild(td);
       }
     }
-    var td = document.createElement("td");
+    var modify_container = document.createElement("div");
+    modify_container.className = "td admin_only";
+
+    var td = document.createElement("div");
+    $(td).addClass("td");
     td.innerHTML='<span class="btn  btn-primary btn-sm glyphicon glyphicon-pencil edit"></span>';
     td.title="edit";
     td.className = "edit_td";
     $(td).data("uid",list[a].uid);
-    tr.appendChild(td);
+    modify_container.appendChild(td);
 
-    var td = document.createElement("td");
+    var td = document.createElement("div");
+    $(td).addClass("td");
     td.innerHTML='<span class="glyphicon glyphicon-trash btn  btn-primary btn-sm remove"></span>';
     td.title="remove";
     td.className = "remove_td";
     $(td).data("uid",list[a].uid);
-    tr.appendChild(td);
-
+    modify_container.appendChild(td);
+    tr.appendChild(modify_container);
     table.appendChild(tr);
   }
   $(".edit").click(function(){
@@ -371,7 +438,7 @@ function updatetable(usli,cb){
     var uid = $(this).parent().data("uid");
     var str = "really delete this entry?</br>";
     for(k in global_list[uid]){
-      if(k==="moddate"&&hrDate){
+      if(k==="moddate"&&(!UTCDATE)){
         str += "</br>"+k+": "+UtcToString(global_list[uid][k]);
       }else{
         str += "</br>"+k+": "+global_list[uid][k];
@@ -382,26 +449,12 @@ function updatetable(usli,cb){
   });
   setLanguage(language);
   if(pwdcorrect){
-    if(list.length != 0){
-      var th = document.createElement("th");
-      table.firstChild.appendChild(th);
-      var th = document.createElement("th");
-      table.firstChild.appendChild(th);
-    }
-    $("#new").show();
-    $(".remove_td").show();
-    $(".edit_td").show();
-    $("#login").hide();
-    $("#logout").show();
+    $(".admin_only").show();
+    $(".user_only").hide();
   }else{
-    $("#new").hide();
-    $(".remove_td").hide();
-    $(".edit_td").hide();
-    $("#login").show();
-    $("#logout").hide();
+    $(".admin_only").hide();
+    $(".user_only").show();
   }
-  if(typeof cb==="function"){cb();}
-
 }
 function edit(vals, cb){
   vals["password"] = btoa(getCookie("pwd"));
@@ -413,7 +466,7 @@ function edit(vals, cb){
     success: function(response) {
       if(cb) cb(response);
       $("#log").html(JSON.stringify(response));
-      getlist(updatetable);
+      getList(updateTable);
     },
     error: function(error) {
       if(cb) cb(error);
@@ -427,7 +480,7 @@ function search(list,str,callback){
     var matches = true;
     var rowstr = "";
     for(key in row){
-      if((key==="moddate")&&hrDate){
+      if((key==="moddate")&&(!UTCDATE)){
         rowstr += UtcToString(row[key])+" ";
       }else{
         rowstr += row[key]+" ";
@@ -459,18 +512,34 @@ function resetforms(){
   $("#password_dialog").hide();
   $("#dialog_box").hide();
 }
+function sortFunction(){
+  (x,y)=>{return(x[sortby].toString().localeCompare(y[sortby].toString()),'de',{numeric:true});}
+}
 function sort(usli){
+  var sortable=[];
+  for(k in usli){
+    sortable[sortable.length]=usli[k];
+  }
   if(sortby === ""){
-    return(usli);
+    return(sortable);
   }else{
     var iskey = false;
-    for(k in usli[0]){
+    for(k in usli[Object.keys(usli)[0]]){
       if(k === sortby){
         iskey = true;
       }
     }
     if(iskey){
-      return(usli.sort((x,y)=>{return(comp=x[sortby].toString().localeCompare(y[sortby].toString()));}));
+      var soli = sortable.sort(sortFunction);
+      if(revsort){
+        var revsoli = [];
+        for(i=soli.length-1;i>=0;i--){
+          revsoli[revsoli.length] = soli[i]
+        }
+        return(revsoli);
+      }else{
+        return(soli);
+      }
     }else{
       console.log(sortby+" is not a collumn name!");
       return(usli);

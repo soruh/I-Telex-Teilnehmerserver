@@ -1,14 +1,17 @@
 <html>
 <head>
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">-->
+  <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+  <link rel="stylesheet" href="stylesheets/bootstrap-theme.min.css">
   <link rel="stylesheet" href="stylesheets/input.css">
   <link rel="stylesheet" href="stylesheets/main.css">
 
   <script src="/javascripts/jquery-3.2.1.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-  <script src="/javascripts/main.js"></script>
+  <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>-->
+  <script src="javascripts/bootstrap.min.js"></script>
+  <script src="javascripts/main.js"></script>
 </head>
 
 <body>
@@ -53,7 +56,7 @@
             </div>
           </li>
           <li>
-            <button id="new" style="display: none;" class="btn btn-primary btn-sm"></button>
+            <button id="new" style="display: none;" class="btn btn-primary btn-sm admin_only"></button>
           </li>
           <li>
             <div id="loc-container">
@@ -63,8 +66,8 @@
           </li>
           <li>
             <div id="loginout">
-              <button id="logout" onclick="logout();"; style="display: none;" class="btn btn-danger btn-sm"></button>
-              <button id="login" style="display: none;" class="btn btn-primary btn-sm"></button>
+              <button id="logout" onclick="logout();"; style="display: none;" class="btn btn-danger btn-sm admin_only"></button>
+              <button id="login" style="display: none;" class="btn btn-primary btn-sm user_only"></button>
             </div>
           </li>
           <!--
@@ -79,7 +82,7 @@
   </nav>
   <div id="wrongpwd" style="display:none;"></div>
   <div class="container">
-    <table id="table"></table>
+    <div id="table"></div>
   </div>
   <div style="display: none;" id="dialog_box">
     <div style="display: none;" id="password_dialog">
