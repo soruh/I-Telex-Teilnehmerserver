@@ -1,12 +1,13 @@
+const PWD = process.env.PWD;
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
-const ITelexCom = require("./ITelexCom.js");
-const colors = require("../colors.js");
+const ITelexCom=require(PWD+"/TCPSERVER/ITelexCom.js");
+const colors = require(PWD+"/COMMONMODULES/colors.js");
 
-const config = require(process.env.PWD+'/../config.js');
+const config = require(PWD+'/COMMONMODULES/config.js');
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 /*const mySqlConnectionOptions = {
@@ -351,7 +352,7 @@ function getFullQuery(){
 }
 var qwdec;	//queuewatchdog exit code
 function startQWD(){
-	qwd = cp.spawn('node',["queuewatchdog.js"]);
+	qwd = cp.spawn('node',[PWD+"/TCPSERVER/queuewatchdog.js"]);
 	qwd.on('exit',(ec)=>{
 		qwdec = ec;
 		if(ITelexCom.cv(0)) console.log("qwd process exited with code "+ec);

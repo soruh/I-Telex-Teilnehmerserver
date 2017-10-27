@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-
 /**
  * Module dependencies.
  */
-const config = require(process.env.PWD+'/../config.js');
-var app = require('../app');
+const PWD = process.env.PWD;
+const config = require(PWD+'/COMMONMODULES/config.js');
+var app = require(PWD+'/WEBSERVER/app');
 var debug = require('debug')('i-telex-teilnehmerserver:server');
 var http = require('http');
 

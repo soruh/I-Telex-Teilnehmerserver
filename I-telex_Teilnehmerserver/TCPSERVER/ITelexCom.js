@@ -1,9 +1,10 @@
+const PWD = process.env.PWD;
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
-const colors = require("../colors.js")
+const colors = require(PWD+"/COMMONMODULES/colors.js");
 
-const config = require(process.env.PWD+'/../config.js');
+const config = require(PWD+'/COMMONMODULES/config.js');
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 /*const mySqlConnectionOptions = {

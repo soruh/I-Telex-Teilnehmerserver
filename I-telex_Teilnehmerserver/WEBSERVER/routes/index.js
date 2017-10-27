@@ -1,3 +1,4 @@
+const PWD = process.env.PWD;
 const express = require('express');
 const router = express.Router();
 /* GET home page. */
@@ -6,7 +7,7 @@ router.get('/', function(req, res, next) {
 });
 module.exports = router;
 const mysql = require('mysql');
-const config = require(process.env.PWD+'/../config.js');
+const config = require(PWD+'/COMMONMODULES/config.js');
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 

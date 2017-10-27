@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "cd ./WEBSERVER/;ln -sf ../config .;pm2 start ./bin/webserver.js;cd ../TCPSERVER/;ln -sf ../config .;pm2 start ./tcpserver.js;",
+    "start": "pm2 start TCPSERVER/tcpserver.js;pm2 start WEBSERVER/bin/webserver.js",
     "restart": "pm2 reload webserver;pm2 reload tcpserver;",
     "stop": "pm2 delete webserver;pm2 delete tcpserver;"
   },
