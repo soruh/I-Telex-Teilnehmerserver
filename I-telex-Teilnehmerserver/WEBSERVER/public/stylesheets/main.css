@@ -198,6 +198,9 @@ select:invalid{
 .cell.cell-extension{
 	width: 77px;
 }
+.cell.cell-pin{
+	width: 50px;
+}
 .cell.cell-gesperrt{
 	width: 79px;
 }

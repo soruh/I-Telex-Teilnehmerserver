@@ -4,7 +4,7 @@ const mysql = require('mysql');
 const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
-const ITelexCom=require(PWD+"/TCPSERVER/ITelexCom.js");
+const ITelexCom = require(PWD+"/TCPSERVER/ITelexCom.js");
 const colors = require(PWD+"/COMMONMODULES/colors.js");
 
 const config = require(PWD+'/COMMONMODULES/config.js');

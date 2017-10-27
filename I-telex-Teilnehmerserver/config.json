@@ -1,17 +1,18 @@
 {
-  "UPDATEQUEUEINTERVAL":60000,
-  "QUEUE_SEND_INTERVAL":60000,
-  "SERVERPIN":118120815,
-  "TCPPORT":11811,
-  "WEBSERVERPORT":3030,
-  "WEBINTERFACEPASSWORD":"password",
-  "QWD_STDOUT_LOG":"",
-  "QWD_STDERR_LOG":"",
   "mySqlConnectionOptions":{
-  	"host": "localhost",
-  	"user": "telefonbuch",
-  	"password": "amesads",
+    "host": "localhost",
+    "user": "telefonbuch",
+    "password": "amesads",
     "database": "telefonbuch"
   },
-  "LOGGING_VERBOSITY":1
+  "SERVERPIN":118120815,
+  "UPDATEQUEUEINTERVAL":60000,
+  "QUEUE_SEND_INTERVAL":60000,
+  "QWD_STDOUT_LOG":"",
+  "QWD_STDERR_LOG":"",
+  "TCPPORT":11811,
+  "LOGGING_VERBOSITY":1,
+
+  "WEBSERVERPORT":3030,
+  "WEBINTERFACEPASSWORD":"password"
 }

@@ -26,7 +26,7 @@ router.post('/list', function(req, res){
           var i=resultnopin.length;
           resultnopin[i] = {};
           for(b in result[i]){
-            if(b != "pin" && b != "changed"&&(b != "gesperrt"||req.body.password=="password")){
+            if((b != "pin" /*TODO*/|| req.body.password=="password"/*TODO:*/)&& b != "changed"&&(b != "gesperrt"||req.body.password=="password")){
               resultnopin[i][b] = result[i][b];
             }
           }
@@ -44,7 +44,8 @@ router.post('/edit', function(req, res){
   if(req.body.password==WEBINTERFACEPASSWORD){
     switch(req.body.typekey){
       case "edit":
-        pool.query("UPDATE teilnehmer SET rufnummer= "+mysql.escape(req.body.rufnummer)+",name='"+mysql.escape(req.body.name)+"',typ="+mysql.escape(req.body.typ)+",hostname='"+mysql.escape(req.body.hostname)+"',ipaddresse='"+mysql.escape(req.body.ipaddresse)+"',port='"+mysql.escape(req.body.port)+"',extension='"+mysql.escape(req.body.extension)+"',gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.round(new Date().getTime()/1000))+" WHERE uid="+mysql.escape(req.body.uid), (err, result)=>{
+        pool.query("UPDATE teilnehmer SET rufnummer="+mysql.escape(req.body.rufnummer)+",name="+mysql.escape(req.body.name)+",typ="+mysql.escape(req.body.typ)+",hostname="+mysql.escape(req.body.hostname)+",ipaddresse="+mysql.escape(req.body.ipaddresse)+",pin="+mysql.escape(req.body.pin)+",port="+mysql.escape(req.body.port)+",extension="+mysql.escape(req.body.extension)+",gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.round(new Date().getTime()/1000))
+        +" WHERE uid="+mysql.escape(req.body.uid), function(err, result){
           if(err){
             res.json({successful:false,message:err});
           }else{
@@ -53,8 +54,8 @@ router.post('/edit', function(req, res){
         });
         break;
       case "new":
-        pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+mysql.escape(req.body.rufnummer)+",'"+mysql.escape(req.body.name)+"',"+mysql.escape(req.body.typ)+",'"+mysql.escape(req.body.hostname)+"','"+mysql.escape(req.body.ipaddresse)+"','"+mysql.escape(req.body.port)+"','"+mysql.escape(req.body.extension)+"','"+mysql.escape(req.body.pin)+"',"+mysql.escape(req.body.gesperrt)+",'"
-        +mysql.escape(Math.round(new Date().getTime()/1000))+"')",
+        pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+mysql.escape(req.body.rufnummer)+","+mysql.escape(req.body.name)+","+mysql.escape(req.body.typ)+","+mysql.escape(req.body.hostname)+","+mysql.escape(req.body.ipaddresse)+","+mysql.escape(req.body.port)+","+mysql.escape(req.body.extension)+","+mysql.escape(req.body.pin)+","+mysql.escape(req.body.gesperrt)+","
+        +mysql.escape(Math.round(new Date().getTime()/1000))+")",
          function (err, result) {
           if(err){
             res.json({successful:false,message:err});

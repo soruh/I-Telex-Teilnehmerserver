@@ -19,6 +19,7 @@ const languages = {
     "#table-th-label-ipaddresse":{text:"ipaddresse"},
     "#table-th-label-port":{text:"port"},
     "#table-th-label-extension":{text:"durchwahl"},
+    "#table-th-label-pin":{text:"pin"},
     "#table-th-label-gesperrt":{title:"gesperrt"},
     "#table-th-label-moddate":{text:"letzte Änderung"},
     "#search-box":{placeholder:"suchen"},
@@ -45,6 +46,7 @@ const languages = {
     "#ipaddresse_newentry_dialog_label":{text:"ipaddresse"},
     "#port_newentry_dialog_label":{text:"port"},
     "#durchwahl_newentry_dialog_label":{text:"durchwahl"},
+    "#pin_newentry_dialog_label":{text:"pin"},
     "#gesperrt_newentry_dialog_label":{text:"gesperrt"},
     "#rufnummer_edit_dialog_label":{text:"rufnummer"},
     "#name_edit_dialog_label":{text:"name"},
@@ -53,6 +55,7 @@ const languages = {
     "#ipaddresse_edit_dialog_label":{text:"ipaddresse"},
     "#port_edit_dialog_label":{text:"port"},
     "#durchwahl_edit_dialog_label":{text:"durchwahl"},
+    "#pin_edit_dialog_label":{text:"pin"},
     "#gesperrt_edit_dialog_label":{text:"gesperrt"},
   },
   english:{
@@ -63,6 +66,7 @@ const languages = {
     "#table-th-label-ipaddresse":{text:"ipaddress"},
     "#table-th-label-port":{text:"port"},
     "#table-th-label-extension":{text:"extension"},
+    "#table-th-label-pin":{text:"pin"},
     "#table-th-label-gesperrt":{title:"locked"},
     "#table-th-label-moddate":{text:"last changed"},
     "#search-box":{placeholder:"search"},
@@ -89,6 +93,7 @@ const languages = {
     "#ipaddresse_newentry_dialog_label":{text:"ipaddress"},
     "#port_newentry_dialog_label":{text:"port"},
     "#durchwahl_newentry_dialog_label":{text:"extension"},
+    "#pin_newentry_dialog_label":{text:"pin"},
     "#gesperrt_newentry_dialog_label":{text:"locked"},
     "#rufnummer_edit_dialog_label":{text:"telex-number"},
     "#name_edit_dialog_label":{text:"name"},
@@ -97,10 +102,11 @@ const languages = {
     "#ipaddresse_edit_dialog_label":{text:"ipaddress"},
     "#port_edit_dialog_label":{text:"port"},
     "#durchwahl_edit_dialog_label":{text:"extension"},
+    "#pin_edit_dialog_label":{text:"pin"},
     "#gesperrt_edit_dialog_label":{text:"locked"},
   }
 };
-var language = DEFAULTLANGUAGE;
+var language = getCookie("language")?getCookie("language"):DEFAULTLANGUAGE;
 var sortby="";
 var revsort=false;
 $(document).ready(function(){
@@ -208,7 +214,7 @@ $(document).ready(function(){
   });
   $("#submit_edit_dialog").click(function(){
     var gesperrt = $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0;
-    console.log();
+    console.log("uid: "+$("#edit_dialog").data("uid"));
     edit({
       typekey:"edit",
       uid: $("#edit_dialog").data("uid"),
@@ -240,13 +246,14 @@ $(document).ready(function(){
   });
 });
 function showpopup(id,callback){
-  $("#edit_dialog").data("uid","");
-  $("#delete_dialog").data("uid","");
   $("#newentry_dialog").hide();
   $("#edit_dialog").hide();
   $("#delete_dialog").hide();
   $("#password_dialog").hide();
-  if(id!=""){
+  if(id==""){
+    $("#edit_dialog").data("uid","");
+    $("#delete_dialog").data("uid","");
+  }else{
     $("#"+id).show(1,function(){
       $("#"+id).center();
       $("#"+id).hide();
@@ -442,6 +449,7 @@ function updateContent(usli){
     $("#ipaddresse_edit_dialog").val(global_list[uid].ipaddresse).trigger('change');
     $("#port_edit_dialog").val(global_list[uid].port).trigger('change');
     $("#durchwahl_edit_dialog").val(global_list[uid].extension).trigger('change');
+    $("#pin_edit_dialog").val(global_list[uid].pin).trigger('change');
     $("#gesperrt_edit_dialog").prop('checked', global_list[uid].gesperrt).trigger('change');
     showpopup("edit_dialog");
   });
@@ -555,6 +563,7 @@ function sort(usli){
 function setLanguage(l){
   if(languages[l]){
     language=l;
+    setCookie("language",l,365*10)
     for(id in languages[l]){
       for(property in languages[l][id]){
         switch(property){
@@ -594,7 +603,6 @@ function setCookie(c_name,value,exdays){
   var c_value = escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
   document.cookie=c_name + "=" + c_value;
 }
-
 function getCookie(c_name){
   var i,x,y,ARRcookies=document.cookie.split(";");
   for (i=0;i<ARRcookies.length;i++){
