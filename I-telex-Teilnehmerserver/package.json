@@ -1,7 +1,7 @@
 {
   "name": "i-telex-teilnehmerserver",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "",
   "scripts": {
     "start": "pm2 start TCPSERVER/tcpserver.js;pm2 start WEBSERVER/bin/webserver.js",
     "restart": "pm2 reload webserver;pm2 reload tcpserver;",
@@ -10,7 +10,6 @@
   "dependencies": {
     "async": "^2.5.0",
     "body-parser": "~1.17.1",
-    "config": "^1.27.0",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",
     "express": "~4.15.2",
@@ -19,5 +18,7 @@
     "promise": "^8.0.1",
     "pug": "~2.0.0-beta11",
     "serve-favicon": "~2.4.2"
-  }
+  },
+  "author": "Paul Römer",
+  "license": "ISC"
 }
