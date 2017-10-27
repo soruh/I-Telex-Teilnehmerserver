@@ -5,7 +5,7 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
-const config = require('config');
+const config = require(process.env.PWD+'/../config.js');
 
 const index = require('./routes/index');
 

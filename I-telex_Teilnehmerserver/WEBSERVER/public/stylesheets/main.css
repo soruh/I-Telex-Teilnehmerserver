@@ -12,7 +12,7 @@ label{
 	display: inline-block;
 }
 .table-th-arrow{
-	transition: all 0.35s ease;
+	transition: all 0.35s cubic-bezier(.79,.14,.15,.86);
 	transform:rotate(360deg);
 	opacity:0.25;
 	cursor: pointer;
@@ -48,62 +48,42 @@ label{
 select:invalid{
   color:gray;
 }
-
 .edit_td, .remove_td{
   vertical-align: bottom;
+	display: inline-block;
 }
-
-.XXXedit{
-  width: 22px !important;
-  height: 22px;
-  background-color: yellow;
-  background-image: url("/images/Edit_Notepad_Icon.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  cursor: pointer;
+.edit_td{
+	margin-right: 2px;
 }
-.XXXremove{
-  width: 22px !important;
-  height: 22px;
-  background-color: red;
-  background-image: url("/images/Trash_font_awesome.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  cursor: pointer;
-}
-
 #new{
   cursor: pointer;
   margin-top: 10px;
 }
-#dialog_box{
-  border: 1px solid black;
+.popup{
+  border: 1px solid #eeeeee;
   background-color: white;
   padding: 10px;
   box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
 	position: absolute;
-
 }
-#submitdialog, #abortdialog{
-  float: right;
+.popup .field--wrapper{
+	padding-right: 48px;
 }
-#password_dialog{
-
+.submit_dialog{
+	float: right;
 }
-
-#edit_dialog{
-
+.abort_dialog{
+  float: left;
 }
-#delete_dialog{
-
+.button_container{
+	margin-top: 24px;
 }
-#newentry_dialog{
-
-}
+#password_dialog{}
+#edit_dialog{}
+#delete_dialog{}
+#newentry_dialog{}
 .shown{
   margin-bottom: 0px;
   color:rgba(0,0,0,255);
@@ -155,9 +135,10 @@ select:invalid{
   position: absolute;
   top: 30px;
   left: 20px;
-  border-radius: 4px;
-  background-color: #eeeeee;
+  xborder-radius: 4px;
+  background-color: white;
   box-shadow: 5px 5px 2px 0px rgba(0,0,0,0.45);
+	z-index: 1;
 }
 #loc-dropdown-children div{
   cursor: pointer;
@@ -168,12 +149,12 @@ select:invalid{
   background-position: center center;
   background-repeat:no-repeat;
 }
-.container{
-	text-align: center;
-}
+.container{}
+.gesperrt{}
 #table{
+	font-family: 'Roboto Condensed', sans-serif;
 	box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.65);
-	background-color: red;
+	background-color: white;
 	display: inline-block;
 }
 #table .td, #table .th{
@@ -185,43 +166,41 @@ select:invalid{
 #table .th ,#table .td{
   padding: 4px 8px;
 }
-#table .tr{
-	border: 1px solid blue;
-}
+#table .tr{}
 #table .td{
 	display: inline-block;
+	min-height: 51px;
 }
 #table .th{
 	display: inline-block;
 }
 .cell{
-	width: 10%;
-	height: 60px;
+	height: 51px;
 }
 .cell.cell-rufnummer{
-
+	width: 83px;
 }
 .cell.cell-name{
-
+	width: 131px;
 }
 .cell.cell-typ{
-
+	width: 106px;
 }
 .cell.cell-hostname{
-
+	width: 131px;
 }
 .cell.cell-ipaddresse{
 	width: 131px;
 }
 .cell.cell-port{
-
+	width: 53px;
 }
 .cell.cell-extention{
-
+	width: 77px;
 }
 .cell.cell-gesperrt{
-
+	width: 79px;
 }
 .cell.cell-moddate{
-
+	width: 131px;
 }

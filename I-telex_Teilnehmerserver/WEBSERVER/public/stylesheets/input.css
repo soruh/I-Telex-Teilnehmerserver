@@ -3,17 +3,19 @@ input[type="text"], input[type="email"], input[type="search"], input[type="passw
   -moz-appearance: caret; /* mobile firefox too! */
   -webkit-tap-highlight-color: transparent;
   color: #000000;
-  background-color: #dddddd;
+  background-color: #eeeeff;
+  border: 1px dashed #aaaaff;
+  border-radius: 1px;
   font-style: normal;
   text-align: left;
   padding: 2px 8px;
-  margin: 0px;
-  border: none;
+  margin: 0;
   height: 22px;
-  border-radius: 0;
-  -webkit-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
-  -moz-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
-  box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
+  xborder: none;
+  xborder-radius: 0;
+  x-webkit-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
+  x-moz-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
+  xbox-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
 }
 select {
     -webkit-appearance: none;
@@ -22,7 +24,7 @@ select {
 select::-ms-expand {
     display: none;
 }
-select,option{
+select, option{
 	padding:0;
 	margin: 0;
 }

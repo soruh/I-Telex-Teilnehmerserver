@@ -1,8 +1,8 @@
 const mysql = require('mysql');
 const ITelexCom=require("./ITelexCom.js");
 const colors = require("../colors.js");
-//const config = require('../config.js');
-const config = require('config');
+
+const config = require(process.env.PWD+'/../config.js');
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions')
 

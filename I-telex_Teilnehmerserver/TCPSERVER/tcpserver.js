@@ -5,8 +5,8 @@ const cp = require('child_process');
 const fs = require('fs');
 const ITelexCom = require("./ITelexCom.js");
 const colors = require("../colors.js");
-//const config = require('../config.js');
-const config = require('config');
+
+const config = require(process.env.PWD+'/../config.js');
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 /*const mySqlConnectionOptions = {
@@ -58,7 +58,7 @@ handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 				connection.end();
 			}
 		}else{
-			dbcon.query("INSERT INTO teilnehmer (rufnummer,port,pin,ipaddresse,gesperrt) VALUES ("+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1');",function(err_b,result_b){
+			dbcon.query("INSERT INTO teilnehmer (name,rufnummer,port,pin,ipaddresse,gesperrt) VALUES ("+"?"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1');",function(err_b,result_b){
 				dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(err_c,result_c){
 					try{
 						connection.write(ITelexCom.encPacket({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary");

@@ -6,107 +6,101 @@
 6: not a real peer, but an “official” email address.*/
 var UTCDATE = false;
 var SHOWALLDATEINFO = false;
-const SHOWTYPENUMBER = true;
+var DEFAULTLANGUAGE = "german";
 var pwdcorrect = false;
 var global_list={};
-const type_list = {
-  1:"I-Telex<br>hostname",
-  2:"I-Telex<br>static Ip",
-  3:"ASCII<br>hostname",
-  4:"ASCII<br>static Ip",
-  5:"I-Telex<br>dynamic Ip",
-  6:"E-mail",
-  7:"ASCII<br>dynamic Ip",
-}
+
 const languages = {
   german:{
-    "#table-th-label-rufnummer":"telex-nummer",
-    "#table-th-label-name":"name",
-    "#table-th-label-typ":"typ",
-    "#table-th-label-hostname":"hostname",
-    "#table-th-label-ipaddresse":"ipaddresse",
-    "#table-th-label-port":"port",
-    "#table-th-label-extention":"durchwahl",
-    "#table-th-label-gesperrt":"gesperrt",
-    "#table-th-label-moddate":"letzte Änderung",
-    "#search-box":"suchen|placeholder",
-    "#new":"neuer eintrag",
-    ".edit":"bearbeiten|title",
-    ".remove":"entfernen|title",
-    "#login":"einloggen",
-    "#logout":"ausloggen",
-    "#abortdialog":"abbrechen",
-    "#submitdialog":"absenden",
-    "#wrongpwd":"Falsches Passwort!",
-    ".typ_option_1":"Hostname Baudot (1)",
-    ".typ_option_2":"Ip Baudot (2)",
-    ".typ_option_3":"Hostname Ascii (3)",
-    ".typ_option_4":"Ip Ascii (4)",
-    ".typ_option_5":"DynIp Baudot (5)",
-    ".typ_option_6":"“offizielle” E-mail (6)",
-    "#passwordfield_label":"passwort",
-    "#rufnummer_newentry_dialog_label":"rufnummer",
-    "#name_newentry_dialog_label":"name",
-    "#typ_newentry_dialog_label":"typ",
-    "#hostname_newentry_dialog_label":"hostname",
-    "#ipaddresse_newentry_dialog_label":"ipaddresse",
-    "#port_newentry_dialog_label":"port",
-    "#durchwahl_newentry_dialog_label":"durchwahl",
-    "#gesperrt_newentry_dialog_label":"gesperrt",
-    "#rufnummer_edit_dialog_label":"rufnummer",
-    "#name_edit_dialog_label":"name",
-    "#typ_edit_dialog_label":"typ",
-    "#hostname_edit_dialog_label":"hostname",
-    "#ipaddresse_edit_dialog_label":"ipaddresse",
-    "#port_edit_dialog_label":"port",
-    "#durchwahl_edit_dialog_label":"durchwahl",
-    "#gesperrt_edit_dialog_label":"gesperrt",
+    "#table-th-label-rufnummer":{text:"telex-nummer"},
+    "#table-th-label-name":{text:"name"},
+    "#table-th-label-typ":{text:"typ"},
+    "#table-th-label-hostname":{text:"hostname"},
+    "#table-th-label-ipaddresse":{text:"ipaddresse"},
+    "#table-th-label-port":{text:"port"},
+    "#table-th-label-extention":{text:"durchwahl"},
+    "#table-th-label-gesperrt":{title:"gesperrt"},
+    "#table-th-label-moddate":{text:"letzte Änderung"},
+    "#search-box":{placeholder:"suchen"},
+    "#new":{text:"neuer eintrag"},
+    ".edit":{title:"bearbeiten"},
+    ".remove":{title:"entfernen"},
+    "#login":{text:"einloggen"},
+    "#logout":{text:"ausloggen"},
+    ".abort_dialog":{text:"abbrechen"},
+    ".submit_dialog":{text:"absenden"},
+    "#wrongpwd":{text:"Falsches Passwort!"},
+    ".typ_option_1":{text:"Hostname Baudot (1)"},
+    ".typ_option_2":{text:"Ip Baudot (2)"},
+    ".typ_option_3":{text:"Hostname Ascii (3)"},
+    ".typ_option_4":{text:"Ip Ascii (4)"},
+    ".typ_option_5":{text:"DynIp Baudot (5)"},
+    ".typ_option_6":{text:"“offizielle” E-mail (6)"},
+    ".typ_option_7":{text:"DynIp Ascii (7)"},
+    "#passwordfield_label":{text:"passwort"},
+    "#rufnummer_newentry_dialog_label":{text:"rufnummer"},
+    "#name_newentry_dialog_label":{text:"name"},
+    "#typ_newentry_dialog_label":{text:"typ"},
+    "#hostname_newentry_dialog_label":{text:"hostname"},
+    "#ipaddresse_newentry_dialog_label":{text:"ipaddresse"},
+    "#port_newentry_dialog_label":{text:"port"},
+    "#durchwahl_newentry_dialog_label":{text:"durchwahl"},
+    "#gesperrt_newentry_dialog_label":{text:"gesperrt"},
+    "#rufnummer_edit_dialog_label":{text:"rufnummer"},
+    "#name_edit_dialog_label":{text:"name"},
+    "#typ_edit_dialog_label":{text:"typ"},
+    "#hostname_edit_dialog_label":{text:"hostname"},
+    "#ipaddresse_edit_dialog_label":{text:"ipaddresse"},
+    "#port_edit_dialog_label":{text:"port"},
+    "#durchwahl_edit_dialog_label":{text:"durchwahl"},
+    "#gesperrt_edit_dialog_label":{text:"gesperrt"},
   },
   english:{
-    "#table-th-label-rufnummer":"telex-number",
-    "#table-th-label-name":"name",
-    "#table-th-label-typ":"type",
-    "#table-th-label-hostname":"hostname",
-    "#table-th-label-ipaddresse":"ipaddress",
-    "#table-th-label-port":"port",
-    "#table-th-label-extention":"extention",
-    "#table-th-label-gesperrt":"locked",
-    "#table-th-label-moddate":"last changed",
-    "#search-box":"search|placeholder",
-    "#new":"new entry",
-    ".edit":"edit|title",
-    ".remove":"remove|title",
-    "#login":"log in",
-    "#logout":"log out",
-    "#abortdialog":"abort",
-    "#submitdialog":"submit",
-    "#wrongpwd":"Wrong password!",
-    ".typ_option_1":"hostname baudot (1)",
-    ".typ_option_2":"ip baudot (2)",
-    ".typ_option_3":"hostname ascii (3)",
-    ".typ_option_4":"ip ascii (4)",
-    ".typ_option_5":"DynIp baudot (5)",
-    ".typ_option_6":"“official” e-mail (6)",
-    "#passwordfield_label":"password",
-    "#rufnummer_newentry_dialog_label":"telex-number",
-    "#name_newentry_dialog_label":"name",
-    "#typ_newentry_dialog_label":"type",
-    "#hostname_newentry_dialog_label":"hostname",
-    "#ipaddresse_newentry_dialog_label":"ipaddress",
-    "#port_newentry_dialog_label":"port",
-    "#durchwahl_newentry_dialog_label":"extention",
-    "#gesperrt_newentry_dialog_label":"locked",
-    "#rufnummer_edit_dialog_label":"telex-number",
-    "#name_edit_dialog_label":"name",
-    "#typ_edit_dialog_label":"type",
-    "#hostname_edit_dialog_label":"hostname",
-    "#ipaddresse_edit_dialog_label":"ipaddress",
-    "#port_edit_dialog_label":"port",
-    "#durchwahl_edit_dialog_label":"extention",
-    "#gesperrt_edit_dialog_label":"locked",
+    "#table-th-label-rufnummer":{text:"telex-number"},
+    "#table-th-label-name":{text:"name"},
+    "#table-th-label-typ":{text:"type"},
+    "#table-th-label-hostname":{text:"hostname"},
+    "#table-th-label-ipaddresse":{text:"ipaddress"},
+    "#table-th-label-port":{text:"port"},
+    "#table-th-label-extention":{text:"extention"},
+    "#table-th-label-gesperrt":{title:"locked"},
+    "#table-th-label-moddate":{text:"last changed"},
+    "#search-box":{placeholder:"search"},
+    "#new":{text:"new entry"},
+    ".edit":{title:"edit"},
+    ".remove":{title:"remove"},
+    "#login":{text:"log in"},
+    "#logout":{text:"log out"},
+    ".abort_dialog":{text:"abort"},
+    ".submit_dialog":{text:"submit"},
+    "#wrongpwd":{text:"Wrong password!"},
+    ".typ_option_1":{text:"hostname baudot (1)"},
+    ".typ_option_2":{text:"ip baudot (2)"},
+    ".typ_option_3":{text:"hostname ascii (3)"},
+    ".typ_option_4":{text:"ip ascii (4)"},
+    ".typ_option_5":{text:"DynIp baudot (5)"},
+    ".typ_option_6":{text:"“official” e-mail (6)"},
+    ".typ_option_7":{text:"DynIp Ascii (7)"},
+    "#passwordfield_label":{text:"password"},
+    "#rufnummer_newentry_dialog_label":{text:"telex-number"},
+    "#name_newentry_dialog_label":{text:"name"},
+    "#typ_newentry_dialog_label":{text:"type"},
+    "#hostname_newentry_dialog_label":{text:"hostname"},
+    "#ipaddresse_newentry_dialog_label":{text:"ipaddress"},
+    "#port_newentry_dialog_label":{text:"port"},
+    "#durchwahl_newentry_dialog_label":{text:"extention"},
+    "#gesperrt_newentry_dialog_label":{text:"locked"},
+    "#rufnummer_edit_dialog_label":{text:"telex-number"},
+    "#name_edit_dialog_label":{text:"name"},
+    "#typ_edit_dialog_label":{text:"type"},
+    "#hostname_edit_dialog_label":{text:"hostname"},
+    "#ipaddresse_edit_dialog_label":{text:"ipaddress"},
+    "#port_edit_dialog_label":{text:"port"},
+    "#durchwahl_edit_dialog_label":{text:"extention"},
+    "#gesperrt_edit_dialog_label":{text:"locked"},
   }
 };
-var language = "german";
+var language = DEFAULTLANGUAGE;
 var sortby="";
 var revsort=false;
 $(document).ready(function(){
@@ -176,81 +170,91 @@ $(document).ready(function(){
     });
   });*/
   $("#login").click(function(){
-    $("#dialog_box").show();
-    $("#password_dialog").show();
-    $("#passwordfield").focus();
-    $("#newentry_dialog").hide();
-    $("#edit_dialog").hide();
-    $("#delete_dialog").hide();
-    actionkey = "login";
+    showpopup("password_dialog", function(){
+      $("#passwordfield").focus();
+    })
   });
   $("#new").click(function(){
-    $("#dialog_box").show();
-    $("#newentry_dialog").show();
-    $("#edit_dialog").hide();
-    $("#delete_dialog").hide();
-    $("#password_dialog").hide();
-    actionkey = "new";
+    showpopup("newentry_dialog");
   });
-  $("#submitdialog").click(function(){
-    switch(actionkey){
-      case "login":
-        login(atob($("#passwordfield").val()),function(successful){
-          if(!successful){
-            $("#wrongpwd").show().fadeOut(3000);
-          }
-        });
-        $("#passwordfield").val("");
-        $("#passwordfield").trigger('change');
-        break;
-      case "delete":
-        edit({
-          typekey:actionkey,
-          rufnummer: parseInt($("#rufnummer_delete_dialog").html()),
-        });
-        break;
-      case "new":
-        var gesperrt = $("#gesperrt_newentry_dialog").prop('checked') ? 1 : 0;
-        edit({
-          typekey:actionkey,
-          rufnummer: $("#rufnummer_newentry_dialog").val(),
-          name: $("#name_newentry_dialog").val(),
-          typ: $("#typ_newentry_dialog").val(),
-          hostname: $("#hostname_newentry_dialog").val(),
-          ipaddresse: $("#ipaddresse_newentry_dialog").val(),
-          port: $("#port_newentry_dialog").val(),
-          extention: $("#durchwahl_newentry_dialog").val(),
-          gesperrt: gesperrt,
-          moddate: $("#moddate_newentry_dialog").val(),
-          pin: $("#pin_newentry_dialog").val(),
-        });
-        break;
-      case "edit":
-        var gesperrt = $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0;
-        edit({
-          typekey:actionkey,
-          rufnummer: $("#rufnummer_edit_dialog").val(),
-          name: $("#name_edit_dialog").val(),
-          typ: $("#typ_edit_dialog").val(),
-          hostname: $("#hostname_edit_dialog").val(),
-          ipaddresse: $("#ipaddresse_edit_dialog").val(),
-          port: $("#port_edit_dialog").val(),
-          extention: $("#durchwahl_edit_dialog").val(),
-          gesperrt: gesperrt,
-          moddate: $("#moddate_edit_dialog").val(),
-          pin: $("#pin_edit_dialog").val(),
-        });
-        break;
-    }
+  $("#submit_password_dialog").click(function(){
+    login(atob($("#passwordfield").val()),function(successful){
+      if(!successful){
+        $("#wrongpwd").show().fadeOut(3000);
+      }
+    });
+    $("#passwordfield").val("");
+    $("#passwordfield").trigger('change');
     resetforms();
     getList(updateTable);
   });
-  $("#abortdialog").click(function(){
-    typekey="";
+  $("#submit_newentry_dialog").click(function(){
+    var gesperrt = $("#gesperrt_newentry_dialog").prop('checked') ? 1 : 0;
+    edit({
+      typekey:"new",
+      rufnummer: $("#rufnummer_newentry_dialog").val(),
+      name: $("#name_newentry_dialog").val(),
+      typ: $("#typ_newentry_dialog").val(),
+      hostname: $("#hostname_newentry_dialog").val(),
+      ipaddresse: $("#ipaddresse_newentry_dialog").val(),
+      port: $("#port_newentry_dialog").val(),
+      extention: $("#durchwahl_newentry_dialog").val(),
+      gesperrt: gesperrt,
+      moddate: $("#moddate_newentry_dialog").val(),
+      pin: $("#pin_newentry_dialog").val(),
+    });
     resetforms();
+    getList(updateTable);
+  });
+  $("#submit_edit_dialog").click(function(){
+    var gesperrt = $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0;
+    console.log();
+    edit({
+      typekey:"edit",
+      uid: $("#edit_dialog").data("uid"),
+      rufnummer: $("#rufnummer_edit_dialog").val(),
+      name: $("#name_edit_dialog").val(),
+      typ: $("#typ_edit_dialog").val(),
+      hostname: $("#hostname_edit_dialog").val(),
+      ipaddresse: $("#ipaddresse_edit_dialog").val(),
+      port: $("#port_edit_dialog").val(),
+      extention: $("#durchwahl_edit_dialog").val(),
+      gesperrt: gesperrt,
+      moddate: $("#moddate_edit_dialog").val(),
+      pin: $("#pin_edit_dialog").val(),
+    });
+    resetforms();
+    getList(updateTable);
+  });
+  $("#submit_delete_dialog").click(function(){
+    edit({
+      typekey:"delete",
+      uid:$("#delete_dialog").data("uid"),
+    });
+    resetforms();
+    getList(updateTable);
+  });
+  $(".abort_dialog").click(function(){
+    resetforms();
+    getList(updateTable);
   });
 });
-
+function showpopup(id,callback){
+  $("#edit_dialog").data("uid","");
+  $("#delete_dialog").data("uid","");
+  $("#newentry_dialog").hide();
+  $("#edit_dialog").hide();
+  $("#delete_dialog").hide();
+  $("#password_dialog").hide();
+  if(id!=""){
+    $("#"+id).show(1,function(){
+      $("#"+id).center();
+      $("#"+id).hide();
+      $("#"+id).fadeIn(350);
+    });
+  }
+  if(typeof callback === "function") callback();
+}
 function login(pwd,callback){
   if(pwd){
     setCookie("pwd",pwd);
@@ -295,9 +299,14 @@ function getList(callback){
       "password":btoa(getCookie("pwd")),
     },
     success: function(response){
-      global_list={};
-      for(k in response){
-        global_list[response[k].uid]=response[k];
+      console.log(response);
+      if(response.successful){
+        global_list={};
+        for(k in response.result){
+          global_list[response.result[k].uid]=response.result[k];
+        }
+      }else{
+        console.error(response.message);
       }
       if(typeof callback==="function") callback(global_list);
     },
@@ -317,16 +326,19 @@ function updateTable(usli,cb){
     if(b!="uid"){
       var th = document.createElement("div");
       $(th).addClass("th cell cell-"+b);
-      var div = document.createElement("div");
-      div.className = "table-th-label";
-      div.id = "table-th-label-"+b;
-      th.appendChild(div);
-
+      var label = document.createElement("div");
+      label.className = "table-th-label";
+      label.id = "table-th-label-"+b;
+      if(b=="gesperrt"){
+        var div = document.createElement("div");
+        $(div).addClass("glyphicon glyphicon-ban-circle gesperrt");
+        label.appendChild(div);
+      }
+      th.appendChild(label);
       var div = document.createElement("div");
       div.className = "table-th-arrow glyphicon glyphicon-chevron-down";
       div.id = "table-th-arrow-"+b;
       $(div).click(function(){
-        console.log(sortby+"!="+$(this).attr('id').split('-')[3]);
         if(sortby!=$(this).attr('id').split('-')[3]){
           $(".table-th-arrow").removeClass("selected").removeClass("rotated");
           $(this).addClass("selected");
@@ -366,23 +378,31 @@ function updateContent(usli){
       if(b!="uid"){
         var td = document.createElement("div");
         $(td).addClass("td cell cell-"+b);
-        if(b==="moddate"&&(!UTCDATE)){
-          $(td).text(UtcToString(list[a][b]));
-        }else if(b==="gesperrt"){
-          if((list[a][b]==1)||(list[a][b]=="1")){
-            $(td).addClass("glyphicon glyphicon-ban-circle");
-            //$(td).addClass("glyphicon glyphicon-ok-circle");
-          }else{
-            //$(td).addClass("glyphicon glyphicon-remove-circle");
-          }
-        }else if(b==="typ"){
-          try{
-            $(td).html(type_list[list[a][b]]+(SHOWTYPENUMBER?"("+list[a][b]+")":""));
-          }catch(e){
+        switch(b){
+          case "moddate":
+            if(!UTCDATE){
+              $(td).text(UtcToString(list[a][b]));
+            }
+            break;
+          case "gesperrt":
+            if((list[a][b]==1)||(list[a][b]=="1")){
+              var div = document.createElement("div");
+              $(div).addClass("glyphicon glyphicon-ban-circle gesperrt");
+              td.appendChild(div);
+              //$(td).addClass("glyphicon glyphicon-ok-circle");
+            }else{
+              //$(td).addClass("glyphicon glyphicon-remove-circle");
+            }
+            break;
+          case "typ":
+            try{
+              $(td).addClass("typ_option_"+list[a][b]);
+            }catch(e){
+              $(td).text(list[a][b]);
+            }
+            break;
+          default:
             $(td).text(list[a][b]);
-          }
-        }else{
-          $(td).text(list[a][b]);
         }
         tr.appendChild(td);
       }
@@ -392,31 +412,29 @@ function updateContent(usli){
 
     var td = document.createElement("div");
     $(td).addClass("td");
-    td.innerHTML='<span class="btn  btn-primary btn-sm glyphicon glyphicon-pencil edit"></span>';
+    var span = document.createElement("span");
+    $(span).addClass("btn  btn-primary btn-sm glyphicon glyphicon-pencil edit");
+    $(span).data("uid",list[a].uid);
+    td.appendChild(span);
     td.title="edit";
     td.className = "edit_td";
-    $(td).data("uid",list[a].uid);
     modify_container.appendChild(td);
 
     var td = document.createElement("div");
     $(td).addClass("td");
-    td.innerHTML='<span class="glyphicon glyphicon-trash btn  btn-primary btn-sm remove"></span>';
+    var span = document.createElement("span");
+    $(span).addClass("btn btn-primary btn-sm glyphicon glyphicon-trash remove");
+    $(span).data("uid",list[a].uid);
+    td.appendChild(span);
     td.title="remove";
     td.className = "remove_td";
-    $(td).data("uid",list[a].uid);
     modify_container.appendChild(td);
     tr.appendChild(modify_container);
     table.appendChild(tr);
   }
   $(".edit").click(function(){
-    $("#dialog_box").show();
-    $("#edit_dialog").show();
-    $("#delete_dialog").hide();
-    $("#newentry_dialog").hide();
-    $("#password_dialog").hide();
-    actionkey = "edit";
-
-    var uid = $(this).parent().data("uid");
+    $("#edit_dialog").data("uid",$(this).data("uid"));
+    var uid = $(this).data("uid");
     $("#rufnummer_edit_dialog").val(global_list[uid].rufnummer).trigger('change');
     $("#name_edit_dialog").val(global_list[uid].name).trigger('change');
     $("#typ_edit_dialog").val(global_list[uid].typ).trigger('change');
@@ -425,17 +443,11 @@ function updateContent(usli){
     $("#port_edit_dialog").val(global_list[uid].port).trigger('change');
     $("#durchwahl_edit_dialog").val(global_list[uid].extention).trigger('change');
     $("#gesperrt_edit_dialog").prop('checked', global_list[uid].gesperrt).trigger('change');
-
+    showpopup("edit_dialog");
   });
   $(".remove").click(function(){
-    $("#dialog_box").show();
-    $("#delete_dialog").show();
-    $("#edit_dialog").hide();
-    $("#newentry_dialog").hide();
-    $("#password_dialog").hide();
-    actionkey = "delete";
-
-    var uid = $(this).parent().data("uid");
+    $("#delete_dialog").data("uid",$(this).data("uid"));
+    var uid = $(this).data("uid");
     var str = "really delete this entry?</br>";
     for(k in global_list[uid]){
       if(k==="moddate"&&(!UTCDATE)){
@@ -444,8 +456,8 @@ function updateContent(usli){
         str += "</br>"+k+": "+global_list[uid][k];
       }
     }
-    $("#rufnummer_delete_dialog").html(global_list[uid].rufnummer);
     $("#message_delete_dialog").html(str);
+    showpopup("delete_dialog");
   });
   setLanguage(language);
   if(pwdcorrect){
@@ -458,19 +470,23 @@ function updateContent(usli){
 }
 function edit(vals, cb){
   vals["password"] = btoa(getCookie("pwd"));
+  console.log(vals);
   $.ajax({
     url: "/edit",
     type: "POST",
     dataType: "json",
     data: vals,
     success: function(response) {
-      if(cb) cb(response);
-      $("#log").html(JSON.stringify(response));
-      getList(updateTable);
+      getList(updateTable)
+      if(cb) cb(response.message);
+      if((response.message.code!=1)&&(response.message.code!=-1)) $("#log").html(JSON.stringify(response.message));
+      if(!response.successful){
+        console.error(response.message);
+      }
     },
     error: function(error) {
-      if(cb) cb(error);
       $("#log").html(JSON.stringify(error));
+      if(cb) cb(error);
     }
   });
 }
@@ -499,21 +515,11 @@ function search(list,str,callback){
 function resetforms(){
   $("#newentry_dialog input").val("");
   $("#newentry_dialog checkbox").prop("checked",false);
-  /*
-  $("#newentry_dialog").html(
-    '<input placeholder="rufnummer" id="rufnummer_newentry_dialog"></input><input placeholder="name" id="name_newentry_dialog"></input><input placeholder="typ" id="typ_newentry_dialog"></input><input placeholder="hostname" id="hostname_newentry_dialog"></input><input placeholder="ipaddresse" id="ipaddresse_newentry_dialog"></input><input placeholder="port"id="port_newentry_dialog"></input><input placeholder="durchwahl" id="durchwahl_newentry_dialog"></input><input placeholder="pin" id="pin_newentry_dialog"></input><input type="checkbox" id="gesperrt_newentry_dialog">gesperrt</input></div>');
-  $("#edit_dialog").html(
-    '<input placeholder="rufnummer" id="rufnummer_edit_dialog"></input><input placeholder="name" id="name_edit_dialog"></input><input placeholder="typ" id="typ_edit_dialog"></input><input placeholder="hostname" id="hostname_edit_dialog"></input><input placeholder="ipaddresse" id="ipaddresse_edit_dialog"></input><input placeholder="port" id="port_edit_dialog"></input><input placeholder="durchwahl" id="durchwahl_edit_dialog"></input><input type="checkbox" id="gesperrt_edit_dialog">gesperrt</input></div>');
-  $("#delete_dialog").html(
-    '<p id="p_delete_dialog"></p><span id="rufnummer_delete_dialog">test</span></div>');*/
-  $("#newentry_dialog").hide();
-  $("#edit_dialog").hide();
-  $("#delete_dialog").hide()
-  $("#password_dialog").hide();
-  $("#dialog_box").hide();
+  showpopup("");
 }
-function sortFunction(){
-  (x,y)=>{return(x[sortby].toString().localeCompare(y[sortby].toString()),'de',{numeric:true});}
+function sortFunction(x,y){
+  //console.log(x[sortby],y[sortby],x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:true}));
+  return(x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:true}));
 }
 function sort(usli){
   var sortable=[];
@@ -531,7 +537,7 @@ function sort(usli){
     }
     if(iskey){
       var soli = sortable.sort(sortFunction);
-      if(revsort){
+      if(!revsort){
         var revsoli = [];
         for(i=soli.length-1;i>=0;i--){
           revsoli[revsoli.length] = soli[i]
@@ -549,14 +555,21 @@ function sort(usli){
 function setLanguage(l){
   if(languages[l]){
     language=l;
-    for(i in languages[l]){
-      if(languages[l][i].split("|").length>1){
-        $(i).prop(languages[l][i].split("|")[1],languages[l][i].split("|")[0]);
-      }else{
-        $(i).html(languages[l][i]);
+    for(id in languages[l]){
+      for(property in languages[l][id]){
+        switch(property){
+          case "html":
+            $(id).html(languages[l][id][property]);
+            break;
+          case "text":
+            $(id).text(languages[l][id][property]);
+            break;
+          default:
+            $(id).prop(property,languages[l][id][property]);
+        }
       }
     }
-    document.getElementById("loc-dropdown-parent").style = "background-image:url(/images/"+l+".svg);";
+    $("#loc-dropdown-parent").css("background-image","url(/images/"+l+".svg)");
   }
 }
 function initloc(){
@@ -565,7 +578,7 @@ function initloc(){
   });
 
   for(i in languages){
-    var child=document.createElement("div");
+    var child = document.createElement("div");
     child.id="loc-dropdown-child-"+i;
     child.style="background-image:url(/images/"+i+".svg);";
     child.onclick = function(){

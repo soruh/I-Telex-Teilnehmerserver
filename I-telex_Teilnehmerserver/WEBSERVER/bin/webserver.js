@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const config = require('config');
+const config = require(process.env.PWD+'/../config.js');
 var app = require('../app');
 var debug = require('debug')('i-telex-teilnehmerserver:server');
 var http = require('http');

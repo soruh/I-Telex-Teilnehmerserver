@@ -6,7 +6,7 @@ router.get('/', function(req, res, next) {
 });
 module.exports = router;
 const mysql = require('mysql');
-const config = require('config');
+const config = require(process.env.PWD+'/../config.js');
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 
@@ -16,9 +16,9 @@ router.post('/list', function(req, res){
   res.header("Content-Type", "application/json; charset=utf-8");
   pool.query("SELECT * FROM telefonbuch.teilnehmer", function (err, result) {
     if(err){
-      res.json(err);
+      res.json({successful:false,message:err});
     }else{
-//      console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
+//    console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
       var resultnopin = [];
       for(a in result){
         if(result[a].gesperrt==0||req.body.password==WEBINTERFACEPASSWORD){
@@ -31,53 +31,54 @@ router.post('/list', function(req, res){
           }
         }
       }
-      console.log(resultnopin);
-      res.json(resultnopin);
+//    console.log(resultnopin);
+      res.json({successful:true,message:null,result:resultnopin});
     }
   });
 });
 
 router.post('/edit', function(req, res){
+  console.log(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
   if(req.body.password==WEBINTERFACEPASSWORD){
     switch(req.body.typekey){
       case "edit":
-        pool.query("UPDATE telefonbuch.teilnehmer SET rufnummer= "+req.body.rufnummer+",name='"+req.body.name+"',typ="+req.body.typ+",hostname='"+req.body.hostname+"',ipaddresse='"+req.body.ipaddresse+"',port='"+req.body.port+"',extention='"+req.body.extention+"',gesperrt="+req.body.gesperrt+", moddate="+Math.round(new Date().getTime()/1000)+" WHERE rufnummer="+req.body.rufnummer, (err, result)=>{
+        pool.query("UPDATE telefonbuch.teilnehmer SET rufnummer= "+mysql.escape(req.body.rufnummer)+",name='"+mysql.escape(req.body.name)+"',typ="+mysql.escape(req.body.typ)+",hostname='"+mysql.escape(req.body.hostname)+"',ipaddresse='"+mysql.escape(req.body.ipaddresse)+"',port='"+mysql.escape(req.body.port)+"',extention='"+mysql.escape(req.body.extention)+"',gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.round(new Date().getTime()/1000))+" WHERE uid="+mysql.escape(req.body.uid), (err, result)=>{
           if(err){
-            res.json(err);
+            res.json({successful:false,message:err});
           }else{
-            res.json(result);
+            res.json({successful:true,message:result});
           }
         });
         break;
       case "new":
-        pool.query("INSERT INTO telefonbuch.teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate) VALUES ("+req.body.rufnummer+",'"+req.body.name+"',"+req.body.typ+",'"+req.body.hostname+"','"+req.body.ipaddresse+"','"+req.body.port+"','"+req.body.extention+"','"+req.body.pin+"',"+req.body.gesperrt+",'"
-        +Math.round(new Date().getTime()/1000)+"')",
+        pool.query("INSERT INTO telefonbuch.teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extention,pin,gesperrt,moddate) VALUES ("+mysql.escape(req.body.rufnummer)+",'"+mysql.escape(req.body.name)+"',"+mysql.escape(req.body.typ)+",'"+mysql.escape(req.body.hostname)+"','"+mysql.escape(req.body.ipaddresse)+"','"+mysql.escape(req.body.port)+"','"+mysql.escape(req.body.extention)+"','"+mysql.escape(req.body.pin)+"',"+mysql.escape(req.body.gesperrt)+",'"
+        +mysql.escape(Math.round(new Date().getTime()/1000))+"')",
          function (err, result) {
           if(err){
-            res.json(err);
+            res.json({successful:false,message:err});
           }else{
-            res.json(result);
+            res.json({successful:true,message:result});
           }
         });
         break;
       case "delete":
-        pool.query("DELETE FROM telefonbuch.teilnehmer WHERE rufnummer="+req.body.rufnummer, function (err, result) {
+        pool.query("DELETE FROM telefonbuch.teilnehmer WHERE WHERE uid="+mysql.escape(req.body.uid), function (err, result) {
           if(err){
-            res.json(err);
+            res.json({successful:false,message:err});
           }else{
-            res.json(result);
+            res.json({successful:true,message:result});
           }
         });
         break;
       case "checkpwd":
-        res.json({code:1,text:"password is correct"});
+        res.json({successful:true,message:{code:1,text:"password is correct"}});
         break;
       default:
-        res.json({code:-2,text:"unknown typekey"});
+        res.json({successful:false,message:{code:-2,text:"unknown typekey"}});
         break;
     }
   }else{
-    res.json({code:-1,text:"wrong password!"});
+    res.json({successful:false,message:{code:-1,text:"wrong password!"}});
   }
 });
