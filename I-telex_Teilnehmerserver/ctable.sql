@@ -22,7 +22,7 @@ CREATE TABLE `teilnehmer` (
   `hostname` tinytext CHARACTER SET utf8,
   `ipaddresse` tinytext CHARACTER SET utf8,
   `port` tinytext CHARACTER SET utf8,
-  `extention` tinytext CHARACTER SET utf8,
+  `extension` tinytext CHARACTER SET utf8,
   `pin` tinytext CHARACTER SET utf8,
   `gesperrt` tinyint(4) DEFAULT NULL,
   `moddate` tinytext CHARACTER SET utf8,

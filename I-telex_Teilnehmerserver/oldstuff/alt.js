@@ -317,13 +317,13 @@ return(outarr);
 function OLD(){
 	switch(obj.packagetype){
 		case 1:
-		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_a,result_a){
+		dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer="+number,function(err_a,result_a){
 			if(result_a&&(result_a!=[])){
 				var res = result_a[0];
 				console.log(res);
 				if(res.pin==pin&&res.port==port){
-					dbcon.query("UPDATE telefonbuch.teilnehmer SET ipaddresse='"+connection.remoteAddress+"' WHERE rufnummer="+number,function(err_b,result_b){
-						dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number,function(err_c,result_c){
+					dbcon.query("UPDATE teilnehmer SET ipaddresse='"+connection.remoteAddress+"' WHERE rufnummer="+number,function(err_b,result_b){
+						dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer="+number,function(err_c,result_c){
 							console.log(Buffer.from(result_c[0].ipaddresse));
 							connection.write(Buffer.from([0x02,0x04].concat(StringToHex(result_c[0].ipaddresse))),"binary");
 						});
@@ -341,8 +341,8 @@ function OLD(){
 		var version = concatByteArray(blockdata.slice(4,5));
 		console.log("rufnummer: "+rufnummer);
 		console.log("version: "+version);
-		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+rufnummer+";",function(err,result){
-			console.log("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+rufnummer+";");
+		dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer="+rufnummer+";",function(err,result){
+			console.log("SELECT * FROM teilnehmer WHERE rufnummer="+rufnummer+";");
 			console.log(result);
 			if(err){
 				console.log(err);
@@ -385,7 +385,7 @@ function OLD(){
 		var query = hextostring(blockdata.slice(1,41));
 		console.log("version: "+version);
 		console.log("query: "+query);
-		var searchstring = "SELECT * FROM telefonbuch.teilnehmer WHERE name LIKE '%%'";
+		var searchstring = "SELECT * FROM teilnehmer WHERE name LIKE '%%'";
 		queryarr = query.split(" ");
 		for(i in queryarr){
 			queryarr[i] = queryarr[i].replace(new RegExp(String.fromCharCode(0x00),"g"),"");
@@ -416,7 +416,7 @@ function OLD(){
 			console.log("pin: "+pin);
 			if(pin == serverpin){
 				connectionpin = pin;
-			dbcon.query("SELECT * FROM telefonbuch.teilnehmer",function(err,result){
+			dbcon.query("SELECT * FROM teilnehmer",function(err,result){
 				if(err){
 					console.log(err);
 				}else{
@@ -454,10 +454,10 @@ function OLD(){
 					var hostname = concatByteArray(blockdata.slice(47,87));
 					var ipaddresse = concatByteArray(blockdata.slice(87,91));
 					var port = concatByteArray(blockdata.slice(91,93));
-					var extention = concatByteArray(blockdata.slice(93,94));
+					var extension = concatByteArray(blockdata.slice(93,94));
 					var gesperrt = 0;//TODO 46,44
 					var moddate = concatByteArray(blockdata.slice(96,100));
-					dbcon.query("UPDATE telefonbuch.teilnehmer SET rufnummer= "+rufnummer+",name='"+name+"',typ="+typ+",hostname='"+hostname+"',ipaddresse='"+ipaddresse+"',port='"+port+"',extention='"+extention+"',gesperrt="+gesperrt+", moddate = "+moddate+" WHERE rufnummer="+rufnummer, function (err, result) {
+					dbcon.query("UPDATE teilnehmer SET rufnummer= "+rufnummer+",name='"+name+"',typ="+typ+",hostname='"+hostname+"',ipaddresse='"+ipaddresse+"',port='"+port+"',extension='"+extension+"',gesperrt="+gesperrt+", moddate = "+moddate+" WHERE rufnummer="+rufnummer, function (err, result) {
 						if(err){
 							console.log(err);
 						}else{

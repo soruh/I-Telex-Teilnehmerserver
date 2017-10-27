@@ -86,7 +86,7 @@ function encPacket(obj) {
 			.concat(deConcatValue(data.hostname,40))
 			.concat(deConcatValue(numip,4))
 			.concat(deConcatValue(parseInt(data.port),2))
-			.concat(deConcatValue(parseInt(data.extention),1))
+			.concat(deConcatValue(parseInt(data.extension),1))
 			.concat(deConcatValue(parseInt(data.pin),2))
 			.concat(deConcatValue(parseInt(data.moddate)+2208988800,4));
 			break;
@@ -271,7 +271,7 @@ function ascii(data,connection,dbcon){
 	if(number!=""){number = parseInt(number);}
 	if(number!=NaN&&number!=""){
 		console.log(FgGreen+"starting lookup for: "+FgCyan+number+FgWhite);
-		dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE rufnummer="+number, function (err, result){
+		dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer="+number, function (err, result){
 			if(err){
 				debug(err);
 			}else{
@@ -294,7 +294,7 @@ function ascii(data,connection,dbcon){
 						send += result[0]["hostname"]+"\n\r";
 					}
 					send += result[0]["port"]+"\n\r";
-					send += result[0]["extention"]+"\n\r";
+					send += result[0]["extension"]+"\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
 						console.log(FgGreen+"Entry found\n=> sent:\n"+FgWhite+send);

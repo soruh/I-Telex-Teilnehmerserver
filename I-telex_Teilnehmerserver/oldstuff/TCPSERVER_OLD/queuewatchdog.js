@@ -55,7 +55,7 @@ handles[8][RESPONDING] = (obj,cnum,dbcon,connection)=>{
 		if(b){
 			console.log("wrote!");
 			console.log(connections[cnum].writebuffer[0]);
-			dbcon.query("DELETE FROM telefonbuch.queue WHERE message="+connections[cnum].writebuffer[0].uid+" AND server="+connections[cnum].servernum+";",function(err,res) {
+			dbcon.query("DELETE FROM queue WHERE message="+connections[cnum].writebuffer[0].uid+" AND server="+connections[cnum].servernum+";",function(err,res) {
 				if(err){
 					debug(err);
 				}else if(res.affectedRows > 0){
@@ -82,17 +82,17 @@ process.stdin.on('data',(data)=>{
 	}
 	console.log("stdin: "+data);
 });
-/*dbcon.query("DELETE FROM telefonbuch.queue WHERE uid="+row.uid, function (err, result2) {
+/*dbcon.query("DELETE FROM queue WHERE uid="+row.uid, function (err, result2) {
 	console.log(FgGreen+"deleted queue entry "+FgCyan+result2.uid+FgGreen+" from queue"+FgWhite);
 });*/
 function SendQueue(callback){
 	console.log(FgCyan+"Sending Queue!"+FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
-	dbcon.query("SELECT * FROM telefonbuch.teilnehmer", function (err, teilnehmer){
+	dbcon.query("SELECT * FROM teilnehmer", function (err, teilnehmer){
 		if(err){
 			debug(err);
 		}
-		dbcon.query("SELECT * FROM telefonbuch.queue", function (err, results){//order by server
+		dbcon.query("SELECT * FROM queue", function (err, results){//order by server
 			if(err) console.log(err);
 			if(results.length>0){
 				var servers = {};
@@ -105,7 +105,7 @@ function SendQueue(callback){
 				console.log(BgMagenta,FgBlack,servers,BgBlack,FgWhite);
 				async.eachSeries(servers,function(server,cb){
 					console.log(FgMagenta,server,FgWhite);
-					dbcon.query("SELECT * FROM telefonbuch.servers WHERE uid="+server[0].server+";",(err, result2)=>{
+					dbcon.query("SELECT * FROM servers WHERE uid="+server[0].server+";",(err, result2)=>{
 						if(err){
 							debug(err);
 						}
@@ -118,7 +118,7 @@ function SendQueue(callback){
 								connections[cnum].writebuffer = [];
 								async.each(server,(serverdata,scb)=>{
 									console.log(FgCyan,serverdata,FgWhite);
-									dbcon.query("SELECT * FROM telefonbuch.teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
+									dbcon.query("SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
 										connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
 										scb();
 									});

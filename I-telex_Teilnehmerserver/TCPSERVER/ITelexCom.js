@@ -110,7 +110,7 @@ function encPacket(obj) {
 			.concat(deConcatValue(data.hostname,40))
 			.concat(deConcatValue(numip,4))
 			.concat(deConcatValue(parseInt(data.port),2))
-			.concat(deConcatValue(parseInt(data.extention),1))
+			.concat(deConcatValue(parseInt(data.extension),1))
 			.concat(deConcatValue(parseInt(data.pin),2))
 			.concat(deConcatValue(parseInt(data.moddate)+2208988800,4));
 			break;
@@ -320,7 +320,7 @@ function ascii(data,connection,dbcon){
 						send += result[0]["hostname"]+"\n\r";
 					}
 					send += result[0]["port"]+"\n\r";
-					send += result[0]["extention"]+"\n\r";
+					send += result[0]["extension"]+"\n\r";
 					send += "+++\n\r";
 					connection.write(send,function(){
 						if(cv(1)) console.log(colors.FgGreen+"Entry found, sent:\n"+colors.FgWhite+send);

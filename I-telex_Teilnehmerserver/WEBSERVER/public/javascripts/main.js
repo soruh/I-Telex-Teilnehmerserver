@@ -18,7 +18,7 @@ const languages = {
     "#table-th-label-hostname":{text:"hostname"},
     "#table-th-label-ipaddresse":{text:"ipaddresse"},
     "#table-th-label-port":{text:"port"},
-    "#table-th-label-extention":{text:"durchwahl"},
+    "#table-th-label-extension":{text:"durchwahl"},
     "#table-th-label-gesperrt":{title:"gesperrt"},
     "#table-th-label-moddate":{text:"letzte Änderung"},
     "#search-box":{placeholder:"suchen"},
@@ -62,7 +62,7 @@ const languages = {
     "#table-th-label-hostname":{text:"hostname"},
     "#table-th-label-ipaddresse":{text:"ipaddress"},
     "#table-th-label-port":{text:"port"},
-    "#table-th-label-extention":{text:"extention"},
+    "#table-th-label-extension":{text:"extension"},
     "#table-th-label-gesperrt":{title:"locked"},
     "#table-th-label-moddate":{text:"last changed"},
     "#search-box":{placeholder:"search"},
@@ -88,7 +88,7 @@ const languages = {
     "#hostname_newentry_dialog_label":{text:"hostname"},
     "#ipaddresse_newentry_dialog_label":{text:"ipaddress"},
     "#port_newentry_dialog_label":{text:"port"},
-    "#durchwahl_newentry_dialog_label":{text:"extention"},
+    "#durchwahl_newentry_dialog_label":{text:"extension"},
     "#gesperrt_newentry_dialog_label":{text:"locked"},
     "#rufnummer_edit_dialog_label":{text:"telex-number"},
     "#name_edit_dialog_label":{text:"name"},
@@ -96,7 +96,7 @@ const languages = {
     "#hostname_edit_dialog_label":{text:"hostname"},
     "#ipaddresse_edit_dialog_label":{text:"ipaddress"},
     "#port_edit_dialog_label":{text:"port"},
-    "#durchwahl_edit_dialog_label":{text:"extention"},
+    "#durchwahl_edit_dialog_label":{text:"extension"},
     "#gesperrt_edit_dialog_label":{text:"locked"},
   }
 };
@@ -198,7 +198,7 @@ $(document).ready(function(){
       hostname: $("#hostname_newentry_dialog").val(),
       ipaddresse: $("#ipaddresse_newentry_dialog").val(),
       port: $("#port_newentry_dialog").val(),
-      extention: $("#durchwahl_newentry_dialog").val(),
+      extension: $("#durchwahl_newentry_dialog").val(),
       gesperrt: gesperrt,
       moddate: $("#moddate_newentry_dialog").val(),
       pin: $("#pin_newentry_dialog").val(),
@@ -218,7 +218,7 @@ $(document).ready(function(){
       hostname: $("#hostname_edit_dialog").val(),
       ipaddresse: $("#ipaddresse_edit_dialog").val(),
       port: $("#port_edit_dialog").val(),
-      extention: $("#durchwahl_edit_dialog").val(),
+      extension: $("#durchwahl_edit_dialog").val(),
       gesperrt: gesperrt,
       moddate: $("#moddate_edit_dialog").val(),
       pin: $("#pin_edit_dialog").val(),
@@ -441,7 +441,7 @@ function updateContent(usli){
     $("#hostname_edit_dialog").val(global_list[uid].hostname).trigger('change');
     $("#ipaddresse_edit_dialog").val(global_list[uid].ipaddresse).trigger('change');
     $("#port_edit_dialog").val(global_list[uid].port).trigger('change');
-    $("#durchwahl_edit_dialog").val(global_list[uid].extention).trigger('change');
+    $("#durchwahl_edit_dialog").val(global_list[uid].extension).trigger('change');
     $("#gesperrt_edit_dialog").prop('checked', global_list[uid].gesperrt).trigger('change');
     showpopup("edit_dialog");
   });
