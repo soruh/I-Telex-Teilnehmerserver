@@ -3,16 +3,37 @@ const options = require(process.env.PWD+"/COMMONMODULES/config.js").get("mySqlCo
 const async = require("async");
 const mysql = require("mysql");
 
-
 /*dbcon.query = function query(str,cb){
   console.log(str);
   cb("code","res");
 }*/
-var raw = require("fs").readFileSync(process.env.PWD+"/ctables.json","utf8").replace(/[\n\r]/g,"");
+/*var raw = require("fs").readFileSync(process.env.PWD+"/sql.json","utf8").replace(/[\n\r]/g,"");
 while(/(\s\s)/g.test(raw)){
   raw = raw.replace(/(\s\s)/g," ");
 }
-var json = JSON.parse(raw);
+var SQL = JSON.parse(raw);*/
+var SQL = {
+  drop:{
+    tables:{
+      queue: 'DROP TABLE `queue`;',
+      server: 'DROP TABLE `servers`;',
+      teilnehmer: 'DROP TABLE `teilnehmer`;'
+    },
+    database: 'DROP DATABASE <database>;',
+    user: 'drop user <user>@localhost;'
+  },
+  create:{
+    tables:{
+      queue: 'CREATE TABLE `queue` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `server` int(11) DEFAULT NULL, `message` int(11) DEFAULT NULL, `timestamp` double unsigned DEFAULT NULL, PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`) ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;',
+      server: 'CREATE TABLE `servers` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `addresse` tinytext, `port` tinytext, PRIMARY KEY (`uid`) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8',
+      teilnehmer: 'CREATE TABLE `teilnehmer` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `rufnummer` int(10) NOT NULL, `name` tinytext CHARACTER SET utf8, `typ` int(8) DEFAULT NULL, `hostname` tinytext CHARACTER SET utf8, `ipaddresse` tinytext CHARACTER SET utf8, `port` tinytext CHARACTER SET utf8, `extension` tinytext CHARACTER SET utf8, `pin` tinytext CHARACTER SET utf8, `gesperrt` tinyint(4) DEFAULT NULL, `moddate` tinytext CHARACTER SET utf8, `changed` tinyint(4) DEFAULT \'1\', PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`), UNIQUE KEY `rufnummer_UNIQUE` (`rufnummer`) ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'
+    },
+    database: 'CREATE DATABASE <database>;',
+    user: 'CREATE USER <user>@localhost IDENTIFIED BY <password>;'
+  },
+  grant: 'GRANT ALL ON <database>.* TO <user>@localhost;'
+}
+
 var args = JSON.parse(JSON.stringify(process.argv));
 args.splice(0,4);
 if(process.argv[2]=="--help"||process.argv[2]==null||process.argv[3]==null){
@@ -25,7 +46,7 @@ if(process.argv[2]=="--help"||process.argv[2]==null||process.argv[3]==null){
         console.log("wrong credentials");
         dbcon.end(process.exit);
       }else if(err.code=="ER_EMPTY_QUERY"){
-        execute(parseCommands(args));
+        create(parseCommands(args));
       }else{
         console.error(err);
         dbcon.end(process.exit);
@@ -39,20 +60,37 @@ var existing = {};
 function remove(callback){
   var ret = {};
   for(i in existing){
-    if(i != "tables"){
-      if(i = "database"){
+    if(i == "tables"){
+      var cdb = false;
+      for(i in existing){
+        if(i=="database") cdb=true;
+      }
+      if(cdb){
         ret[Object.keys(ret).length] = database;
+      }
+      ret[Object.keys(ret).length] = tables;
+    }else if(i == "user"){
+      ret[Object.keys(ret).length] = existing[i];
+      if(parseCommands(args)[3]==grant){
+        ret[Object.keys(ret).length] = grant;
+      }
+    }else{
+      if(i == "database"){
+        var ct = false;
+        for(i in existing){
+          if(i=="tables") ct=true;
+        }
+        if(ct){
+          ret[Object.keys(ret).length] = database;
+        }
         ret[Object.keys(ret).length] = tables;
       }else{
         ret[Object.keys(ret).length] = existing[i];
       }
-    }else{
-      ret[Object.keys(ret).length] = database;
-      ret[Object.keys(ret).length] = tables;
     }
   }
   var temp = [];
-  console.log(ret);
+  // console.log(ret);
   for(a in ret){
     for(b in temp){
       if(ret[a]==temp[b]){
@@ -61,15 +99,37 @@ function remove(callback){
     }
     if(ret[a]!=null) temp.push(ret[a]);
   }
-  console.log(ret);
+  // console.log("ret",ret);
+  // console.log("existing",existing);
+  var removeol = {};
+  for(i in existing){
+    switch(existing[i].toString().split("(")[0].split(" ")[1]){
+      case "database":
+        removeol[3] = database;
+        break;
+      case "tables":
+        removeol[2] = tables;
+        break;
+      case "user":
+        removeol[1] = user;
+        break;
+      case "grant":
+        removeol[0] = grant;
+        break;
+    }
+  }
   var removed = [];
-  async.eachSeries(existing,function(rem, cb){
-    console.log("removing: "+rem.toString().split("(")[0].split(" ")[1]);
+  async.eachSeries(removeol,function(rem, cback){
+    function cb(){
+      process.stdout.write("done!\n");
+      cback();
+    }
+    process.stdout.write("removing: "+rem.toString().split("(")[0].split(" ")[1]+" ...");
     switch(rem.toString().split("(")[0].split(" ")[1]){
       case "user":
-        dbcon.query(replaceTags(json.drop.user),function(err,res){
+        dbcon.query(replaceTags(SQL.drop.user),function(err,res){
           if(err){
-            console.error(err);;
+            console.error(err);
           }else{
             removed[removed.length] = rem.toString().split("(")[0].split(" ")[1];
           }
@@ -77,9 +137,9 @@ function remove(callback){
         });
         break;
       case "database":
-        dbcon.query(replaceTags(json.drop.database),function(err,res){
+        dbcon.query(replaceTags(SQL.drop.database),function(err,res){
           if(err){
-            console.error(err);;
+            console.error(err);
           }else{
             removed[removed.length] = rem.toString().split("(")[0].split(" ")[1];
           }
@@ -87,16 +147,17 @@ function remove(callback){
         });
         break;
       case "tables":
-        async.eachSeries(json.drop.tables,function(table){
+        process.stdout.write("\n");
+        async.eachSeries(SQL.drop.tables,function(table,callback){
+          process.stdout.write("removing: "+table.split(" ")[2].replace(/;/g,"")+" ...");
           dbcon.query(replaceTags(table),function(err,res){
             if(err){
-              if(err.code!="ER_NO_DB_ERROR"){
-                console.error(err);;
-              }
+              console.error(err);
             }else{
-              removed[removed.length] = rem.toString().split("(")[0].split(" ")[1];
+              process.stdout.write("done!\n");
+              removed[removed.length] = table.split(" ")[2].replace(/;/g,"");
             }
-            cb();
+            callback();
           });
         },cb);
         break;
@@ -111,6 +172,7 @@ function remove(callback){
   });
 }
 function parseCommands(commands){
+  //  console.log("parseCommands")
   var creates = {};
   for(command of commands){
     var key = Object.keys(creates).length;
@@ -136,23 +198,26 @@ function parseCommands(commands){
   }
   return creates;
 }
-function execute(creates){
+function create(creates){
   if(Object.keys(creates).length>0){
     async.eachSeries(creates,function(funct,cb){
+      process.stdout.write("creating: "+funct.toString().split("(")[0].split(" ")[1]+" ...");
       funct(cb);
     },function(){
       if(Object.keys(existing).length>0){
-        console.log("the following could not be created, because they already existed:");
+        console.log("the following could not be created, because they already existed:\n");
         for(k in existing){
           console.log(k);
         }
-        console.log("overwrite the existing?\n!!!THIS WILL REMOVE ALL OF THEIR CONTENTS!!! (Y/n)");
+        console.log("\noverwrite the existing?\n!!!THIS WILL REMOVE ALL OF THEIR CONTENTS!!! (Y/n)");
         process.stdin.on("data",function(data){
           var datastr = data.toString().replace(/[\n\r]/g,"");
           if(datastr == "Y"||datastr =="y"){
-            remove(execute);
+            remove(create);
           }else if(datastr == "N"||datastr == "n"){
             dbcon.end(process.exit);
+          }else{
+            console.log("(Y/n)");
           }
         })
       }else{
@@ -164,33 +229,41 @@ function execute(creates){
   }
 }
 function database(callback){
-  dbcon.query(replaceTags(json.create.database),function(err,res){
-    handelResErr(res,err, "successfully created database "+mysql.escape(options.database),database);
-    dbcon.query("USE "+options.database+";",function(err,res){
-      handelResErr(res,err, "now using database "+mysql.escape(options.database));
+  //  console.log("database");
+  dbcon.query(replaceTags(SQL.create.database),function(err,res){
+    handelResErr(res,err, "done!\n",database);
+      if(typeof callback === "function") callback();
+  });
+}
+function tables(callback){
+  //  console.log("tables");
+  process.stdout.write("\n");
+  process.stdout.write("selecting database...");
+  dbcon.query("USE "+options.database+";",function(err_u,res_u){
+    handelResErr(res_u,err_u, "done!\n");
+    async.eachSeries(SQL.create.tables,function(table,cb){
+      process.stdout.write("creating: "+table.split("(")[0].split(" ")[2]+"...");
+      dbcon.query(replaceTags(table),function(err,res){
+        handelResErr(res,err,"done!\n",tables);
+        cb();
+      });
+    },function(){
+      handelResErr(res_u,err_u, "done!\n");
       if(typeof callback === "function") callback();
     });
   });
 }
-function tables(callback){
-  async.eachSeries(json.create.tables,function(table,cb){
-    dbcon.query(replaceTags(table),function(err,res){
-      handelResErr(res,err,"successfully created table "+mysql.escape(table.split(" ")[2].replace(/`/g,"")),tables);
-      cb();
-    });
-  },function(){
-    if(typeof callback === "function") callback();
-  });
-}
 function user(callback){
-  dbcon.query(replaceTags(json.create.user),function(err,res){
-    handelResErr(res,err,"successfully created user "+mysql.escape(options.user),user);
+  //  console.log("user");
+  dbcon.query(replaceTags(SQL.create.user),function(err,res){
+    handelResErr(res,err, "done!\n",user);
     if(typeof callback === "function") callback();
   });
 }
 function grant(callback){
-  dbcon.query(replaceTags(json.grant),function(err,res){
-    handelResErr(res,err,"successfully granted rights for database "+mysql.escape(options.database)+" to user "+mysql.escape(options.user),grant);
+  //  console.log("grant");
+  dbcon.query(replaceTags(SQL.grant),function(err,res){
+    handelResErr(res,err,"done!\n",grant);
     if(typeof callback === "function") callback();
   });
 }
@@ -213,18 +286,28 @@ function printUsage(){
   console.log("USAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" [MYSQL ROOT USER] [MYSQL ROOT PASSWORD] [OPTION 1] [OPTION 2] [...]\n("+process.argv[0]+" "+process.argv[1]+" [MYSQL ROOT USER] [MYSQL ROOT PASSWORD] [OPTION 1] [OPTION 2] [...])\n\nSYNOPSIS:\n\tInitialize mysql from config.js\n\nOPTIONS:\n"+
   "\nall:\n\tIntialize all\n\ntables:\n\tInitialize only tables (database has to exist)\n\nuser:\n\tCreate User\n\ndatabase:\n\tCreate database\n\ngrant:\n\tGrant rights to database (database and user have to exist)\n\nOptions can be in any creates, because they are createsed in the script");
   try{
-    dbcon.end(process.exit);
-  }catch(e){}
+    dbcon.end();
+    process.exit();
+  }catch(e){
+    process.exit();
+  }
 
 }
 function handelResErr(res, err, message, funct){
   if(res){
-    console.log(message);
+    process.stdout.write(message);
   }
   if(err){
     if((err.code == "ER_DB_CREATE_EXISTS")||(err.code == "ER_TABLE_EXISTS_ERROR")||(err.code == "ER_CANNOT_USER")){
       existing[funct.toString().split("(")[0].split(" ")[1]]=funct;
-      console.log("already exists");
+      console.log(" already exists!");
+    }else if(err.code == "ER_BAD_TABLE_ERROR"){
+      console.log(" does not exist!");
+    }else if(err.code == "ER_BAD_DB_ERROR"){
+      console.log("database does not exist!");
+      printUsage();
+    }else if(err.code == "ER_NO_DB_ERROR"){
+      console.log("no database selected!");
     }else{
       console.error(err);;
     }

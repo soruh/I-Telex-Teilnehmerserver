@@ -9,9 +9,12 @@
   <link rel="stylesheet" href="stylesheets/main.css">
 
   <script src="/javascripts/jquery-3.2.1.min.js"></script>
+  <script src="/javascripts/jquery.validate.min.js"></script>
+  <script src="/javascripts/additional-methods.min.js"></script>
   <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>-->
   <script src="javascripts/bootstrap.min.js"></script>
   <script src="javascripts/main.js"></script>
+  <script src="/javascripts/fortune.js"></script>
 </head>
 
 <body>
@@ -24,11 +27,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">Teilnehmix</a>
+        <a class="navbar-brand" href="/">TeilnehmerServer</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
           <li class="inactive"><a href="/">Home</a></li>
+          <li><a href="http://telexgateway.de/">bnd</a></li>
           <!--
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
@@ -79,7 +83,22 @@
       <!--/.nav-collapse -->
     </div>
   </nav>
-  <div id="wrongpwd" style="display:none;"></div>
+  <div id="waitpop" style="display: none; position: absolute; top: -23px; left: 393px;">
+    <div id="waitpop_inner" class="panel panel-default" role="alert">
+      <div id="waitpop_content">
+        <div id="waitpop_message"><p style="margin-bottom:8px">Processing...</p></div>
+        <img src="/fileadmin/templates/img/gears_w.gif" alt="" border="0">
+      </div>
+    </div>
+  </div>
+  <div id="errorpop">
+    <div id="errorpop_inner" class="alert alert-danger" role="alert">
+      <span class="close" onclick="closeError();" aria-label="close">×</span>
+      <div id="errorpop_content">
+      	<div id="errorpop_errmsg">Error!!</div>
+      </div>
+  	</div>
+  </div>
 
   <div class="container">
     <div id="table"></div>
@@ -178,10 +197,10 @@
       <label for="durchwahl_edit_dialog" id="durchwahl_edit_dialog_label">durchwahl_edit_dialog</label>
       <input id="durchwahl_edit_dialog" type="text">
     </div>
-    <div class="field--wrapper">
+    <!--<div class="field--wrapper">
       <label for="pin_edit_dialog" id="pin_edit_dialog_label">pin_edit_dialog</label>
       <input id="pin_edit_dialog" type="text">
-    </div>
+    </div>-->
     <label for="gesperrt_edit_dialog" id="gesperrt_edit_dialog_label">gesperrt_edit_dialog</label>
     <input type="checkbox" id="gesperrt_edit_dialog"></input>
     <div class="button_container">
@@ -239,6 +258,5 @@
   		</div>
   	</div>
 -->
-
 </body>
 </html>

@@ -67,7 +67,7 @@ const languages = {
     "#table-th-label-port":{text:"port"},
     "#table-th-label-extension":{text:"extension"},
     "#table-th-label-pin":{text:"pin"},
-    "#table-th-label-gesperrt":{title:"locked"},
+    "#table-th-label-gesperrt":{title:/*"locked"*/"disabled"},
     "#table-th-label-moddate":{text:"last changed"},
     "#search-box":{placeholder:"search"},
     "#new":{text:"new entry"},
@@ -94,7 +94,7 @@ const languages = {
     "#port_newentry_dialog_label":{text:"port"},
     "#durchwahl_newentry_dialog_label":{text:"extension"},
     "#pin_newentry_dialog_label":{text:"pin"},
-    "#gesperrt_newentry_dialog_label":{text:"locked"},
+    "#gesperrt_newentry_dialog_label":{text:/*"locked"*/"disabled"},
     "#rufnummer_edit_dialog_label":{text:"telex-number"},
     "#name_edit_dialog_label":{text:"name"},
     "#typ_edit_dialog_label":{text:"type"},
@@ -103,12 +103,14 @@ const languages = {
     "#port_edit_dialog_label":{text:"port"},
     "#durchwahl_edit_dialog_label":{text:"extension"},
     "#pin_edit_dialog_label":{text:"pin"},
-    "#gesperrt_edit_dialog_label":{text:"locked"},
+    "#gesperrt_edit_dialog_label":{text:/*"locked"*/"disabled"},
   }
 };
 var language = getCookie("language")?getCookie("language"):DEFAULTLANGUAGE;
+
 var sortby="";
 var revsort=false;
+
 $(document).ready(function(){
   (function($){
     $.fn.extend({
@@ -121,7 +123,17 @@ $(document).ready(function(){
         }
     });
   })(jQuery);
-  login(null,function(){
+  $.ajaxSetup({
+    //    	async: false
+  });
+  $( document ).ajaxStart(function(){
+  	$("#waitpop").show();
+  	$("#waitpop").center();
+  });
+  $( document ).ajaxStop(function(){
+  	$("#waitpop").hide();
+  });
+  login("",function(){
     initloc();
   });
   jQuery("input,select,textarea").bind("checkval",function(){
@@ -184,15 +196,16 @@ $(document).ready(function(){
     showpopup("newentry_dialog");
   });
   $("#submit_password_dialog").click(function(){
-    login(atob($("#passwordfield").val()),function(successful){
-      if(!successful){
-        $("#wrongpwd").show().fadeOut(3000);
+    login($("#passwordfield").val(),function(successful){
+      if(successful){
+        resetforms();
+      }else{
+        showError(languages[language]["#wrongpwd"].text);
       }
     });
     $("#passwordfield").val("");
     $("#passwordfield").trigger('change');
-    resetforms();
-    getList(updateTable);
+    //getList(updateTable);
   });
   $("#submit_newentry_dialog").click(function(){
     var gesperrt = $("#gesperrt_newentry_dialog").prop('checked') ? 1 : 0;
@@ -210,7 +223,7 @@ $(document).ready(function(){
       pin: $("#pin_newentry_dialog").val(),
     });
     resetforms();
-    getList(updateTable);
+    //getList(updateTable);
   });
   $("#submit_edit_dialog").click(function(){
     var gesperrt = $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0;
@@ -230,7 +243,7 @@ $(document).ready(function(){
       pin: $("#pin_edit_dialog").val(),
     });
     resetforms();
-    getList(updateTable);
+    //getList(updateTable);
   });
   $("#submit_delete_dialog").click(function(){
     edit({
@@ -238,13 +251,43 @@ $(document).ready(function(){
       uid:$("#delete_dialog").data("uid"),
     });
     resetforms();
-    getList(updateTable);
+    //getList(updateTable);
   });
   $(".abort_dialog").click(function(){
     resetforms();
-    getList(updateTable);
+    //getList(updateTable);
   });
 });
+
+function showErrorFields(context,errorFields){
+  $.each(errorFields,function(ekey,evalue) {
+    item=$(context).find("[name="+ekey+"]");
+    ig=item.parent(".input-group");
+    if(ig.length>0){
+      item=ig;
+    }
+    item.addClass("gl_error").closest("[class*=col]").append('<span class="gl_fielderror">'+evalue+'</span>');
+
+    //$(context).find("[name="+ekey+"]").addClass("gl_error").closest("[class*=col]").append('<span class="gl_fielderror">'+evalue+'</span>');
+  });
+}
+function clearErrors(){
+  closeError();
+  $(".gl_error").removeClass("gl_error");
+  $(".gl_fielderror").remove();
+}
+
+function showError(errorMessage){
+	if(errorMessage)$('#errorpop_errmsg').html(errorMessage);
+	$('#errorpop').show(1,function(){
+		$('#errorpop').center();
+		$('#errorpop').hide();
+		$('#errorpop').fadeIn("slow");
+	});
+}
+function closeError(){
+	$('#errorpop').fadeOut("slow");
+}
 function showpopup(id,callback){
   $("#newentry_dialog").hide();
   $("#edit_dialog").hide();
@@ -262,25 +305,33 @@ function showpopup(id,callback){
   }
   if(typeof callback === "function") callback();
 }
+function resetforms(){
+  $("#newentry_dialog input").val("");
+  $("#newentry_dialog checkbox").prop("checked",false);
+  showpopup("");
+}
+
 function login(pwd,callback){
   if(pwd){
-    setCookie("pwd",pwd);
+    setCookie("pwd",btoa(pwd));
   }
   edit({
     typekey:"checkpwd"
   },function(result){
     pwdcorrect=(result.code==1);
-    getList(function(li){
+    if(typeof callback==="function") callback(result.code==1);
+    /*getList(function(li){
       updateTable(li,function(){
-        if(typeof callback==="function") callback(result.code==1);
       });
-    });
+    });*/
   });
 }
 function logout(){
   setCookie("pwd","")
   login();
+  resetforms();
 }
+
 function twodigit(n){
   if(n.toString().length<2){
     return("0"+n.toString())
@@ -293,17 +344,24 @@ function UtcToString(Utc){
   if(SHOWALLDATEINFO){
     return(d.toString());
   }else{
-    return(twodigit(d.getDate())+"."+twodigit(d.getMonth()+1)+"."+twodigit(d.getFullYear())+" "+twodigit(d.getHours())+":"+twodigit(d.getMinutes()));
+    if(language=="english"){
+      return(twodigit(d.getMonth()+1)+"."+twodigit(d.getDate())+"."+d.getFullYear()+" "+
+      twodigit(((d.getHours()>12)?(d.getHours()-12):d.getHours()))
+      +":"+twodigit(d.getMinutes())
+      +((d.getHours()>12)?" PM":"AM"));
+    }else{
+      return(twodigit(d.getDate())+"."+twodigit(d.getMonth()+1)+"."+d.getFullYear()+" "+twodigit(d.getHours())+":"+twodigit(d.getMinutes()));
+    }
   }
 }
+
 function getList(callback){
-  console.log("getList");
   $.ajax({
     url: "/list",
     type: "POST",
     dataType: "json",
     data: {
-      "password":btoa(getCookie("pwd")),
+      "password":getPassword(),
     },
     success: function(response){
       console.log(response);
@@ -387,7 +445,9 @@ function updateContent(usli){
         $(td).addClass("td cell cell-"+b);
         switch(b){
           case "moddate":
-            if(!UTCDATE){
+            if(UTCDATE){
+              $(td).text(list[a][b]);
+            }else{
               $(td).text(UtcToString(list[a][b]));
             }
             break;
@@ -477,15 +537,15 @@ function updateContent(usli){
   }
 }
 function edit(vals, cb){
-  vals["password"] = btoa(getCookie("pwd"));
   console.log(vals);
+  vals["password"] = getPassword();
   $.ajax({
     url: "/edit",
     type: "POST",
     dataType: "json",
     data: vals,
     success: function(response) {
-      getList(updateTable)
+      getList(updateTable);
       if(cb) cb(response.message);
       if((response.message.code!=1)&&(response.message.code!=-1)) $("#log").html(JSON.stringify(response.message));
       if(!response.successful){
@@ -498,6 +558,7 @@ function edit(vals, cb){
     }
   });
 }
+
 function search(list,str,callback){
   var returnlist = [];
   for(row of list){
@@ -520,11 +581,7 @@ function search(list,str,callback){
   }
   callback(returnlist);
 }
-function resetforms(){
-  $("#newentry_dialog input").val("");
-  $("#newentry_dialog checkbox").prop("checked",false);
-  showpopup("");
-}
+
 function sortFunction(x,y){
   //console.log(x[sortby],y[sortby],x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:true}));
   return(x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:true}));
@@ -560,6 +617,23 @@ function sort(usli){
     }
   }
 }
+
+function initloc(){
+  $("#loc-dropdown-parent").click(function(){
+    $("#loc-dropdown-children").fadeToggle(300);
+  });
+
+  for(i in languages){
+    var child = document.createElement("div");
+    child.id="loc-dropdown-child-"+i;
+    child.style="background-image:url(/images/"+i+".svg);";
+    child.onclick = function(){
+      setLanguage(this.id.split("-")[this.id.split("-").length-1]);
+      $("#loc-dropdown-children").fadeOut(300);
+    };
+    document.getElementById("loc-dropdown-children").appendChild(child);
+  }
+}
 function setLanguage(l){
   if(languages[l]){
     language=l;
@@ -581,21 +655,16 @@ function setLanguage(l){
     $("#loc-dropdown-parent").css("background-image","url(/images/"+l+".svg)");
   }
 }
-function initloc(){
-  $("#loc-dropdown-parent").click(function(){
-    $("#loc-dropdown-children").fadeToggle(300);
-  });
 
-  for(i in languages){
-    var child = document.createElement("div");
-    child.id="loc-dropdown-child-"+i;
-    child.style="background-image:url(/images/"+i+".svg);";
-    child.onclick = function(){
-      setLanguage(this.id.split("-")[this.id.split("-").length-1]);
-      $("#loc-dropdown-children").fadeOut(300);
-    };
-    document.getElementById("loc-dropdown-children").appendChild(child);
+function getPassword(){
+  try{
+    var password = atob(getCookie("pwd"));
+  }catch(e){
+    console.error(e);
+    setCookie("pwd","");
+    var password = "";
   }
+  return(password);
 }
 function setCookie(c_name,value,exdays){
   var exdate = new Date();

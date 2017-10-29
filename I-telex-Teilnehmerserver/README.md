@@ -1,5 +1,9 @@
 #I-telex-Teilnehmerserver
 ---
+#TODO:
+- don't delete deleted entrys, but give them a "tag" deleted or something
+- jquery validata
+---
 ##Setup
 (under Linux)
 
@@ -17,23 +21,23 @@ $ npm install pm2 -g
 $ npm install
 ```
 ### create database, tables and user
-this can be done with a script I wrote, or manually.
-My script uses the config file, so it is important to at least configure `mySqlConnectionOptions` before executing it.
+this can be done manually, or with a supplied script.
+The script uses the config file, so it is important to at least configure `mySqlConnectionOptions` before executing it.
 
 ```
-> node I-telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] all
+$ node I-telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] all
 ```
 If you want to create the database and the user manually do so and execute
 ```
-> node I-telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] tables
+$ node I-telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] tables
 ```
 for help on the script write
 
 ```
-> node I-telex-Teilnehmerserver/init_mysql --help
+$ node I-telex-Teilnehmerserver/init_mysql --help
 ```
 
-the user defaults to <user_name>`@localhost`, so if you don't want that you will also have to change it manually.
+the user defaults to <user_name>`@localhost`,which makes it only accessible from `loaclhost`.This should be sufficient for normal use, but if you don't want that you will have to change it manually.
 
 ---
 ##Starting/Stoping Server
@@ -93,8 +97,8 @@ The following can be configured in `config.json`
   "" will write to stderr
 
   "\-" will discard all messages
-###TCPPORT
-  The port on which the tcpserver should listen
+###BINARYPORT
+  The port on which the binaryserver should listen
 ###LOGGING_VERBOSITY
   The level of logging verbosity
 ###WEBSERVERPORT

@@ -1,6 +1,6 @@
 const PWD = process.env.PWD;
 const mysql = require('mysql');
-const ITelexCom=require(PWD+"/TCPSERVER/ITelexCom.js");
+const ITelexCom=require(PWD+"/BINARYSERVER/ITelexCom.js");
 const colors = require(PWD+"/COMMONMODULES/colors.js");
 
 const config = require(PWD+'/COMMONMODULES/config.js');

@@ -4,7 +4,7 @@ const mysql = require('mysql');
 const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
-const ITelexCom = require(PWD+"/TCPSERVER/ITelexCom.js");
+const ITelexCom = require(PWD+"/BINARYSERVER/ITelexCom.js");
 const colors = require(PWD+"/COMMONMODULES/colors.js");
 
 const config = require(PWD+'/COMMONMODULES/config.js');
@@ -127,15 +127,15 @@ handles[5][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
 	});
 };
 handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
-	if(obj.data.data.version  ==  1){
+	if(obj.data./*data.*/version  ==  1){
 		if(ITelexCom.cv(2)) console.log(obj);
-		dbcon.query("SELECT * from teilnehmer WHERE rufnummer = "+obj.data.data.rufnummer+";",(err,res)=>{
+		dbcon.query("SELECT * from teilnehmer WHERE rufnummer = "+obj.data./*data.*/rufnummer+";",(err,res)=>{
 			if(err){
 				if(ITelexCom.cv(0)) console.log(err)
 			}else{
 				if(res.length  ==  1){
-					if(obj.data.data.timestamp > res.moddate){
-						dbcon.query("UPDATE teilnehmerSETrufnummer = "+obj.data.data.rufnummer+",name = "+obj.data.data.name+",typ = "+obj.data.data.typ+",hostname = "+obj.data.data.hostname+",ipaddresse = "+obj.data.data.ipaddresse+",port = "+obj.data.data.port+",extension = "+obj.data.data.extension+",pin = "+obj.data.data.pin+",gesperrt = "+obj.data.data.gesperrt+",moddate = "+obj.data.data.moddate+",changed = "+0+"WHERE rufnummer = "+obj.data.data.rufnummer+";",(err,res2)=>{
+					if(obj.data./*data.*/timestamp > res.moddate){
+						dbcon.query("UPDATE teilnehmerSETrufnummer = "+obj.data./*data.*/rufnummer+",name = "+obj.data./*data.*/name+",typ = "+obj.data./*data.*/typ+",hostname = "+obj.data./*data.*/hostname+",ipaddresse = "+obj.data./*data.*/ipaddresse+",port = "+obj.data./*data.*/port+",extension = "+obj.data./*data.*/extension+",pin = "+obj.data./*data.*/pin+",gesperrt = "+obj.data./*data.*/gesperrt+",moddate = "+obj.data./*data.*/moddate+",changed = "+0+"WHERE rufnummer = "+obj.data./*data.*/rufnummer+";",(err,res2)=>{
 							if(err){
 								if(ITelexCom.cv(0)) console.log(err);
 							}else{
@@ -144,7 +144,7 @@ handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 						});
 					}
 				}else if(res.length  ==  0){
-					dbcon.query("INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+obj.data.data.rufnummer+","+obj.data.data.name+","+obj.data.data.typ+","+obj.data.data.hostname+","+obj.data.data.ipaddresse+","+obj.data.data.port+","+obj.data.data.extension+","+obj.data.data.pin+","+obj.data.data.gesperrt+","+obj.data.data.moddate+","+0+");",(err,res2)=>{
+					dbcon.query("INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+obj.data./*data.*/rufnummer+","+obj.data./*data.*/name+","+obj.data./*data.*/typ+","+obj.data./*data.*/hostname+","+obj.data./*data.*/ipaddresse+","+obj.data./*data.*/port+","+obj.data./*data.*/extension+","+obj.data./*data.*/pin+","+obj.data./*data.*/gesperrt+","+obj.data./*data.*/moddate+","+0+");",(err,res2)=>{
 						if(err){
 							if(ITelexCom.cv(0)) console.log(err);
 						}else{
@@ -206,8 +206,8 @@ handles[9][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 };
 handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(ITelexCom.cv(2)) console.log(obj);
-	var version = obj.data.data.version;
-	var query = obj.data.data.pattern;
+	var version = obj.data./*data.*/version;
+	var query = obj.data./*data.*/pattern;
 	var searchstring = "SELECT * FROM teilnehmer WHERE";
 	queryarr = query.split(" ");
 	for(i in queryarr){
@@ -277,7 +277,7 @@ function init(){
 					if(data[0] == 0x71/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
 						ITelexCom.ascii(data,connection,dbcon);
 					}else{
-						ITelexCom.handlePacket(ITelexCom.decData(data),cnum,dbcon,connection,handles); //TCP
+						ITelexCom.handlePacket(ITelexCom.decData(data),cnum,dbcon,connection,handles); //BINARY
 					}
 				});
 			});
@@ -285,8 +285,8 @@ function init(){
 			console.log(e);
 		}
 	});
-	server.listen(config.get("TCPPORT"), function() {
-		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("TCPPORT"));
+	server.listen(config.get("BINARYPORT"), function() {
+		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("BINARYPORT"));
 	});
 }
 function updateQueue(){
@@ -352,7 +352,7 @@ function getFullQuery(){
 }
 var qwdec;	//queuewatchdog exit code
 function startQWD(){
-	qwd = cp.spawn('node',[PWD+"/TCPSERVER/queuewatchdog.js"]);
+	qwd = cp.spawn('node',[PWD+"/BINARYSERVER/queuewatchdog.js"]);
 	qwd.on('exit',(ec)=>{
 		qwdec = ec;
 		if(ITelexCom.cv(0)) console.log("qwd process exited with code "+ec);

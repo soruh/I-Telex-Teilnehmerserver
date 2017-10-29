@@ -37,7 +37,7 @@ const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
 
-const TCPPORT = 11811;
+const BINARYPORT = 11811;
 const UPDATEQUEUEINTERVAL = 60000;
 //<STATES>
 const STANDBY = 0;
@@ -303,14 +303,14 @@ function init(){
 				if(data[0] == 0x71/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
 					ascii(data,connection,dbcon);
 				}else{
-					handlePacket(decData(data),cnum,dbcon,connection); //TCP
+					handlePacket(decData(data),cnum,dbcon,connection); //BINARY
 				}
 			});
 		//console.log(FgYellow+"Disconnected client "+FgCyan+cnum+FgYellow+" from database!"+FgWhite);
 		});
 	});
-	server.listen(TCPPORT, function() {
-		console.log('server is listening on port '+TCPPORT);
+	server.listen(BINARYPORT, function() {
+		console.log('server is listening on port '+BINARYPORT);
 	});
 }
 function updateQueue(){
