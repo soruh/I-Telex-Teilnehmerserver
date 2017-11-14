@@ -27,7 +27,7 @@ label{
 .table-th-label{
 	display: inline-block;
 }
-.table-th-arrow{
+.table_th_arrow{
 	transition: all 0.35s cubic-bezier(.79,.14,.15,.86);
 	transform:rotate(360deg);
 	opacity:0.25;
@@ -76,13 +76,17 @@ select:invalid{
   margin-top: 10px;
 }
 .popup{
+	z-index: 1031;
   border: 1px solid #eeeeee;
   background-color: white;
-  padding: 10px;
+  padding: 24px 24px 24px 24px;
   box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
 	position: absolute;
+}
+h2{
+	margin: 0 0 18px 0;
 }
 .popup .field--wrapper{
 	padding-right: 48px;
@@ -193,33 +197,57 @@ select:invalid{
 .cell{
 	height: 51px;
 }
-.cell.cell-rufnummer{
+.cell.cell_rufnummer{
 	width: 83px;
 }
-.cell.cell-name{
+.cell.cell_name{
 	width: 131px;
 }
-.cell.cell-typ{
+.cell.cell_typ{
 	width: 106px;
 }
-.cell.cell-hostname{
+.cell.cell_hostname{
 	width: 131px;
 }
-.cell.cell-ipaddresse{
+.cell.cell_ipaddresse{
 	width: 131px;
 }
-.cell.cell-port{
-	width: 53px;
+.cell.cell_port{
+	width: 55px;
 }
-.cell.cell-extension{
-	width: 77px;
+.cell.cell_extension{
+	width: 88px;
 }
-.cell.cell-pin{
+.cell.cell_pin{
 	width: 50px;
 }
-.cell.cell-gesperrt{
-	width: 37px;
+.cell.cell_gesperrt{
+	width: 50px;
 }
-.cell.cell-moddate{
+.cell.cell_moddate{
 	width: 131px;
+}
+.validate_error{
+	color: #d9534f;
+	margin-top: 18px;
+}
+input.field_error{
+	border: 1px dashed #d9534f;
+}
+.delete_dialog_label{
+	xdisplay: block;
+}
+.popup h2{
+
+}
+.th.cell{
+	position: relative;
+}
+.table_th_arrow{
+	position: absolute;
+	top: 5px;
+	right: 5px;
+}
+.table-th-label{
+	padding-right: 20px;
 }

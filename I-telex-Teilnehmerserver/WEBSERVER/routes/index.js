@@ -19,21 +19,21 @@ router.post('/list', function(req, res){
     if(err){
       res.json({successful:false,message:err});
     }else{
-//    console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
-      var resultnopin = [];
+  //  console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
+      var resultPublic = [];
       for(a in result){
         if(result[a].gesperrt==0||req.body.password==WEBINTERFACEPASSWORD){
-          var i=resultnopin.length;
-          resultnopin[i] = {};
+          var i=resultPublic.length;
+          resultPublic[i] = {};
           for(b in result[i]){
-            if(((b != "pin")||(false&&req.body.password=="password"))&&(b != "gesperrt"||req.body.password=="password")&&(b != "changed")){
-              resultnopin[i][b] = result[i][b];
+            if(((b != "pin")||(false&&req.body.password=="password"))&&(((b != "gesperrt")||(req.body.password=="password"))&&(b != "changed"))){
+              resultPublic[i][b] = result[i][b];
             }
           }
         }
       }
-//    console.log(resultnopin);
-      res.json({successful:true,message:null,result:resultnopin});
+  //  console.log(resultPublic);
+      res.json({successful:true,message:null,result:resultPublic});
     }
   });
 });
@@ -65,11 +65,20 @@ router.post('/edit', function(req, res){
         });
         break;
       case "delete":
-        pool.query("DELETE FROM teilnehmer WHERE WHERE uid="+mysql.escape(req.body.uid), function (err, result) {
+        var message = [];
+        pool.query("INSERT INTO deleted (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) SELECT rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,"+mysql.escape(Math.round(new Date().getTime()/1000))+" FROM teilnehmer WHERE uid="+mysql.escape(req.body.uid)+";",function(err,result){
           if(err){
             res.json({successful:false,message:err});
           }else{
-            res.json({successful:true,message:result});
+            message.push(result);
+            pool.query("DELETE FROM teilnehmer WHERE uid="+mysql.escape(req.body.uid)+";",function(err,result){
+              if(err){
+                res.json({successful:false,message:err});
+              }else{
+                message.push(result);
+                res.json({successful:true,message:message});
+              }
+            });
           }
         });
         break;

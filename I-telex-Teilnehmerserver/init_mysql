@@ -17,7 +17,8 @@ var SQL = {
     tables:{
       queue: 'DROP TABLE `queue`;',
       server: 'DROP TABLE `servers`;',
-      teilnehmer: 'DROP TABLE `teilnehmer`;'
+      teilnehmer: 'DROP TABLE `teilnehmer`;',
+      deleted: 'DROP TABLE `deleted`;'
     },
     database: 'DROP DATABASE <database>;',
     user: 'drop user <user>@localhost;'
@@ -26,7 +27,8 @@ var SQL = {
     tables:{
       queue: 'CREATE TABLE `queue` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `server` int(11) DEFAULT NULL, `message` int(11) DEFAULT NULL, `timestamp` double unsigned DEFAULT NULL, PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`) ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;',
       server: 'CREATE TABLE `servers` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `addresse` tinytext, `port` tinytext, PRIMARY KEY (`uid`) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8',
-      teilnehmer: 'CREATE TABLE `teilnehmer` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `rufnummer` int(10) NOT NULL, `name` tinytext CHARACTER SET utf8, `typ` int(8) DEFAULT NULL, `hostname` tinytext CHARACTER SET utf8, `ipaddresse` tinytext CHARACTER SET utf8, `port` tinytext CHARACTER SET utf8, `extension` tinytext CHARACTER SET utf8, `pin` tinytext CHARACTER SET utf8, `gesperrt` tinyint(4) DEFAULT NULL, `moddate` tinytext CHARACTER SET utf8, `changed` tinyint(4) DEFAULT \'1\', PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`), UNIQUE KEY `rufnummer_UNIQUE` (`rufnummer`) ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'
+      teilnehmer: 'CREATE TABLE `teilnehmer` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `rufnummer` int(10) NOT NULL, `name` tinytext CHARACTER SET utf8, `typ` int(8) DEFAULT NULL, `hostname` tinytext CHARACTER SET utf8, `ipaddresse` tinytext CHARACTER SET utf8, `port` tinytext CHARACTER SET utf8, `extension` tinytext CHARACTER SET utf8, `pin` tinytext CHARACTER SET utf8, `gesperrt` tinyint(4) DEFAULT NULL, `moddate` tinytext CHARACTER SET utf8, `changed` tinyint(4) DEFAULT \'1\', PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`), UNIQUE KEY `rufnummer_UNIQUE` (`rufnummer`) ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci',
+      deleted: 'CREATE TABLE `deleted` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `rufnummer` int(10) NOT NULL, `name` tinytext CHARACTER SET utf8, `typ` int(8) DEFAULT NULL, `hostname` tinytext CHARACTER SET utf8, `ipaddresse` tinytext CHARACTER SET utf8, `port` tinytext CHARACTER SET utf8, `extension` tinytext CHARACTER SET utf8, `pin` tinytext CHARACTER SET utf8, `gesperrt` tinyint(4) DEFAULT NULL, `moddate` tinytext CHARACTER SET utf8, PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`)) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'
     },
     database: 'CREATE DATABASE <database>;',
     user: 'CREATE USER <user>@localhost IDENTIFIED BY <password>;'
@@ -121,7 +123,7 @@ function remove(callback){
   var removed = [];
   async.eachSeries(removeol,function(rem, cback){
     function cb(){
-      process.stdout.write("done!\n");
+      process.stdout.write(" done!\n");
       cback();
     }
     process.stdout.write("removing: "+rem.toString().split("(")[0].split(" ")[1]+" ...");
@@ -154,7 +156,7 @@ function remove(callback){
             if(err){
               console.error(err);
             }else{
-              process.stdout.write("done!\n");
+              process.stdout.write(" done!\n");
               removed[removed.length] = table.split(" ")[2].replace(/;/g,"");
             }
             callback();
@@ -231,7 +233,7 @@ function create(creates){
 function database(callback){
   //  console.log("database");
   dbcon.query(replaceTags(SQL.create.database),function(err,res){
-    handelResErr(res,err, "done!\n",database);
+    handelResErr(res,err, " done!\n",database);
       if(typeof callback === "function") callback();
   });
 }
@@ -240,15 +242,15 @@ function tables(callback){
   process.stdout.write("\n");
   process.stdout.write("selecting database...");
   dbcon.query("USE "+options.database+";",function(err_u,res_u){
-    handelResErr(res_u,err_u, "done!\n");
+    handelResErr(res_u,err_u, " done!\n");
     async.eachSeries(SQL.create.tables,function(table,cb){
       process.stdout.write("creating: "+table.split("(")[0].split(" ")[2]+"...");
       dbcon.query(replaceTags(table),function(err,res){
-        handelResErr(res,err,"done!\n",tables);
+        handelResErr(res,err," done!\n",tables);
         cb();
       });
     },function(){
-      handelResErr(res_u,err_u, "done!\n");
+      handelResErr(res_u,err_u, " done!\n");
       if(typeof callback === "function") callback();
     });
   });
@@ -256,14 +258,14 @@ function tables(callback){
 function user(callback){
   //  console.log("user");
   dbcon.query(replaceTags(SQL.create.user),function(err,res){
-    handelResErr(res,err, "done!\n",user);
+    handelResErr(res,err, " done!\n",user);
     if(typeof callback === "function") callback();
   });
 }
 function grant(callback){
   //  console.log("grant");
   dbcon.query(replaceTags(SQL.grant),function(err,res){
-    handelResErr(res,err,"done!\n",grant);
+    handelResErr(res,err," done!\n",grant);
     if(typeof callback === "function") callback();
   });
 }
@@ -304,12 +306,12 @@ function handelResErr(res, err, message, funct){
     }else if(err.code == "ER_BAD_TABLE_ERROR"){
       console.log(" does not exist!");
     }else if(err.code == "ER_BAD_DB_ERROR"){
-      console.log("database does not exist!");
+      console.log(" database does not exist!");
       printUsage();
     }else if(err.code == "ER_NO_DB_ERROR"){
-      console.log("no database selected!");
+      console.log(" no database selected!");
     }else{
-      console.error(err);;
+      console.error(err);
     }
   }
 }

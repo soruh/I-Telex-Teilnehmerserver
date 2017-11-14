@@ -3,8 +3,8 @@ input[type="text"], input[type="email"], input[type="search"], input[type="passw
   -moz-appearance: caret; /* mobile firefox too! */
   -webkit-tap-highlight-color: transparent;
   color: #000000;
-  background-color: #eeeeff;
-  border: 1px dashed #aaaaff;
+  border: 1px dashed #337ab7;
+  xborder: 1px dashed #aaaaff;
   border-radius: 1px;
   font-style: normal;
   text-align: left;
@@ -16,6 +16,9 @@ input[type="text"], input[type="email"], input[type="search"], input[type="passw
   x-webkit-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
   x-moz-box-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
   xbox-shadow: 4px 4px 0px 0px rgba(50, 50, 50, 0.75);
+}
+input[type="text"]:not(.bg-danger), input[type="email"]:not(.bg-danger), input[type="search"]:not(.bg-danger), input[type="password"]:not(.bg-danger),select:not(.bg-danger),textarea:not(.bg-danger){
+  background-color: #eeeeff;
 }
 select {
     -webkit-appearance: none;

@@ -17,10 +17,10 @@ const STANDBY = 0;
 const RESPONDING = 1;
 const FULLQUERY = 2;
 const LOGIN = 3;
-//</STATES>"#wrongpwd":"Falsches Passwort",
+//</STATES>
 var connections = [];	//list of active connections
 
-function connect(dbcon,cb,options,handles,callback){
+function connect(dbcon,onEnd,options,handles,callback){
 	if(cv(2)) console.log(colors.FgWhite,options);
 	try{
 		var socket = new net.Socket();
@@ -33,23 +33,46 @@ function connect(dbcon,cb,options,handles,callback){
 		if(cnum == -1){
 			cnum = connections.length;
 		}
-		connections[cnum] = {/*connection:socket,*/state:STANDBY};
-		socket.on('data',(data)=>{
+		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,timeout:setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections)};
+		socket.on('data',function(data){
 			if(cv(2)) console.log(colors.FgCyan,data,"\n",data.toString(),colors.FgWhite);
-			handlePacket(decData(data),cnum,dbcon,socket,handles);
+			if(cv(2)) console.log(connections.readbuffer);
+			clearTimeout(connections[cnum].timeout);
+			connections[cnum].timeout = setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections);
+			var res = checkFullPackage(data, connections.readbuffer);
+			if(res[1]){
+				connections.readbuffer = res[1];
+			}
+			if(res[0]){
+				handlePacket(decData(res[0]),cnum,dbcon,socket,handles);
+			}
 		});
-		socket.on('error',(error)=>{
-			if(cv(0)) console.log(colors.FgRed,error,colors.FgWhite);
-			socket.end();
-			cb();
+		socket.on('error',function(error){
+			if(error.code == "ECONNREFUSED"){
+				console.log("server "+connections[cnum].servernum+" could not be reached");
+			}else{
+				if(cv(0)) console.log(colors.FgRed,error,colors.FgWhite);
+			}
+			try{clearTimeout(connections[cnum].timeout);}catch(e){}
+			connections.splice(cnum,1);
+			try{onEnd();}catch(e){}
 		});
-		socket.connect(options,(connection)=>{
+		socket.on('end',function(){
+			try{clearTimeout(connections[cnum].timeout);}catch(e){}
+			connections.splice(cnum,1);
+			try{onEnd();}catch(e){}
+		});
+		socket.connect(options,function(connection){
 			return(callback(socket,cnum));
 		});
 	}catch(e){
 		if(cv(0)) console.log(e);
 		//cb();
 	}
+}
+function timeout(n,connections){
+	console.log("server "+connections[n].servernum+" timed out");
+	connections[n].connection.end();
 }
 function handlePacket(obj,cnum,dbcon,connection,handles){
 	if(!obj){
@@ -62,6 +85,7 @@ function handlePacket(obj,cnum,dbcon,connection,handles){
 			if(cv(0)) console.log("remote client had error:",colors.FgRed+Buffer.from(obj.data).toString());
 		}else{
 			try{
+				console.log(obj);
 				if(handles[obj.packagetype]!=undefined){
 					handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
 				}else{
@@ -105,7 +129,8 @@ function encPacket(obj) {
 			}
 			var array = deConcatValue(data.rufnummer,4)
 			.concat(deConcatValue(data.name,40))
-			.concat(deConcatValue(data.flags,2))
+			.concat(deConcatValue(data.gesperrt,1))//TODO
+			.concat(deConcatValue(data.deleted,1))
 			.concat(deConcatValue(data.typ,1))
 			.concat(deConcatValue(data.hostname,40))
 			.concat(deConcatValue(numip,4))
@@ -116,11 +141,11 @@ function encPacket(obj) {
 			break;
 		case 6:
 			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.config.get("SERVERPIN"),4));
+			.concat(deConcatValue(config.get("SERVERPIN"),4));
 			break;
 		case 7:
 			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.config.SERVERPIN,4));
+			.concat(deConcatValue(config.get("SERVERPIN"),4));
 			break;
 		case 8:
 			var array = [];
@@ -182,7 +207,8 @@ function decPacket(packagetype,buffer){
 			var data = {
 				rufnummer:concatByteArray(buffer.slice(0,4),"number"),
 				name:concatByteArray(buffer.slice(4,44),"string"),
-				flags:concatByteArray(buffer.slice(44,46),"number"),
+				gesperrt:concatByteArray(buffer.slice(44,45),"number"),
+				deleted:concatByteArray(buffer.slice(45,46),"number"),
 				typ:concatByteArray(buffer.slice(46,47),"number"),
 				addresse:concatByteArray(buffer.slice(47,87),"string"),
 				ipaddresse:ipaddresse,
@@ -223,30 +249,59 @@ function decPacket(packagetype,buffer){
 			return(data);
 			break;
 		default:
-			return(buffer);
+			console.error("unknown packagetype: "+packagetype);
+			return(false);
 			break;
 	}
 }
 function decData(buffer){
+	console.log(buffer);
 	var typepos = 0;
-	var outarr = [];
+	var out = [];
 	while(typepos<buffer.length-1){
+		console.log(typepos,buffer.length);
 		var packagetype = parseInt(buffer[typepos],10);
+		console.log(packagetype);
 		var datalength = parseInt(buffer[typepos+1],10);
+		console.log(datalength);
 		var blockdata = [];
 		for(i=0;i<datalength;i++){
 			blockdata[i] = buffer[typepos+2+i];
 		}
+		console.log(blockdata);
 		var data=decPacket(packagetype,blockdata);
-		outarr[outarr.length] = {
-			packagetype:packagetype,
-			datalength,datalength,
-			data:data
-		};
+		console.log(data);
+		if(data){
+			out.push({
+				packagetype:packagetype,
+				datalength,datalength,
+				data:data
+			});
+		}else{
+			console.log("error, no data");
+		}
 		typepos += datalength+2;
 	}
-	return(outarr/**/[0]/**/);//array of objects => only returning first
+	return(out[0]);
 }
+function checkFullPackage(buffer, part){
+	var data = buffer;
+	if(part){
+		data = part.concat(buffer);
+	}
+	var packagetype = parseInt(data[0],10);
+	var packagelength = parseInt(data[1],10)+2;
+	if(data.length == packagelength){
+		return([data, []]);
+	}else if(data.length > packagelength){
+		var res = checkFullPackage(data.slice(packagelength+1,data.length));
+		return([data.slice(0,packagelength).concat(res[0]), res[1]]);
+	}else if(data.length < packagelength){
+		return([[], data]);
+	}else{
+		return([[], []]);
+	}
+}//return(data, part)
 function concatByteArray(arr,type){
 	if(type==="number"){
 		var num = 0;
@@ -295,50 +350,42 @@ function ascii(data,connection,dbcon){
 	if(number!=""){number = parseInt(number);}
 	if(number!=NaN&&number!=""){
 		if(cv(1)) console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
-		dbcon.query("SELECT * FROM teilnehmer WHERE rufnummer="+number, function (err, result){
-			if(err){
-				if(cv(0)) console.log(err);
+		SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE rufnummer="+number, function(result){
+			if(result.length == 0||result.gesperrt==1){
+				var send = "fail\n\r";
+				send += number+"\n\r";
+				send += "unknown\n\r";
+				send += "+++\n\r";
+				connection.write(send,function(){
+					if(cv(1)) console.log(colors.FgRed+"Entry not found, sent:\n"+colors.FgWhite+send);
+				});
 			}else{
-				if(result.length == 0){
-					var send = "fail\n\r";
-					send += number+"\n\r";
-					send += "unknown\n\r";
-					send += "+++\n\r";
-					connection.write(send,function(){
-						if(cv(1)) console.log(colors.FgRed+"Entry not found, sent:\n"+colors.FgWhite+send);
-					});
-				}else{
-					var send = "ok\n\r";
-					send += result[0]["rufnummer"]+"\n\r";
-					send += result[0]["name"]+"\n\r";
-					send += result[0]["typ"]+"\n\r";
-					if((result[0]["typ"]==2)||(result[0]["typ"]==4)||(result[0]["typ"]==5)){
-						send += result[0]["ipaddresse"]+"\n\r";
-					}else if((result[0]["typ"]==1)||(result[0]["typ"]==3)){
-						send += result[0]["hostname"]+"\n\r";
-					}else if(result[0]["typ"]==6){
-						send += result[0]["hostname"]+"\n\r";
-					}
-					send += result[0]["port"]+"\n\r";
-					send += result[0]["extension"]+"\n\r";
-					send += "+++\n\r";
-					connection.write(send,function(){
-						if(cv(1)) console.log(colors.FgGreen+"Entry found, sent:\n"+colors.FgWhite+send);
-					});
+				var send = "ok\n\r";
+				send += result[0]["rufnummer"]+"\n\r";
+				send += result[0]["name"]+"\n\r";
+				send += result[0]["typ"]+"\n\r";
+				if((result[0]["typ"]==2)||(result[0]["typ"]==4)||(result[0]["typ"]==5)){
+					send += result[0]["ipaddresse"]+"\n\r";
+				}else if((result[0]["typ"]==1)||(result[0]["typ"]==3)){
+					send += result[0]["hostname"]+"\n\r";
+				}else if(result[0]["typ"]==6){
+					send += result[0]["hostname"]+"\n\r";
 				}
+				send += result[0]["port"]+"\n\r";
+				send += result[0]["extension"]+"\n\r";
+				send += "+++\n\r";
+				connection.write(send,function(){
+					if(cv(1)) console.log(colors.FgGreen+"Entry found, sent:\n"+colors.FgWhite+send);
+				});
 			}
 		});
 	}
 }
-function SendQueue(callback){
+function SendQueue(handles,callback){
 	if(cv(2)) console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
-	dbcon.query("SELECT * FROM teilnehmer", function (err, teilnehmer){
-		if(err){
-			if(cv(0)) console.log(err);
-		}
-		dbcon.query("SELECT * FROM queue", function (err, results){//order by server
-			if(err) throw(err);
+	SqlQuery(dbcon,"SELECT * FROM teilnehmer;",function(teilnehmer){
+		SqlQuery(dbcon,"SELECT * FROM queue;",function(results){
 			if(results.length>0){
 				var servers = {};
 				for(i in results){
@@ -350,36 +397,43 @@ function SendQueue(callback){
 				if(cv(2)) console.log(colors.BgMagenta,colors.FgBlack,servers,colors.BgBlack,colors.FgWhite);
 				async.eachSeries(servers,function(server,cb){
 					if(cv(2)) console.log(colors.FgMagenta,server,colors.FgWhite);
-					dbcon.query("SELECT * FROM servers WHERE uid="+server[0].server+";",(err, result2)=>{
-						if(err){
-							if(cv(0)) console.log(err);
-						}
+					SqlQuery(dbcon,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
 						var serverinf = result2[0];
 						if(cv(2)) console.log(colors.FgCyan,serverinf,colors.FgWhite);
 						try{
-							ITelexCom.connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
-								connections[cnum].servernum = server[0].server;
-								if(cv(1)) console.log(colors.FgGreen+'connected to server: '+serverinf.addresse+" on port: "+serverinf.port+colors.FgWhite);
-								connections[cnum].writebuffer = [];
-								async.each(server,(serverdata,scb)=>{
-									if(cv(2)) console.log(colors.FgCyan,serverdata,colors.FgWhite);
-									dbcon.query("SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",(err, result3)=>{
-										connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
-										scb();
-									});
-								},()=>{
-									client.write(ITelexCom.encPacket({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
-										connections[cnum].state = RESPONDING;
-										cb();
+							var isConnected = false;
+							for(c of connections){
+								if(c.servernum == server[0].server){
+									var isConnected = true;
+								}
+							}
+							if(!isConnected){
+								connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
+									connections[cnum].servernum = server[0].server;
+									if(cv(1)) console.log(colors.FgGreen+'connected to server '+server[0].server+': '+serverinf.addresse+" on port "+serverinf.port+colors.FgWhite);
+									connections[cnum].writebuffer = [];
+									async.each(server,function(serverdata,scb){
+										if(cv(2)) console.log(colors.FgCyan,serverdata,colors.FgWhite);
+										SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",function(result3){
+											connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
+											scb();
+										});
+									},function(){
+										client.write(encPacket({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
+											connections[cnum].state = RESPONDING;
+											cb();
+										});
 									});
 								});
-							});
+							}else{
+								if(cv(1)) console.log(colors.FgYellow+"already connected to server "+server[0].server+colors.FgWhite);
+							}
 						}catch(e){
 							if(cv(0)) console.log(e);
-							//cb();
+							cb();
 						}
 					})
-				},()=>{
+				},function(){
 					if(cv(2)) console.log("done");
 					dbcon.end();
 					try{callback();}catch(e){}
@@ -394,6 +448,17 @@ function SendQueue(callback){
 function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
 }
+function SqlQuery(dbcon,query,callback){
+	console.log(colors.FgCyan,query,colors.FgWhite);
+	dbcon.query(query,function(err,res){
+		if(err){
+			if(cv(0)) console.log(colors.FgRed,err,colors.FgBlack);
+			callback([]);
+		}else{
+			callback(res);
+		}
+	});
+}
 
 module.exports.ascii=ascii;
 module.exports.connect=connect;
@@ -404,12 +469,14 @@ module.exports.decData=decData;
 module.exports.concatByteArray=concatByteArray;
 module.exports.deConcatValue=deConcatValue;
 module.exports.SendQueue=SendQueue;
+module.exports.timeout=timeout;
+module.exports.checkFullPackage=checkFullPackage;
 module.exports.connections=connections;
 module.exports.cv=cv;
+module.exports.SqlQuery=SqlQuery;
 module.exports.states = {
 	STANDBY:STANDBY,
 	RESPONDING:RESPONDING,
 	FULLQUERY:FULLQUERY,
 	LOGIN:LOGIN
 };
-module.exports.SERVERPIN = config.get("SERVERPIN");
