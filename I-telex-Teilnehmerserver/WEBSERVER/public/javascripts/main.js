@@ -68,7 +68,7 @@ const languages = {
     "delete_message":"Wollen sie diesen Eintrag wirklich löschen?",
     "verify":{
       unique: "Bitte sie eine noch nicht vorhandene Nummer ein.",
-      required: "Dieses Feld is ein Pflichtfeld.",
+      required: "Dieses Feld ist ein Pflichtfeld.",
       email: "Bitte geben sie eine gültige E-mail addresse ein.",
       ipaddress: "Bitte geben sie eine gültige Ip-addresse ein.",
       hostname: "Bitte geben sie einen gültigen Hostnamen ein.",
@@ -166,6 +166,20 @@ $(document).ready(function(){
   $.validator.methods.ipaddress = matchIp;
   $.validator.methods.hostname = matchHn;
   $.validator.methods.unique = checkUnique;
+  $(function(){
+   var keyStop = {
+    //  8: ":not(input:text, textarea, input:file, input:password)", // stop backspace = back
+     13: "input:text, input:password", // stop enter = submit
+     end: null
+   };
+   $(".popup").bind("keydown", function(event){
+    var selector = keyStop[event.which];
+    if(selector !== undefined && $(event.target).is(selector)) {
+        event.preventDefault(); //stop event
+    }
+    return true;
+   });
+  });
   (function($){
     $.fn.extend({
       center: function () {
