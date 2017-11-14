@@ -321,9 +321,11 @@ $(document).ready(function(){
           digits: true
         },
         port:{
-          required: depends function(element){
-            var type = optionType(formId+" select[name=typ]");  //TODO
-            return(type!="email");
+          required: {
+            depends: function(element){
+              var type = optionType(formId+" select[name=typ]");  //TODO
+              return(type!="email");
+            }
           },
           digits:true
         },
