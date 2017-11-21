@@ -38,7 +38,7 @@ for(i = 1;i <= 10;i++){handles[i] = {};}
 //handes[packagetype][state of this connection]
 //handles[2][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection)=>{}; NOT USED
 //handles[4][WAITING] = (obj,cnum,dbcon,connection)=>{}; NOT USED
-handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,dbcon,connection,handles){
 	var number = obj.data.rufnummer;
 	var pin = obj.data.pin;
 	var port = obj.data.port;
@@ -78,12 +78,12 @@ handles[1][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		}
 	});
 };
-handles[3][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,dbcon,connection,handles){
 	if(obj.data.version == 1){
 		var rufnummer = obj.data.rufnummer;
 		ITelexCom.SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE rufnummer = "+rufnummer+";",function(result){
 			if(ITelexCom.cv(2)) console.log(colors.FgCyan,result,colors.FgWhite);
-			if((result[0] != undefined)&&(result != [])){
+			if((result[0] != undefined)&&(result != [])&&(o.gesperrt != 1)&&(o.typ != 0)){
 				connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:result[0]}));
 			}else{
 				connection.write(ITelexCom.encPacket({packagetype:4,datalength:0}));
@@ -94,7 +94,7 @@ handles[3][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		connection.write(ITelexCom.encPacket({packagetype:4,datalength:0}));
 	}
 };
-handles[5][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,dbcon,connection,handles){
 	if(ITelexCom.cv(2)) console.log(obj);
 	ITelexCom.SqlQuery(dbcon,"SELECT * from teilnehmer WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res){
 		if(res.length == 1){
@@ -115,7 +115,7 @@ handles[5][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
 		}
 	});
 };
-handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
+handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,dbcon,connection,handles){
 	if(obj.data./*data.*/version == 1){
 		if(ITelexCom.cv(2)) console.log(obj);
 		ITelexCom.SqlQuery(dbcon,"SELECT * from teilnehmer WHERE rufnummer = "+obj.data./*data.*/rufnummer+";",function(res){
@@ -137,7 +137,7 @@ handles[5][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
 		if(ITelexCom.cv(0)) console.log(colors.FgRed,"unsupported package version",colors.FgWhite);
 	}
 };
-handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,dbcon,connection,handles){
 	if(obj.data.pin == config.get("SERVERPIN")){
 		ITelexCom.SqlQuery(dbcon,"SELECT * FROM teilnehmer",function(result){
 			if((result[0] != undefined)&&(result != [])&&pin == config.get("SERVERPIN")){
@@ -150,7 +150,7 @@ handles[6][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		});
 	}
 }; //TODO: send stuff?
-handles[7][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,dbcon,connection,handles){
 	if(obj.data.pin == config.get("SERVERPIN")){
 		connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
 		ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
@@ -159,7 +159,7 @@ handles[7][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 		connection.end();
 	}
 };
-handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
+handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,dbcon,connection,handles){
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),()=>{
 			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(1);
@@ -170,14 +170,14 @@ handles[8][ITelexCom.states.RESPONDING] = (obj,cnum,dbcon,connection,handles)=>{
 		ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 	}
 };
-handles[9][ITelexCom.states.FULLQUERY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,dbcon,connection,handles){
 	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 	ITelexCom.connections[cnum].cb();
 };
-handles[9][ITelexCom.states.LOGIN] = (obj,cnum,dbcon,connection,handles)=>{
+handles[9][ITelexCom.states.LOGIN] = function(obj,cnum,dbcon,connection,handles){
 	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 };
-handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
+handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,dbcon,connection,handles){
 	if(ITelexCom.cv(2)) console.log(obj);
 	var version = obj.data./*data.*/version;
 	var query = obj.data./*data.*/pattern;
@@ -191,7 +191,13 @@ handles[10][ITelexCom.states.STANDBY] = (obj,cnum,dbcon,connection,handles)=>{
 	if(ITelexCom.cv(2)) console.log(colors.FgGreen,searchstring,colors.FgWhite);
 	ITelexCom.SqlQuery(dbcon,searchstring,function(result){
 		if((result[0] != undefined)&&(result != [])){
-			ITelexCom.connections[cnum].writebuffer = result;
+			var towrite = [];
+			for(o of result){
+				if(o.gesperrt != 1&&o.typ != 0){
+					towrite.push(o);
+				}
+			}
+			ITelexCom.connections[cnum].writebuffer = towrite;
 			if(ITelexCom.cv(2)) console.log(colors.FgBlue,ITelexCom.connections[cnum].writebuffer,colors.FgWhite);
 			ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
 			ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,dbcon,connection,handles);

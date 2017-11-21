@@ -97,7 +97,7 @@ function handlePacket(obj,cnum,dbcon,connection,handles){
 		}
 	}
 }
-function encPacket(obj) {
+function encPacket(obj){
 	if(cv(2)) console.log(colors.BgYellow,colors.FgBlue,obj,colors.FgWhite,colors.BgBlack);
 	var data = obj.data;
 	switch(obj.packagetype){
@@ -122,15 +122,15 @@ function encPacket(obj) {
 		var array = [];
 			break;
 		case 5:
+			var flags = [data.gesperrt,0];
 			var iparr = data.ipaddresse.split(".");
-			var numip=0
+			var numip=0;
 			for(i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
 			var array = deConcatValue(data.rufnummer,4)
 			.concat(deConcatValue(data.name,40))
-			.concat(deConcatValue(data.gesperrt,1))//TODO
-			.concat(deConcatValue(data.deleted,1))
+			.concat(flags)
 			.concat(deConcatValue(data.typ,1))
 			.concat(deConcatValue(data.hostname,40))
 			.concat(deConcatValue(numip,4))
@@ -204,11 +204,11 @@ function decPacket(packagetype,buffer){
 			var c = (numip>>16)&0xff;
 			var d = (numip>>24)&0xff;
 			var ipaddresse = a+"."+b+"."+c+"."+d;
+			var flags = buffer.slice(44,46);
 			var data = {
 				rufnummer:concatByteArray(buffer.slice(0,4),"number"),
 				name:concatByteArray(buffer.slice(4,44),"string"),
-				gesperrt:concatByteArray(buffer.slice(44,45),"number"),
-				deleted:concatByteArray(buffer.slice(45,46),"number"),
+				gesperrt:flags[0],
 				typ:concatByteArray(buffer.slice(46,47),"number"),
 				addresse:concatByteArray(buffer.slice(47,87),"string"),
 				ipaddresse:ipaddresse,
@@ -330,6 +330,11 @@ function deConcatValue(value,size){
 			array[array.length] = value%256;
 			value = Math.floor(value/256);
 		}
+	}else if(typeof value === "object"){
+		while(value>0){
+			array[array.length] = value%256;
+			value = Math.floor(value/256);
+		}
 	}
 	if(array.length>size||array.length==undefined){
 		if(cv(0)) console.log("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
@@ -351,7 +356,7 @@ function ascii(data,connection,dbcon){
 	if(number!=NaN&&number!=""){
 		if(cv(1)) console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
 		SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE rufnummer="+number, function(result){
-			if(result.length == 0||result.gesperrt==1){
+			if(result.length == 0||result.gesperrt == 1||result.typ == 0){
 				var send = "fail\n\r";
 				send += number+"\n\r";
 				send += "unknown\n\r";
