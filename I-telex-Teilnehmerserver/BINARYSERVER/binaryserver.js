@@ -327,6 +327,11 @@ function getFullQuery(){
 	// var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	//dbcon.connect(()=>{
 		ITelexCom.SqlQuery(dbcon,"SELECT * FROM servers",function(res){
+			for(i in res){
+				if(res[i].addresse == config.get("FULL_QUERY_SERVER")){
+					res = res[i];
+				}
+			}
 			async.eachSeries(res,function(r,cb){
 				ITelexCom.connect(dbcon,function(){},{port:r.port,host:r.addresse},handles,function(client,cnum){
 					client.write(ITelexCom.encPacket({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){

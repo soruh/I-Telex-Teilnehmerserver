@@ -285,8 +285,8 @@ function replaceTags(str){
   return(str);
 }
 function printUsage(){
-  console.log("USAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" [MYSQL ROOT USER] [MYSQL ROOT PASSWORD] [OPTION 1] [OPTION 2] [...]\n("+process.argv[0]+" "+process.argv[1]+" [MYSQL ROOT USER] [MYSQL ROOT PASSWORD] [OPTION 1] [OPTION 2] [...])\n\nSYNOPSIS:\n\tInitialize mysql from config.js\n\nOPTIONS:\n"+
-  "\nall:\n\tIntialize all\n\ntables:\n\tInitialize only tables (database has to exist)\n\nuser:\n\tCreate User\n\ndatabase:\n\tCreate database\n\ngrant:\n\tGrant rights to database (database and user have to exist)\n\nOptions can be in any creates, because they are createsed in the script");
+  console.log("USAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" [MYSQL ROOT USER] [MYSQL ROOT PASSWORD] [OPTION 1] [OPTION 2] [...]\n\nSYNOPSIS:\n\tInitialize mysql from config.js\n\nOPTIONS:\n"+
+  "\nall:\n\tIntialize all\n\ntables:\n\tInitialize only tables (database has to exist)\n\nuser:\n\tCreate User\n\ndatabase:\n\tCreate database\n\ngrant:\n\tGrant rights to database (database and user have to exist)\n\nOptions can be in any order, because they are ordered in the script");
   try{
     dbcon.end();
     process.exit();

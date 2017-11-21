@@ -51,7 +51,7 @@ function connect(dbcon,onEnd,options,handles,callback){
 			if(error.code == "ECONNREFUSED"){
 				console.log("server "+connections[cnum].servernum+" could not be reached");
 			}else{
-				if(cv(0)) console.log(colors.FgRed,error,colors.FgWhite);
+				if(cv(0)) console.error(colors.FgRed,error,colors.FgWhite);
 			}
 			try{clearTimeout(connections[cnum].timeout);}catch(e){}
 			connections.splice(cnum,1);
@@ -66,7 +66,7 @@ function connect(dbcon,onEnd,options,handles,callback){
 			return(callback(socket,cnum));
 		});
 	}catch(e){
-		if(cv(0)) console.log(e);
+		if(cv(0)) console.error(e);
 		//cb();
 	}
 }
@@ -76,23 +76,23 @@ function timeout(n,connections){
 }
 function handlePacket(obj,cnum,dbcon,connection,handles){
 	if(!obj){
-		if(cv(0)) console.log(colors.FgRed+"no package to handle"+colors.FgWhite);
+		if(cv(0)) console.error(colors.FgRed+"no package to handle"+colors.FgWhite);
 	}else{
 		if(cv(2)) console.log(colors.FgMagenta+"state: "+colors.FgCyan+connections[cnum]["state"]+colors.FgWhite);
 		if(cv(2)) console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
 		if(obj.packagetype==0xff){
 			if(cv(2)) console.log(obj.data);
-			if(cv(0)) console.log("remote client had error:",colors.FgRed+Buffer.from(obj.data).toString());
+			if(cv(0)) console.error("remote client had error:",colors.FgRed+Buffer.from(obj.data).toString());
 		}else{
 			try{
 				console.log(obj);
 				if(handles[obj.packagetype]!=undefined){
 					handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
 				}else{
-					if(cv(0)) console.log(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
+					if(cv(0)) console.error(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
 				}
 			}catch(e){
-				if(cv(0)) console.log(colors.FgRed,e,colors.FgWhite);
+				if(cv(0)) console.error(colors.FgRed,e,colors.FgWhite);
 			}
 		}
 	}
@@ -160,7 +160,7 @@ function encPacket(obj){
 	}
 	var header = [obj.packagetype,array.length];
 	if(array.length > obj.datalength){
-		if(cv(0)) console.log("Buffer bigger than expected:\n"+array.length+" > "+obj.datalength);
+		if(cv(0)) console.error("Buffer bigger than expected:\n"+array.length+" > "+obj.datalength);
 	}
 	if(cv(2)) console.log(colors.FgBlue,Buffer.from(header.concat(array)),colors.FgWhite);
 	return(Buffer.from(header.concat(array)));
@@ -337,7 +337,7 @@ function deConcatValue(value,size){
 		}
 	}
 	if(array.length>size||array.length==undefined){
-		if(cv(0)) console.log("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
+		if(cv(0)) console.error("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
 	}
 	while(array.length<size){
 		array[array.length] = 0;
@@ -434,7 +434,7 @@ function SendQueue(handles,callback){
 								if(cv(1)) console.log(colors.FgYellow+"already connected to server "+server[0].server+colors.FgWhite);
 							}
 						}catch(e){
-							if(cv(0)) console.log(e);
+							if(cv(0)) console.error(e);
 							cb();
 						}
 					})
@@ -457,7 +457,7 @@ function SqlQuery(dbcon,query,callback){
 	console.log(colors.FgCyan,query,colors.FgWhite);
 	dbcon.query(query,function(err,res){
 		if(err){
-			if(cv(0)) console.log(colors.FgRed,err,colors.FgBlack);
+			if(cv(0)) console.error(colors.FgRed,err,colors.FgBlack);
 			callback([]);
 		}else{
 			callback(res);
