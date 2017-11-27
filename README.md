@@ -23,7 +23,6 @@ $ sudo apt install mysql-server nodejs
 ```
 $ sudo npm cache clean -f
 $ sudo npm install -g n
-$ sudo n stable
 $ sudo n latest
 ```
 if `latest` does not work try using `9.2.0` instead.
