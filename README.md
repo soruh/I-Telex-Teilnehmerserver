@@ -36,7 +36,7 @@ $ npm install pm2 -g
 ```
 $ npm install
 ```
-### create database, tables and user
+### create SQL database, tables and user
 this can be done manually, or with a supplied script.
 The script uses the config file, so it is important to at least configure `mySqlConnectionOptions` before executing it.
 
