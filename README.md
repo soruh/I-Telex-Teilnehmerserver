@@ -44,6 +44,7 @@ for help on the script execute
 ```
 $ node I-telex-Teilnehmerserver/init_mysql --help
 ```
+You might have to run ```chmod u+x init_mysql``` to be able to execute the script.
 
 the user defaults to <user_name>`@localhost`, which only makes it accessible from `localhost`. This should be sufficient for normal use, but if you want to host your database on a different machine you will have to change the user manually.
 
@@ -55,6 +56,7 @@ They can be managed manually using mysql or with the supplied script.
 ```
 $ node I-telex-Teilnehmerserver/manage_servers --help
 ```
+You might have to run ```chmod u+x manage_servers``` to be able to execute the script.
 
 ---
 ## Starting/Stoping Server
