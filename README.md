@@ -15,10 +15,18 @@ which checks if there have been any changes to the database and sends them to ot
 ## Setup
 (under Linux)
 
-### install mysql and node
+### install mysql and node.js
 ```
 $ sudo apt install mysql-server nodejs
 ```
+### update node.js using npm
+```
+$ sudo npm cache clean -f
+$ sudo npm install -g n
+$ sudo n stable
+$ sudo n latest
+```
+if `latest` does not work try using `9.2.0` instead.
 ### install pm2
 ```
 $ npm install pm2 -g
