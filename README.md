@@ -1,4 +1,4 @@
-# I-telex-Teilnehmerserver
+# I-Telex-Teilnehmerserver
 ---
 # Introduction:
 
@@ -33,16 +33,16 @@ this can be done manually, or with a supplied script.
 The script uses the config file, so it is important to at least configure `mySqlConnectionOptions` before executing it.
 
 ```
-$ node I-telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] all
+$ node I-Telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] all
 ```
 If you want to create the database and the user manually do so and execute
 ```
-$ node I-telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] tables
+$ node I-Telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] tables
 ```
 for help on the script execute
 
 ```
-$ node I-telex-Teilnehmerserver/init_mysql --help
+$ node I-Telex-Teilnehmerserver/init_mysql --help
 ```
 You might have to run ```chmod u+x init_mysql``` to be able to execute the script.
 
@@ -54,7 +54,7 @@ The servers are stored in the servers database.
 
 They can be managed manually using mysql or with the supplied script.
 ```
-$ node I-telex-Teilnehmerserver/manage_servers --help
+$ node I-Telex-Teilnehmerserver/manage_servers --help
 ```
 You might have to run ```chmod u+x manage_servers``` to be able to execute the script.
 
