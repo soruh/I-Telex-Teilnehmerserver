@@ -47,7 +47,7 @@ $ node I-telex-Teilnehmerserver/init_mysql --help
 
 the user defaults to <user_name>`@localhost`, which only makes it accessible from `localhost`. This should be sufficient for normal use, but if you want to host your database on a different machine you will have to change the user manually.
 
-###managing servers
+### managing servers
 
 The servers are stored in the servers database.
 
@@ -57,7 +57,7 @@ $ node I-telex-Teilnehmerserver/manage_servers --help
 ```
 
 ---
-##Starting/Stoping Server
+## Starting/Stoping Server
 ### to start:
 ```
 $ npm start
@@ -87,48 +87,48 @@ $ pm2 help
 ```
 
 ---
-##Config
+## Config
 
 The following can be configured in `config.json`
 
-###mySqlConnectionOptions:
+### mySqlConnectionOptions:
   - host: the mysql database host \*
   - user: the mysql user \*
   - password: the mysql users password \*
   - database: the mysql database name \*
 
   \* required for `init_mysql` script
-###SERVERPIN
+### SERVERPIN
 
   The pin for updates between servers
-###UPDATEQUEUEINTERVAL
+### UPDATEQUEUEINTERVAL
   The interval in which to look for changed entrys and write them to the queue
-###QUEUE_SEND_INTERVAL
+### QUEUE_SEND_INTERVAL
   The interval in which to try to send the queue
-###FULLQUERYINTERVAL
+### FULLQUERYINTERVAL
   The interval in which to perform a `Full_Query`
-###FULL_QUERY_SERVER
+### FULL_QUERY_SERVER
   The server on which to perform a `Full_Query`.
 
 
   If left empty, or if the chosen server is not in the `servers` table `ALL` known servers will be queried!
-###CONNECTIONTIMEOUT
+### CONNECTIONTIMEOUT
   The Timeout duration for client connections
-###QWD_STDOUT_LOG
+### QWD_STDOUT_LOG
   The File to which the queuewatchdog should write it's standard logging
 
   "" will write to the stdout of the binaryserver process
 
   "\-" will discard all messages
-###QWD_STDERR_LOG
+### QWD_STDERR_LOG
   The File to which the queuewatchdog should write it's errors
 
   "" will write to the stderr of the binaryserver process
 
   "\-" will discard all errors
-###BINARYPORT
+### BINARYPORT
   The port on which the binaryserver should listen
-###LOGGING_VERBOSITY
+### LOGGING_VERBOSITY
   The level of logging verbosity:
 
   0 -> only errors
@@ -136,7 +136,7 @@ The following can be configured in `config.json`
   1 -> relevant information
 
   2 -> all (debug)
-###WEBSERVERPORT
+### WEBSERVERPORT
   The port on which to serve the webinterface
-###WEBINTERFACEPASSWORD
+### WEBINTERFACEPASSWORD
   The password for the webinterface
