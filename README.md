@@ -1,18 +1,18 @@
-#I-telex-Teilnehmerserver
+# I-telex-Teilnehmerserver
 ---
-#Introduction:
+# Introduction:
 
 The program consists of 3 processes:
-######the web interface:
+###### the web interface:
 
 which allows manual altering of the database over http
-######the binary server:
+###### the binary server:
 which responds to binary (and ascii) requests
-######the queuewatchdog:
+###### the queuewatchdog:
 which checks if there have been any changes to the database and sends them to other servers.
 
 ---
-##Setup
+## Setup
 (under Linux)
 
 ### install mysql and node
