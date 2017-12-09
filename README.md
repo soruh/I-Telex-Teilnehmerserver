@@ -67,6 +67,7 @@ You might have to run ```chmod u+x manage_servers``` to be able to execute the s
 
 ---
 ## Starting/Stoping Server
+the following must be executed in the root directory of the git
 ### to start:
 ```
 $ npm start
