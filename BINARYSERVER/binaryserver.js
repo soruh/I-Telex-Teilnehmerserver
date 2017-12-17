@@ -349,13 +349,15 @@ function startQWD(){
 	qwd = cp.spawn('node',[PWD+"/BINARYSERVER/queuewatchdog.js"]);
 	qwd.on('exit',(ec)=>{
 		qwdec = ec;
-		if(ITelexCom.cv(0)) console.log("qwd process exited with code "+ec);
+		if(ITelexCom.cv(0)) console.error("qwd process exited with code "+ec);
+		//throw "qwd process exited with code "+ec;
 		startQWD();
 	});
 	qwd.stdout.on('data',(data)=>{
 		if(config.get("QWD_STDOUT_LOG") == ""){
 			if(ITelexCom.cv(0)) console.log(colors.FgBlue+'qwd stdout: '+colors.FgWhite+data);
-		}else if(config.get("QWD_STDOUT_LOG") == "-"){}else{
+		}else if(config.get("QWD_STDOUT_LOG") == "-"){
+		}else{
 			try{
 				fs.appendFileSync(config.get("QWD_STDOUT_LOG"),data);
 			}catch(e){
@@ -366,9 +368,10 @@ function startQWD(){
 	qwd.stderr.on('data',(data)=>{
 		if(config.get("QWD_STDERR_LOG") == ""){
 			if(ITelexCom.cv(0)) console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
-		}else if(config.get("QWD_STDOUT_LOG") == "-"){}else{
+		}else if(config.get("QWD_STDOUT_LOG") == "-"){
+		}else{
 			try{
-				fs.appendFileSync(config.get("QWD_STDERR_LOG,data"));
+				fs.appendFileSync(config.get("QWD_STDERR_LOG"),data);
 			}catch(e){
 				if(ITelexCom.cv(0)) console.log(colors.FgRed+'qwd stderr: '+colors.FgWhite+data);
 			}
@@ -382,4 +385,11 @@ if(module.parent === null){
 	startQWD();
 	updateQueue();
 	getFullQuery();
+}else{
+	module.exports = {
+		init:init,
+		startQWD:startQWD,
+		updateQueue:updateQueue,
+		getFullQuery:getFullQuery
+	};
 }
