@@ -277,7 +277,6 @@ function init(){
 	server.listen(config.get("BINARYPORT"), function() {
 		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("BINARYPORT"));
 	});
-	var getFullQueryInterval = setInterval(getFullQuery,config.get("FULLQUERYINTERVAL"))
 }
 function updateQueue(){
 	// var dbcon = mysql.createConnection(mySqlConnectionOptions);
@@ -339,6 +338,8 @@ function getFullQuery(){
 						ITelexCom.connections[cnum].cb = cb;
 					});
 				});
+			},function(){
+				setTimeout(getFullQuery, config.get("FULLQUERYINTERVAL"));
 			});
 		});
 	//});
