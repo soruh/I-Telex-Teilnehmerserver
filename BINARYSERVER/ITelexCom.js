@@ -85,7 +85,7 @@ function handlePacket(obj,cnum,dbcon,connection,handles){
 			if(cv(0)) console.error("remote client had error:",colors.FgRed+Buffer.from(obj.data).toString());
 		}else{
 			try{
-				console.log(obj);
+				if(cv(2)) console.log(obj);
 				if(handles[obj.packagetype]!=undefined){
 					handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
 				}else{
@@ -159,8 +159,9 @@ function encPacket(obj){
 			break;
 	}
 	var header = [obj.packagetype,array.length];
-	if(array.length > obj.datalength){
-		if(cv(0)) console.error("Buffer bigger than expected:\n"+array.length+" > "+obj.datalength);
+	if(array.length != obj.datalength){
+		if(cv(0)) console.error("Buffer had unexpected size:\n"+array.length+" != "+obj.datalength);
+		return(Buffer.from([]));
 	}
 	if(cv(2)) console.log(colors.FgBlue,Buffer.from(header.concat(array)),colors.FgWhite);
 	return(Buffer.from(header.concat(array)));
@@ -175,13 +176,14 @@ function decPacket(packagetype,buffer){
 			};
 			return(data);
 			break;
+		/*
 		case 2:
 			var data = {
 				ipaddresse:concatByteArray(buffer.slice(0,4),"string")
 			};
 			return(data);
 			break;
-		//The 2(0x02) packet is not supposed to be sent to the server
+		The 2(0x02) packet is not supposed to be sent to the server*/
 		case 3:
 			var data = {
  				rufnummer:concatByteArray(buffer.slice(0,4),"number")
@@ -205,6 +207,7 @@ function decPacket(packagetype,buffer){
 			var d = (numip>>24)&0xff;
 			var ipaddresse = a+"."+b+"."+c+"."+d;
 			var flags = buffer.slice(44,46);
+			if(cv(2)) console.log(flags);
 			var data = {
 				rufnummer:concatByteArray(buffer.slice(0,4),"number"),
 				name:concatByteArray(buffer.slice(4,44),"string"),
@@ -249,32 +252,32 @@ function decPacket(packagetype,buffer){
 			return(data);
 			break;
 		default:
-			console.error("unknown packagetype: "+packagetype);
+			console.error("invalid/unsupported packagetype: "+packagetype);
 			return(false);
 			break;
 	}
 }
 function decData(buffer){
-	console.log(buffer);
+	if(cv(2)) console.log(buffer);
 	var typepos = 0;
 	var out = [];
 	while(typepos<buffer.length-1){
-		console.log(typepos,buffer.length);
+		if(cv(2)) console.log(typepos,buffer.length);
 		var packagetype = parseInt(buffer[typepos],10);
-		console.log(packagetype);
+		if(cv(2)) console.log(packagetype);
 		var datalength = parseInt(buffer[typepos+1],10);
-		console.log(datalength);
+		if(cv(2)) console.log(datalength);
 		var blockdata = [];
 		for(i=0;i<datalength;i++){
 			blockdata[i] = buffer[typepos+2+i];
 		}
-		console.log(blockdata);
+		if(cv(2)) console.log(blockdata);
 		var data=decPacket(packagetype,blockdata);
-		console.log(data);
+		if(cv(2)) console.log(data);
 		if(data){
 			out.push({
 				packagetype:packagetype,
-				datalength,datalength,
+				datalength:datalength,
 				data:data
 			});
 		}else{
@@ -282,7 +285,7 @@ function decData(buffer){
 		}
 		typepos += datalength+2;
 	}
-	return(out[0]);
+	return(out[0]);	//TODO
 }
 function checkFullPackage(buffer, part){
 	var data = buffer;
@@ -306,10 +309,10 @@ function concatByteArray(arr,type){
 	if(type==="number"){
 		var num = 0;
 		for (i=arr.length-1;i>=0;i--){
-			num*=256;
+			num *= 0xff;
 			num += arr[i];
 		}
-		return(num)
+		return(num);
 	}else if(type==="string"){
 		var str = "";
 		for (i=0;i<arr.length;i++){
@@ -327,14 +330,16 @@ function deConcatValue(value,size){
 		}
 	}else if(typeof value === "number"){
 		while(value>0){
-			array[array.length] = value%256;
-			value = Math.floor(value/256);
+			array[array.length] = value%0xff;
+			value = Math.floor(value/0xff);
 		}
 	}else if(typeof value === "object"){
+		console.log("deConcatValue was passed an object:",value);	//TODO
+		/*
 		while(value>0){
-			array[array.length] = value%256;
-			value = Math.floor(value/256);
-		}
+			array[array.length] = value%0xff;
+			value = Math.floor(value/0xff);
+		}*/
 	}
 	if(array.length>size||array.length==undefined){
 		if(cv(0)) console.error("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
@@ -353,16 +358,16 @@ function ascii(data,connection,dbcon){
 		}
 	}
 	if(number!=""){number = parseInt(number);}
-	if(number!=NaN&&number!=""){
+	if(!isNaN(number)&&number!=""){
 		if(cv(1)) console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
-		SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE rufnummer="+number, function(result){
+		SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE rufnummer="+number+";", function(result){
 			if(result.length == 0||result.gesperrt == 1||result.typ == 0){
 				var send = "fail\n\r";
 				send += number+"\n\r";
 				send += "unknown\n\r";
 				send += "+++\n\r";
 				connection.write(send,function(){
-					if(cv(1)) console.log(colors.FgRed+"Entry not found, sent:\n"+colors.FgWhite+send);
+					if(cv(1)) console.log(colors.FgRed+"Entry not found/visible, sent:\n"+colors.FgWhite+send);
 				});
 			}else{
 				var send = "ok\n\r";
@@ -386,7 +391,7 @@ function ascii(data,connection,dbcon){
 		});
 	}
 }
-function SendQueue(handles,callback){
+function SendQueue(handles,callback){ //TODO: find out if messages for connected servers are added
 	if(cv(2)) console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
 	var dbcon = mysql.createConnection(mySqlConnectionOptions);
 	SqlQuery(dbcon,"SELECT * FROM teilnehmer;",function(teilnehmer){
@@ -450,6 +455,7 @@ function SendQueue(handles,callback){
 		});
 	});
 }
+
 function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
 }
