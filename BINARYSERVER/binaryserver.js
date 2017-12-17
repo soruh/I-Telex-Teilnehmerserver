@@ -60,7 +60,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,dbcon,connection,handle
 				connection.end();
 			}
 		}else{
-			ITelexCom.SqlQuery(dbcon,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt) VALUES ('?','"+Math.round(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1');",function(result_b){
+			ITelexCom.SqlQuery(dbcon,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1');",function(result_b){
 				ITelexCom.SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
 					if(result_c.length>0){
 						try{
@@ -229,7 +229,7 @@ function init(){
 					return;
 				}*/
 				//if(ITelexCom.cv(2)) console.log(connection);
-				if(ITelexCom.cv(1)) console.log(colors.FgGreen+"Connected client "+colors.FgCyan+cnum+colors.FgGreen+" to database"+colors.FgWhite);
+				//if(ITelexCom.cv(1)) console.log(colors.FgGreen+"Connected client "+colors.FgCyan+cnum+colors.FgGreen+" to database"+colors.FgWhite);
 				var queryresultpos = -1;
 				var queryresult = [];
 				var connectionpin;
@@ -238,7 +238,7 @@ function init(){
 					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
 					ITelexCom.connections.splice(cnum,1);
 					//dbcon.end(()=>{
-						if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
+						//if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
 					//});
 				});
 				connection.on('error', function(err) {
@@ -246,7 +246,7 @@ function init(){
 					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
 					ITelexCom.connections.splice(cnum,1);
 					//dbcon.end(function(){
-						if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
+						//if(ITelexCom.cv(1)) console.log(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.FgWhite);
 					//});
 				});
 				connection.on('data', function(data) {
@@ -254,27 +254,27 @@ function init(){
 					if(ITelexCom.cv(2)) console.log(colors.FgBlue,data.toString(),colors.FgWhite);
 					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
 					ITelexCom.connections[cnum].timeout = setTimeout(ITelexCom.timeout,config.get("CONNECTIONTIMEOUT"),cnum);
-					if(data[0] == 0x71/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
-						ITelexCom.ascii(data,connection,dbcon);
+					if(data[0] == 0x71&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
+						ITelexCom.ascii(data,connection,dbcon); //TODO: check for fragmentation
 					}else{
 						var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
-						console.log(res);
+						if(cv(2)) console.log(res);
 						if(res[1].length > 0){
 							ITelexCom.connections.readbuffer = res[1];
 						}
 						if(res[0].length > 0){
-							console.log(res[0]);
-							console.log(ITelexCom.decData(res[0]));
+							if(cv(2)) console.log(res[0]);
+							if(cv(2)) console.log(ITelexCom.decData(res[0]));
 							ITelexCom.handlePacket(ITelexCom.decData(res[0]),cnum,dbcon,connection,handles); //BINARY
 						}
 					}
 				});
 			//});
 		}catch(e){
-			console.log(e);
+			console.error(e);
 		}
 	});
-	server.listen(config.get("BINARYPORT"), function() {
+	server.listen(config.get("BINARYPORT"), function(){
 		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("BINARYPORT"));
 	});
 }
@@ -297,7 +297,7 @@ function updateQueue(){
 					async.each(result2,(server,cb1)=>{
 						async.each(result1,(message,cb2)=>{
 							ITelexCom.SqlQuery(dbcon,"DELETE * FROM queue WHERE server = "+server.uid+"AND WHERE message = "+message.uid,function(result3){
-								ITelexCom.SqlQuery(dbcon,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.round(new Date().getTime()/1000)+")",cb2);
+								ITelexCom.SqlQuery(dbcon,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",cb2);
 							});
 						},cb1);
 					},function(){
