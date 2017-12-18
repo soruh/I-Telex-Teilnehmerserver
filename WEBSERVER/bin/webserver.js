@@ -2,7 +2,8 @@
 /**
  * Module dependencies.
  */
-const PWD = process.env.PWD;
+//const PWD = process.env.PWD;
+const PWD = __dirname.split("/").slice(0,-2).join("/");
 const config = require(PWD+'/COMMONMODULES/config.js');
 var app = require(PWD+'/WEBSERVER/app');
 var debug = require('debug')('i-telex-teilnehmerserver:server');

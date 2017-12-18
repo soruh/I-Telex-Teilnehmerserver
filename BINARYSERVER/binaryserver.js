@@ -1,4 +1,5 @@
-const PWD = process.env.PWD;
+//const PWD = process.env.PWD;
+const PWD = __dirname.split("/").slice(0,-2).join("/");
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');

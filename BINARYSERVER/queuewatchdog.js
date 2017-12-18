@@ -1,4 +1,5 @@
-const PWD = process.env.PWD;
+//const PWD = process.env.PWD;
+const PWD = __dirname.split("/").slice(0,-2).join("/");
 const mysql = require('mysql');
 const ITelexCom = require(PWD+"/BINARYSERVER/ITelexCom.js");
 const colors = require(PWD+"/COMMONMODULES/colors.js");

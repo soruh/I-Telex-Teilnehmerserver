@@ -1,4 +1,5 @@
-const PWD = process.env.PWD;
+//const PWD = process.env.PWD;
+const PWD = __dirname.split("/").slice(0,-2).join("/");
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
