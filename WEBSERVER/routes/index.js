@@ -1,5 +1,7 @@
 //const PWD = process.env.PWD;
-const PWD = __dirname.split("/").slice(0,-2).join("/");
+//const PWD = __dirname.split("/").slice(0,-2).join("/");
+const path = require('path');
+const PWD = path.normalize(path.join(__dirname,'..'));
 const express = require('express');
 const router = express.Router();
 /* GET home page. */
@@ -8,7 +10,7 @@ router.get('/', function(req, res, next) {
 });
 module.exports = router;
 const mysql = require('mysql');
-const config = require(PWD+'/COMMONMODULES/config.js');
+const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 

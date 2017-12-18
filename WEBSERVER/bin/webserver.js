@@ -3,9 +3,11 @@
  * Module dependencies.
  */
 //const PWD = process.env.PWD;
-const PWD = __dirname.split("/").slice(0,-2).join("/");
-const config = require(PWD+'/COMMONMODULES/config.js');
-var app = require(PWD+'/WEBSERVER/app');
+//const PWD = __dirname.split("/").slice(0,-2).join("/");
+const path = require('path');
+const PWD = path.normalize(path.join(__dirname,'..'));
+const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
+var app = require(path.join(PWD,'/WEBSERVER/app'));
 var debug = require('debug')('i-telex-teilnehmerserver:server');
 var http = require('http');
 

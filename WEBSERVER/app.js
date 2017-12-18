@@ -1,5 +1,7 @@
 //const PWD = process.env.PWD;
-const PWD = __dirname.split("/").slice(0,-2).join("/");
+//const PWD = __dirname.split("/").slice(0,-2).join("/");
+const path = require('path');
+const PWD = path.normalize(path.join(__dirname,'..'));
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -7,9 +9,9 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
-const config = require(PWD+'/COMMONMODULES/config.js');
+const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
-const index = require(PWD+'/WEBSERVER/routes/index');
+const index = require(path.join(PWD,'/WEBSERVER/routes/index'));
 
 var app = express();
 

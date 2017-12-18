@@ -1,5 +1,5 @@
 #!/usr/local/bin/node
-const options = require(process.env.PWD+"/COMMONMODULES/config.js").get("mySqlConnectionOptions");
+const options = require(__dirname+"/COMMONMODULES/config.js").get("mySqlConnectionOptions");
 const async = require("async");
 const mysql = require("mysql");
 var args = JSON.parse(JSON.stringify(process.argv));

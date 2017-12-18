@@ -1,14 +1,16 @@
 //const PWD = process.env.PWD;
-const PWD = __dirname.split("/").slice(0,-2).join("/");
+//const PWD = __dirname.split("/").slice(0,-2).join("/");
+const path = require('path');
+const PWD = path.normalize(path.join(__dirname,'..'));
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
 const cp = require('child_process');
 const fs = require('fs');
-const ITelexCom = require(PWD+"/BINARYSERVER/ITelexCom.js");
-const colors = require(PWD+"/COMMONMODULES/colors.js");
+const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
+const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 
-const config = require(PWD+'/COMMONMODULES/config.js');
+const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 var dbcon = mysql.createPool(mySqlConnectionOptions);
@@ -347,7 +349,7 @@ function getFullQuery(){
 }
 var qwdec;	//queuewatchdog exit code
 function startQWD(){
-	qwd = cp.spawn('node',[PWD+"/BINARYSERVER/queuewatchdog.js"]);
+	qwd = cp.spawn('node',[path.join(PWD,"/BINARYSERVER/queuewatchdog.js")]);
 	qwd.on('exit',(ec)=>{
 		qwdec = ec;
 		if(ITelexCom.cv(0)) console.error("qwd process exited with code "+ec);

@@ -1,9 +1,11 @@
 //const PWD = process.env.PWD;
-const PWD = __dirname.split("/").slice(0,-2).join("/");
+//const PWD = __dirname.split("/").slice(0,-2).join("/");
+const path = require('path');
+const PWD = path.normalize(path.join(__dirname,'..'));
 const mysql = require('mysql');
-const ITelexCom = require(PWD+"/BINARYSERVER/ITelexCom.js");
-const colors = require(PWD+"/COMMONMODULES/colors.js");
-const config = require(PWD+'/COMMONMODULES/config.js');
+const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
+const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
+const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 
