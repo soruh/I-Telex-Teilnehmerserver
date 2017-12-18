@@ -1,7 +1,7 @@
 //const PWD = process.env.PWD;
 //const PWD = __dirname.split("/").slice(0,-2).join("/");
 const path = require('path');
-const PWD = path.normalize(path.join(__dirname,'..'));
+const PWD = path.normalize(path.join(__dirname,'..','..'));
 const express = require('express');
 const router = express.Router();
 /* GET home page. */
