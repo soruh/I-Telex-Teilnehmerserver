@@ -261,13 +261,13 @@ function init(){
 						ITelexCom.ascii(data,connection,dbcon); //TODO: check for fragmentation
 					}else{
 						var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
-						if(cv(2)) console.log(res);
+						if(ITelexCom.cv(2)) console.log(res);
 						if(res[1].length > 0){
 							ITelexCom.connections.readbuffer = res[1];
 						}
 						if(res[0].length > 0){
-							if(cv(2)) console.log(res[0]);
-							if(cv(2)) console.log(ITelexCom.decData(res[0]));
+							if(ITelexCom.cv(2)) console.log(res[0]);
+							if(ITelexCom.cv(2)) console.log(ITelexCom.decData(res[0]));
 							ITelexCom.handlePacket(ITelexCom.decData(res[0]),cnum,dbcon,connection,handles); //BINARY
 						}
 					}
