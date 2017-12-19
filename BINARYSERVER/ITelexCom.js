@@ -322,7 +322,11 @@ function concatByteArray(arr,type){
 	}else if(type==="string"){
 		var str = "";
 		for (i=0;i<arr.length;i++){
-			str += String.fromCharCode(arr[i]);
+			if(arr[i] != 0){
+				str += String.fromCharCode(arr[i]);
+			}else{
+				break;
+			}
 		}
 		return(str.replace(/(\u0000)/g,""));
 	}
@@ -332,11 +336,7 @@ function deConcatValue(value,size){
 	var array = [];
 	if(typeof value === "string"){
 		for(i=0;i<value.length;i++){
-			if(value != 0){
-				array[i] = value.charCodeAt(i);
-			}else{
-				break;
-			}
+			array[i] = value.charCodeAt(i);
 		}
 	}else if(typeof value === "number"){
 		while(value>0){
