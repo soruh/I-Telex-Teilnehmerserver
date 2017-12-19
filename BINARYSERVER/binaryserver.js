@@ -160,9 +160,10 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 		for(o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
-		ll("writebuffer:",colors.FgBlue,toSend,colors.Reset);
+		ll(colors.Green"entrys to transmit:",colors.FgCyan,toSend,colors.Reset);
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
+		ITelexCom.connections[cnum].writebuffer[0].pin = 0;
 		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),()=>{
 			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(1);
 		});

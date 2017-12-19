@@ -108,9 +108,9 @@ function encPackage(obj){
 	var data = obj.data;
 	switch(obj.packagetype){
 		case 1:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.pin,2))
-			.concat(deConcatValue(data.port,2));
+			var array = ValueToBytearray(data.rufnummer,4)
+			.concat(ValueToBytearray(data.pin,2))
+			.concat(ValueToBytearray(data.port,2));
 			break;
 		case 2:
 			var iparr = data.ipaddresse.split(".");
@@ -118,11 +118,11 @@ function encPackage(obj){
 			for(i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
-			var array = deConcatValue(numip,4);
+			var array = ValueToBytearray(numip,4);
 			break;
 		case 3:
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.version,1));
+			var array = ValueToBytearray(data.rufnummer,4)
+			.concat(ValueToBytearray(data.version,1));
 			break;
 		case 4:
 		var array = [];
@@ -134,24 +134,24 @@ function encPackage(obj){
 			for(i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
-			var array = deConcatValue(data.rufnummer,4)
-			.concat(deConcatValue(data.name,40))
+			var array = ValueToBytearray(data.rufnummer,4)
+			.concat(ValueToBytearray(data.name,40))
 			.concat(flags)
-			.concat(deConcatValue(data.typ,1))
-			.concat(deConcatValue(data.hostname,40))
-			.concat(deConcatValue(numip,4))
-			.concat(deConcatValue(parseInt(data.port),2))
-			.concat(deConcatValue(parseInt(data.extension),1))
-			.concat(deConcatValue(parseInt(data.pin),2))
-			.concat(deConcatValue(parseInt(data.moddate)+2208988800,4));
+			.concat(ValueToBytearray(data.typ,1))
+			.concat(ValueToBytearray(data.hostname,40))
+			.concat(ValueToBytearray(numip,4))
+			.concat(ValueToBytearray(parseInt(data.port),2))
+			.concat(ValueToBytearray(parseInt(data.extension),1))
+			.concat(ValueToBytearray(parseInt(data.pin),2))
+			.concat(ValueToBytearray(parseInt(data.moddate)+2208988800,4));
 			break;
 		case 6:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(config.get("SERVERPIN"),4));
+			var array = ValueToBytearray(data.version,1)
+			.concat(ValueToBytearray(config.get("SERVERPIN"),4));
 			break;
 		case 7:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(config.get("SERVERPIN"),4));
+			var array = ValueToBytearray(data.version,1)
+			.concat(ValueToBytearray(config.get("SERVERPIN"),4));
 			break;
 		case 8:
 			var array = [];
@@ -160,10 +160,10 @@ function encPackage(obj){
 			var array = [];
 			break;
 		case 10:
-			// var array = deConcatValue(data.version,1)
-			// .concat(deConcatValue(data.pattern,40));
-			var array = deConcatValue(data.pattern,40)
-			.concat(deConcatValue(data.version,1));
+			// var array = ValueToBytearray(data.version,1)
+			// .concat(ValueToBytearray(data.pattern,40));
+			var array = ValueToBytearray(data.pattern,40)
+			.concat(ValueToBytearray(data.version,1));
 			break;
 	}
 	var header = [obj.packagetype,array.length];
@@ -178,26 +178,26 @@ function decPackage(packagetype,buffer){
 	switch(packagetype){
 		case 1:
 			var data = {
-				rufnummer:concatByteArray(buffer.slice(0,4),"number"),
-				pin:concatByteArray(buffer.slice(4,6),"number"),
-				port:concatByteArray(buffer.slice(6,8),"number")
+				rufnummer:BytearrayToValue(buffer.slice(0,4),"number"),
+				pin:BytearrayToValue(buffer.slice(4,6),"number"),
+				port:BytearrayToValue(buffer.slice(6,8),"number")
 			};
 			return(data);
 			break;
 		/*
 		case 2:
 			var data = {
-				ipaddresse:concatByteArray(buffer.slice(0,4),"string")
+				ipaddresse:BytearrayToValue(buffer.slice(0,4),"string")
 			};
 			return(data);
 			break;
 		The 2(0x02) package is not supposed to be sent to the server*/
 		case 3:
 			var data = {
- 				rufnummer:concatByteArray(buffer.slice(0,4),"number")
+ 				rufnummer:BytearrayToValue(buffer.slice(0,4),"number")
  			};
 			if(buffer.slice(4,5).length > 0){
-				data["version"] = concatByteArray(buffer.slice(4,5),"number");
+				data["version"] = BytearrayToValue(buffer.slice(4,5),"number");
 			}else{
 				data["version"] = 1;
 			}
@@ -208,7 +208,7 @@ function decPackage(packagetype,buffer){
 			return(data);
 			break;
 		case 5:
-			var numip = concatByteArray(buffer.slice(87,91),"number");
+			var numip = BytearrayToValue(buffer.slice(87,91),"number");
 			var a = (numip>>0)&256;
 			var b = (numip>>8)&256;
 			var c = (numip>>16)&256;
@@ -217,30 +217,30 @@ function decPackage(packagetype,buffer){
 			var flags = buffer.slice(44,46);
 			if(cv(2)) ll(flags);
 			var data = {
-				rufnummer:concatByteArray(buffer.slice(0,4),"number"),
-				name:concatByteArray(buffer.slice(4,44),"string"),
+				rufnummer:BytearrayToValue(buffer.slice(0,4),"number"),
+				name:BytearrayToValue(buffer.slice(4,44),"string"),
 				gesperrt:flags[0],
-				typ:concatByteArray(buffer.slice(46,47),"number"),
-				addresse:concatByteArray(buffer.slice(47,87),"string"),
+				typ:BytearrayToValue(buffer.slice(46,47),"number"),
+				addresse:BytearrayToValue(buffer.slice(47,87),"string"),
 				ipaddresse:ipaddresse,
-				port:concatByteArray(buffer.slice(91,93),"number"),
-				durchwahl:concatByteArray(buffer.slice(93,94),"number"),
-				pin:concatByteArray(buffer.slice(94,96),"number"),
-				timestamp:concatByteArray(buffer.slice(96,100),"number")-2208988800
+				port:BytearrayToValue(buffer.slice(91,93),"number"),
+				durchwahl:BytearrayToValue(buffer.slice(93,94),"number"),
+				pin:BytearrayToValue(buffer.slice(94,96),"number"),
+				timestamp:BytearrayToValue(buffer.slice(96,100),"number")-2208988800
 			};
 			return(data);
 			break;
 		case 6:
 			var data = {
-				version:concatByteArray(buffer.slice(0,1),"number"),
-				serverpin:concatByteArray(buffer.slice(1,5),"number")
+				version:BytearrayToValue(buffer.slice(0,1),"number"),
+				serverpin:BytearrayToValue(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
 		case 7:
 			var data = {
-				version:concatByteArray(buffer.slice(0,1),"number"),
-				serverpin:concatByteArray(buffer.slice(1,5),"number")
+				version:BytearrayToValue(buffer.slice(0,1),"number"),
+				serverpin:BytearrayToValue(buffer.slice(1,5),"number")
 			};
 			return(data);
 			break;
@@ -254,10 +254,10 @@ function decPackage(packagetype,buffer){
 			break;
 		case 10:
 			var data = {
-				// version:concatByteArray(buffer.slice(0,1),"number"),
-				// pattern:concatByteArray(buffer.slice(1,41),"string")
-				pattern:concatByteArray(buffer.slice(0,40),"string"),
-				version:concatByteArray(buffer.slice(40,41),"number")
+				// version:BytearrayToValue(buffer.slice(0,1),"number"),
+				// pattern:BytearrayToValue(buffer.slice(1,41),"string")
+				pattern:BytearrayToValue(buffer.slice(0,40),"string"),
+				version:BytearrayToValue(buffer.slice(40,41),"number")
 			};
 			return(data);
 			break;
@@ -316,7 +316,7 @@ function checkFullPackage(buffer, part){
 		return([[], []]);
 	}
 }//return(data, part)
-function concatByteArray(arr,type){
+function BytearrayToValue(arr,type){
 	if(type==="number"){
 		var num = 0;
 		for (i=arr.length-1;i>=0;i--){
@@ -336,7 +336,7 @@ function concatByteArray(arr,type){
 		return(str.replace(/(\u0000)/g,""));
 	}
 }
-function deConcatValue(value,size){
+function ValueToBytearray(value,size){
 	//if(cv(2)) ll(value);
 	var array = [];
 	if(typeof value === "string"){
@@ -348,14 +348,7 @@ function deConcatValue(value,size){
 			array[array.length] = value%256;
 			value = Math.floor(value/256);
 		}
-	}/*else if(typeof value === "object"){
-		ll("deConcatValue was passed an object:",value);	//TODO
-
-		//while(value>0){
-		//	array[array.length] = value%256;
-		//	value = Math.floor(value/256);
-		//}
-	}*/
+	}
 	if(array.length>size||array.length==undefined){
 		if(cv(0)) console.error("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
 	}
@@ -523,8 +516,8 @@ module.exports.handlePackage=handlePackage;
 module.exports.encPackage=encPackage;
 module.exports.decPackage=decPackage;
 module.exports.decData=decData;
-module.exports.concatByteArray=concatByteArray;
-module.exports.deConcatValue=deConcatValue;
+module.exports.BytearrayToValue=BytearrayToValue;
+module.exports.ValueToBytearray=ValueToBytearray;
 module.exports.SendQueue=SendQueue;
 module.exports.timeout=timeout;
 module.exports.checkFullPackage=checkFullPackage;
