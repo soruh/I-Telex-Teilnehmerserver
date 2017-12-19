@@ -88,7 +88,7 @@ function handlePacket(obj,cnum,pool,connection,handles){
 		}else{
 			try{
 				if(cv(2)) console.log(obj);
-				if(typeof handles[obj.packagetype][connections[cnum]["state"]=="function"){
+				if(typeof handles[obj.packagetype][connections[cnum]["state"]]=="function"){
 					handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,pool,connection,handles);
 				}else{
 					if(cv(0)) console.error(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
