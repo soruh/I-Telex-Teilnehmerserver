@@ -1,11 +1,12 @@
 if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
+
+const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
 const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
-
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
@@ -19,11 +20,14 @@ const STANDBY = 0;
 const RESPONDING = 1;
 const FULLQUERY = 2;
 const LOGIN = 3;
+
+const stateNames = {0:"standby",1:"responding",2:"performing fullquery",3:"performing login"};
+const PackageNames = {1:"Client_update",2:"Address_confirm",3:"Peer_query",4:"Peer_not_found",5:"Peer_reply",6:"Sync_FullQuery",7:"Sync_Login",8:"Acknowledge",9:"End_of_List",10:"Peer_search"};
 //</STATES>
 var connections = [];	//list of active connections
 
 function connect(pool,onEnd,options,handles,callback){
-	if(cv(2)) console.log("trying to connect to:",colors.FgWhite,options);
+	if(cv(2)) ll(colors.FgGreen,"trying to connect to:",colors.Reset,options);
 	try{
 		var socket = new net.Socket();
 		var cnum = -1;
@@ -37,8 +41,8 @@ function connect(pool,onEnd,options,handles,callback){
 		}
 		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,timeout:setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections)};
 		socket.on('data',function(data){
-			if(cv(2)) console.log(colors.FgCyan,data,"\n",data.toString(),colors.FgWhite);
-			if(cv(2)) console.log(connections.readbuffer);
+			if(cv(2)) ll(colors.FgCyan,data,"\n",data.toString(),colors.Reset);
+			if(cv(2)) ll(connections.readbuffer);
 			clearTimeout(connections[cnum].timeout);
 			connections[cnum].timeout = setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections);
 			var res = checkFullPackage(data, connections.readbuffer);
@@ -46,14 +50,14 @@ function connect(pool,onEnd,options,handles,callback){
 				connections.readbuffer = res[1];
 			}
 			if(res[0]){
-				handlePacket(decData(res[0]),cnum,pool,socket,handles);
+				handlePackage(decData(res[0]),cnum,pool,socket,handles);
 			}
 		});
 		socket.on('error',function(error){
 			if(error.code == "ECONNREFUSED"){
-				console.log("server "+connections[cnum].servernum+" could not be reached");
+				ll("server "+connections[cnum].servernum+" could not be reached");
 			}else{
-				if(cv(0)) console.error(colors.FgRed,error,colors.FgWhite);
+				if(cv(0)) console.error(colors.FgRed,error,colors.Reset);
 			}
 			try{clearTimeout(connections[cnum].timeout);}catch(e){}
 			connections.splice(cnum,1);
@@ -73,34 +77,34 @@ function connect(pool,onEnd,options,handles,callback){
 	}
 }
 function timeout(n,connections){
-	console.log("server "+connections[n].servernum+" timed out");
+	ll("server "+connections[n].servernum+" timed out");
 	connections[n].connection.end();
 }
-function handlePacket(obj,cnum,pool,connection,handles){
+function handlePackage(obj,cnum,pool,connection,handles){
 	if(!obj){
-		if(cv(0)) console.error(colors.FgRed+"no package to handle"+colors.FgWhite);
+		if(cv(0)) console.error(colors.FgRed+"no package to handle"+colors.Reset);
 	}else{
-		if(cv(2)) console.log(colors.FgMagenta+"state: "+colors.FgCyan+connections[cnum]["state"]+colors.FgWhite);
-		if(cv(2)) console.log(colors.BgYellow,colors.FgRed,obj,colors.FgWhite,colors.BgBlack);
+		if(cv(2)) ll(colors.FgGreen+"state: "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 		if(obj.packagetype==0xff){
-			if(cv(2)) console.log(obj.data);
-			if(cv(0)) console.error("remote client had error:",colors.FgRed+Buffer.from(obj.data).toString());
+			//if(cv(2)) ll(obj.data);
+			if(cv(0)) console.error(colors.FgMagenta+"remote client had error:"+colors.FgRed,Buffer.from(obj.data).toString());
 		}else{
 			try{
-				if(cv(2)) console.log(obj);
+				if(cv(2)) ll(colors.FgGreen+"handeling Package:"+colors.Reset,obj);
 				if(typeof handles[obj.packagetype][connections[cnum].state]=="function"){
 					handles[obj.packagetype][connections[cnum].state](obj,cnum,pool,connection,handles);
+					if(cv(2)) ll(colors.FgGreen+"calling handler for packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgGreen+" in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 				}else{
-					if(cv(0)) console.error(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
+					if(cv(0)) console.error(colors.FgRed+"packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgRed+" not supported in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 				}
 			}catch(e){
-				if(cv(0)) console.error(colors.FgRed,e,colors.FgWhite);
+				if(cv(0)) console.error(colors.FgRed,e,colors.Reset);
 			}
 		}
 	}
 }
-function encPacket(obj){
-	if(cv(2)) console.log(colors.BgYellow,colors.FgBlue,obj,colors.FgWhite,colors.BgBlack);
+function encPackage(obj){
+	if(cv(2)) ll(colors.FgGreen,"encoding Package:",colors.Reset,obj);
 	var data = obj.data;
 	switch(obj.packagetype){
 		case 1:
@@ -167,10 +171,10 @@ function encPacket(obj){
 		if(cv(0)) console.error("Buffer had unexpected size:\n"+array.length+" != "+obj.datalength);
 		return(Buffer.from([]));
 	}
-	if(cv(2)) console.log(colors.FgBlue,Buffer.from(header.concat(array)),colors.FgWhite);
+	//if(cv(2)) ll(colors.FgBlue,Buffer.from(header.concat(array)),colors.Reset);
 	return(Buffer.from(header.concat(array)));
 }
-function decPacket(packagetype,buffer){
+function decPackage(packagetype,buffer){
 	switch(packagetype){
 		case 1:
 			var data = {
@@ -187,7 +191,7 @@ function decPacket(packagetype,buffer){
 			};
 			return(data);
 			break;
-		The 2(0x02) packet is not supposed to be sent to the server*/
+		The 2(0x02) package is not supposed to be sent to the server*/
 		case 3:
 			var data = {
  				rufnummer:concatByteArray(buffer.slice(0,4),"number")
@@ -211,7 +215,7 @@ function decPacket(packagetype,buffer){
 			var d = (numip>>24)&256;
 			var ipaddresse = a+"."+b+"."+c+"."+d;
 			var flags = buffer.slice(44,46);
-			if(cv(2)) console.log(flags);
+			if(cv(2)) ll(flags);
 			var data = {
 				rufnummer:concatByteArray(buffer.slice(0,4),"number"),
 				name:concatByteArray(buffer.slice(4,44),"string"),
@@ -264,22 +268,23 @@ function decPacket(packagetype,buffer){
 	}
 }
 function decData(buffer){
-	if(cv(2)) console.log(buffer);
 	var typepos = 0;
 	var out = [];
 	while(typepos<buffer.length-1){
-		if(cv(2)) console.log(typepos,buffer.length);
 		var packagetype = parseInt(buffer[typepos],10);
-		if(cv(2)) console.log(packagetype);
 		var datalength = parseInt(buffer[typepos+1],10);
-		if(cv(2)) console.log(datalength);
 		var blockdata = [];
 		for(i=0;i<datalength;i++){
 			blockdata[i] = buffer[typepos+2+i];
 		}
-		if(cv(2)) console.log(blockdata);
-		var data=decPacket(packagetype,blockdata);
-		if(cv(2)) console.log(data);
+		var data=decPackage(packagetype,blockdata);
+		/*if(cv(2)) ll("buffer: ",buffer);
+		if(cv(2)) ll("typepos: "+typepos);
+		if(cv(2)) ll("bufferlength: "+buffer.length);
+		if(cv(2)) ll("packagetype: "+packagetype);
+		if(cv(2)) ll("datalength "+datalength);
+		if(cv(2)) ll("raw:",blockdata);
+		if(cv(2)) ll("decoded:",data);*/
 		if(data){
 			out.push({
 				packagetype:packagetype,
@@ -287,7 +292,7 @@ function decData(buffer){
 				data:data
 			});
 		}else{
-			console.log("error, no data");
+			ll("error, no data");
 		}
 		typepos += datalength+2;
 	}
@@ -332,7 +337,7 @@ function concatByteArray(arr,type){
 	}
 }
 function deConcatValue(value,size){
-	if(cv(2)) console.log(value);
+	//if(cv(2)) ll(value);
 	var array = [];
 	if(typeof value === "string"){
 		for(i=0;i<value.length;i++){
@@ -344,7 +349,7 @@ function deConcatValue(value,size){
 			value = Math.floor(value/256);
 		}
 	}/*else if(typeof value === "object"){
-		console.log("deConcatValue was passed an object:",value);	//TODO
+		ll("deConcatValue was passed an object:",value);	//TODO
 
 		//while(value>0){
 		//	array[array.length] = value%256;
@@ -362,14 +367,14 @@ function deConcatValue(value,size){
 function ascii(data,connection,pool){
 	var number = "";
 	for(i=0;i<data.length;i++){
-		//if(cv(2)) console.log(String.fromCharCode(data[i]));
+		//if(cv(2)) ll(String.fromCharCode(data[i]));
 		if(/([0-9])/.test(String.fromCharCode(data[i]))){
 			number += String.fromCharCode(data[i]);
 		}
 	}
 	if(number!=""){number = parseInt(number);}
 	if(!isNaN(number)&&number!=""){
-		if(cv(1)) console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
+		if(cv(1)) ll(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.Reset);
 		SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer="+number+";", function(result){
 			if(result.length == 0||result.gesperrt == 1||result.typ == 0){
 				var send = "fail\n\r";
@@ -379,11 +384,11 @@ function ascii(data,connection,pool){
 				connection.write(send,function(){
 					if(cv(1)) m = colors.FgRed+"Entry not found/visible";
 					if(cv(2)){
-						m += ", sent:\n"+colors.FgYellow+send+colors.FgWhite;
+						m += ", sent:\n"+colors.FgYellow+send+colors.Reset;
 					}else{
-						m += colors.FgWhite;
+						m += colors.Reset;
 					}
-					if(cv(1)) console.log(m);
+					if(cv(1)) ll(m);
 				});
 			}else{
 				var send = "ok\n\r";
@@ -403,18 +408,18 @@ function ascii(data,connection,pool){
 				connection.write(send,function(){
 					if(cv(1)) m = colors.FgGreen+"Entry found";
 					if(cv(2)){
-						m += ", sent:\n"+colors.FgYellow+send+colors.FgWhite;
+						m += ", sent:\n"+colors.FgYellow+send+colors.Reset;
 					}else{
-						m += colors.FgWhite;
+						m += colors.Reset;
 					}
-					if(cv(1)) console.log(m);
+					if(cv(1)) ll(m);
 				});
 			}
 		});
 	}
 }
 function SendQueue(handles,callback){
-	if(cv(2)) console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
+	if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
 	var pool = mysql.createConnection(mySqlConnectionOptions);
 	SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
 		SqlQuery(pool,"SELECT * FROM queue;",function(results){
@@ -426,13 +431,13 @@ function SendQueue(handles,callback){
 					}
 					servers[results[i].server][servers[results[i].server].length] = results[i];
 				}
-				if(cv(2)) console.log(colors.BgMagenta,colors.FgBlack,servers,colors.BgBlack,colors.FgWhite);
+				//if(cv(2)) ll(colors.BgMagenta,colors.FgBlack,servers,colors.Reset);
 				async.eachSeries(servers,function(server,cb){
-					if(cv(2)) console.log(colors.FgMagenta,server,colors.FgWhite);
+					//if(cv(2)) ll(colors.FgMagenta,server,colors.Reset);
 					SqlQuery(pool,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
-						if(results.length!=1){
+						if(result2.length==1){
 							var serverinf = result2[0];
-							if(cv(2)) console.log(colors.FgCyan,serverinf,colors.FgWhite);
+							if(cv(2)) ll(colors.FgCyan,serverinf,colors.Reset);
 							try{
 								var isConnected = false;
 								for(c of connections){
@@ -443,10 +448,10 @@ function SendQueue(handles,callback){
 								if(!isConnected){
 									connect(pool,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
 										connections[cnum].servernum = server[0].server;
-										if(cv(1)) console.log(colors.FgGreen+'connected to server '+server[0].server+': '+serverinf.addresse+" on port "+serverinf.port+colors.FgWhite);
+										if(cv(1)) ll(colors.FgGreen+'connected to server '+server[0].server+': '+serverinf.addresse+" on port "+serverinf.port+colors.Reset);
 										connections[cnum].writebuffer = [];
 										async.each(server,function(serverdata,scb){
-											if(cv(2)) console.log(colors.FgCyan,serverdata,colors.FgWhite);
+											if(cv(2)) ll(colors.FgCyan,serverdata,colors.Reset);
 											/*SqlQuery(pool,"SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",function(result3){
 												connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
 												scb();
@@ -461,7 +466,7 @@ function SendQueue(handles,callback){
 											if(!exists){
 												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res){
 													if(res.affectedRows > 0){
-														if(ITelexCom.cv(1)) console.log(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.FgWhite);
+														if(ITelexCom.cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
 														scb();
 													}
 												});
@@ -469,14 +474,14 @@ function SendQueue(handles,callback){
 												scb();
 											}
 										},function(){
-											client.write(encPacket({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
+											client.write(encPackage({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
 												connections[cnum].state = RESPONDING;
 												cb();
 											});
 										});
 									});
 								}else{
-									if(cv(1)) console.log(colors.FgYellow+"already connected to server "+server[0].server+colors.FgWhite);
+									if(cv(1)) ll(colors.FgYellow+"already connected to server "+server[0].server+colors.Reset);
 								}
 							}catch(e){
 								if(cv(0)) console.error(e);
@@ -487,12 +492,11 @@ function SendQueue(handles,callback){
 						}
 					})
 				},function(){
-					if(cv(2)) console.log("done");
-					try{callback();}catch(e){}
+					if(typeof callback === "function") callback();
 				});
 			}else{
-				if(cv(2)) console.log(colors.FgYellow,"No queue!",colors.FgWhite);
-				try{callback();}catch(e){}
+				if(cv(2)) ll(colors.FgYellow,"No queue!",colors.Reset);
+				if(typeof callback === "function") callback();
 			}
 		});
 	});
@@ -502,22 +506,22 @@ function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
 }
 function SqlQuery(pool,query,callback){
-	if(cv(2)) console.log(colors.BgWhite+colors.FgBlack,query,colors.BgBlack+colors.FgWhite);
+	if(cv(2)) ll(colors.BgWhite+colors.FgBlack,query,colors.Reset+colors.Reset);
 	pool.query(query,function(err,res){
 		if(err){
-			if(cv(0)) console.error(colors.FgRed,err,colors.FgWhite);
-			callback([]);
+			if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
+			if(typeof callback === "function") callback([]);
 		}else{
-			callback(res);
+			if(typeof callback === "function") callback(res);
 		}
 	});
 }
 
 module.exports.ascii=ascii;
 module.exports.connect=connect;
-module.exports.handlePacket=handlePacket;
-module.exports.encPacket=encPacket;
-module.exports.decPacket=decPacket;
+module.exports.handlePackage=handlePackage;
+module.exports.encPackage=encPackage;
+module.exports.decPackage=decPackage;
 module.exports.decData=decData;
 module.exports.concatByteArray=concatByteArray;
 module.exports.deConcatValue=deConcatValue;
