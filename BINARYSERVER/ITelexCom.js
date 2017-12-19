@@ -204,10 +204,10 @@ function decPacket(packagetype,buffer){
 			break;
 		case 5:
 			var numip = concatByteArray(buffer.slice(87,91),"number");
-			var a = (numip>>0)&0xff;
-			var b = (numip>>8)&0xff;
-			var c = (numip>>16)&0xff;
-			var d = (numip>>24)&0xff;
+			var a = (numip>>0)&256;
+			var b = (numip>>8)&256;
+			var c = (numip>>16)&256;
+			var d = (numip>>24)&256;
 			var ipaddresse = a+"."+b+"."+c+"."+d;
 			var flags = buffer.slice(44,46);
 			if(cv(2)) console.log(flags);
@@ -312,7 +312,7 @@ function concatByteArray(arr,type){
 	if(type==="number"){
 		var num = 0;
 		for (i=arr.length-1;i>=0;i--){
-			num *= 0xff;
+			num *= 256;
 			num += arr[i];
 		}
 		return(num);
@@ -333,15 +333,15 @@ function deConcatValue(value,size){
 		}
 	}else if(typeof value === "number"){
 		while(value>0){
-			array[array.length] = value%0xff;
-			value = Math.floor(value/0xff);
+			array[array.length] = value%256;
+			value = Math.floor(value/256);
 		}
 	}else if(typeof value === "object"){
 		console.log("deConcatValue was passed an object:",value);	//TODO
 		/*
 		while(value>0){
-			array[array.length] = value%0xff;
-			value = Math.floor(value/0xff);
+			array[array.length] = value%256;
+			value = Math.floor(value/256);
 		}*/
 	}
 	if(array.length>size||array.length==undefined){
