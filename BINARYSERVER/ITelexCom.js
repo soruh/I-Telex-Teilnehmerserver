@@ -157,8 +157,10 @@ function encPacket(obj){
 			var array = [];
 			break;
 		case 10:
-			var array = deConcatValue(data.version,1)
-			.concat(deConcatValue(data.pattern,40));
+			// var array = deConcatValue(data.version,1)
+			// .concat(deConcatValue(data.pattern,40));
+			var array = deConcatValue(data.pattern,40)
+			.concat(deConcatValue(data.version,1));
 			break;
 	}
 	var header = [obj.packagetype,array.length];
@@ -249,8 +251,10 @@ function decPacket(packagetype,buffer){
 			break;
 		case 10:
 			var data = {
-				version:concatByteArray(buffer.slice(0,1),"number"),
-				pattern:concatByteArray(buffer.slice(1,41),"string")
+				// version:concatByteArray(buffer.slice(0,1),"number"),
+				// pattern:concatByteArray(buffer.slice(1,41),"string")
+				pattern:concatByteArray(buffer.slice(0,40),"string"),
+				version:concatByteArray(buffer.slice(40,41),"number")
 			};
 			return(data);
 			break;
@@ -463,7 +467,7 @@ function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
 }
 function SqlQuery(dbcon,query,callback){
-	console.log(colors.FgCyan,query,colors.FgWhite);
+	if(cv(2)) console.log(colors.FgCyan,query,colors.FgWhite);
 	dbcon.query(query,function(err,res){
 		if(err){
 			if(cv(0)) console.error(colors.FgRed,err,colors.FgBlack);

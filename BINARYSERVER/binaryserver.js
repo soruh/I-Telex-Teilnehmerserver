@@ -191,7 +191,6 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,dbcon,connection,handl
 	}
 	searchstring += ";"
 	searchstring = searchstring.replace("WHERE AND","WHERE");
-	if(ITelexCom.cv(2)) console.log(colors.FgGreen,searchstring,colors.FgWhite);
 	ITelexCom.SqlQuery(dbcon,searchstring,function(result){
 		if((result[0] != undefined)&&(result != [])){
 			var towrite = [];
