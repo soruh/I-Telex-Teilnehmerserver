@@ -373,7 +373,13 @@ function ascii(data,connection,pool){
 				send += "unknown\n\r";
 				send += "+++\n\r";
 				connection.write(send,function(){
-					if(cv(1)) console.log(colors.FgRed+"Entry not found/visible, sent:\n"+colors.FgWhite+send);
+					if(cv(1)) m = colors.FgRed+"Entry not found/visible";
+					if(cv(2)){
+						m += ", sent:\n"+colors.FgYellow+send+colors.FgWhite;
+					}else{
+						m += colors.FgWhite;
+					}
+					if(cv(1)) console.log(m);
 				});
 			}else{
 				var send = "ok\n\r";
@@ -391,7 +397,13 @@ function ascii(data,connection,pool){
 				send += result[0]["extension"]+"\n\r";
 				send += "+++\n\r";
 				connection.write(send,function(){
-					if(cv(1)) console.log(colors.FgGreen+"Entry found, sent:\n"+colors.FgWhite+send);
+					if(cv(1)) m = colors.FgGreen+"Entry found";
+					if(cv(2)){
+						m += ", sent:\n"+colors.FgYellow+send+colors.FgWhite;
+					}else{
+						m += colors.FgWhite;
+					}
+					if(cv(1)) console.log(m);
 				});
 			}
 		});
@@ -486,10 +498,10 @@ function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
 }
 function SqlQuery(pool,query,callback){
-	if(cv(2)) console.log(colors.FgCyan,query,colors.FgWhite);
+	if(cv(2)) console.log(colors.BgWhite+colors.FgBlack,query,colors.BgBlack+colors.FgWhite);
 	pool.query(query,function(err,res){
 		if(err){
-			if(cv(0)) console.error(colors.FgRed,err,colors.FgBlack);
+			if(cv(0)) console.error(colors.FgRed,err,colors.FgWhite);
 			callback([]);
 		}else{
 			callback(res);

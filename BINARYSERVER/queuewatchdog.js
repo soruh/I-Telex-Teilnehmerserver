@@ -21,8 +21,13 @@ pool.getConnection(function(err, connection){
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles){
-	if(ITelexCom.cv(2)) console.log(colors.FgMagenta,ITelexCom.connections[cnum].writebuffer,colors.FgWhite);
-//	var pool = mysql.createConnection(mySqlConnectionOptions);
+	if(ITelexCom.cv(2)){
+		var toSend = [];
+		for(o of ITelexCom.connections[cnum].writebuffer){
+			toSend.push(o.rufnummer);
+		}
+		console.log("writebuffer:",colors.FgBlue,toSend,colors.FgWhite);
+	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		if(ITelexCom.cv(2)) console.log("writing!");
 		var b = connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}));

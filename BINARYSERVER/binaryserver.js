@@ -151,6 +151,13 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	}
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles){
+	if(ITelexCom.cv(2)){
+		var toSend = [];
+		for(o of ITelexCom.connections[cnum].writebuffer){
+			toSend.push(o.rufnummer);
+		}
+		console.log("writebuffer:",colors.FgBlue,toSend,colors.FgWhite);
+	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),()=>{
 			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(1);
@@ -188,7 +195,6 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 				}
 			}
 			ITelexCom.connections[cnum].writebuffer = towrite;
-			if(ITelexCom.cv(2)) console.log(colors.FgBlue,ITelexCom.connections[cnum].writebuffer,colors.FgWhite);//TODO: beautify
 			ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
 			ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
 		}else{
@@ -265,7 +271,7 @@ function init(){
 		}
 	});
 	server.listen(config.get("BINARYPORT"), function(){
-		if(ITelexCom.cv(9)) console.log('server is listening on port '+config.get("BINARYPORT"));
+		if(ITelexCom.cv(0)) console.log(colors.FgMagenta,"server is listening on port "+config.get("BINARYPORT"),colors.FgWhite);
 	});
 }
 function updateQueue(){
@@ -277,17 +283,25 @@ function updateQueue(){
 		}*/
 		if(ITelexCom.cv(2)) console.log(colors.FgGreen+"Updating Queue!"+colors.FgWhite);
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE changed = "+1, function(result1){
-			ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0;", function(result3){
-				if(ITelexCom.cv(2)) console.log(colors.FgGreen+result3.changedRows+" rows were updated!"+colors.FgWhite);
-			});
 			if(result1.length > 0){
-				if(ITelexCom.cv(2)) console.log(colors.FgCyan,result1);
-				if(ITelexCom.cv(1)) console.log("rows to update: "+result1.length);
+				if(ITelexCom.cv(2)){
+					var changed_numbers = [];
+					for(o of result1){
+						changed_numbers.push(o.rufnummer);
+					}
+					console.log(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,changed_numbers,colors.FgWhite);
+				}
+//				if(ITelexCom.cv(1)&&!ITelexCom.cv(2)) console.log(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,result1.length,colors.FgWhite);
 				ITelexCom.SqlQuery(pool,"SELECT * FROM servers", function(result2){
-					async.each(result2,(server,cb1)=>{
-						async.each(result1,(message,cb2)=>{
-							ITelexCom.SqlQuery(pool,"DELETE * FROM queue WHERE server = "+server.uid+"AND WHERE message = "+message.uid,function(result3){
-								ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",cb2);
+					async.each(result2,function(server,cb1){
+						async.each(result1,function(message,cb2){
+							ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(result3){
+								ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
+									ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(result3){
+										if(ITelexCom.cv(2)) console.log(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.FgWhite);
+										cb2();
+									});
+								});
 							});
 						},cb1);
 					},function(){
@@ -299,10 +313,7 @@ function updateQueue(){
 					});
 				});
 			}else{
-				if(ITelexCom.cv(2)) console.log(colors.FgYellow+"no rows to update"+colors.FgWhite);
-					//pool.end(()=>{
-						if(ITelexCom.cv(2)) console.log(colors.FgYellow+"Disconnected from server database!"+colors.FgWhite);
-					//});
+				if(ITelexCom.cv(2)) console.log(colors.FgYellow+"no numbers to enqueue"+colors.FgWhite);
 				if(qwdec == null){
 					qwdec = "unknown";
 					qwd.stdin.write("sendqueue");
@@ -336,7 +347,7 @@ function getFullQuery(){
 }
 var qwdec;	//queuewatchdog exit code
 function startQWD(){
-	console.log(colors.FgMagenta,"Initialising queuewatchdog",colors.FgWhite);
+	console.log(colors.FgMagenta,"Initialising queuewatchdog!",colors.FgWhite);
 	qwd = cp.spawn('node',[path.join(PWD,"/BINARYSERVER/queuewatchdog.js")]);
 	qwd.on('exit',(ec)=>{
 		qwdec = ec;

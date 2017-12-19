@@ -64,7 +64,7 @@ router.post('/edit', function(req, res){
             message.push(list);
 
             pool.query("UPDATE teilnehmer SET rufnummer="+mysql.escape(req.body.rufnummer)+",name="+mysql.escape(req.body.name)+",typ="+mysql.escape(req.body.typ)+",hostname="+mysql.escape(req.body.hostname)+",ipaddresse="+mysql.escape(req.body.ipaddresse)+/*",pin="+mysql.escape(req.body.pin)+*/",port="+mysql.escape(req.body.port)+",extension="+mysql.escape(req.body.extension)+",gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.floor(new Date().getTime()/1000))
-            +" WHERE uid="+mysql.escape(req.body.uid), function(err, result){
+            +",changed=1 WHERE uid="+mysql.escape(req.body.uid), function(err, result){
               if(err){
                 success = false;
                 message.push(err);
