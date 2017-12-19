@@ -74,7 +74,7 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		var rufnummer = obj.data.rufnummer;
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+rufnummer+";",function(result){
 			if(ITelexCom.cv(2)) console.log(colors.FgCyan,result,colors.FgWhite);
-			if((result[0] != undefined)&&(result != [])&&(o.gesperrt != 1)&&(o.typ != 0)){
+			if((result[0] != undefined)&&(result != [])&&(obj.gesperrt != 1)&&(obj.typ != 0)){
 				connection.write(ITelexCom.encPacket({packagetype:5,datalength:100,data:result[0]}));
 			}else{
 				connection.write(ITelexCom.encPacket({packagetype:4,datalength:0}));
