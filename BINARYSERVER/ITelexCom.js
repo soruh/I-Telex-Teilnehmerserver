@@ -128,7 +128,7 @@ function encPackage(obj){
 		var array = [];
 			break;
 		case 5:
-			var flags = [data.gesperrt,0];
+			var flags = data.gesperrt;
 			var iparr = data.ipaddresse.split(".");
 			var numip=0;
 			for(i in iparr){
@@ -136,7 +136,7 @@ function encPackage(obj){
 			}
 			var array = ValueToBytearray(data.rufnummer,4)
 			.concat(ValueToBytearray(data.name,40))
-			.concat(flags)
+			.concat(ValueToBytearray(flags))
 			.concat(ValueToBytearray(data.typ,1))
 			.concat(ValueToBytearray(data.hostname,40))
 			.concat(ValueToBytearray(numip,4))
