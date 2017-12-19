@@ -130,6 +130,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 };
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles){
 	if(obj.data.pin == config.get("SERVERPIN")){
+		if(cv(1)) console.log(colors.FgGreen,"pin is correct!",colors.FgWhite);
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer",function(result){
 			if((result[0] != undefined)&&(result != [])&&pin == config.get("SERVERPIN")){
 				ITelexCom.connections[cnum].writebuffer = result;
@@ -143,6 +144,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 }; //TODO: send stuff?
 handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles){
 	if(obj.data.pin == config.get("SERVERPIN")){
+		if(cv(1)) console.log(colors.FgGreen,"pin is correct!",colors.FgWhite);
 		connection.write(ITelexCom.encPacket({packagetype:8,datalength:0}));
 		ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
 		ITelexCom.handlePacket({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
