@@ -332,7 +332,11 @@ function deConcatValue(value,size){
 	var array = [];
 	if(typeof value === "string"){
 		for(i=0;i<value.length;i++){
-			array[i] = value.charCodeAt(i);
+			if(value != 0){
+				array[i] = value.charCodeAt(i);
+			}else{
+				break;
+			}
 		}
 	}else if(typeof value === "number"){
 		while(value>0){
