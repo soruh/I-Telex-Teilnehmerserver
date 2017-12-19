@@ -1,5 +1,4 @@
-//const PWD = process.env.PWD;
-//const PWD = __dirname.split("/").slice(0,-2).join("/");
+if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..','..'));
 const express = require('express');
@@ -14,7 +13,15 @@ const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 
-const pool  = mysql.createPool(mySqlConnectionOptions);
+const pool = mysql.createPool(mySqlConnectionOptions);
+pool.getConnection(function(err, connection){
+	if(err){
+		console.error(colors.FgRed,"could not conect to database!",colors.FgWhite);
+		throw err;
+	}else{
+		connection.release();
+	}
+});
 router.post('/list', function(req, res){
   console.log(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");

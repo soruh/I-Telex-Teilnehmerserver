@@ -1,5 +1,4 @@
-//const PWD = process.env.PWD;
-//const PWD = __dirname.split("/").slice(0,-2).join("/");
+if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 const net = require('net');
@@ -23,8 +22,8 @@ const LOGIN = 3;
 //</STATES>
 var connections = [];	//list of active connections
 
-function connect(dbcon,onEnd,options,handles,callback){
-	if(cv(2)) console.log(colors.FgWhite,options);
+function connect(pool,onEnd,options,handles,callback){
+	if(cv(2)) console.log("trying to connect to:",colors.FgWhite,options);
 	try{
 		var socket = new net.Socket();
 		var cnum = -1;
@@ -47,7 +46,7 @@ function connect(dbcon,onEnd,options,handles,callback){
 				connections.readbuffer = res[1];
 			}
 			if(res[0]){
-				handlePacket(decData(res[0]),cnum,dbcon,socket,handles);
+				handlePacket(decData(res[0]),cnum,pool,socket,handles);
 			}
 		});
 		socket.on('error',function(error){
@@ -77,7 +76,7 @@ function timeout(n,connections){
 	console.log("server "+connections[n].servernum+" timed out");
 	connections[n].connection.end();
 }
-function handlePacket(obj,cnum,dbcon,connection,handles){
+function handlePacket(obj,cnum,pool,connection,handles){
 	if(!obj){
 		if(cv(0)) console.error(colors.FgRed+"no package to handle"+colors.FgWhite);
 	}else{
@@ -90,7 +89,7 @@ function handlePacket(obj,cnum,dbcon,connection,handles){
 			try{
 				if(cv(2)) console.log(obj);
 				if(handles[obj.packagetype]!=undefined){
-					handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,dbcon,connection,handles);
+					handles[obj.packagetype][connections[cnum]["state"]](obj,cnum,pool,connection,handles);
 				}else{
 					if(cv(0)) console.error(colors.FgRed+"packagetype ["+colors.FgCyan+obj.packagetype+colors.FgRed+" ] not supported in state ["+colors.FgCyan+connections[cnum]["state"]+colors.FgRed+"]"+colors.FgWhite);
 				}
@@ -340,14 +339,14 @@ function deConcatValue(value,size){
 			array[array.length] = value%256;
 			value = Math.floor(value/256);
 		}
-	}else if(typeof value === "object"){
+	}/*else if(typeof value === "object"){
 		console.log("deConcatValue was passed an object:",value);	//TODO
-		/*
-		while(value>0){
-			array[array.length] = value%256;
-			value = Math.floor(value/256);
-		}*/
-	}
+
+		//while(value>0){
+		//	array[array.length] = value%256;
+		//	value = Math.floor(value/256);
+		//}
+	}*/
 	if(array.length>size||array.length==undefined){
 		if(cv(0)) console.error("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
 	}
@@ -356,7 +355,7 @@ function deConcatValue(value,size){
 	}
 	return(array);
 }
-function ascii(data,connection,dbcon){
+function ascii(data,connection,pool){
 	var number = "";
 	for(i=0;i<data.length;i++){
 		//if(cv(2)) console.log(String.fromCharCode(data[i]));
@@ -367,7 +366,7 @@ function ascii(data,connection,dbcon){
 	if(number!=""){number = parseInt(number);}
 	if(!isNaN(number)&&number!=""){
 		if(cv(1)) console.log(colors.FgGreen+"starting lookup for: "+colors.FgCyan+number+colors.FgWhite);
-		SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE rufnummer="+number+";", function(result){
+		SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer="+number+";", function(result){
 			if(result.length == 0||result.gesperrt == 1||result.typ == 0){
 				var send = "fail\n\r";
 				send += number+"\n\r";
@@ -398,11 +397,11 @@ function ascii(data,connection,dbcon){
 		});
 	}
 }
-function SendQueue(handles,callback){ //TODO: find out if messages for connected servers are added
+function SendQueue(handles,callback){
 	if(cv(2)) console.log(colors.FgCyan+"Sending Queue!"+colors.FgWhite);
-	var dbcon = mysql.createConnection(mySqlConnectionOptions);
-	SqlQuery(dbcon,"SELECT * FROM teilnehmer;",function(teilnehmer){
-		SqlQuery(dbcon,"SELECT * FROM queue;",function(results){
+	var pool = mysql.createConnection(mySqlConnectionOptions);
+	SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
+		SqlQuery(pool,"SELECT * FROM queue;",function(results){
 			if(results.length>0){
 				var servers = {};
 				for(i in results){
@@ -414,45 +413,65 @@ function SendQueue(handles,callback){ //TODO: find out if messages for connected
 				if(cv(2)) console.log(colors.BgMagenta,colors.FgBlack,servers,colors.BgBlack,colors.FgWhite);
 				async.eachSeries(servers,function(server,cb){
 					if(cv(2)) console.log(colors.FgMagenta,server,colors.FgWhite);
-					SqlQuery(dbcon,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
-						var serverinf = result2[0];
-						if(cv(2)) console.log(colors.FgCyan,serverinf,colors.FgWhite);
-						try{
-							var isConnected = false;
-							for(c of connections){
-								if(c.servernum == server[0].server){
-									var isConnected = true;
+					SqlQuery(pool,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
+						if(results.length!=1){
+							var serverinf = result2[0];
+							if(cv(2)) console.log(colors.FgCyan,serverinf,colors.FgWhite);
+							try{
+								var isConnected = false;
+								for(c of connections){
+									if(c.servernum == server[0].server){
+										var isConnected = true;
+									}
 								}
-							}
-							if(!isConnected){
-								connect(dbcon,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
-									connections[cnum].servernum = server[0].server;
-									if(cv(1)) console.log(colors.FgGreen+'connected to server '+server[0].server+': '+serverinf.addresse+" on port "+serverinf.port+colors.FgWhite);
-									connections[cnum].writebuffer = [];
-									async.each(server,function(serverdata,scb){
-										if(cv(2)) console.log(colors.FgCyan,serverdata,colors.FgWhite);
-										SqlQuery(dbcon,"SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",function(result3){
-											connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
-											scb();
-										});
-									},function(){
-										client.write(encPacket({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
-											connections[cnum].state = RESPONDING;
-											cb();
+								if(!isConnected){
+									connect(pool,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
+										connections[cnum].servernum = server[0].server;
+										if(cv(1)) console.log(colors.FgGreen+'connected to server '+server[0].server+': '+serverinf.addresse+" on port "+serverinf.port+colors.FgWhite);
+										connections[cnum].writebuffer = [];
+										async.each(server,function(serverdata,scb){
+											if(cv(2)) console.log(colors.FgCyan,serverdata,colors.FgWhite);
+											/*SqlQuery(pool,"SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",function(result3){
+												connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
+												scb();
+											});*/
+											var exists = false;
+											for(t of teilnehmer){
+												if(t.uid=serverdata.message){
+													connections[cnum].writebuffer[connections[cnum].writebuffer.length] = t;
+													exists = true;
+												}
+											}
+											if(!exists){
+												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res){
+													if(res.affectedRows > 0){
+														if(ITelexCom.cv(1)) console.log(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.FgWhite);
+														scb();
+													}
+												});
+											}else{
+												scb();
+											}
+										},function(){
+											client.write(encPacket({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
+												connections[cnum].state = RESPONDING;
+												cb();
+											});
 										});
 									});
-								});
-							}else{
-								if(cv(1)) console.log(colors.FgYellow+"already connected to server "+server[0].server+colors.FgWhite);
+								}else{
+									if(cv(1)) console.log(colors.FgYellow+"already connected to server "+server[0].server+colors.FgWhite);
+								}
+							}catch(e){
+								if(cv(0)) console.error(e);
+								cb();
 							}
-						}catch(e){
-							if(cv(0)) console.error(e);
-							cb();
+						}else{
+							SqlQuery(pool,"DELETE FROM queue WHERE server="+server[0].server+";");
 						}
 					})
 				},function(){
 					if(cv(2)) console.log("done");
-					dbcon.end();
 					try{callback();}catch(e){}
 				});
 			}else{
@@ -466,9 +485,9 @@ function SendQueue(handles,callback){ //TODO: find out if messages for connected
 function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
 }
-function SqlQuery(dbcon,query,callback){
+function SqlQuery(pool,query,callback){
 	if(cv(2)) console.log(colors.FgCyan,query,colors.FgWhite);
-	dbcon.query(query,function(err,res){
+	pool.query(query,function(err,res){
 		if(err){
 			if(cv(0)) console.error(colors.FgRed,err,colors.FgBlack);
 			callback([]);
