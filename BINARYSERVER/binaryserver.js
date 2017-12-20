@@ -111,6 +111,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 		if(ITelexCom.cv(2)) ll(obj);
 		ITelexCom.SqlQuery(pool,"SELECT * from teilnehmer WHERE rufnummer = "+obj.data.rufnummer+";",function(res){
+			if(ITelexCom.cv(2)) ll(res);
 			if(res.length == 1){
 				if(obj.data.timestamp > res.moddate){
 					ITelexCom.SqlQuery(pool,"UPDATE teilnehmerSETrufnummer = "+obj.data.rufnummer+",name = "+obj.data.name+",typ = "+obj.data.typ+",hostname = "+obj.data.hostname+",ipaddresse = "+obj.data.ipaddresse+",port = "+obj.data.port+",extension = "+obj.data.extension+",pin = "+obj.data.pin+",gesperrt = "+obj.data.gesperrt+",moddate = "+obj.data.moddate+",changed = "+0+"WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
