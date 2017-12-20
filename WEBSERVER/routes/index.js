@@ -33,7 +33,7 @@ router.post('/list', function(req, res){
   //  console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
       var resultPublic = [];
       for(a in result){
-        if(result[a].gesperrt==0||req.body.password==WEBINTERFACEPASSWORD){
+        if(result[a].gesperrt===0||req.body.password==WEBINTERFACEPASSWORD){
           var i=resultPublic.length;
           resultPublic[i] = {};
           for(b in result[i]){
