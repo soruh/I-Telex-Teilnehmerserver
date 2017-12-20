@@ -134,7 +134,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	if(obj.data.serverpin == config.get("SERVERPIN")){
 		if(ITelexCom.cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer",function(result){
-			if((result[0] != undefined)&&(result != [])&&pin == config.get("SERVERPIN")){
+			if((result[0] != undefined)&&(result != [])){
 				ITelexCom.connections[cnum].writebuffer = result;
 				ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
 				ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
