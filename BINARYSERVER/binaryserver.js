@@ -95,7 +95,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			name:obj.data.name,
 			typ:obj.data.typ,
 			hostname:obj.data.addresse,
-			ipaddresse:bj.data.ipaddresse,
+			ipaddresse:obj.data.ipaddresse,
 			port:obj.data.port,
 			extension:obj.data.durchwahl,
 			pin:obj.data.pin,
@@ -150,7 +150,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 				name:obj.data.name,
 				typ:obj.data.typ,
 				hostname:obj.data.addresse,
-				ipaddresse:bj.data.ipaddresse,
+				ipaddresse:obj.data.ipaddresse,
 				port:obj.data.port,
 				extension:obj.data.durchwahl,
 				pin:obj.data.pin,
@@ -285,7 +285,7 @@ function init(){
 		try{
 			var cnum = -1;
 			for(i = 0;i<ITelexCom.connections.length;i++){
-				if(ITelexCom.connections[i] == ){
+				if(ITelexCom.connections[i] == null){
 					cnum = i;
 				}
 			}
@@ -388,7 +388,7 @@ function updateQueue(){
 				});
 			}else{
 				if(ITelexCom.cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
-				if(qwdec == ){
+				if(qwdec == null){
 					qwdec = "unknown";
 					qwd.stdin.write("sendqueue");
 				}
@@ -465,7 +465,7 @@ pool.getConnection(function(err, connection){
 		throw err;
 	}else{
 		connection.release();
-		if(module.parent === ){
+		if(module.parent === null){
 			if(ITelexCom.cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
 			init();
 			startQWD();
