@@ -109,7 +109,6 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 	});
 };
 handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
-	if(obj.data.version == 1||!obj.data.version){
 		if(ITelexCom.cv(2)) ll(obj);
 		ITelexCom.SqlQuery(pool,"SELECT * from teilnehmer WHERE rufnummer = "+obj.data./*data.*/rufnummer+";",function(res){
 			if(res.length == 1){
@@ -126,8 +125,6 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 				if(ITelexCom.cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
 			}
 		});
-	}else{
-		if(ITelexCom.cv(0)) ll(colors.FgRed,"unsupported package version",colors.Reset);
 	}
 };
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles){
