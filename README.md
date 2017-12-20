@@ -107,7 +107,11 @@ The following can be configured in `config.json`
   - password: the mysql users password \*
   - database: the mysql database name \*
 
-  \* required for `init_mysql` script
+  \* required for `init_mysql` script
+### LOGLINENUMBERS
+
+Print linenumbers before log messages
+
 ### SERVERPIN
 
   The pin for updates between servers
