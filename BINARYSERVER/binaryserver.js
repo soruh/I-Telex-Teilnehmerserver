@@ -93,14 +93,17 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 		if(res.length == 1){
 			if(obj.data.timestamp > res.moddate){
 				if(ITelexCom.cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
-				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+mysql.escape(obj.data.name)+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+mysql.escape(obj.data.addresse)+",ipaddresse = "+mysql.escape(obj.data.ipaddresse)+",port = "+mysql.escape(obj.data.port)+",extension = "+mysql.escape(obj.data.durchwahl)+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+mysql.escape(obj.data.flags)+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+mysql.escape(0)+"WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res2){
+				//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+mysql.escape(obj.data.name)+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+mysql.escape(obj.data.addresse)+",ipaddresse = "+mysql.escape(obj.data.ipaddresse)+",port = "+mysql.escape(obj.data.port)+",extension = "+mysql.escape(obj.data.durchwahl)+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+mysql.escape(obj.data.flags)+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+mysql.escape(0)+"WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res2){
+				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+(mysql.escape(obj.data.name)||"null")+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+(mysql.escape(obj.data.addresse)||"null")+",ipaddresse = "+(mysql.escape(obj.data.ipaddresse)||"null")+",port = "+mysql.escape(obj.data.port)+",extension = "+(mysql.escape(obj.data.durchwahl)||"null")+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+(mysql.escape(obj.data.gesperrt)||"null")+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+0+" WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				});
 			}else{
 				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 			}
 		}else if(res.length == 0){
-			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name)+","+mysql.escape(obj.data.typ)+","+mysql.escape(obj.data.addresse)+","+mysql.escape(obj.data.ipaddresse)+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl)+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.flags)+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");",function(res2){
+			//ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name)+","+mysql.escape(obj.data.typ)+","+mysql.escape(obj.data.addresse)+","+mysql.escape(obj.data.ipaddresse)+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl)+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.flags)+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");",function(res2){
+			var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+(mysql.escape(obj.data.name)||"null")+","+mysql.escape(obj.data.typ)+","+(mysql.escape(obj.data.addresse)||"null")+","+(mysql.escape(obj.data.ipaddresse)||"null")+","+mysql.escape(obj.data.port)+","+(mysql.escape(obj.data.durchwahl)||"null")+","+mysql.escape(obj.data.pin)+","+(mysql.escape(obj.data.gesperrt)||"null")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
+			ITelexCom.SqlQuery(pool,q,function(res2){
 				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 			});
 		}else{
