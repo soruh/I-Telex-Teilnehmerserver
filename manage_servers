@@ -1,4 +1,4 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 const options = require(__dirname+"/COMMONMODULES/config.js").get("mySqlConnectionOptions");
 const async = require("async");
 const mysql = require("mysql");
