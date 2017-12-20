@@ -125,7 +125,6 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 				if(ITelexCom.cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
 			}
 		});
-	}
 };
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles){
 	if(obj.data.serverpin == config.get("SERVERPIN")){
