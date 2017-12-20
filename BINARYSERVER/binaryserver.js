@@ -142,6 +142,11 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}));
 			}
 		});
+	}else{
+		if(cv(1)){
+			ll(colors.FgRed+"pin is incorrect!"+colors.FgCyan+obj.data.pin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
+			connection.end();
+		}
 	}
 };
 handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles){
@@ -151,7 +156,10 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
 		ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
 	}else{
-		connection.end();
+		if(cv(1)){
+			ll(colors.FgRed+"pin is incorrect!"+colors.FgCyan+obj.data.pin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
+			connection.end();
+		}
 	}
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles){
