@@ -114,9 +114,12 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 			if(ITelexCom.cv(2)) ll(res);
 			if(res.length == 1){
 				if(obj.data.timestamp > res.moddate){
-					ITelexCom.SqlQuery(pool,"UPDATE teilnehmerSETrufnummer = "+obj.data.rufnummer+",name = "+obj.data.name+",typ = "+obj.data.typ+",hostname = "+obj.data.hostname+",ipaddresse = "+obj.data.ipaddresse+",port = "+obj.data.port+",extension = "+obj.data.extension+",pin = "+obj.data.pin+",gesperrt = "+obj.data.gesperrt+",moddate = "+obj.data.moddate+",changed = "+0+"WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
+					ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+obj.data.rufnummer+",name = "+obj.data.name+",typ = "+obj.data.typ+",hostname = "+obj.data.hostname+",ipaddresse = "+obj.data.ipaddresse+",port = "+obj.data.port+",extension = "+obj.data.extension+",pin = "+obj.data.pin+",gesperrt = "+obj.data.gesperrt+",moddate = "+obj.data.moddate+",changed = "+0+"WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
 						connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 					});
+				}else{
+					if(ITelexCom.cv(2)) ll(colors.FgRed+"entry is "+colors.FgCyan+(obj.data.timestamp-res.moddate)+colors.FgRed+"seconds older and was ignored"+colors.Reset);
+					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				}
 			}else if(res.length == 0){
 				var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name||"null")+","+obj.data.typ+","+mysql.escape(obj.data.addresse||"null")+","+mysql.escape(obj.data.ipaddresse||"null")+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl||"null")+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.gesperrt||"null")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
