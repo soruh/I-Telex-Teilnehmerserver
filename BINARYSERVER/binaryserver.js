@@ -118,7 +118,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 					});
 				}
 			}else if(res.length == 0){
-				var q = "INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+obj.data.rufnummer||null+","+obj.data.name||null+","+obj.data.typ||null+","+obj.data.hostname||null+","+obj.data.ipaddresse||null+","+obj.data.port||null+","+obj.data.extension||null+","+obj.data.pin||null+","+obj.data.gesperrt||null+","+obj.data.moddate||null+","+0+");"
+				var q = "INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+obj.data.rufnummer+","+(obj.data.name||null)+","+obj.data.typ+","+(obj.data.hostname||null)+","+(obj.data.ipaddresse||null)+","+obj.data.port+","+(obj.data.extension||null)+","+obj.data.pin+","+(obj.data.gesperrt||null)+","+obj.data.moddate+","+0+");"
 				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				});
