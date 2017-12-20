@@ -136,7 +136,7 @@ function encPackage(obj){
 			}
 			var array = ValueToBytearray(data.rufnummer,4)
 			.concat(ValueToBytearray(data.name,40))
-			.concat(ValueToBytearray(flags))
+			.concat(ValueToBytearray(flags,2))
 			.concat(ValueToBytearray(data.typ,1))
 			.concat(ValueToBytearray(data.hostname,40))
 			.concat(ValueToBytearray(numip,4))
