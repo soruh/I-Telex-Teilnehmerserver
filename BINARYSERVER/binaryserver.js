@@ -131,8 +131,8 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 	}
 };
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles){
-	if(obj.data.pin == config.get("SERVERPIN")){
-		if(cv(1)) ll(colors.FgGreen,"pin is correct!",colors.Reset);
+	if(obj.data.serverpin == config.get("SERVERPIN")){
+		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer",function(result){
 			if((result[0] != undefined)&&(result != [])&&pin == config.get("SERVERPIN")){
 				ITelexCom.connections[cnum].writebuffer = result;
@@ -144,20 +144,20 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		});
 	}else{
 		if(ITelexCom.cv(1)){
-			ll(colors.FgRed+"pin is incorrect!"+colors.FgCyan+obj.data.pin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
+			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
 			connection.end();
 		}
 	}
 };
 handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles){
-	if(obj.data.pin == config.get("SERVERPIN")){
-		if(cv(1)) ll(colors.FgGreen,"pin is correct!",colors.Reset);
+	if(obj.data.serverpin == config.get("SERVERPIN")){
+		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
 		connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 		ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
 		ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
 	}else{
 		if(ITelexCom.cv(1)){
-			ll(colors.FgRed+"pin is incorrect!"+colors.FgCyan+obj.data.pin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
+			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
 			connection.end();
 		}
 	}
