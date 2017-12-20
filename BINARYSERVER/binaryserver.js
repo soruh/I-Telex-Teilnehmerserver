@@ -153,8 +153,8 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	if(obj.data.serverpin == config.get("SERVERPIN")){
 		if(ITelexCom.cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
 		connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
-		ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
-		ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
+		ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
+	//ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
 	}else{
 		if(ITelexCom.cv(1)){
 			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
