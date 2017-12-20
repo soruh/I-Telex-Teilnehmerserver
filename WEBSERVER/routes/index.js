@@ -44,7 +44,7 @@ router.post('/list', function(req, res){
           }
         }
       }
-  //  console.log(resultPublic);
+      console.log(resultPublic);
       res.json({successful:true,message:null,result:resultPublic});
     }
   });
