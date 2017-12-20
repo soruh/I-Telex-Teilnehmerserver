@@ -9,6 +9,7 @@ const PWD = path.normalize(path.join(__dirname,'..','..'));
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 var app = require(path.join(PWD,'/WEBSERVER/app'));
 var debug = require('debug')('i-telex-teilnehmerserver:server');
+debug.enabled = true;
 var http = require('http');
 
 /**

@@ -11,6 +11,7 @@ router.get('/', function(req, res, next) {
 module.exports = router;
 const mysql = require('mysql');
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
+const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 

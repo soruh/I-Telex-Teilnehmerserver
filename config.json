@@ -2,7 +2,7 @@
   "mySqlConnectionOptions":{
     "host": "localhost",
     "user": "telefonbuch",
-    "password": "XXX",
+    "password": "amesads",
     "database": "telefonbuch"
   },
   "LOGLINENUMBERS":true,
@@ -18,5 +18,5 @@
   "LOGGING_VERBOSITY":2,
 
   "WEBSERVERPORT":3030,
-  "WEBINTERFACEPASSWORD":"XXXX"
+  "WEBINTERFACEPASSWORD":"test"
 }

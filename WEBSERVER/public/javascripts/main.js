@@ -169,18 +169,19 @@ $(document).ready(function(){
   $.validator.methods.hostname = matchHn;
   $.validator.methods.unique = checkUnique;
   $(function(){
-   var keyStop = {
+    var keyStop = {
     //  8: ":not(input:text, textarea, input:file, input:password)", // stop backspace = back
-     13: "input:text, input:password", // stop enter = submit
-     end: null
-   };
-   $(".popup").bind("keydown", function(event){
-    var selector = keyStop[event.which];
-    if(selector !== undefined && $(event.target).is(selector)) {
+      13: "input:text, input:password", // stop enter = submit
+      end: null
+    };
+    $(".popup").bind("keydown", function(event){
+      var selector = keyStop[event.which];
+      if(selector !== undefined && $(event.target).is(selector)) {
         event.preventDefault(); //stop event
-    }
-    return true;
-   });
+        $(event.target).parent().parent().find(".submit_dialog")[0].click();
+      }
+      return true;
+    });
   });
   (function($){
     $.fn.extend({
@@ -588,6 +589,7 @@ function showpopup(id,callback){
       $("#"+id).center();
       $("#"+id).hide();
       $("#"+id).fadeIn(350);
+      setTimeout(function(id){$($("#"+id).children().find("input")[0]).focus();},0,id);
     });
   }
   if(typeof callback === "function") callback();
