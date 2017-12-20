@@ -118,7 +118,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 					});
 				}
 			}else if(res.length == 0){
-				var q = "INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+obj.data.rufnummer+","+(obj.data.name||"null")+","+obj.data.typ+","+(obj.data.addresse||"null")+","+(obj.data.ipaddresse||"null")+","+obj.data.port+","+(obj.data.durchwahl||"null")+","+obj.data.pin+","+(obj.data.gesperrt||"null")+","+obj.data.timestamp+","+0+");"
+				var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name||"null")+","+obj.data.typ+","+mysql.escape(obj.data.addresse||"null")+","+mysql.escape(obj.data.ipaddresse||"null")+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl||"null")+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.gesperrt||"null")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
 				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				});
