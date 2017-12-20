@@ -118,7 +118,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 						connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 					});
 				}else{
-					if(ITelexCom.cv(2)) ll(colors.FgRed+"entry is "+colors.FgCyan+(res.moddate-obj.data.timestamp)+colors.FgRed+"seconds older and was ignored"+colors.Reset);
+					if(ITelexCom.cv(2)) ll(colors.FgRed+"recieved entry is "+colors.FgCyan+(res.moddate-obj.data.timestamp)+colors.FgRed+"seconds older and was ignored"+colors.Reset);
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				}
 			}else if(res.length == 0){
