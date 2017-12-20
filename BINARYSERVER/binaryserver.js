@@ -1,4 +1,4 @@
-if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
+if(module.parent!=){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
@@ -90,11 +90,32 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles){
 	if(ITelexCom.cv(2)) ll(obj);
 	ITelexCom.SqlQuery(pool,"SELECT * from teilnehmer WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res){
+		var o = {
+			rufnummer:obj.data.rufnummer,
+			name:obj.data.name,
+			typ:obj.data.typ,
+			hostname:obj.data.addresse,
+			ipaddresse:bj.data.ipaddresse,
+			port:obj.data.port,
+			extension:obj.data.durchwahl,
+			pin:obj.data.pin,
+			gesperrt:obj.data.gesperrt,
+			moddate:obj.data.timestamp,
+			changed:0};
 		if(res.length == 1){
 			if(obj.data.timestamp > res.moddate){
 				if(ITelexCom.cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
 				//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+mysql.escape(obj.data.name)+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+mysql.escape(obj.data.addresse)+",ipaddresse = "+mysql.escape(obj.data.ipaddresse)+",port = "+mysql.escape(obj.data.port)+",extension = "+mysql.escape(obj.data.durchwahl)+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+mysql.escape(obj.data.flags)+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+mysql.escape(0)+"WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res2){
-				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+(mysql.escape(obj.data.name)||"NULL")+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+(mysql.escape(obj.data.addresse)||"NULL")+",ipaddresse = "+(mysql.escape(obj.data.ipaddresse)||"NULL")+",port = "+mysql.escape(obj.data.port)+",extension = "+(mysql.escape(obj.data.durchwahl)||"NULL")+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+(mysql.escape(obj.data.gesperrt)||"NULL")+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+0+" WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
+				//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+(mysql.escape(obj.data.name)||"")+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+(mysql.escape(obj.data.addresse)||"")+",ipaddresse = "+(mysql.escape(obj.data.ipaddresse)||"")+",port = "+mysql.escape(obj.data.port)+",extension = "+(mysql.escape(obj.data.durchwahl)||"")+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+(mysql.escape(obj.data.gesperrt)||"")+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+0+" WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
+				var sets = ""
+				for(k in o){
+					if(o[k]!=undefined){
+						sets+=k+" = ";
+						values+=mysql.escape(o[k])+", ";
+					}
+				}
+				var q = "UPDATE teilnehmer SET "+sets.substring(0, sets.length - 2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
+				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				});
 			}else{
@@ -102,7 +123,16 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			}
 		}else if(res.length == 0){
 			//ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name)+","+mysql.escape(obj.data.typ)+","+mysql.escape(obj.data.addresse)+","+mysql.escape(obj.data.ipaddresse)+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl)+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.flags)+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");",function(res2){
-			var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+(mysql.escape(obj.data.name)||"NULL")+","+mysql.escape(obj.data.typ)+","+(mysql.escape(obj.data.addresse)||"NULL")+","+(mysql.escape(obj.data.ipaddresse)||"NULL")+","+mysql.escape(obj.data.port)+","+(mysql.escape(obj.data.durchwahl)||"NULL")+","+mysql.escape(obj.data.pin)+","+(mysql.escape(obj.data.gesperrt)||"NULL")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
+			//var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+(mysql.escape(obj.data.name)||"")+","+mysql.escape(obj.data.typ)+","+(mysql.escape(obj.data.addresse)||"")+","+(mysql.escape(obj.data.ipaddresse)||"")+","+mysql.escape(obj.data.port)+","+(mysql.escape(obj.data.durchwahl)||"")+","+mysql.escape(obj.data.pin)+","+(mysql.escape(obj.data.gesperrt)||"")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
+			var names = "";
+			var values = "";
+			for(k in o){
+				if(o[k]!=undefined){
+					names+=k+", ";
+					values+=mysql.escape(o[k])+", ";
+				}
+			}
+			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 1)+");";
 			ITelexCom.SqlQuery(pool,q,function(res2){
 				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 			});
@@ -115,10 +145,31 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 		if(ITelexCom.cv(2)) ll(obj);
 		ITelexCom.SqlQuery(pool,"SELECT * from teilnehmer WHERE rufnummer = "+obj.data.rufnummer+";",function(res){
 			if(ITelexCom.cv(2)) ll(res);
+			var o = {
+				rufnummer:obj.data.rufnummer,
+				name:obj.data.name,
+				typ:obj.data.typ,
+				hostname:obj.data.addresse,
+				ipaddresse:bj.data.ipaddresse,
+				port:obj.data.port,
+				extension:obj.data.durchwahl,
+				pin:obj.data.pin,
+				gesperrt:obj.data.gesperrt,
+				moddate:obj.data.timestamp,
+				changed:0};
 			if(res.length == 1){
 				var res=res[0];
 				if(obj.data.timestamp > res.moddate){
-					ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+(mysql.escape(obj.data.name)||"NULL")+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+(mysql.escape(obj.data.addresse)||"NULL")+",ipaddresse = "+(mysql.escape(obj.data.ipaddresse)||"NULL")+",port = "+mysql.escape(obj.data.port)+",extension = "+(mysql.escape(obj.data.durchwahl)||"NULL")+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+(mysql.escape(obj.data.gesperrt)||"NULL")+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+0+" WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
+					//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+(mysql.escape(obj.data.name)||"")+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+(mysql.escape(obj.data.addresse)||"")+",ipaddresse = "+(mysql.escape(obj.data.ipaddresse)||"")+",port = "+mysql.escape(obj.data.port)+",extension = "+(mysql.escape(obj.data.durchwahl)||"")+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+(mysql.escape(obj.data.gesperrt)||"")+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+0+" WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
+					var sets = ""
+					for(k in o){
+						if(o[k]!=undefined){
+							sets+=k+" = ";
+							values+=mysql.escape(o[k])+", ";
+						}
+					}
+					var q = "UPDATE teilnehmer SET "+sets.substring(0, sets.length - 2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
+					ITelexCom.SqlQuery(pool,q,function(res2){
 						connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 					});
 				}else{
@@ -126,7 +177,16 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				}
 			}else if(res.length == 0){
-				var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+(mysql.escape(obj.data.name)||"NULL")+","+mysql.escape(obj.data.typ)+","+(mysql.escape(obj.data.addresse)||"NULL")+","+(mysql.escape(obj.data.ipaddresse)||"NULL")+","+mysql.escape(obj.data.port)+","+(mysql.escape(obj.data.durchwahl)||"NULL")+","+mysql.escape(obj.data.pin)+","+(mysql.escape(obj.data.gesperrt)||"NULL")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
+				//var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+(mysql.escape(obj.data.name)||"")+","+mysql.escape(obj.data.typ)+","+(mysql.escape(obj.data.addresse)||"")+","+(mysql.escape(obj.data.ipaddresse)||"")+","+mysql.escape(obj.data.port)+","+(mysql.escape(obj.data.durchwahl)||"")+","+mysql.escape(obj.data.pin)+","+(mysql.escape(obj.data.gesperrt)||"")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
+				var names = "";
+				var values = "";
+				for(k in o){
+					if(o[k]!=undefined){
+						names+=k+", ";
+						values+=mysql.escape(o[k])+", ";
+					}
+				}
+				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 1)+");";
 				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				});
@@ -225,7 +285,7 @@ function init(){
 		try{
 			var cnum = -1;
 			for(i = 0;i<ITelexCom.connections.length;i++){
-				if(ITelexCom.connections[i] == null){
+				if(ITelexCom.connections[i] == ){
 					cnum = i;
 				}
 			}
@@ -328,7 +388,7 @@ function updateQueue(){
 				});
 			}else{
 				if(ITelexCom.cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
-				if(qwdec == null){
+				if(qwdec == ){
 					qwdec = "unknown";
 					qwd.stdin.write("sendqueue");
 				}
@@ -405,7 +465,7 @@ pool.getConnection(function(err, connection){
 		throw err;
 	}else{
 		connection.release();
-		if(module.parent === null){
+		if(module.parent === ){
 			if(ITelexCom.cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
 			init();
 			startQWD();
