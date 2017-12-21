@@ -102,6 +102,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			gesperrt:obj.data.gesperrt,
 			moddate:obj.data.timestamp,
 			changed:0};
+		console.log(o);
 		if(res.length == 1){
 			if(obj.data.timestamp > res.moddate){
 				if(ITelexCom.cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
@@ -110,8 +111,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 				var sets = ""
 				for(k in o){
 					if(o[k]!=undefined){
-						sets+=k+" = ";
-						values+=mysql.escape(o[k])+", ";
+						sets+=k+" = "+mysql.escape(o[k])+", ";
 					}
 				}
 				var q = "UPDATE teilnehmer SET "+sets.substring(0, sets.length - 2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
@@ -132,7 +132,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 					values+=mysql.escape(o[k])+", ";
 				}
 			}
-			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 1)+");";
+			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
 			ITelexCom.SqlQuery(pool,q,function(res2){
 				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 			});
@@ -157,6 +157,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 				gesperrt:obj.data.gesperrt,
 				moddate:obj.data.timestamp,
 				changed:0};
+			console.log(o);
 			if(res.length == 1){
 				var res=res[0];
 				if(obj.data.timestamp > res.moddate){
@@ -164,8 +165,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 					var sets = ""
 					for(k in o){
 						if(o[k]!=undefined){
-							sets+=k+" = ";
-							values+=mysql.escape(o[k])+", ";
+							sets+=k+" = "+mysql.escape(o[k])+", ";
 						}
 					}
 					var q = "UPDATE teilnehmer SET "+sets.substring(0, sets.length - 2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
@@ -186,7 +186,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 						values+=mysql.escape(o[k])+", ";
 					}
 				}
-				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 1)+");";
+				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
 				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}));
 				});
