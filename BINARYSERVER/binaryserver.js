@@ -102,7 +102,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			gesperrt:obj.data.gesperrt,
 			moddate:obj.data.timestamp,
 			changed:0};
-		console.log(o);
+		if(ITelexCom.cv(2)) console.log(o);
 		if(res.length == 1){
 			if(obj.data.timestamp > res.moddate){
 				if(ITelexCom.cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
@@ -157,7 +157,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 				gesperrt:obj.data.gesperrt,
 				moddate:obj.data.timestamp,
 				changed:0};
-			console.log(o);
+			if(ITelexCom.cv(2)) console.log(o);
 			if(res.length == 1){
 				var res=res[0];
 				if(obj.data.timestamp > res.moddate){

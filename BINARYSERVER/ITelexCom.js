@@ -134,6 +134,8 @@ function encPackage(obj){
 			for(i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
+			if(cv(2)) ll(numip);
+			if(cv(2)) ll(data.ipaddresse);
 			var array = ValueToBytearray(data.rufnummer,4)
 			.concat(ValueToBytearray(data.name,40))
 			.concat(ValueToBytearray(flags,2))
@@ -214,8 +216,9 @@ function decPackage(packagetype,buffer){
 			var c = (numip>>16)&256;
 			var d = (numip>>24)&256;
 			var ipaddresse = a+"."+b+"."+c+"."+d;
+			if(cv(2)) ll(numip);
+			if(cv(2)) ll(ipaddresse);
 			var flags = buffer.slice(44,46);
-			if(cv(2)) ll(flags);
 			var data = {
 				rufnummer:BytearrayToValue(buffer.slice(0,4),"number"),
 				name:BytearrayToValue(buffer.slice(4,44),"string"),
