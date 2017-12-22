@@ -308,6 +308,7 @@ function decData(buffer){
 	return(out[0]);	//TODO
 }
 function checkFullPackage(buffer, part){
+	buffer = Array.prototype.slice.call(buffer, 0);
 	var data = buffer;
 	if(part){
 		data = part.concat(buffer);
