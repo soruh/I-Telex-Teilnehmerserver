@@ -309,9 +309,10 @@ function decData(buffer){
 }
 function checkFullPackage(buffer, part){
 	var data = buffer;
-	if(part){
+	if(part.length > 0){
 		data = part.concat(buffer);
 	}
+	if(cv(2)) ll(data);
 	var packagetype = parseInt(data[0],10);
 	var packagelength = parseInt(data[1],10)+2;
 	if(data.length == packagelength){
