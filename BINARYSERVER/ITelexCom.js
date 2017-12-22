@@ -315,6 +315,8 @@ function checkFullPackage(buffer, part){
 	if(cv(2)) ll(data);
 	var packagetype = parseInt(data[0],10);
 	var packagelength = parseInt(data[1],10)+2;
+	if(cv(2)) ll(packagetype, packagelength);
+	if(cv(2)) ll(data.length, packagelength);
 	if(data.length == packagelength){
 		return([data, []]);
 	}else if(data.length > packagelength){
