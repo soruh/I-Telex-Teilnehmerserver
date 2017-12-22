@@ -329,13 +329,19 @@ function init(){
 						ll(colors.FgYellow,data,colors.Reset);
 						ll(colors.FgCyan,data.toString(),colors.Reset);
 					}
-					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
+					try{
+						clearTimeout(ITelexCom.connections[cnum].timeout);
+					}catch(e){
+						if(ITelexCom.cv(2)) console.error(e);
+					}
 					ITelexCom.connections[cnum].timeout = setTimeout(ITelexCom.timeout,config.get("CONNECTIONTIMEOUT"),cnum);
 					if(data[0] == 0x71&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
+						if(ITelexCom.cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
 						ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation
 					}else{
+						if(ITelexCom.cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
 						var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
-						//if(ITelexCom.cv(2)) ll(res);
+						if(ITelexCom.cv(2)) ll(res);
 						if(res[1].length > 0){
 							ITelexCom.connections.readbuffer = res[1];
 						}
