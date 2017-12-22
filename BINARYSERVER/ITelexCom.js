@@ -308,6 +308,8 @@ function decData(buffer){
 	return(out[0]);	//TODO
 }
 function checkFullPackage(buffer, part){
+	if(cv(2)) ll(part);
+	if(cv(2)) ll(buffer);
 	buffer = Array.prototype.slice.call(buffer, 0);
 	var data = buffer;
 	if(part){
