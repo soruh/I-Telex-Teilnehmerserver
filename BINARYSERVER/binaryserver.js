@@ -429,7 +429,7 @@ var qwdec;	//queuewatchdog exit code
 function startQWD(){
 	ll(colors.FgMagenta,"Initialising queuewatchdog!",colors.Reset);
 	qwd = cp.spawn('node',[path.join(PWD,"/BINARYSERVER/queuewatchdog.js")]);
-	qwd.on('exit',(ec)=>{
+	qwd.on('exit',function(ec){
 		qwdec = ec;
 		if(ITelexCom.cv(0)) console.error("qwd process exited with code "+ec);
 		//throw "qwd process exited with code "+ec;

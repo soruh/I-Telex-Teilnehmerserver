@@ -46,6 +46,7 @@ function connect(pool,onEnd,options,handles,callback){
 			clearTimeout(connections[cnum].timeout);
 			connections[cnum].timeout = setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections);
 			var res = checkFullPackage(data, connections.readbuffer);
+			if(cv(2)) ll(res);
 			if(res[1]){
 				connections.readbuffer = res[1];
 			}
