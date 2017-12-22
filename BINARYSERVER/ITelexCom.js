@@ -43,6 +43,7 @@ function connect(pool,onEnd,options,handles,callback){
 		socket.on('data',function(data){
 			if(cv(2)) ll(colors.FgCyan,data,"\n",data.toString(),colors.Reset);
 			if(cv(2)) ll(connections.readbuffer);
+			if(cv(2)) ll(data);
 			clearTimeout(connections[cnum].timeout);
 			connections[cnum].timeout = setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections);
 			var res = checkFullPackage(data, connections.readbuffer);
@@ -275,6 +276,7 @@ function decPackage(packagetype,buffer){
 	}
 }
 function decData(buffer){
+	if(cv(2)) ll("decoding data");
 	var typepos = 0;
 	var out = [];
 	while(typepos<buffer.length-1){
@@ -285,13 +287,13 @@ function decData(buffer){
 			blockdata[i] = buffer[typepos+2+i];
 		}
 		var data=decPackage(packagetype,blockdata);
-		/*if(cv(2)) ll("buffer: ",buffer);
+		if(cv(2)) ll("buffer: ",buffer);
 		if(cv(2)) ll("typepos: "+typepos);
 		if(cv(2)) ll("bufferlength: "+buffer.length);
 		if(cv(2)) ll("packagetype: "+packagetype);
 		if(cv(2)) ll("datalength "+datalength);
 		if(cv(2)) ll("raw:",blockdata);
-		if(cv(2)) ll("decoded:",data);*/
+		if(cv(2)) ll("decoded:",data);
 		if(data){
 			out.push({
 				packagetype:packagetype,
