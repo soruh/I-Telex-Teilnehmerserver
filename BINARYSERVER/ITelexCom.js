@@ -309,7 +309,7 @@ function decData(buffer){
 }
 function checkFullPackage(buffer, part){
 	var data = buffer;
-	if(part.length > 0){
+	if(part){
 		data = part.concat(buffer);
 	}
 	if(cv(2)) ll(data);
