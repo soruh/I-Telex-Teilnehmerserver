@@ -36,14 +36,16 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 		if(b){
 			if(ITelexCom.cv(2)) ll("wrote!");
 			if(ITelexCom.cv(1)) ll(ITelexCom.connections[cnum].writebuffer[0]);
-			ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res){
+			ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res,err){
 				if(res.affectedRows > 0){
 					if(ITelexCom.cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
-					ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(1);
+				}else{
+					if(ITelexCom.cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+":"+colors.FgRed,err,colors.Reset);
 				}
+				ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(0,1);
 			});
 		}else{
-			if(ITelexCom.cv(0)) ll("error writing");
+			if(ITelexCom.cv(0)) ll(colors.FgRed+"error writing"+colors.Reset);
 		}
 	}else if(ITelexCom.connections[cnum].writebuffer.length <= 0){
 		connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}));

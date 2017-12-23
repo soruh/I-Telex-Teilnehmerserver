@@ -237,8 +237,8 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		ITelexCom.connections[cnum].writebuffer[0].pin = 0;
-		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),()=>{
-			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(1);
+		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),function(){
+			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(0,1);
 		});
 	}else if(ITelexCom.connections[cnum].writebuffer.length  ==  0){
 		connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}));
