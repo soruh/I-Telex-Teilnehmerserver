@@ -475,7 +475,7 @@ pool.getConnection(function(err, connection){
 			if(ITelexCom.cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
 			init();
 			startQWD();
-			updateQueue();
+			//updateQueue();
 			getFullQuery();
 		}else{
 			module.exports = {
