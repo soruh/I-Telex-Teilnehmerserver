@@ -18,7 +18,7 @@ const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 const pool = mysql.createPool(mySqlConnectionOptions);
 pool.getConnection(function(err, connection){
 	if(err){
-		console.error(colors.FgRed,"could not conect to database!",colors.Reset);
+		console.error(colors.FgRed,"could not connect to database!",colors.Reset);
 		throw err;
 	}else{
 		connection.release();

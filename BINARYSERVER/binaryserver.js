@@ -467,7 +467,7 @@ function startQWD(){
 var pool = mysql.createPool(mySqlConnectionOptions);
 pool.getConnection(function(err, connection){
 	if(err){
-		console.error(colors.FgRed,"Could not conect to database!",colors.Reset);
+		console.error(colors.FgRed,"Could not connect to database!",colors.Reset);
 		throw err;
 	}else{
 		connection.release();
