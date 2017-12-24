@@ -28,7 +28,7 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 		for(o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
-		ll("writebuffer:",colors.FgBlue,toSend,colors.Reset);
+		if(ITelexCom.cv(2)) ll("writebuffer:",colors.FgBlue,toSend,colors.Reset);
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		if(ITelexCom.cv(2)) ll("writing!");
