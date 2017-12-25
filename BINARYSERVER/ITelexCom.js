@@ -39,13 +39,17 @@ function connect(pool,onEnd,options,handles,callback){
 		if(cnum == -1){
 			cnum = connections.length;
 		}
-		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,timeout:setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections)};
+		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,cnum,connections};
+
+		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
+		socket.on('timeout', function(){
+		    socket.destroy();
+				socket.end();
+		});
 		socket.on('data',function(data){
 			if(cv(2)) ll(colors.FgCyan,data,"\n",data.toString(),colors.Reset);
 			if(cv(2)) ll(connections.readbuffer);
 			if(cv(2)) ll(data);
-			clearTimeout(connections[cnum].timeout);
-			connections[cnum].timeout = setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections);
 			var res = checkFullPackage(data, connections.readbuffer);
 			if(cv(2)) ll(res);
 			if(res[1]){
@@ -61,13 +65,11 @@ function connect(pool,onEnd,options,handles,callback){
 			}else{
 				if(cv(0)) console.error(colors.FgRed,error,colors.Reset);
 			}
-			try{clearTimeout(connections[cnum].timeout);}catch(e){}
-			connections.splice(cnum,1);
+			if(connections[cnum].connection = socket) connections.splice(cnum,1);
 			try{onEnd();}catch(e){}
 		});
 		socket.on('end',function(){
-			try{clearTimeout(connections[cnum].timeout);}catch(e){}
-			connections.splice(cnum,1);
+			if(connections[cnum].connection = socket) connections.splice(cnum,1);
 			try{onEnd();}catch(e){}
 		});
 		socket.connect(options,function(connection){
@@ -77,10 +79,6 @@ function connect(pool,onEnd,options,handles,callback){
 		if(cv(0)) console.error(e);
 		//cb();
 	}
-}
-function timeout(n,connections){
-	ll("server "+connections[n].servernum+" timed out");
-	connections[n].connection.end();
 }
 function handlePackage(obj,cnum,pool,connection,handles){
 	if(!obj){
@@ -535,7 +533,6 @@ module.exports.decData=decData;
 module.exports.BytearrayToValue=BytearrayToValue;
 module.exports.ValueToBytearray=ValueToBytearray;
 module.exports.SendQueue=SendQueue;
-module.exports.timeout=timeout;
 module.exports.checkFullPackage=checkFullPackage;
 module.exports.connections=connections;
 module.exports.cv=cv;

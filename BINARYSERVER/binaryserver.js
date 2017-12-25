@@ -292,7 +292,7 @@ function init(){
 			if(cnum == -1){
 				cnum = ITelexCom.connections.length;
 			}
-			ITelexCom.connections[cnum] = {connection:connection,timeout:setTimeout(ITelexCom.timeout,config.get("CONNECTIONTIMEOUT")),state:ITelexCom.states.STANDBY};
+			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
 			// var pool = mysql.createConnection(mySqlConnectionOptions);
 			if(ITelexCom.cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset);
 			//.replace(/^.*:/,'')
@@ -307,18 +307,21 @@ function init(){
 				var queryresultpos = -1;
 				var queryresult = [];
 				var connectionpin;
+				socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
+				socket.on('timeout', function(){
+				    socket.destroy();
+						connection.end();
+				})
 				connection.on('end', function() {
 					if(ITelexCom.cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
-					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
-					ITelexCom.connections.splice(cnum,1);
+					if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections.splice(cnum,1);
 					//pool.end(()=>{
 						//if(ITelexCom.cv(1)) ll(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.Reset);
 					//});
 				});
 				connection.on('error', function(err) {
 					if(ITelexCom.cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
-					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
-					ITelexCom.connections.splice(cnum,1);
+					if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections.splice(cnum,1);
 					//pool.end(function(){
 						//if(ITelexCom.cv(1)) ll(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.Reset);
 					//});
@@ -329,12 +332,6 @@ function init(){
 						ll(colors.FgYellow,data,colors.Reset);
 						ll(colors.FgCyan,data.toString(),colors.Reset);
 					}
-					try{
-						clearTimeout(ITelexCom.connections[cnum].timeout);
-					}catch(e){
-						if(ITelexCom.cv(2)) console.error(e);
-					}
-					ITelexCom.connections[cnum].timeout = setTimeout(ITelexCom.timeout,config.get("CONNECTIONTIMEOUT"),cnum);
 					if(data[0] == 0x71&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
 						if(ITelexCom.cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
 						ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation
