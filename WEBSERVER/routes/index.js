@@ -13,7 +13,6 @@ const mysql = require('mysql');
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
-const WEBINTERFACEPASSWORD = config.get('WEBINTERFACEPASSWORD');
 
 const pool = mysql.createPool(mySqlConnectionOptions);
 pool.getConnection(function(err, connection){
@@ -34,11 +33,15 @@ router.post('/list', function(req, res){
   //  console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
       var resultPublic = [];
       for(a in result){
-        if(result[a].gesperrt===0||req.body.password==WEBINTERFACEPASSWORD){
+        if(result[a].gesperrt===0||req.body.password==config.get("WEBINTERFACEPASSWORD")){
           var i=resultPublic.length;
           resultPublic[i] = {};
           for(b in result[i]){
-            if(((b != "pin")||(false&&req.body.password=="password"))&&(((b != "gesperrt")||(req.body.password=="password"))&&(b != "changed"))){
+            if(
+              ((b != "pin")||(false&&req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
+              ((b != "gesperrt")||(req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
+              (b != "changed")
+            ){
               resultPublic[i][b] = result[i][b];
             }
           }
@@ -53,7 +56,7 @@ router.post('/list', function(req, res){
 router.post('/edit', function(req, res){
   console.log(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
-  if(req.body.password==WEBINTERFACEPASSWORD){
+  if(req.body.password==config.get("WEBINTERFACEPASSWORD")){
     switch(req.body.typekey){
       case "edit":
         var message = [];
