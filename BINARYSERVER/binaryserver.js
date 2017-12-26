@@ -478,7 +478,7 @@ function startQWD(){
 }
 
 
-var timeouts = {};
+var timeouts = {};//TODO: timeouts, pool(to many open connections)
 
 function Timer(fn, countdown) {
     var ident, complete = false;

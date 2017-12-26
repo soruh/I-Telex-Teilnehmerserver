@@ -454,8 +454,8 @@ function SendQueue(handles,callback){
 											});*/
 											var exists = false;
 											for(t of teilnehmer){
-												if(t.uid=serverdata.message){
-													connections[cnum].writebuffer[connections[cnum].writebuffer.length] = t;
+												if(t.uid == serverdata.message){
+													connections[cnum].writebuffer.push(t);
 													exists = true;
 												}
 											}
