@@ -507,9 +507,7 @@ function SqlQuery(pool,query,callback){
 		try{
 			console.log("number of open connections: "+pool._allConnections.length);
 		}catch(e){
-			console.log(pool);
 			console.log(pool._allConnections);
-			console.log(e);
 		}
 		if(err){
 			if(cv(0)) console.error(colors.FgRed,err,colors.Reset);

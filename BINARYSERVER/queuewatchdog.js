@@ -41,8 +41,8 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 				});
 				ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res,err){
 					if(!err&&res.affectedRows > 0){
-					}else{
 						if(ITelexCom.cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
+					}else{
 						if(ITelexCom.cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+":"+colors.FgRed,err,colors.Reset);
 					}
 					ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.slice(1);
