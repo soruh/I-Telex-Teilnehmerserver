@@ -359,9 +359,26 @@ function init(){
 							ITelexCom.connections.readbuffer = res[1];
 						}
 						if(res[0]){
-							async.eachSeries(ITelexCom.decData(res[0]),function(pkg,cb){
-								ITelexCom.handlePackage(pkg,cnum,pool,connection,handles,cb);
-							});
+							ITelexCom.connections[cnum].packages = ITelexCom.connections[cnum].packages.concat(ITelexCom.decData(res[0]));
+							let timeout = function(){
+								if(ITelexCom.connections[cnum].handling === false){
+									ITelexCom.connections[cnum].handling = true;
+									if(ITelexCom.connections[cnum].timeout != null){
+										clearTimeout(ITelexCom.connections[cnum].timeout);
+										ITelexCom.connections[cnum].timeout = null;
+									}
+									async.eachSeries(ITelexCom.connections[cnum].packages,function(pkg,cb){
+										ITelexCom.handlePackage(pkg,cnum,pool,socket,handles,cb);
+									},function(){
+										ITelexCom.connections[cnum].handling = false;
+									});
+								}else{
+									if(ITelexCom.connections[cnum].timeout == null){
+										ITelexCom.connections[cnum].timeout = setTimeout(timeout,100);
+									}
+								}
+							}
+							timeout();
 						}
 						/*if(res[0].length > 0){
 							ITelexCom.handlePackage(ITelexCom.decData(res[0]),cnum,pool,connection,handles); //BINARY

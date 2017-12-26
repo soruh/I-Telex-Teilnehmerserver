@@ -39,7 +39,7 @@ function connect(pool,onEnd,options,handles,callback){
 		if(cnum == -1){
 			cnum = connections.length;
 		}
-		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,cnum,connections};
+		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,packages:[],handeling:false};
 
 		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
 		socket.on('timeout', function(){
@@ -52,12 +52,29 @@ function connect(pool,onEnd,options,handles,callback){
 			var res = checkFullPackage(data, connections.readbuffer);
 			//if(cv(2)) ll(res);
 			if(res[1]){
-				connections.readbuffer = res[1];
+				connections[cnum].readbuffer = res[1];
 			}
 			if(res[0]){
-				async.eachSeries(decData(res[0]),function(pkg,cb){
-					handlePackage(pkg,cnum,pool,socket,handles,cb);
-				});
+				connections[cnum].packages = connections[cnum].packages.concat(decData(res[0]));
+				let timeout = function(){
+					if(connections[cnum].handling === false){
+						connections[cnum].handling = true;
+						if(connections[cnum].timeout != null){
+							clearTimeout(connections[cnum].timeout);
+							connections[cnum].timeout = null;
+						}
+						async.eachSeries(connections[cnum].packages,function(pkg,cb){
+							handlePackage(pkg,cnum,pool,socket,handles,cb);
+						},function(){
+							connections[cnum].handling = false;
+						});
+					}else{
+						if(connections[cnum].timeout == null){
+							connections[cnum].timeout = setTimeout(timeout,100);
+						}
+					}
+				}
+				timeout();
 			}
 			/*if(res[0]){
 				handlePackage(decData(res[0]),cnum,pool,socket,handles);
