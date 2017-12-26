@@ -77,6 +77,7 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+rufnummer+";",function(result){
 			if(ITelexCom.cv(2)) ll(colors.FgCyan,result,colors.Reset);
 			if((result[0] != undefined)&&(result != [])&&(obj.gesperrt != 1)&&(obj.typ != 0)){
+				result[0].pin = 0;
 				connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:result[0]}));
 			}else{
 				connection.write(ITelexCom.encPackage({packagetype:4,datalength:0}));
@@ -88,7 +89,6 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	}
 };
 handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles){
-	if(ITelexCom.cv(2)) ll(obj);
 	ITelexCom.SqlQuery(pool,"SELECT * from teilnehmer WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res){
 		var o = {
 			rufnummer:obj.data.rufnummer,
@@ -101,8 +101,8 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			pin:obj.data.pin,
 			gesperrt:obj.data.gesperrt,
 			moddate:obj.data.timestamp,
-			changed:0};
-		if(ITelexCom.cv(2)) console.log(o);
+			changed:0
+		};
 		if(res.length == 1){
 			if(obj.data.timestamp > res.moddate){
 				if(ITelexCom.cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
@@ -156,8 +156,8 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles){
 				pin:obj.data.pin,
 				gesperrt:obj.data.gesperrt,
 				moddate:obj.data.timestamp,
-				changed:0};
-			if(ITelexCom.cv(2)) console.log(o);
+				changed:0
+			};
 			if(res.length == 1){
 				var res=res[0];
 				if(obj.data.timestamp > res.moddate){
@@ -233,12 +233,11 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 		for(o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
-		ll(colors.Green,"entrys to transmit:",colors.FgCyan,toSend,colors.Reset);
+		ll(colors.FgGreen,"entrys to transmit:",colors.FgCyan,toSend,colors.Reset);
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
-		ITelexCom.connections[cnum].writebuffer[0].pin = 0;
 		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),function(){
-			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.splice(0,1);
+			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.slice(1);
 		});
 	}else if(ITelexCom.connections[cnum].writebuffer.length  ==  0){
 		connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}));
@@ -269,6 +268,7 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 			var towrite = [];
 			for(o of result){
 				if(o.gesperrt != 1&&o.typ != 0){
+					o.pin = 0;
 					towrite.push(o);
 				}
 			}
@@ -292,7 +292,7 @@ function init(){
 			if(cnum == -1){
 				cnum = ITelexCom.connections.length;
 			}
-			ITelexCom.connections[cnum] = {connection:connection,timeout:setTimeout(ITelexCom.timeout,config.get("CONNECTIONTIMEOUT")),state:ITelexCom.states.STANDBY};
+			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
 			// var pool = mysql.createConnection(mySqlConnectionOptions);
 			if(ITelexCom.cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset);
 			//.replace(/^.*:/,'')
@@ -307,18 +307,21 @@ function init(){
 				var queryresultpos = -1;
 				var queryresult = [];
 				var connectionpin;
+				connection.setTimeout(config.get("CONNECTIONTIMEOUT"));
+				connection.on('timeout', function(){
+				    socket.destroy();
+						connection.end();
+				})
 				connection.on('end', function() {
 					if(ITelexCom.cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
-					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
-					ITelexCom.connections.splice(cnum,1);
+					if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections.splice(cnum,1);
 					//pool.end(()=>{
 						//if(ITelexCom.cv(1)) ll(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.Reset);
 					//});
 				});
 				connection.on('error', function(err) {
 					if(ITelexCom.cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
-					try{clearTimeout(ITelexCom.connections[cnum].timeout);}catch(e){}
-					ITelexCom.connections.splice(cnum,1);
+					if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections.splice(cnum,1);
 					//pool.end(function(){
 						//if(ITelexCom.cv(1)) ll(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.Reset);
 					//});
@@ -326,22 +329,16 @@ function init(){
 				connection.on('data', function(data) {
 					if(ITelexCom.cv(2)){
 						ll(colors.FgGreen+"recieved data:"+colors.Reset);
-						ll(colors.FgYellow,data,colors.Reset);
-						ll(colors.FgCyan,data.toString(),colors.Reset);
+						ll(colors.FgCyan,data,colors.Reset);
+						ll(colors.FgYellow,data.toString(),colors.Reset);
 					}
-					try{
-						clearTimeout(ITelexCom.connections[cnum].timeout);
-					}catch(e){
-						if(ITelexCom.cv(2)) console.error(e);
-					}
-					ITelexCom.connections[cnum].timeout = setTimeout(ITelexCom.timeout,config.get("CONNECTIONTIMEOUT"),cnum);
 					if(data[0] == 0x71&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
 						if(ITelexCom.cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
 						ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation
 					}else{
 						if(ITelexCom.cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
 						var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
-						if(ITelexCom.cv(2)) ll(res);
+						//if(ITelexCom.cv(2)) ll(res);
 						if(res[1].length > 0){
 							ITelexCom.connections.readbuffer = res[1];
 						}

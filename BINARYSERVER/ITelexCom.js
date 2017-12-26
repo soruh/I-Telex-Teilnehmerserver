@@ -27,7 +27,7 @@ const PackageNames = {1:"Client_update",2:"Address_confirm",3:"Peer_query",4:"Pe
 var connections = [];	//list of active connections
 
 function connect(pool,onEnd,options,handles,callback){
-	if(cv(2)) ll(colors.FgGreen,"trying to connect to:",colors.Reset,options);
+	if(cv(2)) ll(colors.FgGreen,"trying to connect to:"+colors.FgCyan,options,colors.Reset);
 	try{
 		var socket = new net.Socket();
 		var cnum = -1;
@@ -39,15 +39,18 @@ function connect(pool,onEnd,options,handles,callback){
 		if(cnum == -1){
 			cnum = connections.length;
 		}
-		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,timeout:setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections)};
+		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,cnum,connections};
+
+		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
+		socket.on('timeout', function(){
+		    socket.destroy();
+				socket.end();
+		});
 		socket.on('data',function(data){
-			if(cv(2)) ll(colors.FgCyan,data,"\n",data.toString(),colors.Reset);
-			if(cv(2)) ll(connections.readbuffer);
-			if(cv(2)) ll(data);
-			clearTimeout(connections[cnum].timeout);
-			connections[cnum].timeout = setTimeout(timeout,config.get("CONNECTIONTIMEOUT"),cnum,connections);
+			//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
+			//if(cv(2)) ll(connections.readbuffer);
 			var res = checkFullPackage(data, connections.readbuffer);
-			if(cv(2)) ll(res);
+			//if(cv(2)) ll(res);
 			if(res[1]){
 				connections.readbuffer = res[1];
 			}
@@ -61,13 +64,11 @@ function connect(pool,onEnd,options,handles,callback){
 			}else{
 				if(cv(0)) console.error(colors.FgRed,error,colors.Reset);
 			}
-			try{clearTimeout(connections[cnum].timeout);}catch(e){}
-			connections.splice(cnum,1);
+			if(connections[cnum].connection = socket) connections.splice(cnum,1);
 			try{onEnd();}catch(e){}
 		});
 		socket.on('end',function(){
-			try{clearTimeout(connections[cnum].timeout);}catch(e){}
-			connections.splice(cnum,1);
+			if(connections[cnum].connection = socket) connections.splice(cnum,1);
 			try{onEnd();}catch(e){}
 		});
 		socket.connect(options,function(connection){
@@ -77,10 +78,6 @@ function connect(pool,onEnd,options,handles,callback){
 		if(cv(0)) console.error(e);
 		//cb();
 	}
-}
-function timeout(n,connections){
-	ll("server "+connections[n].servernum+" timed out");
-	connections[n].connection.end();
 }
 function handlePackage(obj,cnum,pool,connection,handles){
 	if(!obj){
@@ -92,7 +89,7 @@ function handlePackage(obj,cnum,pool,connection,handles){
 			if(cv(0)) console.error(colors.FgMagenta+"remote client had error:"+colors.FgRed,Buffer.from(obj.data).toString());
 		}else{
 			try{
-				if(cv(2)) ll(colors.FgGreen+"handeling Package:"+colors.Reset,obj);
+				if(cv(2)) ll(colors.FgGreen+"handeling Package:"+colors.FgCyan,obj,colors.Reset);
 				if(typeof handles[obj.packagetype][connections[cnum].state]=="function"){
 					handles[obj.packagetype][connections[cnum].state](obj,cnum,pool,connection,handles);
 					if(cv(2)) ll(colors.FgGreen+"calling handler for packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgGreen+" in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
@@ -106,7 +103,7 @@ function handlePackage(obj,cnum,pool,connection,handles){
 	}
 }
 function encPackage(obj){
-	if(cv(2)) ll(colors.FgGreen,"encoding Package:",colors.Reset,obj);
+	if(cv(2)) ll(colors.FgGreen,"encoding:",colors.FgCyan,obj,colors.Reset);
 	var data = obj.data;
 	switch(obj.packagetype){
 		case 1:
@@ -173,7 +170,7 @@ function encPackage(obj){
 		if(cv(0)) console.error("Buffer had unexpected size:\n"+array.length+" != "+obj.datalength);
 		return(Buffer.from([]));
 	}
-	//if(cv(2)) ll(colors.FgBlue,Buffer.from(header.concat(array)),colors.Reset);
+	if(cv(2)) ll(colors.FgGreen+"encoded:"+colors.FgCyan,Buffer.from(header.concat(array)),colors.Reset);
 	return(Buffer.from(header.concat(array)));
 }
 function decPackage(packagetype,buffer){
@@ -184,14 +181,12 @@ function decPackage(packagetype,buffer){
 				pin:BytearrayToValue(buffer.slice(4,6),"number"),
 				port:BytearrayToValue(buffer.slice(6,8),"number")
 			};
-			return(data);
 			break;
 		/*
 		case 2:
 			var data = {
 				ipaddresse:BytearrayToValue(buffer.slice(0,4),"string")
 			};
-			return(data);
 			break;
 		The 2(0x02) package is not supposed to be sent to the server*/
 		case 3:
@@ -203,11 +198,9 @@ function decPackage(packagetype,buffer){
 			}else{
 				data["version"] = 1;
 			}
- 			return(data);
 			break;
 		case 4:
 			var data = {};
-			return(data);
 			break;
 		case 5:
 			var numip = BytearrayToValue(buffer.slice(87,91),"number");
@@ -236,29 +229,24 @@ function decPackage(packagetype,buffer){
 				pin:BytearrayToValue(buffer.slice(94,96),"number"),
 				timestamp:BytearrayToValue(buffer.slice(96,100),"number")-2208988800
 			};
-			return(data);
 			break;
 		case 6:
 			var data = {
 				version:BytearrayToValue(buffer.slice(0,1),"number"),
 				serverpin:BytearrayToValue(buffer.slice(1,5),"number")
 			};
-			return(data);
 			break;
 		case 7:
 			var data = {
 				version:BytearrayToValue(buffer.slice(0,1),"number"),
 				serverpin:BytearrayToValue(buffer.slice(1,5),"number")
 			};
-			return(data);
 			break;
 		case 8:
 			var data = {};
-			return(data);
 			break;
 		case 9:
 			var data = {};
-			return(data);
 			break;
 		case 10:
 			var data = {
@@ -267,16 +255,16 @@ function decPackage(packagetype,buffer){
 				pattern:BytearrayToValue(buffer.slice(0,40),"string"),
 				version:BytearrayToValue(buffer.slice(40,41),"number")
 			};
-			return(data);
 			break;
 		default:
 			console.error("invalid/unsupported packagetype: "+packagetype);
-			return(false);
+			data = false;
 			break;
 	}
+		return(data);
 }
 function decData(buffer){
-	if(cv(2)) ll("decoding data");
+	if(cv(2)) ll(colors.FgGreen+"decoding:",colors.FgCyan,Buffer.from(buffer), colors.Reset);
 	var typepos = 0;
 	var out = [];
 	while(typepos<buffer.length-1){
@@ -287,13 +275,6 @@ function decData(buffer){
 			blockdata[i] = buffer[typepos+2+i];
 		}
 		var data=decPackage(packagetype,blockdata);
-		if(cv(2)) ll("buffer: ",buffer);
-		if(cv(2)) ll("typepos: "+typepos);
-		if(cv(2)) ll("bufferlength: "+buffer.length);
-		if(cv(2)) ll("packagetype: "+packagetype);
-		if(cv(2)) ll("datalength "+datalength);
-		if(cv(2)) ll("raw:",blockdata);
-		if(cv(2)) ll("decoded:",data);
 		if(data){
 			out.push({
 				packagetype:packagetype,
@@ -305,22 +286,20 @@ function decData(buffer){
 		}
 		typepos += datalength+2;
 	}
+	if(cv(2)) ll(colors.FgGreen+"decoded:",colors.FgCyan,out[0],colors.Reset);
 	return(out[0]);	//TODO
 }
 function checkFullPackage(buffer, part){
-	if(cv(2)) ll(part);
-	if(cv(2)) ll(buffer);
+	//if(cv(2)) ll(part);
+	//if(cv(2)) ll(buffer);
 	buffer = Array.prototype.slice.call(buffer, 0);
 	var data = buffer;
 	if(part){
 		data = part.concat(buffer);
 	}
-	if(cv(2)) ll(data);
+//	if(cv(2)) ll(data);
 	var packagetype = data[0];
 	var packagelength = data[1]+2;
-	if(cv(2)) ll(data[0],data[1]);
-	if(cv(2)) ll(packagetype, packagelength);
-	if(cv(2)) ll(data.length, packagelength);
 	if(data.length == packagelength){
 		return([data, []]);
 	}else if(data.length > packagelength){
@@ -536,7 +515,6 @@ module.exports.decData=decData;
 module.exports.BytearrayToValue=BytearrayToValue;
 module.exports.ValueToBytearray=ValueToBytearray;
 module.exports.SendQueue=SendQueue;
-module.exports.timeout=timeout;
 module.exports.checkFullPackage=checkFullPackage;
 module.exports.connections=connections;
 module.exports.cv=cv;
