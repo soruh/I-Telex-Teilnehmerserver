@@ -55,6 +55,7 @@ function connect(pool,onEnd,options,handles,callback){
 				connections[cnum].readbuffer = res[1];
 			}
 			if(res[0]){
+				if(typeof connections[cnum].packages != "object") connections[cnum].packages = [];
 				connections[cnum].packages = connections[cnum].packages.concat(decData(res[0]));
 				let timeout = function(){
 					if(connections[cnum].handling === false){
