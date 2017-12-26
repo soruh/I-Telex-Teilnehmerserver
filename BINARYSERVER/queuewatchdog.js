@@ -22,13 +22,14 @@ pool.getConnection(function(err, connection){
 
 var handles = {};
 for(i=1;i<=10;i++){handles[i] = {};}
-handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles){
+handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
 	if(ITelexCom.cv(2)){
 		var toSend = [];
 		for(o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
 		if(ITelexCom.cv(2)) ll("writebuffer:",colors.FgBlue,toSend,colors.Reset);
+		if(ITelexCom.cv(2)) ll("writebuffer-length:",colors.FgBlue,ITelexCom.connections[cnum].writebuffer.length,colors.Reset);
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		if(ITelexCom.cv(2)) ll("writing!");
@@ -54,12 +55,12 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 				if(typeof cb === "function") cb();
 			}
 		});
-	}else if(ITelexCom.connections[cnum].writebuffer.length <= 0){
-		connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}),function(){if(typeof cb === "function") cb();});
-		ITelexCom.connections[cnum].writebuffer = [];
-		ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 	}else{
-		if(typeof cb === "function") cb();
+		connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}),function(){
+			ITelexCom.connections[cnum].writebuffer = [];
+			ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
+			if(typeof cb === "function") cb();
+	});
 	}
 };
 
