@@ -359,6 +359,7 @@ function init(){
 							ITelexCom.connections.readbuffer = res[1];
 						}
 						if(res[0]){
+							if(typeof ITelexCom.connections[cnum].packages != "object") ITelexCom.connections[cnum].packages = [];
 							ITelexCom.connections[cnum].packages = ITelexCom.connections[cnum].packages.concat(ITelexCom.decData(res[0]));
 							let timeout = function(){
 								if(ITelexCom.connections[cnum].handling === false){
