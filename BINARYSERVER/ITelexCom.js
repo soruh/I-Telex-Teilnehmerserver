@@ -505,9 +505,9 @@ function SqlQuery(pool,query,callback){
 	if(cv(2)) ll(colors.BgWhite+colors.FgBlack,query,colors.Reset+colors.Reset);
 	pool.query(query,function(err,res){
 		try{
-			console.log("number of open connections: "+pool._allConnections.length);
+			ll("number of open connections: "+pool._allConnections.length);
 		}catch(e){
-			console.log(pool._allConnections);
+			ll(pool._allConnections);
 		}
 		if(err){
 			if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
