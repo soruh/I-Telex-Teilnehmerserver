@@ -517,6 +517,7 @@ function cv(level){ //check verbosity
 function SqlQuery(pool,query,callback){
 	if(cv(2)) ll(colors.BgWhite+colors.FgBlack,query,colors.Reset+colors.Reset);
 	pool.query(query,function(err,res){
+		console.log("number of open connections: "+pool._allConnections.length);
 		if(err){
 			if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
 			if(typeof callback === "function") callback([]);
