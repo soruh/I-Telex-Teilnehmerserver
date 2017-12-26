@@ -478,7 +478,7 @@ function startQWD(){
 }
 
 
-
+var timeouts = {};
 
 var pool = mysql.createPool(mySqlConnectionOptions);
 pool.getConnection(function(err, connection){
