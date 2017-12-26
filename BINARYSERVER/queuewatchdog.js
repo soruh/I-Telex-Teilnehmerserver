@@ -43,7 +43,7 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 					if(!err&&res.affectedRows > 0){
 						if(ITelexCom.cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
 					}else{
-						if(ITelexCom.cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+":"+colors.FgRed,err,colors.Reset);
+						if(ITelexCom.cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+":"+colors.FgRed,"err:",err,"res:",res,colors.Reset);
 					}
 					ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.slice(1);
 					if(typeof cb === "function") cb();
