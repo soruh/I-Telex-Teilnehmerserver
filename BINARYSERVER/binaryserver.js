@@ -448,7 +448,7 @@ function startQWD(){
 	qwd = cp.spawn('node',[path.join(PWD,"/BINARYSERVER/queuewatchdog.js")]);
 	qwd.on('exit',function(ec){
 		qwdec = ec;
-		if(ITelexCom.cv(0)) console.error(colors.FgRed+"qwd process exited with code "+colrs.FgCyan+ec+colors.Reset);
+		if(ITelexCom.cv(0)) console.error(colors.FgRed+"qwd process exited with code "+colors.FgCyan+ec+colors.Reset);
 		//throw "qwd process exited with code "+ec;
 		startQWD();
 	});
