@@ -55,7 +55,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				if(typeof cb === "function") cb();
 			}
 		}else{
-			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1');",function(result_b){
+			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1','1');",function(result_b){
 				ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
 					if(result_c.length>0){
 						try{
@@ -136,7 +136,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 					values+=mysql.escape(o[k])+", ";
 				}
 			}
-			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
+			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+",changed) VALUES ("+values.substring(0, values.length - 2)+",0);";
 			ITelexCom.SqlQuery(pool,q,function(res2){
 				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
 			});
@@ -190,7 +190,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles,c
 						values+=mysql.escape(o[k])+", ";
 					}
 				}
-				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
+				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+",changed) VALUES ("+values.substring(0, values.length - 2)+",0);";
 				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
 				});
@@ -479,6 +479,33 @@ function startQWD(){
 
 
 var timeouts = {};
+
+function Timer(fn, countdown) {
+    var ident, complete = false;
+
+    function _time_diff(date1, date2) {
+        return date2 ? date2 - date1 : new Date().getTime() - date1;
+    }
+
+    function cancel() {
+        clearTimeout(ident);
+    }
+
+    function pause() {
+        clearTimeout(ident);
+        total_time_run = _time_diff(start_time);
+        complete = total_time_run >= countdown;
+    }
+
+    function resume() {
+        ident = complete ? -1 : setTimeout(fn, countdown - total_time_run);
+    }
+
+    var start_time = new Date().getTime();
+    ident = setTimeout(fn, countdown);
+
+    return { cancel: cancel, pause: pause, resume: resume };
+}
 
 var pool = mysql.createPool(mySqlConnectionOptions);
 pool.getConnection(function(err, connection){

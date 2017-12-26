@@ -36,9 +36,9 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 			if(b){
 				if(ITelexCom.cv(2)) ll("wrote!");
 				if(ITelexCom.cv(1)) ll(ITelexCom.connections[cnum].writebuffer[0]);
-				ITelexCom.SqlQuery(pool,"SELECT * FROM queue",function(res,err){ //Debug
+				/*ITelexCom.SqlQuery(pool,"SELECT * FROM queue",function(res,err){ //Debug
 					ll(res,err,ITelexCom.connections[cnum].writebuffer[0].uid);
-				});
+				});*/
 				ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res,err){
 					if(!err&&res.affectedRows > 0){
 						if(ITelexCom.cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
