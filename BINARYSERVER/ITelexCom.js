@@ -55,8 +55,13 @@ function connect(pool,onEnd,options,handles,callback){
 				connections.readbuffer = res[1];
 			}
 			if(res[0]){
-				handlePackage(decData(res[0]),cnum,pool,socket,handles);
+				async.eachSeries(decData(res[0]),function(pkg,cb){
+					handlePackage(pkg,cnum,pool,socket,handles,cb);
+				});
 			}
+			/*if(res[0]){
+				handlePackage(decData(res[0]),cnum,pool,socket,handles);
+			}*/
 		});
 		socket.on('error',function(error){
 			if(error.code == "ECONNREFUSED"){
@@ -79,25 +84,28 @@ function connect(pool,onEnd,options,handles,callback){
 		//cb();
 	}
 }
-function handlePackage(obj,cnum,pool,connection,handles){
+function handlePackage(obj,cnum,pool,connection,handles,cb){
 	if(!obj){
 		if(cv(0)) console.error(colors.FgRed+"no package to handle"+colors.Reset);
+		if(typeof cb === "function") cb();
 	}else{
 		if(cv(2)) ll(colors.FgGreen+"state: "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 		if(obj.packagetype==0xff){
-			//if(cv(2)) ll(obj.data);
 			if(cv(0)) console.error(colors.FgMagenta+"remote client had error:"+colors.FgRed,Buffer.from(obj.data).toString());
+			if(typeof cb === "function") cb();
 		}else{
 			try{
 				if(cv(2)) ll(colors.FgGreen+"handeling Package:"+colors.FgCyan,obj,colors.Reset);
 				if(typeof handles[obj.packagetype][connections[cnum].state]=="function"){
-					handles[obj.packagetype][connections[cnum].state](obj,cnum,pool,connection,handles);
+					handles[obj.packagetype][connections[cnum].state](obj,cnum,pool,connection,handles,cb);
 					if(cv(2)) ll(colors.FgGreen+"calling handler for packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgGreen+" in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 				}else{
 					if(cv(0)) console.error(colors.FgRed+"packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgRed+" not supported in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
+					if(typeof cb === "function") cb();
 				}
 			}catch(e){
 				if(cv(0)) console.error(colors.FgRed,e,colors.Reset);
+				if(typeof cb === "function") cb();
 			}
 		}
 	}
@@ -287,7 +295,7 @@ function decData(buffer){
 		typepos += datalength+2;
 	}
 	if(cv(2)) ll(colors.FgGreen+"decoded:",colors.FgCyan,out[0],colors.Reset);
-	return(out[0]);	//TODO
+	return(out);	//TODO
 }
 function checkFullPackage(buffer, part){
 	//if(cv(2)) ll(part);
@@ -297,7 +305,7 @@ function checkFullPackage(buffer, part){
 	if(part){
 		data = part.concat(buffer);
 	}
-//	if(cv(2)) ll(data);
+	//if(cv(2)) ll(data);
 	var packagetype = data[0];
 	var packagelength = data[1]+2;
 	if(data.length == packagelength){
@@ -462,7 +470,7 @@ function SendQueue(handles,callback){
 												scb();
 											}
 										},function(){
-											client.write(encPackage({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),()=>{
+											client.write(encPackage({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
 												connections[cnum].state = RESPONDING;
 												cb();
 											});
