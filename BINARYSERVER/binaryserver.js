@@ -378,7 +378,6 @@ function init(){
 	});
 }
 function updateQueue(){
-
 		if(ITelexCom.cv(2)) ll(colors.FgGreen+"Updating Queue!"+colors.Reset);
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE changed = "+1, function(result1){
 			if(result1.length > 0){
@@ -492,7 +491,7 @@ pool.getConnection(function(err, connection){
 			if(ITelexCom.cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
 			init();
 			startQWD();
-			//updateQueue();
+			setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 			getFullQuery();
 		}else{
 			module.exports = {
