@@ -38,7 +38,6 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number,function(result_a){
 		if(result_a&&(result_a.length>0)){
 			var res = result_a[0];
-			if(ITelexCom.cv(2)) ll(res);
 			if(res.pin == pin){
 				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+connection.remoteAddress.replace(/^.*:/,'')+"' WHERE rufnummer = "+number+";",function(result_b){
 					ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
@@ -308,7 +307,7 @@ function init(){
 			if(cnum == -1){
 				cnum = ITelexCom.connections.length;
 			}
-			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY};
+			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false};
 			// var pool = mysql.createConnection(mySqlConnectionOptions);
 			if(ITelexCom.cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset);
 			//.replace(/^.*:/,'')
@@ -362,20 +361,25 @@ function init(){
 							if(typeof ITelexCom.connections[cnum].packages != "object") ITelexCom.connections[cnum].packages = [];
 							ITelexCom.connections[cnum].packages = ITelexCom.connections[cnum].packages.concat(ITelexCom.decData(res[0]));
 							let timeout = function(){
+								if(ITelexCom.cv(2)) ll(colors.FgGreen+"handling: "+colors.FgCyan+ITelexCom.connections[cnum].handling+colors.Reset);
 								if(ITelexCom.connections[cnum].handling === false){
 									ITelexCom.connections[cnum].handling = true;
 									if(ITelexCom.connections[cnum].timeout != null){
 										clearTimeout(ITelexCom.connections[cnum].timeout);
 										ITelexCom.connections[cnum].timeout = null;
 									}
-									async.eachSeries(ITelexCom.connections[cnum].packages,function(pkg,cb){
-										ITelexCom.handlePackage(pkg,cnum,pool,socket,handles,cb);
+									async.eachOfSeries(ITelexCom.connections[cnum].packages,function(pkg,key,cb){
+										if(ITelexCom.cv(1)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(ITelexCom.connections[cnum].packages).length+colors.Reset);
+										ITelexCom.handlePackage(pkg,cnum,pool,connection,handles,function(){
+											ITelexCom.connections[cnum].packages.splice(key,1);
+											cb();
+										});
 									},function(){
 										ITelexCom.connections[cnum].handling = false;
 									});
 								}else{
 									if(ITelexCom.connections[cnum].timeout == null){
-										ITelexCom.connections[cnum].timeout = setTimeout(timeout,100);
+										ITelexCom.connections[cnum].timeout = setTimeout(timeout,10);
 									}
 								}
 							}
@@ -395,7 +399,7 @@ function init(){
 		if(ITelexCom.cv(0)) ll(colors.FgMagenta,"server is listening on port "+config.get("BINARYPORT"),colors.Reset);
 	});
 }
-function updateQueue(){
+function updateQueue(callback){
 		if(ITelexCom.cv(2)) ll(colors.FgGreen+"Updating Queue!"+colors.Reset);
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE changed = "+1, function(result1){
 			if(result1.length > 0){
@@ -422,7 +426,8 @@ function updateQueue(){
 					},function(){
 						//pool.end(()=>{
 							qwd.stdin.write("sendqueue");
-							setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+							//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+							if(typeof callback === "function") callback();
 						//});
 					});
 				});
@@ -430,14 +435,16 @@ function updateQueue(){
 				if(ITelexCom.cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
 				if(qwdec == null){
 					qwdec = "unknown";
-					qwd.stdin.write("sendqueue");
+					qwd.stdin.write("sendqueue",callback);
+				}else{
+					if(typeof callback === "function") callback();
 				}
-				setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+				//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 			}
 		});
 	//});
 } //TODO: call!
-function getFullQuery(){
+function getFullQuery(callback){
 	// var pool = mysql.createConnection(mySqlConnectionOptions);
 	//pool.connect(()=>{
 		ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
@@ -447,14 +454,16 @@ function getFullQuery(){
 				}
 			}
 			async.eachSeries(res,function(r,cb){
-				ITelexCom.connect(pool,function(){},{port:r.port,host:r.addresse},handles,function(client,cnum){
+				ITelexCom.connect(pool,function(e){
+					try{cb()}catch(e){}
+				},{port:r.port,host:r.addresse},handles,function(client,cnum){
 					client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
 						ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
 						ITelexCom.connections[cnum].cb = cb;
 					});
 				});
 			},function(){
-				setTimeout(getFullQuery, config.get("FULLQUERYINTERVAL"));
+				if(typeof callback === "function") callback();
 			});
 		});
 	//});
@@ -470,7 +479,17 @@ function startQWD(){
 		startQWD();
 	});
 	qwd.stderr.on('data',function(data){
-		if(config.get("QWD_STDERR_LOG") == ""){
+		if(data.toString() === "pausetimeouts"){
+			for(k of Object.keys(ITelexCom.timeouts)){
+				if(ITelexCom.cv(3)) ll("pausing: "+k);
+				ITelexCom.timeouts[k].pause();
+			}
+		}else if(data.toString() === "resumetimeouts"){
+			for(k of Object.keys(ITelexCom.timeouts)){
+				if(ITelexCom.cv(3)) ll("resuming: "+k);
+				ITelexCom.timeouts[k].resume();
+			}
+		}else if(config.get("QWD_STDERR_LOG") == ""){
 			if(ITelexCom.cv(0)) process.stderr.write(colors.FgRed+'qwd: '+data+colors.Reset);
 		}else if(config.get("QWD_STDOUT_LOG") == "-"){
 		}else{
@@ -496,36 +515,7 @@ function startQWD(){
 }
 
 
-var timeouts = {};//TODO: timeouts, pool(to many open connections)
-
-function Timer(fn, countdown) {
-    var ident, complete = false;
-
-    function _time_diff(date1, date2) {
-        return date2 ? date2 - date1 : new Date().getTime() - date1;
-    }
-
-    function cancel() {
-        clearTimeout(ident);
-    }
-
-    function pause() {
-        clearTimeout(ident);
-        total_time_run = _time_diff(start_time);
-        complete = total_time_run >= countdown;
-    }
-
-    function resume() {
-        ident = complete ? -1 : setTimeout(fn, countdown - total_time_run);
-    }
-
-    var start_time = new Date().getTime();
-    ident = setTimeout(fn, countdown);
-
-    return { cancel: cancel, pause: pause, resume: resume };
-}
-
-var pool = mysql.createPool(mySqlConnectionOptions);
+var pool = mysql.createPool(mySqlConnectionOptions); //TODO: pool(to many open connections)
 pool.getConnection(function(err, connection){
 	if(err){
 		console.error(colors.FgRed,"Could not connect to database!",colors.Reset);
@@ -534,10 +524,13 @@ pool.getConnection(function(err, connection){
 		connection.release();
 		if(module.parent === null){
 			if(ITelexCom.cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
-			init();
 			startQWD();
-			setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+			init();
 			getFullQuery();
+			//updateQueue();
+			ITelexCom.TimeoutWrapper(getFullQuery, config.get("FULLQUERYINTERVAL"),qwd.stdin)
+			ITelexCom.TimeoutWrapper(updateQueue,config.get("UPDATEQUEUEINTERVAL"),qwd.stdin);
+			//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 		}else{
 			module.exports = {
 				init:init,

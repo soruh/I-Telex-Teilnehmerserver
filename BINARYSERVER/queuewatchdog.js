@@ -64,19 +64,26 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 	}
 };
 
-var sendInt = setInterval(interval,config.get("QUEUE_SEND_INTERVAL"));
+//var sendInt = setInterval(interval,config.get("QUEUE_SEND_INTERVAL"));
+ITelexCom.TimeoutWrapper(ITelexCom.SendQueue,config.get("QUEUE_SEND_INTERVAL"),process.stderr,pool,handles);
+
 process.stdin.on('data',function(data){
-	//ll(data.toString());
+	if(ITelexCom.cv(3)) ll(colors.FgBlue+data.toString()+colors.Reset);
 	if(data.toString() === "sendqueue"){
-		interval();
+		ITelexCom.SendQueue(pool,handles);
+	}else if(data.toString() === "pausetimeouts"){
+		for(k of Object.keys(ITelexCom.timeouts)){
+			if(ITelexCom.cv(3)) ll("pausing: "+k);
+			ITelexCom.timeouts[k].pause();
+		}
+	}else if(data.toString() === "resumetimeouts"){
+		for(k of Object.keys(ITelexCom.timeouts)){
+			if(ITelexCom.cv(3)) ll("resuming: "+k);
+			ITelexCom.timeouts[k].resume();
+		}
 	}
 });
-function interval(){
-	clearInterval(sendInt);
-	ITelexCom.SendQueue(handles,function(){
-		sendInt = setInterval(ITelexCom.SendQueue,config.get("QUEUE_SEND_INTERVAL"));
-	});
-}
+
 /*pool.query("DELETE FROM queue WHERE uid="+row.uid, function (err, result2) {
 	if(ITelexCom.cv(0)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+result2.uid+colors.FgGreen+" from queue"+colors.Reset);
 });*/

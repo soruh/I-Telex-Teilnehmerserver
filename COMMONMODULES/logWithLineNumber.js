@@ -12,9 +12,19 @@ function ll(){
     console.log.apply(this,arguments);
   }
 }
+function lle(){
+  var stack = new Error().stack.split('\n');
+  var line = stack[(module.exports.offset || 1) + 1].split("/").slice(-1)[0].replace(")","")
+  if(!module.exports.diabled){
+    console.error.apply(this,[colors.Underscore+colors.Dim+line+colors.Reset].concat(Object.values(arguments)));const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
+  }else{
+    console.error.apply(this,arguments);
+  }
+}
 var offset = 1;
 var disabled = !config.get("LOGLINENUMBERS");
 
 module.exports.setDiabled = function setDiabled(val){disabled=val;};
 module.exports.setOffset = function setOffset(val){offset=val;};
 module.exports.ll = ll;
+module.exports.lle = lle;

@@ -3,6 +3,7 @@ const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
 const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
+const lle = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).lle;
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
@@ -26,6 +27,65 @@ const PackageNames = {1:"Client_update",2:"Address_confirm",3:"Peer_query",4:"Pe
 //</STATES>
 var connections = [];	//list of active connections
 
+var timeouts = {};
+function Timer(fn, countdown){
+    var ident;
+    function _time_diff(date1, date2){
+      return date2 ? date2 - date1 : new Date().getTime() - date1;
+    }
+    function cancel(){
+    	clearTimeout(ident);
+    }
+    function pause(){
+			this.paused = true;
+      clearTimeout(ident);
+      total_time_run = _time_diff(this.start_time);
+      this.complete = total_time_run >= countdown;
+			this.remaining = countdown - total_time_run;
+    }
+    function resume(){
+			this.paused = false;
+			total_time_run = _time_diff(this.start_time);
+			this.complete = total_time_run >= countdown;
+			this.remaining = countdown - total_time_run;
+      ident = this.complete ? -1 : setTimeout(fn, this.remaining);
+    }
+    this.start_time = new Date().getTime();
+    ident = setTimeout(fn, countdown);
+
+    return { cancel: cancel, pause: pause, resume: resume, complete: false, start_time:this.start_time};
+}
+function TimeoutWrapper(fn, countdown, pipe){
+	var fnName = fn.toString().split("(")[0].split(" ")[1];
+	var args = [];
+	for(i in arguments){
+		if(i>2) args.push(arguments[i]);
+	}
+	args.push(function(){
+		if(cv(3)) ll(colors.FgMagenta+"callback for timeout: "+colors.FgCyan+fnName+colors.Reset);
+		//ll(timeouts)
+		pipe.write("resumetimeouts");
+		for(k of Object.keys(timeouts)){
+			//console.log(k,timeouts[k]);
+			if(timeouts[k].complete){
+				timeouts[k].start_time = new Date().getTime();
+				if(cv(3)) ll(colors.FgMagenta+"restarted timeout for: "+colors.FgCyan+fnName+colors.Reset);
+			}
+			timeouts[k].resume();
+		}
+		//TimeoutWrapper(fn, countdown, timeouts);
+	});
+	if(cv(1)) ll(colors.FgMagenta+"set timeout for: "+colors.FgCyan+fnName+colors.FgMagenta+" to "+colors.FgCyan+countdown+colors.FgMagenta+"ms"+colors.Reset);
+	timeouts[fnName] = new Timer(function(){
+		pipe.write("pausetimeouts");
+		for(k of Object.keys(timeouts)){
+			timeouts[k].pause();
+		}
+		if(cv(3)) ll(colors.FgMagenta+"called: "+colors.FgCyan+fnName+colors.FgMagenta+" with: "+colors.FgCyan,args,colors.Reset);
+		fn.apply(null,args);
+	},countdown);
+}
+
 function connect(pool,onEnd,options,handles,callback){
 	if(cv(2)) ll(colors.FgGreen,"trying to connect to:"+colors.FgCyan,options,colors.Reset);
 	try{
@@ -39,7 +99,7 @@ function connect(pool,onEnd,options,handles,callback){
 		if(cnum == -1){
 			cnum = connections.length;
 		}
-		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,packages:[],handeling:false};
+		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,packages:[],handling:false};
 
 		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
 		socket.on('timeout', function(){
@@ -58,20 +118,25 @@ function connect(pool,onEnd,options,handles,callback){
 				if(typeof connections[cnum].packages != "object") connections[cnum].packages = [];
 				connections[cnum].packages = connections[cnum].packages.concat(decData(res[0]));
 				let timeout = function(){
+					if(cv(2)) ll(colors.FgGreen+"handling: "+colors.FgCyan+connections[cnum].handling+colors.Reset);
 					if(connections[cnum].handling === false){
 						connections[cnum].handling = true;
 						if(connections[cnum].timeout != null){
 							clearTimeout(connections[cnum].timeout);
 							connections[cnum].timeout = null;
 						}
-						async.eachSeries(connections[cnum].packages,function(pkg,cb){
-							handlePackage(pkg,cnum,pool,socket,handles,cb);
+						async.eachOfSeries(connections[cnum].packages,function(pkg,key,cb){
+							if(cv(1)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(connections[cnum].packages).length+colors.Reset);
+							handlePackage(pkg,cnum,pool,socket,handles,function(){
+								connections[cnum].packages.splice(key,1);
+								cb();
+							});
 						},function(){
 							connections[cnum].handling = false;
 						});
 					}else{
 						if(connections[cnum].timeout == null){
-							connections[cnum].timeout = setTimeout(timeout,100);
+							connections[cnum].timeout = setTimeout(timeout,10);
 						}
 					}
 				}
@@ -85,14 +150,22 @@ function connect(pool,onEnd,options,handles,callback){
 			if(error.code == "ECONNREFUSED"){
 				ll("server "+connections[cnum].servernum+" could not be reached");
 			}else{
-				if(cv(0)) console.error(colors.FgRed,error,colors.Reset);
+				if(cv(0)) lle("in "+module.parent.filename+"\n",colors.FgRed,error,colors.Reset);
 			}
 			if(connections[cnum].connection = socket) connections.splice(cnum,1);
-			try{onEnd();}catch(e){}
+			try{
+				onEnd();
+			}catch(e){
+				if(cv(0)) console.error(e);
+			}
 		});
 		socket.on('end',function(){
 			if(connections[cnum].connection = socket) connections.splice(cnum,1);
-			try{onEnd();}catch(e){}
+			try{
+				onEnd();
+			}catch(e){
+				if(cv(0)) console.error(e);
+			}
 		});
 		socket.connect(options,function(connection){
 			return(callback(socket,cnum));
@@ -432,9 +505,8 @@ function ascii(data,connection,pool){
 		});
 	}
 }
-function SendQueue(handles,callback){
+function SendQueue(pool,handles,callback){
 	if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
-	var pool = mysql.createConnection(mySqlConnectionOptions);
 	SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
 		SqlQuery(pool,"SELECT * FROM queue;",function(results){
 			if(results.length>0){
@@ -478,9 +550,9 @@ function SendQueue(handles,callback){
 												}
 											}
 											if(!exists){
-												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res){
+												SqlQuery(pool,"DELETE FROM queue WHERE message="+connections[cnum].writebuffer[0].uid+" AND server="+connections[cnum].servernum+";",function(res){
 													if(res.affectedRows > 0){
-														if(ITelexCom.cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
+														if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
 														scb();
 													}
 												});
@@ -519,13 +591,13 @@ function SendQueue(handles,callback){
 function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
 }
-function SqlQuery(pool,query,callback){
+function SqlQuery(sqlPool,query,callback){
 	if(cv(2)) ll(colors.BgWhite+colors.FgBlack,query,colors.Reset+colors.Reset);
-	pool.query(query,function(err,res){
+	sqlPool.query(query,function(err,res){
 		try{
-			ll("number of open connections: "+pool._allConnections.length);
+			if(cv(2)) ll("number of open connections: "+sqlPool._allConnections.length);
 		}catch(e){
-			ll(pool._allConnections);
+			console.trace(sqlPool.threadId);
 		}
 		if(err){
 			if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
@@ -534,9 +606,39 @@ function SqlQuery(pool,query,callback){
 			if(typeof callback === "function") callback(res);
 		}
 	});
+	/*try{
+		sqlPool.getConnection(function(e,c){
+			if(e){
+				if(cv(0)) console.error(colors.FgRed,e,colors.Reset);
+				c.release();
+			}else{
+				c.query(query,function(err,res){
+					c.release();
+					//console.log(sqlPool);
+					try{
+						ll("number of open connections: "+sqlPool._allConnections.length);
+					}catch(e){
+						//ll("sqlPool threadId: "+sqlPool.threadId);
+						console.trace(sqlPool.threadId);
+					}
+					if(err){
+						if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
+						if(typeof callback === "function") callback([]);
+					}else{
+						if(typeof callback === "function") callback(res);
+					}
+				});
+			}
+		});
+	}catch(e){
+		console.log(sqlPool);
+		throw(e);
+	}*/
 }
 
 module.exports.ascii=ascii;
+module.exports.TimeoutWrapper=TimeoutWrapper;
+module.exports.timeouts=timeouts;
 module.exports.connect=connect;
 module.exports.handlePackage=handlePackage;
 module.exports.encPackage=encPackage;
