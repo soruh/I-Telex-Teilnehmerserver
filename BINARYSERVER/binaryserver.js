@@ -70,7 +70,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 					});
 				});
 			}else{
-				if(cv(1)) ll("pin is wrong")
+				if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
 				connection.end();
 				let mailOptions = {
 		        from: config.get("EMAIL").from,
