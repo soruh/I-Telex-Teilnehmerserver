@@ -73,7 +73,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		        from: config.get("EMAIL").from,
 		        to: config.get("EMAIL").to,
 		        subject: 'password',
-		        html: '<span style="color=red;">'+connection.remoteAddress+'</span> tried to update the dynIp for <span style="color=red;">'+res.name+'</span> with a wrong pin at '+'<span style="color=red;">'+new Date()+'</span>'
+		        html: '<span style="color:red;">'+connection.remoteAddress+'</span> tried to update the dynIp for <span style="color:red;">'+res.name+'</span> with a wrong pin at '+'<span style="color:red;">'+new Date()+'</span>'
 		    };
 				if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
 				transporter.sendMail(mailOptions, function(error, info){
@@ -95,7 +95,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			        from: config.get("EMAIL").from,
 			        to: config.get("EMAIL").to,
 			        subject: 'new participant',
-			        html: 'A new participant joined with number:<span style="color=red;">'+number+'</span> and ip: <span style="color=red;">'+connection.remoteAddress+'</span> at <span style="color=red;">'+new Date()+"</span>"
+			        html: 'A new participant joined with number:<span style="color:red;">'+number+'</span> and ip: <span style="color:red;">'+connection.remoteAddress+'</span> at <span style="color:red;">'+new Date()+"</span>"
 			    };
 					if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
 					transporter.sendMail(mailOptions, function(error, info){
@@ -265,7 +265,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
 				subject: 'password',
-				html: '<span style="color=red;">'+connection.remoteAddress+'</span> tried to update the sync the server with a wrong pin at <span style="color=red;">'+new Date()+'</span>'
+				html: '<span style="color:red;">'+connection.remoteAddress+'</span> tried to update the sync the server with a wrong pin at <span style="color:red;">'+new Date()+'</span>'
 		};
 		if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
@@ -296,7 +296,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
 				subject: 'new participant',
-				html: 'A new participant joined with number:<span style="color=red;">'+number+'</span> and ip: <span style="color=red;">'+connection.remoteAddress+'</span> at <span style="color=red;">'+new Date()+'</span>'
+				html: 'A new participant joined with number:<span style="color:red;">'+number+'</span> and ip: <span style="color:red;">'+connection.remoteAddress+'</span> at <span style="color:red;">'+new Date()+'</span>'
 		};
 		if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
