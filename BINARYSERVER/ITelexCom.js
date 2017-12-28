@@ -126,7 +126,7 @@ function connect(pool,onEnd,options,handles,callback){
 							connections[cnum].timeout = null;
 						}
 						async.eachOfSeries(connections[cnum].packages,function(pkg,key,cb){
-							if(cv(1)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(connections[cnum].packages).length+colors.Reset);
+							if((cv(1)&&(Object.keys(connections[cnum].packages).length > 1))||cv(2)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(connections[cnum].packages).length+colors.Reset);
 							handlePackage(pkg,cnum,pool,socket,handles,function(){
 								connections[cnum].packages.splice(key,1);
 								cb();
