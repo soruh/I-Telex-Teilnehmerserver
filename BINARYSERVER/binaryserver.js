@@ -477,7 +477,7 @@ function init(){
 		}
 	});
 	server.listen(config.get("BINARYPORT"), function(){
-		if(cv(0)) ll(colors.FgMagenta,"server is listening on port "+config.get("BINARYPORT"),colors.Reset);
+		if(cv(0)) ll(colors.FgMagenta,"server is listening on port "+colors.FgCyan+config.get("BINARYPORT"),colors.Reset);
 	});
 }
 function updateQueue(callback){
