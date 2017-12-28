@@ -15,20 +15,22 @@ const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
 const nodemailer = require('nodemailer');
 
-// Generate test SMTP service account from ethereal.email
-// Only needed if you don't have a real mail account for testing
-var transporter;
-nodemailer.createTestAccount(function(err, account){
-    /*var*/transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-            user: account.user, // generated ethereal user
-            pass: account.pass  // generated ethereal password
-        }
-    }/*config.get(EMAIL).account*/);
-});
+if(config.get("EMAIL").useTestAccount){
+  var transporter;
+  nodemailer.createTestAccount(function(err, account){
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: account.user, // generated ethereal user
+        pass: account.pass  // generated ethereal password
+      }
+    });
+  });
+}else{
+  var transporter = nodemailer.createTransport(config.get("EMAIL").account);
+}
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 
@@ -73,8 +75,8 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				let mailOptions = {
 		        from: config.get("EMAIL").from,
 		        to: config.get("EMAIL").to,
-		        subject: 'password',
-		        html: '<span style="color:red;">'+connection.remoteAddress+'</span> tried to update the dynIp for <span style="color:red;">'+res.name+'</span> with a wrong pin at '+'<span style="color:red;">'+new Date()+'</span>'
+		        subject: config.get("EMAIL").messages.wrongDynIpPin.subject,
+		        html: config.get("EMAIL").messages.wrongDynIpPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date())
 		    };
 				if(cv(2)) ll("sending mail:",mailOptions);
 				transporter.sendMail(mailOptions, function(error, info){
@@ -82,7 +84,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		            return console.error(error);
 		        }
 		        if(cv(1)) ll('Message sent:', info.messageId);
-		        ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+		        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
 						if(typeof cb === "function") cb();
 		    });
 			}
@@ -95,8 +97,8 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 					let mailOptions = {
 			        from: config.get("EMAIL").from,
 			        to: config.get("EMAIL").to,
-			        subject: 'new participant',
-			        html: 'A new participant joined with number:<span style="color:red;">'+number+'</span> and ip: <span style="color:red;">'+connection.remoteAddress+'</span> at <span style="color:red;">'+new Date()+"</span>"
+			        subject: config.get("EMAIL").messages.new.subject,
+			        html: config.get("EMAIL").messages.new.html.replace(/(\[number\])/g,number).replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date())
 			    };
 					if(cv(2)) ll("sending mail:",mailOptions);
 					transporter.sendMail(mailOptions, function(error, info){
@@ -104,7 +106,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			            return console.error(error);
 			        }
 			        if(cv(1)) ll('Message sent:', info.messageId);
-			        ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+			        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
 							if(typeof cb === "function") cb();
 			    });
 					try{
@@ -267,8 +269,8 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		let mailOptions = {
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
-				subject: 'password',
-				html: '<span style="color:red;">'+connection.remoteAddress+'</span> tried to update the sync the server with a wrong pin at <span style="color:red;">'+new Date()+'</span>'
+				subject: config.get("EMAIL").messages.wrongServerPin.subject,
+        html: config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date())
 		};
 		if(cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
@@ -276,7 +278,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 						return console.error(error);
 				}
 				if(cv(1)) ll('Message sent:', info.messageId);
-				ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+				if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
 				if(typeof cb === "function") cb();
 		});
 		if(typeof cb === "function") cb();
@@ -298,8 +300,8 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		let mailOptions = {
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
-				subject: 'new participant',
-				html: 'A new participant joined with number:<span style="color:red;">'+number+'</span> and ip: <span style="color:red;">'+connection.remoteAddress+'</span> at <span style="color:red;">'+new Date()+'</span>'
+				subject: config.get("EMAIL").messages.wrongServerPin.subject,
+        html: config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date())
 		};
 		if(cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
@@ -307,7 +309,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 						return console.error(error);
 				}
 				if(cv(1)) ll('Message sent:', info.messageId);
-				ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+				if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
 				if(typeof cb === "function") cb();
 		});
 		if(typeof cb === "function") cb();

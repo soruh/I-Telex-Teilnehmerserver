@@ -22,6 +22,7 @@
   "WEBINTERFACEPASSWORD":"XXX",
 
   "EMAIL":{
+    "useTestAccount":true,
     "account":{
       "host": "",
       "port": 587,
@@ -29,9 +30,26 @@
       "auth": {
         "user": "",
         "pass": ""
+      },
+      "tls":{
+        "rejectUnauthorized": true
       }
     },
     "to":"ab@cd.ef, gh@ij.kl",
-    "from":"\"Teilnehmerserver\" <noreply@teilnehmerserver.de>"
+    "from":"\"Teilnehmerserver\" <noreply@teilnehmerserver.de>",
+    "messages":{
+      "new":{
+        "subject":"new participant",
+        "html":"A new participant joined with number:<span style=\"color:red;\">[number]</span> and ip: <span style=\"color:red;\">[remoteAddress]</span> at <span style=\"color:red;\">[date]</span>"
+      },
+      "wrongDynIpPin":{
+        "subject":"wrong dynIp pin",
+        "html":"<span style=\"color:red;\">[remoteAddress]</span> tried to update the dynIp for <span style=\"color:red;\">[number]</span>(<span style=\"color:red;\">[name]</span>) with a wrong pin at <span style=\"color:red;\">[date]</span>"
+      },
+      "wrongServerPin":{
+        "subject":"wrong Server pin",
+        "html":"<span style=\"color:red;\">[remoteAddress]</span> tried to sync the server with a wrong pin at <span style=\"color:red;\">[date]</span>"
+      }
+    }
   }
 }
