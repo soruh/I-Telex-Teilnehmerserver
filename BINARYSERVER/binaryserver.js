@@ -12,6 +12,23 @@ const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
+const nodemailer = require('nodemailer');
+
+// Generate test SMTP service account from ethereal.email
+// Only needed if you don't have a real mail account for testing
+
+nodemailer.createTestAccount(function(err, account){
+    var transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: account.user, // generated ethereal user
+            pass: account.pass  // generated ethereal password
+        }
+    }/*config.get(EMAIL).account*/);
+});
+
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 
 /*<PKGTYPES>
@@ -49,27 +66,50 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 						}
 					});
 				});
-			}else if(res.pin != pin){
+			}else{
 				connection.end();
-				if(typeof cb === "function") cb();
+				transporter.sendMail({
+		        from: config.get("EMAIL").from,
+		        to: config.get("EMAIL").to,
+		        subject: 'password',
+		        text: '"'+connection.remoteAddress+'" tried to update the dynIp for "'+res.name+'" with a wrong pin at '+new Date()
+		    }, function(error, info){
+						if(typeof cb === "function") cb();
+		        if (error) {
+		            return console.error(error);
+		        }
+		        if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
+		        ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+		    });
 			}
 		}else{
-			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1','1');",function(result_b){
-				ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
-					if(result_c.length>0){
-						try{
-							connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
-						}catch(e){
-							if(ITelexCom.cv(0)) ll(colors.FgRed,e,colors.Reset);
+			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1','1');",function(result_b, err){
+				if(err){
+					console.error(colors.FgRed+"could not create entry",err,colors.Reset);
+					if(typeof cb === "function") cb();
+				}else{
+					transporter.sendMail({
+			        from: config.get("EMAIL").from,
+			        to: config.get("EMAIL").to,
+			        subject: 'new participant',
+			        text: 'A new participant joined with number:"'+number+'" and ip: "'+connection.remoteAddress+' at '+new Date()
+			    }, function(error, info){
 							if(typeof cb === "function") cb();
-						}
-						//connection.end();
-					}else{
-						ll("no such entry");
-						//connection.end();
+			        if (error) {
+			            return console.error(error);
+			        }
+			        if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
+			        ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+			    });
+					try{
+						connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:connection.remoteAddress}}),"binary",function(){
+							if(typeof cb === "function") cb();
+						});
+					}catch(e){
+						if(ITelexCom.cv(0)) ll(colors.FgRed,e,colors.Reset);
 						if(typeof cb === "function") cb();
 					}
-				});
+				}
 			});
 		}
 	});
@@ -216,6 +256,19 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
 			connection.end();
 		}
+		transporter.sendMail({
+				from: config.get("EMAIL").from,
+				to: config.get("EMAIL").to,
+				subject: 'password',
+				text: '"'+connection.remoteAddress+'" tried to update the sync the server with a wrong pin at '+new Date()
+		}, function(error, info){
+				if(typeof cb === "function") cb();
+				if (error) {
+						return console.error(error);
+				}
+				if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
+				ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+		});
 		if(typeof cb === "function") cb();
 	}
 };
@@ -232,6 +285,19 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);
 			connection.end();
 		}
+		transporter.sendMail({
+				from: config.get("EMAIL").from,
+				to: config.get("EMAIL").to,
+				subject: 'new participant',
+				text: 'A new participant joined with number:"'+number+'" and ip: "'+connection.remoteAddress+' at '+new Date()
+		}, function(error, info){
+				if(typeof cb === "function") cb();
+				if (error) {
+						return console.error(error);
+				}
+				if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
+				ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+		});
 		if(typeof cb === "function") cb();
 	}
 };

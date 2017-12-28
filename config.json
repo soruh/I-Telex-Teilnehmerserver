@@ -18,5 +18,19 @@
   "LOGGING_VERBOSITY":2,
 
   "WEBSERVERPORT":3030,
-  "WEBINTERFACEPASSWORD":"test"
+  "WEBINTERFACEPASSWORD":"test",
+
+  "EMAIL":{
+    "account":{
+      "host": "",
+      "port": 587,
+      "secure": false,
+      "auth": {
+        "user": "",
+        "pass": ""
+      }
+    },
+    "to":"ab@cd.ef, gh@ij.kl",
+    "from":"\"Teilnehmerserver\" <noreply@teilnehmerserver.de>"
+  }
 }
