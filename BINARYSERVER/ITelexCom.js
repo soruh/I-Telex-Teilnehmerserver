@@ -156,7 +156,7 @@ function connect(pool,onEnd,options,handles,callback){
 			try{
 				onEnd();
 			}catch(e){
-				if(cv(0)) console.error(e);
+				if(cv(2)) console.error(e);
 			}
 		});
 		socket.on('end',function(){
@@ -164,14 +164,14 @@ function connect(pool,onEnd,options,handles,callback){
 			try{
 				onEnd();
 			}catch(e){
-				if(cv(0)) console.error(e);
+				if(cv(2)) console.error(e);
 			}
 		});
 		socket.connect(options,function(connection){
 			return(callback(socket,cnum));
 		});
 	}catch(e){
-		if(cv(0)) console.error(e);
+		if(cv(2)) console.error(e);
 		//cb();
 	}
 }
@@ -570,7 +570,7 @@ function SendQueue(pool,handles,callback){
 									if(cv(1)) ll(colors.FgYellow+"already connected to server "+server[0].server+colors.Reset);
 								}
 							}catch(e){
-								if(cv(0)) console.error(e);
+								if(cv(2)) console.error(e);
 								cb();
 							}
 						}else{

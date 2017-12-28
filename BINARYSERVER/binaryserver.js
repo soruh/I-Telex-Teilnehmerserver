@@ -16,9 +16,9 @@ const nodemailer = require('nodemailer');
 
 // Generate test SMTP service account from ethereal.email
 // Only needed if you don't have a real mail account for testing
-
+var transporter;
 nodemailer.createTestAccount(function(err, account){
-    var transporter = nodemailer.createTransport({
+    /*var*/transporter = nodemailer.createTransport({
         host: 'smtp.ethereal.email',
         port: 587,
         secure: false, // true for 465, false for other ports
@@ -67,19 +67,22 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 					});
 				});
 			}else{
+				if(ITelexCom.cv(1)) ll("pin is wrong")
 				connection.end();
-				transporter.sendMail({
+				let mailOptions = {
 		        from: config.get("EMAIL").from,
 		        to: config.get("EMAIL").to,
 		        subject: 'password',
-		        text: '"'+connection.remoteAddress+'" tried to update the dynIp for "'+res.name+'" with a wrong pin at '+new Date()
-		    }, function(error, info){
-						if(typeof cb === "function") cb();
+		        html: '<span style="color=red;">'+connection.remoteAddress+'</span> tried to update the dynIp for <span style="color=red;">'+res.name+'</span> with a wrong pin at '+'<span style="color=red;">'+new Date()+'</span>'
+		    };
+				if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
+				transporter.sendMail(mailOptions, function(error, info){
 		        if (error) {
 		            return console.error(error);
 		        }
-		        if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
-		        ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+		        if(ITelexCom.cv(1)) ll('Message sent:', info.messageId);
+		        ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+						if(typeof cb === "function") cb();
 		    });
 			}
 		}else{
@@ -88,18 +91,20 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 					console.error(colors.FgRed+"could not create entry",err,colors.Reset);
 					if(typeof cb === "function") cb();
 				}else{
-					transporter.sendMail({
+					let mailOptions = {
 			        from: config.get("EMAIL").from,
 			        to: config.get("EMAIL").to,
 			        subject: 'new participant',
-			        text: 'A new participant joined with number:"'+number+'" and ip: "'+connection.remoteAddress+' at '+new Date()
-			    }, function(error, info){
-							if(typeof cb === "function") cb();
+			        html: 'A new participant joined with number:<span style="color=red;">'+number+'</span> and ip: <span style="color=red;">'+connection.remoteAddress+'</span> at <span style="color=red;">'+new Date()+"</span>"
+			    };
+					if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
+					transporter.sendMail(mailOptions, function(error, info){
 			        if (error) {
 			            return console.error(error);
 			        }
-			        if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
-			        ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+			        if(ITelexCom.cv(1)) ll('Message sent:', info.messageId);
+			        ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+							if(typeof cb === "function") cb();
 			    });
 					try{
 						connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:connection.remoteAddress}}),"binary",function(){
@@ -256,18 +261,20 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
 			connection.end();
 		}
-		transporter.sendMail({
+		let mailOptions = {
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
 				subject: 'password',
-				text: '"'+connection.remoteAddress+'" tried to update the sync the server with a wrong pin at '+new Date()
-		}, function(error, info){
-				if(typeof cb === "function") cb();
+				html: '<span style="color=red;">'+connection.remoteAddress+'</span> tried to update the sync the server with a wrong pin at <span style="color=red;">'+new Date()+'</span>'
+		};
+		if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
+		transporter.sendMail(mailOptions, function(error, info){
 				if (error) {
 						return console.error(error);
 				}
-				if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
-				ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+				if(ITelexCom.cv(1)) ll('Message sent:', info.messageId);
+				ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+				if(typeof cb === "function") cb();
 		});
 		if(typeof cb === "function") cb();
 	}
@@ -285,18 +292,20 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);
 			connection.end();
 		}
-		transporter.sendMail({
+		let mailOptions = {
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
 				subject: 'new participant',
-				text: 'A new participant joined with number:"'+number+'" and ip: "'+connection.remoteAddress+' at '+new Date()
-		}, function(error, info){
-				if(typeof cb === "function") cb();
+				html: 'A new participant joined with number:<span style="color=red;">'+number+'</span> and ip: <span style="color=red;">'+connection.remoteAddress+'</span> at <span style="color=red;">'+new Date()+'</span>'
+		};
+		if(ITelexCom.cv(2)) ll("sending mail:",mailOptions);
+		transporter.sendMail(mailOptions, function(error, info){
 				if (error) {
 						return console.error(error);
 				}
-				if(ITelexCom.cv(1)) ll.log('Message sent: %s', info.messageId);
-				ll.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));//DEBUG
+				if(ITelexCom.cv(1)) ll('Message sent:', info.messageId);
+				ll('Preview URL:', nodemailer.getTestMessageUrl(info));//DEBUG
+				if(typeof cb === "function") cb();
 		});
 		if(typeof cb === "function") cb();
 	}

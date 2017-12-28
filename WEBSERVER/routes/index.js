@@ -33,16 +33,16 @@ router.post('/list', function(req, res){
   //  console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
       var resultPublic = [];
       for(a in result){
-        if(result[a].gesperrt===0||req.body.password==config.get("WEBINTERFACEPASSWORD")){
+        if((result[a].gesperrt===0||req.body.password==config.get("WEBINTERFACEPASSWORD"))&&((result[a].typ != 0)||req.body.password==config.get("WEBINTERFACEPASSWORD"))){
           var i=resultPublic.length;
           resultPublic[i] = {};
-          for(b in result[i]){
+          for(b in result[a]){
             if(
               ((b != "pin")||(false&&req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
               ((b != "gesperrt")||(req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
               (b != "changed")
             ){
-              resultPublic[i][b] = result[i][b];
+              resultPublic[i][b] = result[a][b];
             }
           }
         }
@@ -79,7 +79,7 @@ router.post('/edit', function(req, res){
                 if(list[0].rufnummer!=req.body.rufnummer){
                   /*"UPDATE teilnehmer SET rufnummer="+mysql.escape(req.body.rufnummer)+",name="+mysql.escape(req.body.name)+",typ="+mysql.escape(req.body.typ)+",hostname="+mysql.escape(req.body.hostname)+",ipaddresse="+mysql.escape(req.body.ipaddresse)+",port="+mysql.escape(req.body.port)+",extension="+mysql.escape(req.body.extension)+",gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.floor(new Date().getTime()/1000))
                   +" WHERE uid="+mysql.escape(req.body.uid),*/
-                  pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+mysql.escape(req.body.rufnummer)+","+mysql.escape(req.body.name)+",0,"+mysql.escape(req.body.hostname)+","+mysql.escape(req.body.ipaddresse)+","+mysql.escape(req.body.port)+","+mysql.escape(req.body.extension)+","+mysql.escape(req.body.pin)+","+mysql.escape(req.body.gesperrt)+","+mysql.escape(Math.floor(new Date().getTime()/1000))+")",function(err, result){
+                  pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(req.body.rufnummer)+","+mysql.escape(req.body.name)+",0,"+mysql.escape(req.body.hostname)+","+mysql.escape(req.body.ipaddresse)+","+mysql.escape(req.body.port)+","+mysql.escape(req.body.extension)+","+mysql.escape(req.body.pin)+","+mysql.escape(req.body.gesperrt)+","+mysql.escape(Math.floor(new Date().getTime()/1000))+",'0')",function(err, result){
                     if(err){
                       success = false;
                       message.push(err);
@@ -108,7 +108,7 @@ router.post('/edit', function(req, res){
         });
         break;
       case "delete":
-        pool.query("UPDATE teilnehmer SET typ=0 WHERE uid="+mysql.escape(req.body.uid)+";",function(err,result){
+        pool.query("UPDATE teilnehmer SET typ=0, changed=1 WHERE uid="+mysql.escape(req.body.uid)+";",function(err,result){
           if(err){
             res.json({successful:false,message:err});
           }else{

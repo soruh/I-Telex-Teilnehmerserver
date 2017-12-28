@@ -878,7 +878,7 @@ function search(list,str){
 }
 function sortFunction(x,y){
   //console.log(x[sortby],y[sortby],x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:true}));
-  return(x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:true}));
+  return(x[sortby].toString().localeCompare(y[sortby].toString(),'de'/*,{numeric:true}*/));
 }
 function sort(usli){
   var sortable=[];
