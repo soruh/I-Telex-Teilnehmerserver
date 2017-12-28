@@ -182,11 +182,15 @@ function handlePackage(obj,cnum,pool,connection,handles,cb){
 	}else{
 		if(cv(2)) ll(colors.FgGreen+"state: "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 		if(obj.packagetype==0xff){
-			if(cv(0)) console.error(colors.FgMagenta+"remote client had error:"+colors.FgRed,Buffer.from(obj.data).toString());
+			if(cv(0)) console.error(colors.FgRed+"remote client had error:",Buffer.from(obj.data).toString());
 			if(typeof cb === "function") cb();
 		}else{
 			try{
-				if(cv(2)) ll(colors.FgGreen+"handeling Package:"+colors.FgCyan,obj,colors.Reset);
+				if(cv(2)){
+          ll(colors.FgGreen+"handeling package:"+colors.FgCyan,obj,colors.FgGreen+"for: "+colors.FgCyan+(obj.packagetype == 1?"#"+obj.data.rufnummer:connection.remoteAddress)+colors.Reset);
+        }else if(cv(1)){
+          ll(colors.FgGreen+"handeling packagetype:"+colors.FgCyan,obj.packagetype,colors.FgGreen+"for: "+colors.FgCyan+(obj.packagetype == 1?"#"+obj.data.rufnummer:connection.remoteAddress)+colors.Reset);
+        }
 				if(typeof handles[obj.packagetype][connections[cnum].state]=="function"){
 					handles[obj.packagetype][connections[cnum].state](obj,cnum,pool,connection,handles,cb);
 					if(cv(2)) ll(colors.FgGreen+"calling handler for packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgGreen+" in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
