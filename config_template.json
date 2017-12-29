@@ -4,7 +4,8 @@
     "host": "localhost",
     "user": "telefonbuch",
     "password": "XXX",
-    "database": "telefonbuch"
+    "database": "telefonbuch",
+    "insecureAuth" : true
   },
   "LOGLINENUMBERS":true,
   "SERVERPIN":118120815,
