@@ -601,7 +601,7 @@ function SqlQuery(sqlPool,query,callback){
 		try{
 			if(cv(2)) ll("number of open connections: "+sqlPool._allConnections.length);
 		}catch(e){
-			console.trace(sqlPool.threadId);
+			if(cv(2)) ll("not a pool");
 		}
 		if(err){
 			if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
