@@ -1,4 +1,5 @@
-if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
+"use strict";
+if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
@@ -11,11 +12,7 @@ const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
-/*const mySqlConnectionOptions = {
-	host: config.SQL_host,
-	user: config.SQL_user,
-	password: config.SQL_password
-};*/
+
 //<STATES>
 const STANDBY = 0;
 const RESPONDING = 1;
@@ -39,15 +36,15 @@ function Timer(fn, countdown){
     function pause(){
 			this.paused = true;
       clearTimeout(ident);
-      total_time_run = _time_diff(this.start_time);
-      this.complete = total_time_run >= countdown;
-			this.remaining = countdown - total_time_run;
+      this.total_time_run = _time_diff(this.start_time);
+      this.complete = this.total_time_run >= countdown;
+			this.remaining = countdown - this.total_time_run;
     }
     function resume(){
 			this.paused = false;
-			total_time_run = _time_diff(this.start_time);
-			this.complete = total_time_run >= countdown;
-			this.remaining = countdown - total_time_run;
+			this.total_time_run = _time_diff(this.start_time);
+			this.complete = this.total_time_run >= countdown;
+			this.remaining = countdown - this.total_time_run;
       ident = this.complete ? -1 : setTimeout(fn, this.remaining);
     }
     this.start_time = new Date().getTime();
@@ -58,14 +55,14 @@ function Timer(fn, countdown){
 function TimeoutWrapper(fn, countdown, pipe){
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
 	var args = [];
-	for(i in arguments){
+	for(let i in arguments){
 		if(i>2) args.push(arguments[i]);
 	}
 	args.push(function(){
 		if(cv(3)) ll(colors.FgMagenta+"callback for timeout: "+colors.FgCyan+fnName+colors.Reset);
 		//ll(timeouts)
 		pipe.write("resumetimeouts");
-		for(k of Object.keys(timeouts)){
+		for(let k of Object.keys(timeouts)){
 			//console.log(k,timeouts[k]);
 			if(timeouts[k].complete){
 				timeouts[k].start_time = new Date().getTime();
@@ -78,7 +75,7 @@ function TimeoutWrapper(fn, countdown, pipe){
 	if(cv(1)) ll(colors.FgMagenta+"set timeout for: "+colors.FgCyan+fnName+colors.FgMagenta+" to "+colors.FgCyan+countdown+colors.FgMagenta+"ms"+colors.Reset);
 	timeouts[fnName] = new Timer(function(){
 		pipe.write("pausetimeouts");
-		for(k of Object.keys(timeouts)){
+		for(let k of Object.keys(timeouts)){
 			timeouts[k].pause();
 		}
 		if(cv(3)) ll(colors.FgMagenta+"called: "+colors.FgCyan+fnName+colors.FgMagenta+" with: "+colors.FgCyan,args,colors.Reset);
@@ -91,7 +88,7 @@ function connect(pool,onEnd,options,handles,callback){
 	try{
 		var socket = new net.Socket();
 		var cnum = -1;
-		for(i=0;i<connections.length;i++){
+		for(let i=0;i<connections.length;i++){
 			if(connections[i] == null){
 				cnum = i;
 			}
@@ -217,7 +214,7 @@ function encPackage(obj){
 		case 2:
 			var iparr = data.ipaddresse.split(".");
 			var numip=0
-			for(i in iparr){
+			for(let i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
 			var array = ValueToBytearray(numip,4);
@@ -233,7 +230,7 @@ function encPackage(obj){
 			var flags = data.gesperrt;
 			var iparr = data.ipaddresse.split(".");
 			var numip=0;
-			for(i in iparr){
+			for(let i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
 			var array = ValueToBytearray(data.rufnummer,4)
@@ -309,7 +306,7 @@ function decPackage(packagetype,buffer){
 			var numip = BytearrayToValue(buffer.slice(87,91),"number");
 			/*
 			var iparr = [];
-			for(i=0;i<=3;i++){
+			for(let i=0;i<=3;i++){
 				iparr[i] = (numip>>i*8)&255
 			}
 			var ipaddresse = iparr.join(".");
@@ -374,7 +371,7 @@ function decData(buffer){
 		var packagetype = parseInt(buffer[typepos],10);
 		var datalength = parseInt(buffer[typepos+1],10);
 		var blockdata = [];
-		for(i=0;i<datalength;i++){
+		for(let i=0;i<datalength;i++){
 			blockdata[i] = buffer[typepos+2+i];
 		}
 		var data=decPackage(packagetype,blockdata);
@@ -417,14 +414,14 @@ function checkFullPackage(buffer, part){
 function BytearrayToValue(arr,type){
 	if(type==="number"){
 		var num = 0;
-		for (i=arr.length-1;i>=0;i--){
+		for(let i=arr.length-1;i>=0;i--){
 			num *= 256;
 			num += arr[i];
 		}
 		return(num);
 	}else if(type==="string"){
 		var str = "";
-		for (i=0;i<arr.length;i++){
+		for(let i=0;i<arr.length;i++){
 			if(arr[i] != 0){
 				str += String.fromCharCode(arr[i]);
 			}else{
@@ -438,7 +435,7 @@ function ValueToBytearray(value,size){
 	//if(cv(2)) ll(value);
 	var array = [];
 	if(typeof value === "string"){
-		for(i=0;i<value.length;i++){
+		for(let i=0;i<value.length;i++){
 			array[i] = value.charCodeAt(i);
 		}
 	}else if(typeof value === "number"){
@@ -457,7 +454,7 @@ function ValueToBytearray(value,size){
 }
 function ascii(data,connection,pool){
 	var number = "";
-	for(i=0;i<data.length;i++){
+	for(let i=0;i<data.length;i++){
 		//if(cv(2)) ll(String.fromCharCode(data[i]));
 		if(/([0-9])/.test(String.fromCharCode(data[i]))){
 			number += String.fromCharCode(data[i]);
@@ -515,7 +512,7 @@ function SendQueue(pool,handles,callback){
 		SqlQuery(pool,"SELECT * FROM queue;",function(results){
 			if(results.length>0){
 				var servers = {};
-				for(i in results){
+				for(let i in results){
 					if(!servers[results[i].server]){
 						servers[results[i].server] = [];
 					}
@@ -530,7 +527,7 @@ function SendQueue(pool,handles,callback){
 							if(cv(2)) ll(colors.FgCyan,serverinf,colors.Reset);
 							try{
 								var isConnected = false;
-								for(c of connections){
+								for(let c of connections){
 									if(c.servernum == server[0].server){
 										var isConnected = true;
 									}
@@ -547,7 +544,7 @@ function SendQueue(pool,handles,callback){
 												scb();
 											});*/
 											var exists = false;
-											for(t of teilnehmer){
+											for(let t of teilnehmer){
 												if(t.uid == serverdata.message){
 													connections[cnum].writebuffer.push(t);
 													exists = true;

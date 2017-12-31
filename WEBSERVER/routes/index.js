@@ -1,4 +1,5 @@
-if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
+"use strict";
+if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..','..'));
 
@@ -32,11 +33,11 @@ router.post('/list', function(req, res){
     }else{
   //  console.log("Result: " + JSON.stringify(result).replace(/,/g,",\n").replace(/(},)/g,"},\n"));
       var resultPublic = [];
-      for(a in result){
+      for(let a in result){
         if((result[a].gesperrt===0||req.body.password==config.get("WEBINTERFACEPASSWORD"))&&((result[a].typ != 0)||req.body.password==config.get("WEBINTERFACEPASSWORD"))){
           var i=resultPublic.length;
           resultPublic[i] = {};
-          for(b in result[a]){
+          for(let b in result[a]){
             if(
               ((b != "pin")||(false&&req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
               ((b != "gesperrt")||(req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
@@ -47,7 +48,6 @@ router.post('/list', function(req, res){
           }
         }
       }
-      console.log(resultPublic);
       res.json({successful:true,message:null,result:resultPublic});
     }
   });
@@ -62,14 +62,15 @@ router.post('/edit', function(req, res){
         var message = [];
         var success = true;
         pool.query("SELECT * FROM teilnehmer WHERE uid="+mysql.escape(req.body.uid)+";", function(err, list){
+          console.log(err, list);
           if(err){
             success = false;
             message.push(err);
           }else{
             message.push(list);
-
             pool.query("UPDATE teilnehmer SET rufnummer="+mysql.escape(req.body.rufnummer)+",name="+mysql.escape(req.body.name)+",typ="+mysql.escape(req.body.typ)+",hostname="+mysql.escape(req.body.hostname)+",ipaddresse="+mysql.escape(req.body.ipaddresse)+/*",pin="+mysql.escape(req.body.pin)+*/",port="+mysql.escape(req.body.port)+",extension="+mysql.escape(req.body.extension)+",gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.floor(new Date().getTime()/1000))
             +",changed=1 WHERE uid="+mysql.escape(req.body.uid), function(err, result){
+              console.log(err, list);
               if(err){
                 success = false;
                 message.push(err);
@@ -79,6 +80,7 @@ router.post('/edit', function(req, res){
                   /*"UPDATE teilnehmer SET rufnummer="+mysql.escape(req.body.rufnummer)+",name="+mysql.escape(req.body.name)+",typ="+mysql.escape(req.body.typ)+",hostname="+mysql.escape(req.body.hostname)+",ipaddresse="+mysql.escape(req.body.ipaddresse)+",port="+mysql.escape(req.body.port)+",extension="+mysql.escape(req.body.extension)+",gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.floor(new Date().getTime()/1000))
                   +" WHERE uid="+mysql.escape(req.body.uid),*/
                   pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(list[0].rufnummer)+","+mysql.escape(list[0].name)+",0,"+mysql.escape(list[0].hostname)+","+mysql.escape(list[0].ipaddresse)+","+mysql.escape(list[0].port)+","+mysql.escape(list[0].extension)+","+mysql.escape(list[0].pin)+","+mysql.escape(list[0].gesperrt)+","+mysql.escape(Math.floor(new Date().getTime()/1000))+",'0')",function(err, result){
+                    console.log(err, list);
                     if(err){
                       success = false;
                       message.push(err);

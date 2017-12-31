@@ -1,4 +1,5 @@
-if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
+"use strict";
+if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
@@ -47,7 +48,7 @@ End_of_List: 9
 Peer_search: 10
 </PKGTYPES>*/
 var handles = {};	//functions for handeling packages
-for(i = 1;i <= 10;i++){handles[i] = {};}
+for(let i = 1;i <= 10;i++){handles[i] = {};}
 //handes[packagetype][state of this connection]
 //handles[2][ITelexCom.states.STANDBY] = (obj,cnum,pool,connection)=>{}; NOT USED
 //handles[4][WAITING] = (obj,cnum,pool,connection)=>{}; NOT USED
@@ -156,12 +157,11 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			changed:0
 		};
 		if(res.length == 1){
+      var res=res[0];
 			if(obj.data.timestamp > res.moddate){
-				if(cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
-				//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+mysql.escape(obj.data.name)+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+mysql.escape(obj.data.addresse)+",ipaddresse = "+mysql.escape(obj.data.ipaddresse)+",port = "+mysql.escape(obj.data.port)+",extension = "+mysql.escape(obj.data.durchwahl)+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+mysql.escape(obj.data.flags)+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+mysql.escape(0)+"WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res2){
-				//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+(mysql.escape(obj.data.name)||"")+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+(mysql.escape(obj.data.addresse)||"")+",ipaddresse = "+(mysql.escape(obj.data.ipaddresse)||"")+",port = "+mysql.escape(obj.data.port)+",extension = "+(mysql.escape(obj.data.durchwahl)||"")+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+(mysql.escape(obj.data.gesperrt)||"")+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+0+" WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
+        if(cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
 				var sets = ""
-				for(k in o){
+				for(let k in o){
 					if(o[k]!=undefined){
 						sets+=k+" = "+mysql.escape(o[k])+", ";
 					}
@@ -171,14 +171,13 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
 				});
 			}else{
-				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
+        if(cv(2)) ll(colors.FgYellow+"recieved entry is "+colors.FgCyan+(parseInt(res.moddate)-parseInt(obj.data.timestamp))+colors.FgYellow+" seconds older and was ignored"+colors.Reset);
+        connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
 			}
 		}else if(res.length == 0){
-			//ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed)VALUES("+mysql.escape(obj.data.rufnummer)+","+mysql.escape(obj.data.name)+","+mysql.escape(obj.data.typ)+","+mysql.escape(obj.data.addresse)+","+mysql.escape(obj.data.ipaddresse)+","+mysql.escape(obj.data.port)+","+mysql.escape(obj.data.durchwahl)+","+mysql.escape(obj.data.pin)+","+mysql.escape(obj.data.flags)+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");",function(res2){
-			//var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+(mysql.escape(obj.data.name)||"")+","+mysql.escape(obj.data.typ)+","+(mysql.escape(obj.data.addresse)||"")+","+(mysql.escape(obj.data.ipaddresse)||"")+","+mysql.escape(obj.data.port)+","+(mysql.escape(obj.data.durchwahl)||"")+","+mysql.escape(obj.data.pin)+","+(mysql.escape(obj.data.gesperrt)||"")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
 			var names = "";
 			var values = "";
-			for(k in o){
+			for(let k in o){
 				if(o[k]!=undefined){
 					names+=k+", ";
 					values+=mysql.escape(o[k])+", ";
@@ -194,61 +193,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 		}
 	});
 };
-handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles,cb){
-    if(cv(1)) ll(colors.FgGreen+"got dataset for:",colors.FgCyan,obj.data.rufnummer,colors.Reset);
-		ITelexCom.SqlQuery(pool,"SELECT * from teilnehmer WHERE rufnummer = "+obj.data.rufnummer+";",function(res){
-			if(cv(2)) ll(res);
-			var o = {
-				rufnummer:obj.data.rufnummer,
-				name:obj.data.name,
-				typ:obj.data.typ,
-				hostname:obj.data.addresse,
-				ipaddresse:obj.data.ipaddresse,
-				port:obj.data.port,
-				extension:obj.data.durchwahl,
-				pin:obj.data.pin,
-				gesperrt:obj.data.gesperrt,
-				moddate:obj.data.timestamp,
-				changed:0
-			};
-			if(res.length == 1){
-				var res=res[0];
-				if(obj.data.timestamp > res.moddate){
-					//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET rufnummer = "+mysql.escape(obj.data.rufnummer)+",name = "+(mysql.escape(obj.data.name)||"")+",typ = "+mysql.escape(obj.data.typ)+",hostname = "+(mysql.escape(obj.data.addresse)||"")+",ipaddresse = "+(mysql.escape(obj.data.ipaddresse)||"")+",port = "+mysql.escape(obj.data.port)+",extension = "+(mysql.escape(obj.data.durchwahl)||"")+",pin = "+mysql.escape(obj.data.pin)+",gesperrt = "+(mysql.escape(obj.data.gesperrt)||"")+",moddate = "+mysql.escape(obj.data.timestamp)+",changed = "+0+" WHERE rufnummer = "+obj.data.rufnummer+";",function(res2){
-					var sets = ""
-					for(k in o){
-						if(o[k]!=undefined){
-							sets+=k+" = "+mysql.escape(o[k])+", ";
-						}
-					}
-					var q = "UPDATE teilnehmer SET "+sets.substring(0, sets.length - 2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
-					ITelexCom.SqlQuery(pool,q,function(res2){
-						connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-					});
-				}else{
-					if(cv(2)) ll(colors.FgRed+"recieved entry is "+colors.FgCyan+(parseInt(res.moddate)-parseInt(obj.data.timestamp))+colors.FgRed+" seconds older and was ignored"+colors.Reset);
-					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-				}
-			}else if(res.length == 0){
-				//var q = "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(obj.data.rufnummer)+","+(mysql.escape(obj.data.name)||"")+","+mysql.escape(obj.data.typ)+","+(mysql.escape(obj.data.addresse)||"")+","+(mysql.escape(obj.data.ipaddresse)||"")+","+mysql.escape(obj.data.port)+","+(mysql.escape(obj.data.durchwahl)||"")+","+mysql.escape(obj.data.pin)+","+(mysql.escape(obj.data.gesperrt)||"")+","+mysql.escape(obj.data.timestamp)+","+mysql.escape(0)+");"
-				var names = "";
-				var values = "";
-				for(k in o){
-					if(o[k]!=undefined){
-						names+=k+", ";
-						values+=mysql.escape(o[k])+", ";
-					}
-				}
-				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
-				ITelexCom.SqlQuery(pool,q,function(res2){
-					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-				});
-			}else{
-				if(cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
-				if(typeof cb === "function") cb();
-			}
-		});
-};//TODO: look for difference in FULLQUERY & LOGIN
+handles[5][ITelexCom.states.LOGIN] = handles[5][ITelexCom.states.FULLQUERY];
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	if(obj.data.serverpin == config.get("SERVERPIN")){
 		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
@@ -291,7 +236,6 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
 			if(typeof cb === "function") cb();
 		});
-		//ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles);
 	}else{
 		if(cv(1)){
 			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);
@@ -318,7 +262,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
 	if(cv(2)){
 		var toSend = [];
-		for(o of ITelexCom.connections[cnum].writebuffer){
+		for(let o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
 		ll(colors.FgGreen,"entrys to transmit:",colors.FgCyan,toSend,colors.Reset);
@@ -354,7 +298,7 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 	var query = obj.data.pattern;
 	var searchstring = "SELECT * FROM teilnehmer WHERE";
 	queryarr = query.split(" ");
-	for(i in queryarr){
+	for(let i in queryarr){
 		searchstring +=  " AND name LIKE '%"+queryarr[i]+"%'";
 	}
 	searchstring += ";"
@@ -362,7 +306,7 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 	ITelexCom.SqlQuery(pool,searchstring,function(result){
 		if((result[0] != undefined)&&(result != [])){
 			var towrite = [];
-			for(o of result){
+			for(let o of result){
 				if(o.gesperrt != 1&&o.typ != 0){
 					o.pin = 0;
 					towrite.push(o);
@@ -380,7 +324,7 @@ function init(){
 	var server = net.createServer(function(connection){
 		try{
 			var cnum = -1;
-			for(i = 0;i<ITelexCom.connections.length;i++){
+			for(let i = 0;i<ITelexCom.connections.length;i++){
 				if(ITelexCom.connections[i] == null){
 					cnum = i;
 				}
@@ -389,89 +333,68 @@ function init(){
 				cnum = ITelexCom.connections.length;
 			}
 			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false};
-			// var pool = mysql.createConnection(mySqlConnectionOptions);
-			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset);
-			//.replace(/^.*:/,'')
-			/*pool.connect(function(err){
-				if(err){
-					if(cv(0)) ll(colors.FgRed+"Connection of client "+colors.FgCyan+cnum+colors.FgRed+" to database threw an error:\n",err,colors.Reset);
-					connection.end(()=>{if(cv(1)) ll(colors.FgRed+"Terminated connection with client "+colors.FgCyan+cnum+colors.Reset);});
-					return;
-				}*/
-				//if(cv(2)) ll(connection);
-				//if(cv(1)) ll(colors.FgGreen+"Connected client "+colors.FgCyan+cnum+colors.FgGreen+" to database"+colors.Reset);
-				var queryresultpos = -1;
-				var queryresult = [];
-				var connectionpin;
-				connection.setTimeout(config.get("CONNECTIONTIMEOUT"));
-				connection.on('timeout', function(){
-				    connection.destroy();
-						connection.end();
-				})
-				connection.on('end', function() {
-					if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
-					if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections[cnum] = null;
-					//pool.end(()=>{
-						//if(cv(1)) ll(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.Reset);
-					//});
-				});
-				connection.on('error', function(err) {
-					if(cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
-					if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections[cnum] = null;
-					//pool.end(function(){
-						//if(cv(1)) ll(colors.FgYellow+"Disconnected client "+colors.FgCyan+cnum+colors.FgYellow+" from database"+colors.Reset);
-					//});
-				});
-				connection.on('data', function(data) {
-					if(cv(2)){
-						ll(colors.FgGreen+"recieved data:"+colors.Reset);
-						ll(colors.FgCyan,data,colors.Reset);
-						ll(colors.FgYellow,data.toString(),colors.Reset);
+			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset); //.replace(/^.*:/,'')
+			var queryresultpos = -1;
+			var queryresult = [];
+			var connectionpin;
+			connection.setTimeout(config.get("CONNECTIONTIMEOUT"));
+			connection.on('timeout', function(){
+			    connection.destroy();
+					connection.end();
+			})
+			connection.on('end', function() {
+				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
+				if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections[cnum] = null;
+			});
+			connection.on('error', function(err) {
+				if(cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
+				if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections[cnum] = null;
+			});
+			connection.on('data', function(data) {
+				if(cv(2)){
+					ll(colors.FgGreen+"recieved data:"+colors.Reset);
+					ll(colors.FgCyan,data,colors.Reset);
+					ll(colors.FgYellow,data.toString(),colors.Reset);
+				}
+				if(data[0] == 0x71&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
+					if(cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
+					ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation
+				}else{
+					if(cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
+					var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
+					if(res[1].length > 0){
+						ITelexCom.connections.readbuffer = res[1];
 					}
-					if(data[0] == 0x71&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
-						if(cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
-						ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation
-					}else{
-						if(cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
-						var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
-						//if(cv(2)) ll(res);
-						if(res[1].length > 0){
-							ITelexCom.connections.readbuffer = res[1];
-						}
-						if(res[0]){
-							if(typeof ITelexCom.connections[cnum].packages != "object") ITelexCom.connections[cnum].packages = [];
-							ITelexCom.connections[cnum].packages = ITelexCom.connections[cnum].packages.concat(ITelexCom.decData(res[0]));
-							let timeout = function(){
-								if(cv(2)) ll(colors.FgGreen+"handling: "+colors.FgCyan+ITelexCom.connections[cnum].handling+colors.Reset);
-								if(ITelexCom.connections[cnum].handling === false){
-									ITelexCom.connections[cnum].handling = true;
-									if(ITelexCom.connections[cnum].timeout != null){
-										clearTimeout(ITelexCom.connections[cnum].timeout);
-										ITelexCom.connections[cnum].timeout = null;
-									}
-									async.eachOfSeries(ITelexCom.connections[cnum].packages,function(pkg,key,cb){
-										if((cv(1)&&(Object.keys(ITelexCom.connections[cnum].packages).length > 1))||cv(2)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(ITelexCom.connections[cnum].packages).length+colors.Reset);
-										ITelexCom.handlePackage(pkg,cnum,pool,connection,handles,function(){
-											ITelexCom.connections[cnum].packages.splice(key,1);
-											cb();
-										});
-									},function(){
-										ITelexCom.connections[cnum].handling = false;
+					if(res[0]){
+						if(typeof ITelexCom.connections[cnum].packages != "object") ITelexCom.connections[cnum].packages = [];
+						ITelexCom.connections[cnum].packages = ITelexCom.connections[cnum].packages.concat(ITelexCom.decData(res[0]));
+						let timeout = function(){
+							if(cv(2)) ll(colors.FgGreen+"handling: "+colors.FgCyan+ITelexCom.connections[cnum].handling+colors.Reset);
+							if(ITelexCom.connections[cnum].handling === false){
+								ITelexCom.connections[cnum].handling = true;
+								if(ITelexCom.connections[cnum].timeout != null){
+									clearTimeout(ITelexCom.connections[cnum].timeout);
+									ITelexCom.connections[cnum].timeout = null;
+								}
+								async.eachOfSeries(ITelexCom.connections[cnum].packages,function(pkg,key,cb){
+									if((cv(1)&&(Object.keys(ITelexCom.connections[cnum].packages).length > 1))||cv(2)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(ITelexCom.connections[cnum].packages).length+colors.Reset);
+									ITelexCom.handlePackage(pkg,cnum,pool,connection,handles,function(){
+										ITelexCom.connections[cnum].packages.splice(key,1);
+										cb();
 									});
-								}else{
-									if(ITelexCom.connections[cnum].timeout == null){
-										ITelexCom.connections[cnum].timeout = setTimeout(timeout,10);
-									}
+								},function(){
+									ITelexCom.connections[cnum].handling = false;
+								});
+							}else{
+								if(ITelexCom.connections[cnum].timeout == null){
+									ITelexCom.connections[cnum].timeout = setTimeout(timeout,10);
 								}
 							}
-							timeout();
 						}
-						/*if(res[0].length > 0){
-							ITelexCom.handlePackage(ITelexCom.decData(res[0]),cnum,pool,connection,handles); //BINARY
-						}*/
+						timeout();
 					}
-				});
-			//});
+				}
+			});
 		}catch(e){
 			console.error(e);
 		}
@@ -486,12 +409,12 @@ function updateQueue(callback){
 			if(changed.length > 0){
 				if(cv(2)){
 					var changed_numbers = [];
-					for(o of changed){
+					for(let o of changed){
 						changed_numbers.push(o.rufnummer);
 					}
 					ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,changed_numbers,colors.Reset);
 				}
-				
+
 				//if(cv(1)&&!cv(2)) ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,result1.length,colors.Reset);
 				ITelexCom.SqlQuery(pool,"SELECT * FROM servers;", function(servers){
 					async.each(servers,function(server,cb1){
@@ -552,7 +475,7 @@ function updateQueue(callback){
 			if(result1.length > 0){
 				if(cv(2)){
 					var changed_numbers = [];
-					for(o of result1){
+					for(let o of result1){
 						changed_numbers.push(o.rufnummer);
 					}
 					ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,changed_numbers,colors.Reset);
@@ -596,7 +519,7 @@ function getFullQuery(callback){
 	// var pool = mysql.createConnection(mySqlConnectionOptions);
 	//pool.connect(()=>{
 		ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
-			for(i in res){
+			for(let i in res){
 				if(res[i].addresse == config.get("FULL_QUERY_SERVER")){
 					res = res[i];
 				}
@@ -617,6 +540,7 @@ function getFullQuery(callback){
 	//});
 }
 var qwdec;	//queuewatchdog exit code
+var qwd;
 function startQWD(){
 	ll(colors.FgMagenta,"Initialising queuewatchdog!",colors.Reset);
 	qwd = cp.spawn('node',[path.join(PWD,"/BINARYSERVER/queuewatchdog.js")]);
@@ -628,12 +552,12 @@ function startQWD(){
 	});
 	qwd.stderr.on('data',function(data){
 		if(data.toString() === "pausetimeouts"){
-			for(k of Object.keys(ITelexCom.timeouts)){
+			for(let k of Object.keys(ITelexCom.timeouts)){
 				if(cv(3)) ll("pausing: "+k);
 				ITelexCom.timeouts[k].pause();
 			}
 		}else if(data.toString() === "resumetimeouts"){
-			for(k of Object.keys(ITelexCom.timeouts)){
+			for(let k of Object.keys(ITelexCom.timeouts)){
 				if(cv(3)) ll("resuming: "+k);
 				ITelexCom.timeouts[k].resume();
 			}

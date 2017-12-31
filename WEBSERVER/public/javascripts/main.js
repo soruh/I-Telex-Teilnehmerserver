@@ -1,3 +1,4 @@
+"use strict";
 /*1: peer able to support the “texting baudot” protocol, accessible by a host name (known by official DNS servers)
 2: peer able to support the “texting baudot” protocol, accessible by a given IP address (IPv4)
 3: peer only supporting “ascii texting” (or a standard telnet client), accessible by a host name (known by official DNS servers)
@@ -543,7 +544,7 @@ $(document).ready(function(){
 function checkUnique(value,element){
   var uid = $($(element).parents()[2]).data("uid")?$($(element).parents()[2]).data("uid"):false;
   var isUnique = true;
-  for(k in global_list){
+  for(let k in global_list){
     if((global_list[k].rufnummer == value)&&((!uid)||(global_list[k].uid != uid))){
       isUnique = false;
     }
@@ -650,7 +651,7 @@ function getList(callback){
       console.log(response);
       if(response.successful){
         global_list={};
-        for(k in response.result){
+        for(let k in response.result){
           global_list[response.result[k].uid]=response.result[k];
         }
       }else{
@@ -659,7 +660,7 @@ function getList(callback){
       if(typeof callback==="function") callback(global_list);
     },
     error: function(error) {
-      console.error(error);
+      console.log(error);
     }
   });
 }
@@ -670,7 +671,7 @@ function updateTable(usli,cb){
   }
   var tr = document.createElement("div");
   $(tr).addClass("tr");
-  for(b in usli[Object.keys(usli)[0]]){
+  for(let b in usli[Object.keys(usli)[0]]){
     if(b!="uid"){
       var th = document.createElement("div");
       $(th).addClass("th cell cell_"+b);
@@ -719,10 +720,10 @@ function updateContent(usli){
   while(table.children.length > 1){
     table.removeChild(table.lastChild);
   }
-  for(a in list){
+  for(let a in list){
     var tr = document.createElement("div");
     $(tr).addClass("tr");
-    for(b in list[a]){
+    for(let b in list[a]){
       if(b!="uid"){
         var td = document.createElement("div");
         $(td).addClass("td cell cell_"+b);
@@ -818,7 +819,7 @@ function removeButtonClick(){
     text: languages[language].delete_message
   };
   jQuery('<div/>', div).appendTo("#delete_dialog_label_container");
-  for(k in global_list[uid]){
+  for(let k in global_list[uid]){
     var div = {
       id: k+"_delete_dialog_label",
       class: "delete_dialog_label"
@@ -843,30 +844,31 @@ function edit(vals, cb){
     success: function(response){
       getList(updateTable);
       if(cb) cb(response.message,null);
-      if((response.message.code!=1)&&(response.message.code!=-1)) $("#log").html(JSON.stringify(response.message));
+      if((response.message.code!=1)&&(response.message.code!=-1)) $("#log").text(JSON.stringify(response.message));
       if(!response.successful){
-        console.error(response.message);
+        console.log(response.message);
       }
     },
     error: function(error){
-      $("#log").html(JSON.stringify(error));
+      console.error(error);
+      $("#log").text(JSON.stringify(error));
       if(cb) cb(null,error);
     }
   });
 }
 function search(list,str){
   var returnlist = [];
-  for(row of list){
+  for(let row of list){
     var matches = true;
     var rowstr = "";
-    for(key in row){
+    for(let key in row){
       if((key==="moddate")&&(!UTCDATE)){
         rowstr += UtcToString(row[key])+" ";
       }else{
         rowstr += row[key]+" ";
       }
     }
-    for(i in str.split(" ")){
+    for(let i in str.split(" ")){
       var word = str.split(" ")[i];
       if(!(new RegExp(word.replace(/[:.?*+^$[\]\\(){}|-]/g, "\\$&"),"gi").test(rowstr))){
         matches = false;
@@ -882,14 +884,14 @@ function sortFunction(x,y){
 }
 function sort(usli){
   var sortable=[];
-  for(k in usli){
+  for(let k in usli){
     sortable[sortable.length]=usli[k];
   }
   if(sortby === ""){
     return(sortable);
   }else{
     var iskey = false;
-    for(k in usli[Object.keys(usli)[0]]){
+    for(let k in usli[Object.keys(usli)[0]]){
       if(k === sortby){
         iskey = true;
       }
@@ -898,7 +900,7 @@ function sort(usli){
       var soli = sortable.sort(sortFunction);
       if(revsort){
         var revsoli = [];
-        for(i=soli.length-1;i>=0;i--){
+        for(let i=soli.length-1;i>=0;i--){
           revsoli[revsoli.length] = soli[i];
         }
         return(revsoli);
@@ -916,7 +918,7 @@ function initloc(){
     $("#loc-dropdown-children").fadeToggle(300);
   });
 
-  for(i in languages){
+  for(let i in languages){
     var child = document.createElement("div");
     child.id="loc-dropdown-child-"+i;
     child.style="background-image:url(/images/"+i+".svg);";
@@ -936,8 +938,8 @@ function setLanguage(l){
   }
 }
 function updateLoc(){
-  for(i in languages[language]){
-    for(property in languages[language][i]){
+  for(let i in languages[language]){
+    for(let property in languages[language][i]){
       switch(property){
         case "html":
         $(i).html(languages[language][i][property]);
@@ -970,7 +972,7 @@ function setCookie(c_name,value,exdays){
 }
 function getCookie(c_name){
   var i,x,y,ARRcookies=document.cookie.split(";");
-  for (i=0;i<ARRcookies.length;i++){
+  for(let i=0;i<ARRcookies.length;i++){
     x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
     y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
     x=x.replace(/^\s+|\s+$/g,"");

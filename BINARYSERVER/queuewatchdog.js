@@ -1,4 +1,5 @@
-if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
+"use strict";
+if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[37m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[37m":"\x1b[33m"+load_order[i]+"\x1b[37m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
@@ -22,11 +23,11 @@ pool.getConnection(function(err, connection){
 });
 
 var handles = {};
-for(i=1;i<=10;i++){handles[i] = {};}
+for(let i=1;i<=10;i++){handles[i] = {};}
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
 	if(cv(2)){
 		var toSend = [];
-		for(o of ITelexCom.connections[cnum].writebuffer){
+		for(let o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
 		if(cv(2)) ll("writebuffer:",colors.FgBlue,toSend,colors.Reset);
@@ -72,12 +73,12 @@ process.stdin.on('data',function(data){
 	if(data.toString() === "sendqueue"){
 		ITelexCom.SendQueue(pool,handles);
 	}else if(data.toString() === "pausetimeouts"){
-		for(k of Object.keys(ITelexCom.timeouts)){
+		for(let k of Object.keys(ITelexCom.timeouts)){
 			if(cv(3)) ll("pausing: "+k);
 			ITelexCom.timeouts[k].pause();
 		}
 	}else if(data.toString() === "resumetimeouts"){
-		for(k of Object.keys(ITelexCom.timeouts)){
+		for(let k of Object.keys(ITelexCom.timeouts)){
 			if(cv(3)) ll("resuming: "+k);
 			ITelexCom.timeouts[k].resume();
 		}
