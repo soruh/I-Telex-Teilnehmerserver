@@ -482,6 +482,72 @@ function init(){
 }
 function updateQueue(callback){
 		if(cv(2)) ll(colors.FgGreen+"Updating Queue!"+colors.Reset);
+		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE changed = "+1, function(changed){
+			if(changed.length > 0){
+				if(cv(2)){
+					var changed_numbers = [];
+					for(o of changed){
+						changed_numbers.push(o.rufnummer);
+					}
+					ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,changed_numbers,colors.Reset);
+				}
+				
+				//if(cv(1)&&!cv(2)) ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,result1.length,colors.Reset);
+				ITelexCom.SqlQuery(pool,"SELECT * FROM servers;", function(servers){
+					async.each(servers,function(server,cb1){
+						async.each(changed,function(message,cb2){
+							ITelexCom.SqlQuery(pool,"SELECT * FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(qentry){
+								if(qentry.length == 1){
+									ITelexCom.SqlQuery(pool,"UPDATE queue SET timestamp = "+Math.floor(new Date().getTime()/1000)+" WHERE server = "+server.uid+" AND message = "+message.uid,function(){
+										ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(result3){
+											if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
+											cb2();
+										});
+									});
+								}else if(qentry.length == 0){
+									ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
+										ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(result3){
+											if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
+											cb2();
+										});
+									});
+								}else{
+									console.error("duplicate queue entry!");
+									ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(qentry){
+										ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
+											ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(result3){
+												if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
+												cb2();
+											});
+										});
+									});
+								}
+							});
+						},cb1);
+					},function(){
+						//pool.end(()=>{
+							qwd.stdin.write("sendqueue");
+							//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+							if(typeof callback === "function") callback();
+						//});
+					});
+				});
+			}else{
+				if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
+				if(qwdec == null){
+					qwdec = "unknown";
+					qwd.stdin.write("sendqueue",callback);
+				}else{
+					if(typeof callback === "function") callback();
+				}
+				//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+			}
+		});
+	//});
+}
+/*
+function updateQueue(callback){
+		if(cv(2)) ll(colors.FgGreen+"Updating Queue!"+colors.Reset);
 		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE changed = "+1, function(result1){
 			if(result1.length > 0){
 				if(cv(2)){
@@ -499,7 +565,7 @@ function updateQueue(callback){
 								ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
 									ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(result3){
 										if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
-										cb2();
+										cb2();//TODO
 									});
 								});
 							});
@@ -524,7 +590,8 @@ function updateQueue(callback){
 			}
 		});
 	//});
-} //TODO: call!
+}
+*/
 function getFullQuery(callback){
 	// var pool = mysql.createConnection(mySqlConnectionOptions);
 	//pool.connect(()=>{
