@@ -184,7 +184,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 					values+=mysql.escape(o[k])+", ";
 				}
 			}
-			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+",changed) VALUES ("+values.substring(0, values.length - 2)+",0);";
+			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
 			ITelexCom.SqlQuery(pool,q,function(res2){
 				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
 			});
@@ -239,7 +239,7 @@ handles[5][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles,c
 						values+=mysql.escape(o[k])+", ";
 					}
 				}
-				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+",changed) VALUES ("+values.substring(0, values.length - 2)+",0);";
+				var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
 				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
 				});
