@@ -79,7 +79,7 @@ router.post('/edit', function(req, res){
                 if(list[0].rufnummer!=req.body.rufnummer){
                   /*"UPDATE teilnehmer SET rufnummer="+mysql.escape(req.body.rufnummer)+",name="+mysql.escape(req.body.name)+",typ="+mysql.escape(req.body.typ)+",hostname="+mysql.escape(req.body.hostname)+",ipaddresse="+mysql.escape(req.body.ipaddresse)+",port="+mysql.escape(req.body.port)+",extension="+mysql.escape(req.body.extension)+",gesperrt="+mysql.escape(req.body.gesperrt)+", moddate="+mysql.escape(Math.floor(new Date().getTime()/1000))
                   +" WHERE uid="+mysql.escape(req.body.uid),*/
-                  pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(list[0].rufnummer)+","+mysql.escape(list[0].name)+",0,"+mysql.escape(list[0].hostname)+","+mysql.escape(list[0].ipaddresse)+","+mysql.escape(list[0].port)+","+mysql.escape(list[0].extension)+","+mysql.escape(list[0].pin)+","+mysql.escape(list[0].gesperrt)+","+mysql.escape(Math.floor(new Date().getTime()/1000))+",'0')",function(err, result){
+                  pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES ("+mysql.escape(list[0].rufnummer)+","+mysql.escape(list[0].name)+",0,"+mysql.escape(list[0].hostname)+","+mysql.escape(list[0].ipaddresse)+","+mysql.escape(list[0].port)+","+mysql.escape(list[0].extension)+","+mysql.escape(list[0].pin)+","+mysql.escape(list[0].gesperrt)+","+mysql.escape(Math.floor(new Date().getTime()/1000))+",'1')",function(err, result){
                     console.log(err, list);
                     if(err){
                       success = false;
