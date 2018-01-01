@@ -806,7 +806,11 @@ function editButtonClick(){
   $("#rufnummer_edit_dialog").val(global_list[uid].rufnummer).trigger('change');
   $("#name_edit_dialog").val(global_list[uid].name).trigger('change');
   $("#typ_edit_dialog").val(global_list[uid].typ).trigger('change');
-  $("#hostname_edit_dialog").val(global_list[uid].hostname).trigger('change');
+  if(global_list[uid].typ == 6){
+    $("#email_edit_dialog").val(global_list[uid].hostname).trigger('change');
+  }else{
+    $("#hostname_edit_dialog").val(global_list[uid].hostname).trigger('change');
+  }
   $("#ipaddresse_edit_dialog").val(global_list[uid].ipaddresse).trigger('change');
   $("#port_edit_dialog").val(global_list[uid].port).trigger('change');
   $("#durchwahl_edit_dialog").val(global_list[uid].extension).trigger('change');
