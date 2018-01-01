@@ -61,10 +61,10 @@ router.post('/edit', function(req, res){
       case "edit":
         var message = [];
         var success = true;
-        pool.query("SELECT * FROM teilnehmer WHERE;", function(err, list){
-          
-          for(let l in list){
-
+        pool.query("SELECT * FROM teilnehmer;", function(err, r){
+          let list = [];
+          for(let l of r){
+            if(l.uid == req.body.uid) list.push(l);
           }
           console.log(err, list);
           if(err){
