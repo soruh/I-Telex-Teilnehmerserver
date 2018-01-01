@@ -437,6 +437,11 @@ $(document).ready(function(){
       errorClass: "validate_error",
       validClass: "validate_valid",
       rules:{
+        typ:{
+          required: true,
+          digits: true,
+          min: 1
+        },
         durchwahl:{
           digits: true
         },
