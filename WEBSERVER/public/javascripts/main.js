@@ -545,7 +545,7 @@ function checkUnique(value,element){
   var uid = $($(element).parents()[2]).data("uid")?$($(element).parents()[2]).data("uid"):false;
   var isUnique = true;
   for(let k in global_list){
-    if((global_list[k].rufnummer == value)&&((!uid)||(global_list[k].uid != uid))){
+    if((global_list[k].rufnummer == value)&&((!uid)||(global_list[k].uid != uid))&&(global_list[k].typ!=0)){
       isUnique = false;
     }
   }

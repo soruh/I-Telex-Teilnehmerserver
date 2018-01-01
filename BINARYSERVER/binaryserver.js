@@ -76,9 +76,15 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				let mailOptions = {
 		        from: config.get("EMAIL").from,
 		        to: config.get("EMAIL").to,
-		        subject: config.get("EMAIL").messages.wrongDynIpPin.subject,
-		        html: config.get("EMAIL").messages.wrongDynIpPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date())
+		        subject: config.get("EMAIL").messages.wrongDynIpPin.subject
 		    };
+        if(mailOptions.text){
+          mailOptions.text = config.get("EMAIL").messages.wrongDynIpPin.text;
+        }else if(mailOptions.html){
+          mailOptions.html = config.get("EMAIL").messages.wrongDynIpPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date());
+        }else{
+          mailOptions.text = "configuration error in config.json";
+        }
 				if(cv(2)) ll("sending mail:",mailOptions);
 				transporter.sendMail(mailOptions, function(error, info){
 		        if (error) {
@@ -98,9 +104,15 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 					let mailOptions = {
 			        from: config.get("EMAIL").from,
 			        to: config.get("EMAIL").to,
-			        subject: config.get("EMAIL").messages.new.subject,
-			        html: config.get("EMAIL").messages.new.html.replace(/(\[number\])/g,number).replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date())
+			        subject: config.get("EMAIL").messages.new.subject
 			    };
+          if(mailOptions.text){
+            mailOptions.text = config.get("EMAIL").messages.new.text;
+          }else if(mailOptions.html){
+            mailOptions.html = config.get("EMAIL").messages.new.html.replace(/(\[number\])/g,number).replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date());
+          }else{
+            mailOptions.text = "configuration error in config.json";
+          }
 					if(cv(2)) ll("sending mail:",mailOptions);
 					transporter.sendMail(mailOptions, function(error, info){
 			        if (error) {
@@ -214,9 +226,15 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		let mailOptions = {
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
-				subject: config.get("EMAIL").messages.wrongServerPin.subject,
-        html: config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date())
+				subject: config.get("EMAIL").messages.wrongServerPin.subject
 		};
+    if(mailOptions.text){
+      mailOptions.text = config.get("EMAIL").messages.wrongServerPin.text;
+    }else if(mailOptions.html){
+      mailOptions.html = config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date());
+    }else{
+      mailOptions.text = "configuration error in config.json";
+    }
 		if(cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
 				if (error) {
@@ -244,9 +262,15 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		let mailOptions = {
 				from: config.get("EMAIL").from,
 				to: config.get("EMAIL").to,
-				subject: config.get("EMAIL").messages.wrongServerPin.subject,
-        html: config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date())
+				subject: config.get("EMAIL").messages.wrongServerPin.subject
 		};
+    if(mailOptions.text){
+      mailOptions.text = config.get("EMAIL").messages.wrongServerPin.text;
+    }else if(mailOptions.html){
+      mailOptions.html = config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date());
+    }else{
+      mailOptions.text = "configuration error in config.json";
+    }
 		if(cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
 				if (error) {

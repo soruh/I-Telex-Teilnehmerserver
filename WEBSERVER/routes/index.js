@@ -61,7 +61,11 @@ router.post('/edit', function(req, res){
       case "edit":
         var message = [];
         var success = true;
-        pool.query("SELECT * FROM teilnehmer WHERE uid="+mysql.escape(req.body.uid)+";", function(err, list){
+        pool.query("SELECT * FROM teilnehmer WHERE;", function(err, list){
+          
+          for(let l in list){
+
+          }
           console.log(err, list);
           if(err){
             success = false;
@@ -98,13 +102,27 @@ router.post('/edit', function(req, res){
         });
         break;
       case "new":
-        pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+mysql.escape(req.body.rufnummer)+","+mysql.escape(req.body.name)+","+mysql.escape(req.body.typ)+","+mysql.escape(req.body.hostname)+","+mysql.escape(req.body.ipaddresse)+","+mysql.escape(req.body.port)+","+mysql.escape(req.body.extension)+","+mysql.escape(req.body.pin)+","+mysql.escape(req.body.gesperrt)+","
-        +mysql.escape(Math.floor(new Date().getTime()/1000))+")",
-         function (err, result) {
+        pool.query("SELECT * FROM teilnehmer;",function(err, teilnehmer){
           if(err){
             res.json({successful:false,message:err});
           }else{
-            res.json({successful:true,message:result});
+            let exists = false;
+            for(let t of teilnehmer){
+              if(t.rufnummer == req.body.rufnummer) exists = true;
+            }
+            if(!exists){
+              pool.query("INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+mysql.escape(req.body.rufnummer)+","+mysql.escape(req.body.name)+","+mysql.escape(req.body.typ)+","+mysql.escape(req.body.hostname)+","+mysql.escape(req.body.ipaddresse)+","+mysql.escape(req.body.port)+","+mysql.escape(req.body.extension)+","+mysql.escape(req.body.pin)+","+mysql.escape(req.body.gesperrt)+","
+              +mysql.escape(Math.floor(new Date().getTime()/1000))+")",
+              function (err, result) {
+                if(err){
+                  res.json({successful:false,message:err});
+                }else{
+                  res.json({successful:true,message:result});
+                }
+              });
+            }else{
+              res.json({successful:false,message:"already exists"});
+            }
           }
         });
         break;
