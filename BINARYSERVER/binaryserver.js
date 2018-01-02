@@ -311,7 +311,7 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
   if(typeof ITelexCom.connections[cnum].cb === "function") ITelexCom.connections[cnum].cb();
-	if(typeof ITelexCom.connections[cnum].cb === "function") ITelexCom.connections[cnum].cb();
+	if(typeof cb === "function") cb();
   connection.end();
 };
 handles[9][ITelexCom.states.LOGIN] = handles[9][ITelexCom.states.FULLQUERY];
@@ -484,13 +484,14 @@ function updateQueue(callback){
 				});
 			}else{
 				if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
-				if(qwdec == null){
+				/*if(qwdec == null){
 					qwdec = "unknown";
 					//TODO qwd.stdin.write("sendqueue",callback);
           if(typeof callback === "function") callback();
 				}else{
-					if(typeof callback === "function") callback();
-				}
+          if(typeof callback === "function") callback();
+				}*/
+        if(typeof callback === "function") callback();
 				//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 			}
 		});
@@ -718,25 +719,9 @@ pool.getConnection(function(err, connection){
 			init();
 			//getFullQuery();
 			//updateQueue();
-      function a(){
-        console.log("a");
-        setTimeout(getFullQuery, config.get("FULLQUERYINTERVAL"),a);
-      }
-      function b(){
-        console.log("b");
-        setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"),b);
-      }
-      function c(){
-        console.log("c");
-        setTimeout(SendQueue,config.get("QUEUE_SEND_INTERVAL"),c);
-      }
-      //a();
-      //b();
-      c();
-			/*ITelexCom.TimeoutWrapper(getFullQuery, config.get("FULLQUERYINTERVAL"),qwd.stdin);
-			ITelexCom.TimeoutWrapper(updateQueue,config.get("UPDATEQUEUEINTERVAL"),qwd.stdin);
-      ITelexCom.TimeoutWrapper(ITelexCom.SendQueue,config.get("QUEUE_SEND_INTERVAL"),process.stderr,pool,handles);//TODO*/
-			//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+      ITelexCom.TimeoutWrapper(getFullQuery, config.get("FULLQUERYINTERVAL"));
+      ITelexCom.TimeoutWrapper(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
+      ITelexCom.TimeoutWrapper(SendQueue,config.get("QUEUE_SEND_INTERVAL"));
 		}else{
 			module.exports = {
 				init:init,

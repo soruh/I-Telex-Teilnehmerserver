@@ -50,9 +50,9 @@ function Timer(fn, countdown){
     this.start_time = new Date().getTime();
     ident = setTimeout(fn, countdown);
 
-    return { cancel: cancel, pause: pause, resume: resume, complete: false, start_time:this.start_time};
+    return {cancel:cancel,pause:pause,resume:resume,complete:false,start_time:this.start_time};
 }
-function TimeoutWrapper(fn, countdown, pipe){
+function TimeoutWrapper(fn, countdown){
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
 	var args = [];
 	for(let i in arguments){
@@ -60,25 +60,20 @@ function TimeoutWrapper(fn, countdown, pipe){
 	}
 	args.push(function(){
 		if(cv(3)) ll(colors.FgMagenta+"callback for timeout: "+colors.FgCyan+fnName+colors.Reset);
-		//ll(timeouts)
-		pipe.write("resumetimeouts");
 		for(let k of Object.keys(timeouts)){
-			//console.log(k,timeouts[k]);
 			if(timeouts[k].complete){
 				timeouts[k].start_time = new Date().getTime();
 				if(cv(3)) ll(colors.FgMagenta+"restarted timeout for: "+colors.FgCyan+fnName+colors.Reset);
 			}
 			timeouts[k].resume();
 		}
-		//TimeoutWrapper(fn, countdown, timeouts);
 	});
 	if(cv(1)) ll(colors.FgMagenta+"set timeout for: "+colors.FgCyan+fnName+colors.FgMagenta+" to "+colors.FgCyan+countdown+colors.FgMagenta+"ms"+colors.Reset);
 	timeouts[fnName] = new Timer(function(){
-		pipe.write("pausetimeouts");
 		for(let k of Object.keys(timeouts)){
 			timeouts[k].pause();
 		}
-		if(cv(3)) ll(colors.FgMagenta+"called: "+colors.FgCyan+fnName+colors.FgMagenta+" with: "+colors.FgCyan,args,colors.Reset);
+		if(cv(3)) ll(colors.FgMagenta+"called: "+colors.FgCyan+fnName+colors.FgMagenta+" with: "+colors.FgCyan,args.slice(1),colors.Reset);
 		fn.apply(null,args);
 	},countdown);
 }
