@@ -26,16 +26,16 @@ var connections = {};	//list of active connections
 
 var timeouts = {};
 function Timer(fn, countdown){
-    var ident;
+    var timout;
     function _time_diff(date1, date2){
       return date2 ? date2 - date1 : new Date().getTime() - date1;
     }
     function cancel(){
-    	clearTimeout(ident);
+    	clearTimeout(timout);
     }
     function pause(){
 			this.paused = true;
-      clearTimeout(ident);
+      clearTimeout(timout);
       this.total_time_run = _time_diff(this.start_time);
       this.complete = this.total_time_run >= countdown;
 			this.remaining = countdown - this.total_time_run;
@@ -45,10 +45,10 @@ function Timer(fn, countdown){
 			this.total_time_run = _time_diff(this.start_time);
 			this.complete = this.total_time_run >= countdown;
 			this.remaining = countdown - this.total_time_run;
-      ident = this.complete ? -1 : setTimeout(fn, this.remaining);
+      timout = this.complete ? -1 : setTimeout(fn, this.remaining);
     }
     this.start_time = new Date().getTime();
-    ident = setTimeout(fn, countdown);
+    timout = setTimeout(fn, countdown);
 
     return {cancel:cancel,pause:pause,resume:resume,complete:false,start_time:this.start_time};
 }
