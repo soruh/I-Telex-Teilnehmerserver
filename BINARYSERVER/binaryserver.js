@@ -4,6 +4,7 @@ const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
 const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
+const lle = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).lle;
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
@@ -88,7 +89,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				if(cv(2)) ll("sending mail:",mailOptions);
 				transporter.sendMail(mailOptions, function(error, info){
 		        if (error) {
-		            return console.error(error);
+		            return lle(error);
 		        }
 		        if(cv(1)) ll('Message sent:', info.messageId);
 		        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
@@ -98,7 +99,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		}else{
 			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1','1');",function(result_b, err){
 				if(err){
-					console.error(colors.FgRed+"could not create entry",err,colors.Reset);
+					lle(colors.FgRed+"could not create entry",err,colors.Reset);
 					if(typeof cb === "function") cb();
 				}else{
 					let mailOptions = {
@@ -116,7 +117,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 					if(cv(2)) ll("sending mail:",mailOptions);
 					transporter.sendMail(mailOptions, function(error, info){
 			        if (error) {
-			            return console.error(error);
+			            return lle(error);
 			        }
 			        if(cv(1)) ll('Message sent:', info.messageId);
 			        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
@@ -238,7 +239,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		if(cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
 				if (error) {
-						return console.error(error);
+						return lle(error);
 				}
 				if(cv(1)) ll('Message sent:', info.messageId);
 				if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
@@ -274,7 +275,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		if(cv(2)) ll("sending mail:",mailOptions);
 		transporter.sendMail(mailOptions, function(error, info){
 				if (error) {
-						return console.error(error);
+						return lle(error);
 				}
 				if(cv(1)) ll('Message sent:', info.messageId);
 				if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
@@ -309,13 +310,11 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 };
 handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
-	ITelexCom.connections[cnum].cb();
-	if(typeof cb === "function") cb();
+  if(typeof ITelexCom.connections[cnum].cb === "function") ITelexCom.connections[cnum].cb();
+	if(typeof ITelexCom.connections[cnum].cb === "function") ITelexCom.connections[cnum].cb();
+  connection.end();
 };
-handles[9][ITelexCom.states.LOGIN] = function(obj,cnum,pool,connection,handles,cb){
-	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
-	if(typeof cb === "function") cb();
-};
+handles[9][ITelexCom.states.LOGIN] = handles[9][ITelexCom.states.FULLQUERY];
 handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	if(cv(2)) ll(obj);
 	var version = obj.data.version;
@@ -348,13 +347,13 @@ function init(){
 	var server = net.createServer(function(connection){
 		try{
 			var cnum = -1;
-			for(let i = 0;i<ITelexCom.connections.length;i++){
-				if(ITelexCom.connections[i] == null){
+			for(let i = 0;i<Object.keys(ITelexCom.connections).length;i++){
+				if(!ITelexCom.connections.hasOwnProperty(i)){
 					cnum = i;
 				}
 			}
 			if(cnum == -1){
-				cnum = ITelexCom.connections.length;
+				cnum = Object.keys(ITelexCom.connections).length;
 			}
 			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false};
 			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset); //.replace(/^.*:/,'')
@@ -366,13 +365,17 @@ function init(){
 			    connection.destroy();
 					connection.end();
 			})
-			connection.on('end', function() {
+			connection.on('end', function(){
 				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
-				if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections[cnum] = null;
+				if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
+          delete ITelexCom.connections[cnum];
+        }
 			});
 			connection.on('error', function(err) {
 				if(cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
-				if(ITelexCom.connections[cnum].connection = connection) ITelexCom.connections[cnum] = null;
+        if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
+          delete ITelexCom.connections[cnum];
+        }
 			});
 			connection.on('data', function(data) {
 				if(cv(2)){
@@ -420,7 +423,7 @@ function init(){
 				}
 			});
 		}catch(e){
-			console.error(e);
+			lle(e);
 		}
 	});
 	server.listen(config.get("BINARYPORT"), function(){
@@ -459,7 +462,7 @@ function updateQueue(callback){
 										});
 									});
 								}else{
-									console.error("duplicate queue entry!");
+									lle("duplicate queue entry!");
 									ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(){
 										ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
 											ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
@@ -473,7 +476,7 @@ function updateQueue(callback){
 						},cb1);
 					},function(){
 						//pool.end(()=>{
-							qwd.stdin.write("sendqueue");
+							//TODO qwd.stdin.write("sendqueue");
 							//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 							if(typeof callback === "function") callback();
 						//});
@@ -483,7 +486,8 @@ function updateQueue(callback){
 				if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
 				if(qwdec == null){
 					qwdec = "unknown";
-					qwd.stdin.write("sendqueue",callback);
+					//TODO qwd.stdin.write("sendqueue",callback);
+          if(typeof callback === "function") callback();
 				}else{
 					if(typeof callback === "function") callback();
 				}
@@ -491,6 +495,119 @@ function updateQueue(callback){
 			}
 		});
 	//});
+}
+function getFullQuery(callback){
+	// var pool = mysql.createConnection(mySqlConnectionOptions);
+	//pool.connect(()=>{
+		ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
+			for(let i in res){
+				if(res[i].addresse == config.get("FULL_QUERY_SERVER")){
+					res = res[i];
+				}
+			}
+			async.eachSeries(res,function(r,cb){
+				ITelexCom.connect(pool,function(e){
+					try{cb()}catch(e){}
+				},{port:r.port,host:r.addresse},handles,function(client,cnum){
+					client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
+						ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
+						ITelexCom.connections[cnum].cb = cb;
+					});
+				});
+			},function(){
+				if(typeof callback === "function") callback();
+			});
+		});
+	//});
+}
+function SendQueue(callback){
+	if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
+	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
+		ITelexCom.SqlQuery(pool,"SELECT * FROM queue;",function(results){
+			if(results.length>0){
+				var servers = {};
+				for(let i in results){
+					if(!servers[results[i].server]){
+						servers[results[i].server] = [];
+					}
+					servers[results[i].server][servers[results[i].server].length] = results[i];
+				}
+				//if(cv(2)) ll(colors.BgMagenta,colors.FgBlack,servers,colors.Reset);
+				async.eachSeries(servers,function(server,cb){
+					//if(cv(2)) ll(colors.FgMagenta,server,colors.Reset);
+					ITelexCom.SqlQuery(pool,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
+						if(result2.length==1){
+							var serverinf = result2[0];
+							if(cv(2)) ll(colors.FgCyan,serverinf,colors.Reset);
+							try{
+								var isConnected = false;
+								for(let key in ITelexCom.connections){
+                  if(ITelexCom.connections.hasOwnProperty(key)){
+                    var c = ITelexCom.connections[key];
+                  }
+									if(c.servernum == server[0].server){
+										var isConnected = true;
+									}
+								}
+								if(!isConnected){
+									ITelexCom.connect(pool,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
+										ITelexCom.connections[cnum].servernum = server[0].server;
+										if(cv(1)) ll(colors.FgGreen+'connected to server '+server[0].server+': '+serverinf.addresse+" on port "+serverinf.port+colors.Reset);
+										ITelexCom.connections[cnum].writebuffer = [];
+										async.each(server,function(serverdata,scb){
+											if(cv(2)) ll(colors.FgCyan,serverdata,colors.Reset);
+											/*SqlQuery(pool,"SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",function(result3){
+												connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
+												scb();
+											});*/
+											var exists = false;
+											for(let t of teilnehmer){
+												if(t.uid == serverdata.message){
+													ITelexCom.connections[cnum].writebuffer.push(t);
+													exists = true;
+												}
+											}
+											if(!exists){
+												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res){
+													if(res.affectedRows > 0){
+														if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
+														scb();
+													}else{
+                            if(cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgRed+" from queue"+colors.Reset);
+                            scb();
+                          }
+												});
+											}else{
+												scb();
+											}
+										},function(){
+											client.write(ITelexCom.encPackage({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
+												ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
+												cb();
+											});
+										});
+									});
+								}else{
+									if(cv(1)) ll(colors.FgYellow+"already connected to server "+server[0].server+colors.Reset);
+                  cb();
+								}
+							}catch(e){
+								if(cv(2)) lle(e);
+								cb();
+							}
+						}else{
+							ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE server="+server[0].server+";",cb);
+						}
+					});
+				},function(){
+					if(typeof callback === "function") callback();
+				});
+			}else{
+				if(cv(2)) ll(colors.FgYellow,"No queue!",colors.Reset);
+				if(typeof callback === "function") callback();
+			}
+		});
+	});
 }
 /*
 function updateQueue(callback){
@@ -519,7 +636,7 @@ function updateQueue(callback){
 						},cb1);
 					},function(){
 						//pool.end(()=>{
-							qwd.stdin.write("sendqueue");
+							//TODO qwd.stdin.write("sendqueue");
 							//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 							if(typeof callback === "function") callback();
 						//});
@@ -529,7 +646,7 @@ function updateQueue(callback){
 				if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
 				if(qwdec == null){
 					qwdec = "unknown";
-					qwd.stdin.write("sendqueue",callback);
+					//TODO qwd.stdin.write("sendqueue",callback);
 				}else{
 					if(typeof callback === "function") callback();
 				}
@@ -539,30 +656,7 @@ function updateQueue(callback){
 	//});
 }
 */
-function getFullQuery(callback){
-	// var pool = mysql.createConnection(mySqlConnectionOptions);
-	//pool.connect(()=>{
-		ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
-			for(let i in res){
-				if(res[i].addresse == config.get("FULL_QUERY_SERVER")){
-					res = res[i];
-				}
-			}
-			async.eachSeries(res,function(r,cb){
-				ITelexCom.connect(pool,function(e){
-					try{cb()}catch(e){}
-				},{port:r.port,host:r.addresse},handles,function(client,cnum){
-					client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
-						ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
-						ITelexCom.connections[cnum].cb = cb;
-					});
-				});
-			},function(){
-				if(typeof callback === "function") callback();
-			});
-		});
-	//});
-}
+/*
 var qwdec;	//queuewatchdog exit code
 var qwd;
 function startQWD(){
@@ -570,7 +664,7 @@ function startQWD(){
 	qwd = cp.spawn('node',[path.join(PWD,"/BINARYSERVER/queuewatchdog.js")]);
 	qwd.on('exit',function(ec){
 		qwdec = ec;
-		if(cv(0)) console.error(colors.FgRed+"qwd process exited with code "+colors.FgCyan+ec+colors.Reset);
+		if(cv(0)) lle(colors.FgRed+"qwd process exited with code "+colors.FgCyan+ec+colors.Reset);
 		//throw "qwd process exited with code "+ec;
 		startQWD();
 	});
@@ -609,23 +703,39 @@ function startQWD(){
 		}
 	});
 }
-
+*/
 
 var pool = mysql.createPool(mySqlConnectionOptions); //TODO: pool(to many open connections)
 pool.getConnection(function(err, connection){
 	if(err){
-		console.error(colors.FgRed,"Could not connect to database!",colors.Reset);
+		lle(colors.FgRed,"Could not connect to database!",colors.Reset);
 		throw err;
 	}else{
 		connection.release();
 		if(module.parent === null){
 			if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
-			startQWD();
+			//startQWD();
 			init();
-			getFullQuery();
+			//getFullQuery();
 			//updateQueue();
-			ITelexCom.TimeoutWrapper(getFullQuery, config.get("FULLQUERYINTERVAL"),qwd.stdin)
+      function a(){
+        console.log("a");
+        setTimeout(getFullQuery, config.get("FULLQUERYINTERVAL"),a);
+      }
+      function b(){
+        console.log("b");
+        setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"),b);
+      }
+      function c(){
+        console.log("c");
+        setTimeout(SendQueue,config.get("QUEUE_SEND_INTERVAL"),c);
+      }
+      //a();
+      //b();
+      c();
+			/*ITelexCom.TimeoutWrapper(getFullQuery, config.get("FULLQUERYINTERVAL"),qwd.stdin);
 			ITelexCom.TimeoutWrapper(updateQueue,config.get("UPDATEQUEUEINTERVAL"),qwd.stdin);
+      ITelexCom.TimeoutWrapper(ITelexCom.SendQueue,config.get("QUEUE_SEND_INTERVAL"),process.stderr,pool,handles);//TODO*/
 			//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 		}else{
 			module.exports = {

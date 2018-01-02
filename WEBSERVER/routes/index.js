@@ -21,6 +21,7 @@ pool.getConnection(function(err, connection){
 		console.error(colors.FgRed,"could not connect to database!",colors.Reset);
 		throw err;
 	}else{
+    console.error(colors.FgGreen,"connected to database!",colors.Reset);
 		connection.release();
 	}
 });
@@ -59,7 +60,6 @@ router.post('/edit', function(req, res){
   if(req.body.password==config.get("WEBINTERFACEPASSWORD")){
     switch(req.body.typekey){
       case "edit":
-      const pool = mysql.createPool(mySqlConnectionOptions);
         pool.query("SELECT * FROM teilnehmer;", function(err, r){
           if(err){
             res.json({successful:false,message:err});

@@ -22,7 +22,7 @@ const LOGIN = 3;
 const stateNames = {0:"standby",1:"responding",2:"performing fullquery",3:"performing login"};
 const PackageNames = {1:"Client_update",2:"Address_confirm",3:"Peer_query",4:"Peer_not_found",5:"Peer_reply",6:"Sync_FullQuery",7:"Sync_Login",8:"Acknowledge",9:"End_of_List",10:"Peer_search"};
 //</STATES>
-var connections = [];	//list of active connections
+var connections = {};	//list of active connections
 
 var timeouts = {};
 function Timer(fn, countdown){
@@ -87,17 +87,16 @@ function connect(pool,onEnd,options,handles,callback){
 	if(cv(2)) ll(colors.FgGreen,"trying to connect to:"+colors.FgCyan,options,colors.Reset);
 	try{
 		var socket = new net.Socket();
-		var cnum = -1;
-		for(let i=0;i<connections.length;i++){
-			if(connections[i] == null){
-				cnum = i;
-			}
-		}
-		if(cnum == -1){
-			cnum = connections.length;
-		}
+    var cnum = -1;
+    for(let i = 0;i<Object.keys(connections).length;i++){
+      if(!connections.hasOwnProperty(i)){
+        cnum = i;
+      }
+    }
+    if(cnum == -1){
+      cnum = Object.keys(connections).length;
+    }
 		connections[cnum] = {connection:socket,readbuffer:[],state:STANDBY,packages:[],handling:false};
-
 		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
 		socket.on('timeout', function(){
 		    socket.destroy();
@@ -151,35 +150,35 @@ function connect(pool,onEnd,options,handles,callback){
 			}
 			if(connections[cnum].connection = socket) connections.splice(cnum,1);
 			try{
-				onEnd();
+				try{onEnd();}catch(e){}
 			}catch(e){
-				if(cv(2)) console.error(e);
+				if(cv(2)) lle(e);
 			}
 		});
 		socket.on('end',function(){
-			if(connections[cnum].connection = socket) connections.splice(cnum,1);
+			if(connections[cnum].connection = socket) delete connections[cnum];
 			try{
-				onEnd();
+				try{onEnd();}catch(e){}
 			}catch(e){
-				if(cv(2)) console.error(e);
+				if(cv(2)) lle(e);
 			}
 		});
 		socket.connect(options,function(connection){
 			return(callback(socket,cnum));
 		});
 	}catch(e){
-		if(cv(2)) console.error(e);
+		if(cv(2)) lle(e);
 		//cb();
 	}
 }
 function handlePackage(obj,cnum,pool,connection,handles,cb){
 	if(!obj){
-		if(cv(0)) console.error(colors.FgRed+"no package to handle"+colors.Reset);
+		if(cv(0)) lle(colors.FgRed+"no package to handle"+colors.Reset);
 		if(typeof cb === "function") cb();
 	}else{
 		if(cv(2)) ll(colors.FgGreen+"state: "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 		if(obj.packagetype==0xff){
-			if(cv(0)) console.error(colors.FgRed+"remote client had error:",Buffer.from(obj.data).toString());
+			if(cv(0)) lle(colors.FgRed+"remote client had error:",Buffer.from(obj.data).toString());
 			if(typeof cb === "function") cb();
 		}else{
 			try{
@@ -192,11 +191,11 @@ function handlePackage(obj,cnum,pool,connection,handles,cb){
 					handles[obj.packagetype][connections[cnum].state](obj,cnum,pool,connection,handles,cb);
 					if(cv(2)) ll(colors.FgGreen+"calling handler for packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgGreen+" in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 				}else{
-					if(cv(0)) console.error(colors.FgRed+"packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgRed+" not supported in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
+					if(cv(0)) lle(colors.FgRed+"packagetype "+colors.FgCyan+PackageNames[obj.packagetype]+"("+obj.packagetype+")"+colors.FgRed+" not supported in state "+colors.FgCyan+stateNames[connections[cnum].state]+"("+connections[cnum].state+")"+colors.Reset);
 					if(typeof cb === "function") cb();
 				}
 			}catch(e){
-				if(cv(0)) console.error(colors.FgRed,e,colors.Reset);
+				if(cv(0)) lle(colors.FgRed,e,colors.Reset);
 				if(typeof cb === "function") cb();
 			}
 		}
@@ -267,7 +266,7 @@ function encPackage(obj){
 	}
 	var header = [obj.packagetype,array.length];
 	if(array.length != obj.datalength){
-		if(cv(0)) console.error("Buffer had unexpected size:\n"+array.length+" != "+obj.datalength);
+		if(cv(0)) lle("Buffer had unexpected size:\n"+array.length+" != "+obj.datalength);
 		return(Buffer.from([]));
 	}
 	if(cv(2)) ll(colors.FgGreen+"encoded:"+colors.FgCyan,Buffer.from(header.concat(array)),colors.Reset);
@@ -357,7 +356,7 @@ function decPackage(packagetype,buffer){
 			};
 			break;
 		default:
-			console.error("invalid/unsupported packagetype: "+packagetype);
+			lle("invalid/unsupported packagetype: "+packagetype);
 			data = false;
 			break;
 	}
@@ -445,7 +444,7 @@ function ValueToBytearray(value,size){
 		}
 	}
 	if(array.length>size||array.length==undefined){
-		if(cv(0)) console.error("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
+		if(cv(0)) lle("Value "+value+" turned into a bigger than expecte Bytearray!\n"+array.length+" > "+size);
 	}
 	while(array.length<size){
 		array[array.length] = 0;
@@ -506,88 +505,6 @@ function ascii(data,connection,pool){
 		});
 	}
 }
-function SendQueue(pool,handles,callback){
-	if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
-	SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
-		SqlQuery(pool,"SELECT * FROM queue;",function(results){
-			if(results.length>0){
-				var servers = {};
-				for(let i in results){
-					if(!servers[results[i].server]){
-						servers[results[i].server] = [];
-					}
-					servers[results[i].server][servers[results[i].server].length] = results[i];
-				}
-				//if(cv(2)) ll(colors.BgMagenta,colors.FgBlack,servers,colors.Reset);
-				async.eachSeries(servers,function(server,cb){
-					//if(cv(2)) ll(colors.FgMagenta,server,colors.Reset);
-					SqlQuery(pool,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
-						if(result2.length==1){
-							var serverinf = result2[0];
-							if(cv(2)) ll(colors.FgCyan,serverinf,colors.Reset);
-							try{
-								var isConnected = false;
-								for(let c of connections){
-									if(c.servernum == server[0].server){
-										var isConnected = true;
-									}
-								}
-								if(!isConnected){
-									connect(pool,cb,{host:serverinf.addresse,port: serverinf.port},handles,function(client,cnum){
-										connections[cnum].servernum = server[0].server;
-										if(cv(1)) ll(colors.FgGreen+'connected to server '+server[0].server+': '+serverinf.addresse+" on port "+serverinf.port+colors.Reset);
-										connections[cnum].writebuffer = [];
-										async.each(server,function(serverdata,scb){
-											if(cv(2)) ll(colors.FgCyan,serverdata,colors.Reset);
-											/*SqlQuery(pool,"SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",function(result3){
-												connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
-												scb();
-											});*/
-											var exists = false;
-											for(let t of teilnehmer){
-												if(t.uid == serverdata.message){
-													connections[cnum].writebuffer.push(t);
-													exists = true;
-												}
-											}
-											if(!exists){
-												SqlQuery(pool,"DELETE FROM queue WHERE message="+connections[cnum].writebuffer[0].uid+" AND server="+connections[cnum].servernum+";",function(res){
-													if(res.affectedRows > 0){
-														if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
-														scb();
-													}
-												});
-											}else{
-												scb();
-											}
-										},function(){
-											client.write(encPackage({packagetype:7,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
-												connections[cnum].state = RESPONDING;
-												cb();
-											});
-										});
-									});
-								}else{
-									if(cv(1)) ll(colors.FgYellow+"already connected to server "+server[0].server+colors.Reset);
-								}
-							}catch(e){
-								if(cv(2)) console.error(e);
-								cb();
-							}
-						}else{
-							SqlQuery(pool,"DELETE FROM queue WHERE server="+server[0].server+";");
-						}
-					})
-				},function(){
-					if(typeof callback === "function") callback();
-				});
-			}else{
-				if(cv(2)) ll(colors.FgYellow,"No queue!",colors.Reset);
-				if(typeof callback === "function") callback();
-			}
-		});
-	});
-}
 
 function cv(level){ //check verbosity
 	return(level <= config.get("LOGGING_VERBOSITY"));
@@ -601,7 +518,7 @@ function SqlQuery(sqlPool,query,callback){
 			if(cv(2)) ll("not a pool");
 		}
 		if(err){
-			if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
+			if(cv(0)) lle(colors.FgRed,err,colors.Reset);
 			if(typeof callback === "function") callback([]);
 		}else{
 			if(typeof callback === "function") callback(res);
@@ -610,7 +527,7 @@ function SqlQuery(sqlPool,query,callback){
 	/*try{
 		sqlPool.getConnection(function(e,c){
 			if(e){
-				if(cv(0)) console.error(colors.FgRed,e,colors.Reset);
+				if(cv(0)) lle(colors.FgRed,e,colors.Reset);
 				c.release();
 			}else{
 				c.query(query,function(err,res){
@@ -623,7 +540,7 @@ function SqlQuery(sqlPool,query,callback){
 						console.trace(sqlPool.threadId);
 					}
 					if(err){
-						if(cv(0)) console.error(colors.FgRed,err,colors.Reset);
+						if(cv(0)) lle(colors.FgRed,err,colors.Reset);
 						if(typeof callback === "function") callback([]);
 					}else{
 						if(typeof callback === "function") callback(res);
@@ -647,7 +564,6 @@ module.exports.decPackage=decPackage;
 module.exports.decData=decData;
 module.exports.BytearrayToValue=BytearrayToValue;
 module.exports.ValueToBytearray=ValueToBytearray;
-module.exports.SendQueue=SendQueue;
 module.exports.checkFullPackage=checkFullPackage;
 module.exports.connections=connections;
 module.exports.cv=cv;
