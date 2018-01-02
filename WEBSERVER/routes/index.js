@@ -80,12 +80,14 @@ router.post('/edit', function(req, res){
             }
             for(let e of r){
               if(
-                (e.rufnummer == toEdit.rufnummer)&&
+                (e.rufnummer == req.body.rufnummer)&&
                 (e.uid != req.body.uid)
               ){
                 existing = e;
               }
             }
+            ll(toEdit);
+            ll(existing);
             if(toEdit){
               let qstr = "UPDATE teilnehmer SET "+
               "rufnummer="+mysql.escape(req.body.rufnummer)+
