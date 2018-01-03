@@ -524,18 +524,16 @@ function getFullQuery(callback){
 function SendQueue(callback){
 	if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
 	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
-		ITelexCom.SqlQuery(pool,"SELECT * FROM queue;",function(results){
-			if(results.length>0){
+		ITelexCom.SqlQuery(pool,"SELECT * FROM queue;",function(queue){
+			if(queue.length>0){
 				var servers = {};
-				for(let i in results){
-					if(!servers[results[i].server]){
-						servers[results[i].server] = [];
-					}
-					servers[results[i].server][servers[results[i].server].length] = results[i];
+				for(let q of queue){
+					if(!servers[q.server]) servers[q.server] = [];
+					servers[q.server].push(q);
 				}
-				//if(cv(2)) ll(colors.BgMagenta,colors.FgBlack,servers,colors.Reset);
+        ll(servers);
 				async.eachSeries(servers,function(server,cb){
-					//if(cv(2)) ll(colors.FgMagenta,server,colors.Reset);
+          ll(server)
 					ITelexCom.SqlQuery(pool,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
 						if(result2.length==1){
 							var serverinf = result2[0];
@@ -579,6 +577,7 @@ function SendQueue(callback){
                           }
 												});
 											}else{
+                        if(cv(2)) ll(colors.FgRed+"entry does not exist"+colors.FgCyan+colors.Reset);
 												scb();
 											}
 										},function(){
