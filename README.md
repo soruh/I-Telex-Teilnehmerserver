@@ -2,14 +2,12 @@
 ---
 # Introduction:
 
-The program consists of 3 processes:
+The program consists of 2 processes:
 ###### the web interface:
 
 which allows manual altering of the database over http
 ###### the binary server:
 which responds to binary (and ascii) requests
-###### the queuewatchdog:
-which checks if there have been any changes to the database and sends them to other servers.
 
 ---
 ## Setup
@@ -99,7 +97,9 @@ $ pm2 help
 ---
 ## Config
 
-The following can be configured in `config.json`
+Please rename `config_template.json` to `config.json` and remove the fist line.
+
+The following can then be configured in `config.json`
 
 ### mySqlConnectionOptions:
   - host: the mysql database host \*
@@ -154,3 +154,18 @@ Print linenumbers before log messages
   The port on which to serve the webinterface
 ### WEBINTERFACEPASSWORD
   The password for the webinterface
+
+### EMAIL
+
+  ## account
+  E-mail account, to which to send messages
+
+  ## useTestAccount
+  if true a link to an online service, for previewing emails will be printed in the console, after a message was sent
+  !messages will not be sent to the above specified account!
+
+  ## messages
+  coustomized messages [value] will be replaced with the value
+
+### LOGLINENUMBERS
+  print line numbers in front of log messages
