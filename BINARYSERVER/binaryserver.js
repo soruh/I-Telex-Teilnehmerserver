@@ -320,7 +320,7 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 	var version = obj.data.version;
 	var query = obj.data.pattern;
 	var searchstring = "SELECT * FROM teilnehmer WHERE";
-	queryarr = query.split(" ");
+	var queryarr = query.split(" ");
 	for(let i in queryarr){
 		searchstring +=  " AND name LIKE '%"+queryarr[i]+"%'";
 	}
