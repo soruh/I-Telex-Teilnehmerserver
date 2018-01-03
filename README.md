@@ -157,14 +157,14 @@ Print linenumbers before log messages
 
 ### EMAIL
 
-  ## account
+  #### account
   E-mail account, to which to send messages
 
-  ## useTestAccount
+  #### useTestAccount
   if true a link to an online service, for previewing emails will be printed in the console, after a message was sent
   !messages will not be sent to the above specified account!
 
-  ## messages
+  #### messages
   coustomized messages [value] will be replaced with the value
 
 ### LOGLINENUMBERS
