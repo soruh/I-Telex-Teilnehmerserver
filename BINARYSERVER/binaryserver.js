@@ -561,12 +561,12 @@ function sendQueue(callback){
 											}
 											if(existing){
 												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE uid="+serverdata.uid+";",function(res){
-                          ITelexCom.connections[cnum].writebuffer.push(existing);
 													if(res.affectedRows > 0){
-                            if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
+                            ITelexCom.connections[cnum].writebuffer.push(existing);
+                            if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+existing.name+colors.FgGreen+" from queue"+colors.Reset);
 														scb();
 													}else{
-                            if(cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgRed+" from queue"+colors.Reset);
+                            if(cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+existing.name+colors.FgRed+" from queue"+colors.Reset);
                             scb();
                           }
 												});
