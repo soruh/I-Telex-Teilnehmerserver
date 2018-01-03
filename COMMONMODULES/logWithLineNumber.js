@@ -6,7 +6,11 @@ const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 function ll(){
   var stack = new Error().stack.split('\n');
-  var line = stack[(module.exports.offset || 1) + 1].split("/").slice(-1)[0].replace(")","")
+  if(/^win/.test(process.platform)){
+    var line = stack[(module.exports.offset || 1) + 1].split("\\").slice(-1)[0].replace(")","")
+  }else{
+    var line = stack[(module.exports.offset || 1) + 1].split("/").slice(-1)[0].replace(")","");
+  }
   if(!module.exports.diabled){
     console.log.apply(this,[colors.Underscore+colors.Dim+line+colors.Reset].concat(Object.values(arguments)));const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
   }else{
@@ -15,7 +19,11 @@ function ll(){
 }
 function lle(){
   var stack = new Error().stack.split('\n');
-  var line = stack[(module.exports.offset || 1) + 1].split("/").slice(-1)[0].replace(")","")
+  if(/^win/.test(process.platform)){
+    var line = stack[(module.exports.offset || 1) + 1].split("\\").slice(-1)[0].replace(")","")
+  }else{
+    var line = stack[(module.exports.offset || 1) + 1].split("/").slice(-1)[0].replace(")","");
+  }
   if(!module.exports.diabled){
     console.error.apply(this,[colors.Underscore+colors.Dim+line+colors.Reset].concat(Object.values(arguments)));const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
   }else{
