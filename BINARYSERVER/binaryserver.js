@@ -476,7 +476,7 @@ function updateQueue(callback){
 						},cb1);
 					},function(){
 						//pool.end(()=>{
-							//TODO qwd.stdin.write("sendqueue");
+							//TODO qwd.stdin.write("sendQueue");
 							//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 							if(typeof callback === "function") callback();
 						//});
@@ -486,7 +486,7 @@ function updateQueue(callback){
 				if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
 				/*if(qwdec == null){
 					qwdec = "unknown";
-					//TODO qwd.stdin.write("sendqueue",callback);
+					//TODO qwd.stdin.write("sendQueue",callback);
           if(typeof callback === "function") callback();
 				}else{
           if(typeof callback === "function") callback();
@@ -521,7 +521,7 @@ function getFullQuery(callback){
 		});
 	//});
 }
-function SendQueue(callback){
+function sendQueue(callback){
 	if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
 	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
 		ITelexCom.SqlQuery(pool,"SELECT * FROM queue;",function(queue){
@@ -531,9 +531,7 @@ function SendQueue(callback){
 					if(!servers[q.server]) servers[q.server] = [];
 					servers[q.server].push(q);
 				}
-        ll(servers);
 				async.eachSeries(servers,function(server,cb){
-          ll(server)
 					ITelexCom.SqlQuery(pool,"SELECT * FROM servers WHERE uid="+server[0].server+";",function(result2){
 						if(result2.length==1){
 							var serverinf = result2[0];
@@ -555,21 +553,17 @@ function SendQueue(callback){
 										ITelexCom.connections[cnum].writebuffer = [];
 										async.each(server,function(serverdata,scb){
 											if(cv(2)) ll(colors.FgCyan,serverdata,colors.Reset);
-											/*SqlQuery(pool,"SELECT * FROM teilnehmer WHERE uid="+serverdata.message+";",function(result3){
-												connections[cnum].writebuffer[connections[cnum].writebuffer.length] = result3[0];
-												scb();
-											});*/
-											var exists = false;
+											var existing = false;
 											for(let t of teilnehmer){
 												if(t.uid == serverdata.message){
-													ITelexCom.connections[cnum].writebuffer.push(t);
-													exists = true;
+													existing = t;
 												}
 											}
-											if(!exists){
-												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE message="+ITelexCom.connections[cnum].writebuffer[0].uid+" AND server="+ITelexCom.connections[cnum].servernum+";",function(res){
+											if(existing){
+												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE uid="+serverdata.uid+";",function(res){
+                          ITelexCom.connections[cnum].writebuffer.push(existing);
 													if(res.affectedRows > 0){
-														if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
+                            if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgGreen+" from queue"+colors.Reset);
 														scb();
 													}else{
                             if(cv(1)) ll(colors.FgRed+"could not delete queue entry "+colors.FgCyan+ITelexCom.connections[cnum].writebuffer[0].name+colors.FgRed+" from queue"+colors.Reset);
@@ -636,7 +630,7 @@ function updateQueue(callback){
 						},cb1);
 					},function(){
 						//pool.end(()=>{
-							//TODO qwd.stdin.write("sendqueue");
+							//TODO qwd.stdin.write("sendQueue");
 							//setTimeout(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
 							if(typeof callback === "function") callback();
 						//});
@@ -646,7 +640,7 @@ function updateQueue(callback){
 				if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
 				if(qwdec == null){
 					qwdec = "unknown";
-					//TODO qwd.stdin.write("sendqueue",callback);
+					//TODO qwd.stdin.write("sendQueue",callback);
 				}else{
 					if(typeof callback === "function") callback();
 				}
@@ -720,7 +714,7 @@ pool.getConnection(function(err, connection){
 			//updateQueue();
       ITelexCom.TimeoutWrapper(getFullQuery, config.get("FULLQUERYINTERVAL"));
       ITelexCom.TimeoutWrapper(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
-      ITelexCom.TimeoutWrapper(SendQueue,config.get("QUEUE_SEND_INTERVAL"));
+      ITelexCom.TimeoutWrapper(sendQueue,config.get("QUEUE_SEND_INTERVAL"));
 		}else{
 			module.exports = {
 				init:init,
