@@ -221,7 +221,7 @@ function encPackage(obj){
 		var array = [];
 			break;
 		case 5:
-			var flags = data.gesperrt;
+			var flags = data.gesperrt*2;
 			var iparr = data.ipaddresse.split(".");
 			var numip=0;
 			for(let i in iparr){
@@ -314,7 +314,7 @@ function decPackage(packagetype,buffer){
 			var data = {
 				rufnummer:BytearrayToValue(buffer.slice(0,4),"number"),
 				name:BytearrayToValue(buffer.slice(4,44),"string"),
-				gesperrt:flags[0],
+				gesperrt:flags[0]*2;
 				typ:BytearrayToValue(buffer.slice(46,47),"number"),
 				addresse:BytearrayToValue(buffer.slice(47,87),"string"),
 				ipaddresse:ipaddresse,
