@@ -314,7 +314,7 @@ function decPackage(packagetype,buffer){
 			var data = {
 				rufnummer:BytearrayToValue(buffer.slice(0,4),"number"),
 				name:BytearrayToValue(buffer.slice(4,44),"string"),
-				gesperrt:flags[0]*2;
+				gesperrt:flags[0]/2,
 				typ:BytearrayToValue(buffer.slice(46,47),"number"),
 				addresse:BytearrayToValue(buffer.slice(47,87),"string"),
 				ipaddresse:ipaddresse,
