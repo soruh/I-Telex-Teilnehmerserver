@@ -236,9 +236,9 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				to: config.get("EMAIL").to,
 				subject: config.get("EMAIL").messages.wrongServerPin.subject
 		};
-    if(mailOptions.text){
+    if(config.get("EMAIL").messages.wrongServerPin.text){
       mailOptions.text = config.get("EMAIL").messages.wrongServerPin.text;
-    }else if(mailOptions.html){
+    }else if(config.get("EMAIL").messages.wrongServerPin.html){
       mailOptions.html = config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date());
     }else{
       mailOptions.text = "configuration error in config.json";
@@ -272,9 +272,9 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				to: config.get("EMAIL").to,
 				subject: config.get("EMAIL").messages.wrongServerPin.subject
 		};
-    if(mailOptions.text){
+    if(config.get("EMAIL").messages.wrongServerPin.text){
       mailOptions.text = config.get("EMAIL").messages.wrongServerPin.text;
-    }else if(mailOptions.html){
+    }else if(config.get("EMAIL").messages.wrongServerPin.html){
       mailOptions.html = config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date());
     }else{
       mailOptions.text = "configuration error in config.json";
