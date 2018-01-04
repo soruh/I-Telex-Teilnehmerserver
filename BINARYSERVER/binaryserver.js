@@ -65,7 +65,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+ip+"' "+
 				(
 					(port!=res.port||ip!=res.ipaddresse)?
-					("changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)+" "):
+					(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)+" "):
 					""
 				)
 				+"WHERE rufnummer = "+number+";",function(result_b){
@@ -114,13 +114,13 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			        to: config.get("EMAIL").to,
 			        subject: config.get("EMAIL").messages.new.subject
 			    };
-          if(mailOptions.text){
-            mailOptions.text = config.get("EMAIL").messages.new.text;
-          }else if(mailOptions.html){
-            mailOptions.html = config.get("EMAIL").messages.new.html.replace(/(\[number\])/g,number).replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[date\])/g,new Date());
-          }else{
-            mailOptions.text = "configuration error in config.json";
-          }
+					if(config.get("EMAIL").messages.new.text){
+											mailOptions.text = config.get("EMAIL").messages.new.text;
+									}else if(config.get("EMAIL").messages.new.html){
+											mailOptions.html = config.get("EMAIL").messages.new.html.replace(/(\[remoteAddress\])/g,connection.remoteAddress).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date());
+									}else{
+										mailOptions.text = "configuration error in config.json";
+									}
 					if(cv(2)) ll("sending mail:",mailOptions);
 					transporter.sendMail(mailOptions, function(error, info){
 			        if (error) {
