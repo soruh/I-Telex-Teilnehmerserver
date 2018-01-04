@@ -57,11 +57,12 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	var number = obj.data.rufnummer;
 	var pin = obj.data.pin;
 	var port = obj.data.port;
+	var ip = connection.remoteAddress.replace(/^.*:/,'');
 	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number,function(result_a){
 		if(result_a&&(result_a.length>0)){
 			var res = result_a[0];
 			if(res.pin == pin){
-				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+connection.remoteAddress.replace(/^.*:/,'')+"' WHERE rufnummer = "+number+";",function(result_b){
+				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+ip+"' "+((port!=res.port||ip!=res.ipaddresse)?("changed = '1' moddate ="+Math.floor(new Date().getTime()/1000)+" ":"")+"WHERE rufnummer = "+number+";",function(result_b){
 					ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
 						try{
 							connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
