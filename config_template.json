@@ -41,15 +41,15 @@
     "messages":{
       "new":{
         "subject":"new participant",
-        "html":"A new participant joined with number:<span style=\"color:red;\">[number]</span> and ip:<span style=\"color:red;\">[Ip]</span> at <span style=\"color:red;\">[date]</span>"
+        "html":"A new participant joined with number:<font color=\"blue\">[number]</font> and ip:<font color=\"blue\">[Ip]</font> at <font color=\"blue\">[date]</font>"
       },
       "wrongDynIpPin":{
         "subject":"wrong dynIp pin",
-        "html":"<span style=\"color:red;\">[Ip]</span> tried to update the dynIp for <span style=\"color:red;\">[number]</span>(<span style=\"color:red;\">[name]</span>) with a wrong pin at <span style=\"color:red;\">[date]</span>"
+        "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with a wrong pin at <font color=\"blue\">[date]</font>"
       },
       "wrongServerPin":{
         "subject":"wrong Server pin",
-        "html":"<span style=\"color:red;\">[Ip]</span> tried to sync the server with a wrong pin at <span style=\"color:red;\">[date]</span>"
+        "html":"<font color=\"blue\">[Ip]</font> tried to syncronize with the server with a wrong pin at <font color=\"blue\">[date]</font>"
       }
     }
   }
