@@ -145,7 +145,7 @@ function connect(pool,onEnd,options,handles,callback){
 			}
 			if(connections[cnum].connection = socket) connections.splice(cnum,1);
 			try{
-				try{onEnd();}catch(e){}
+				onEnd();
 			}catch(e){
 				if(cv(2)) lle(e);
 			}
@@ -153,7 +153,7 @@ function connect(pool,onEnd,options,handles,callback){
 		socket.on('end',function(){
 			if(connections[cnum].connection = socket) delete connections[cnum];
 			try{
-				try{onEnd();}catch(e){}
+				onEnd();
 			}catch(e){
 				if(cv(2)) lle(e);
 			}

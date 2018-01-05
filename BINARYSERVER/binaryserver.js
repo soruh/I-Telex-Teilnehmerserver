@@ -513,7 +513,11 @@ function getFullQuery(callback){
 		}
 		async.eachSeries(res,function(r,cb){
 			ITelexCom.connect(pool,function(e){
-				try{cb();}catch(e){}
+				try{
+          cb();
+        }catch(e){
+          if(cv(2)) lle(e);
+        }
 			},{port:r.port,host:r.addresse},handles,function(client,cnum){
 				client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
 					ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;

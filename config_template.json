@@ -1,11 +1,11 @@
 ////rename to 'config.json' and remove this line!////
 {
   "mySqlConnectionOptions":{
-    "host": "localhost",
-    "user": "telefonbuch",
-    "password": "XXX",
-    "database": "telefonbuch",
-    "insecureAuth" : true
+    "host":"localhost",
+    "user":"telefonbuch",
+    "password":"XXX",
+    "database":"telefonbuch",
+    "insecureAuth":true
   },
   "LOGLINENUMBERS":true,
   "SERVERPIN":118120815,
@@ -25,15 +25,15 @@
   "EMAIL":{
     "useTestAccount":true,
     "account":{
-      "host": "",
-      "port": 587,
-      "secure": false,
-      "auth": {
-        "user": "",
-        "pass": ""
+      "host":"",
+      "port":587,
+      "secure":false,
+      "auth":{
+        "user":"",
+        "pass":""
       },
       "tls":{
-        "rejectUnauthorized": true
+        "rejectUnauthorized":true
       }
     },
     "to":"ab@cd.ef, gh@ij.kl",
@@ -41,7 +41,7 @@
     "messages":{
       "new":{
         "subject":"new participant",
-        "html":"A new participant joined with number:<span style=\"color:red;\">[number]</span> and ip: <span style=\"color:red;\">[Ip]</span> at <span style=\"color:red;\">[date]</span>"
+        "html":"A new participant joined with number:<span style=\"color:red;\">[number]</span> and ip:<span style=\"color:red;\">[Ip]</span> at <span style=\"color:red;\">[date]</span>"
       },
       "wrongDynIpPin":{
         "subject":"wrong dynIp pin",
