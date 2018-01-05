@@ -275,7 +275,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
     if(config.get("EMAIL").messages.wrongServerPin.text){
       mailOptions.text = config.get("EMAIL").messages.wrongServerPin.text;
     }else if(config.get("EMAIL").messages.wrongServerPin.html){
-      mailOptions.html = config.get("EMAIL").messages.wrongServerPin.html..replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[date\])/g,new Date());
+      mailOptions.html = config.get("EMAIL").messages.wrongServerPin.html.replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[date\])/g,new Date());
     }else{
       mailOptions.text = "configuration error in config.json";
     }

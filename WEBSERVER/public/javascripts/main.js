@@ -331,12 +331,14 @@ $(document).ready(function(){
       },
       errorClass: "validate_error",
       validClass: "validate_valid",
-      rules:{
+     rules:{
         pin:{
-          required: true
+          required: true,
+          max: 65536
         },
         durchwahl:{
-          digits: true
+          digits: true,
+          max: 100
         },
         port:{
           required: {
@@ -345,18 +347,22 @@ $(document).ready(function(){
               return(type!="email");
             }
           },
+          max: 65536,
           digits:true
         },
         name:{
-          required: true
+          required: true,
+          maxlength: 40
         },
         rufnummer:{
           unique: true,
           required: true,
-          digits:true
+          digits:true,
+          max: 4294967296
         },
         email:{
           email:true,
+          maxlength:40,
           required:{
             depends: function(element){
               var type = optionType(formId+" select[name=typ]");
@@ -366,6 +372,7 @@ $(document).ready(function(){
         },
         hostname:{
           hostname:true,
+          maxlength:40,
           required:{
             depends: function(element){
               var type = optionType(formId+" select[name=typ]");
@@ -436,29 +443,43 @@ $(document).ready(function(){
       },
       errorClass: "validate_error",
       validClass: "validate_valid",
-      rules:{
+       rules:{
         typ:{
           required: true,
           digits: true,
           min: 1
         },
+        pin:{
+          required: true,
+          max: 65536
+        },
         durchwahl:{
-          digits: true
+          digits: true,
+          max: 100
         },
         port:{
-          required: true,
+          required: {
+            depends: function(element){
+              var type = optionType(formId+" select[name=typ]");  //TODO
+              return(type!="email");
+            }
+          },
+          max: 65536,
           digits:true
         },
         name:{
-          required: true
+          required: true,
+          maxlength: 40
         },
         rufnummer:{
           unique: true,
           required: true,
-          digits:true
+          digits:true,
+          max: 4294967296
         },
         email:{
           email:true,
+          maxlength:40,
           required:{
             depends: function(element){
               var type = optionType(formId+" select[name=typ]");
@@ -468,6 +489,7 @@ $(document).ready(function(){
         },
         hostname:{
           hostname:true,
+          maxlength:40,
           required:{
             depends: function(element){
               var type = optionType(formId+" select[name=typ]");
