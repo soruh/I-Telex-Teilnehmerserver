@@ -33,6 +33,11 @@ function Timer(fn, countdown){
     function cancel(){
     	clearTimeout(timout);
     }
+    function getRemaining(){
+      this.total_time_run = _time_diff(this.start_time);
+			this.remaining = countdown - this.total_time_run;
+      return(this.remaining);
+    }
     function pause(){
 			this.paused = true;
       clearTimeout(timout);
@@ -45,12 +50,25 @@ function Timer(fn, countdown){
 			this.total_time_run = _time_diff(this.start_time);
 			this.complete = this.total_time_run >= countdown;
 			this.remaining = countdown - this.total_time_run;
-      timout = this.complete ? -1 : setTimeout(fn, this.remaining);
+      if(this.complete){
+        if(cv(3)) ll(colors.FgCyan+"restarted "+colors.FgMagenta+"timeout"+colors.Reset);
+        this.start_time = new Date().getTime();
+        this.resume();
+      }else{
+        timout = setTimeout(fn, this.remaining);
+      }
     }
     this.start_time = new Date().getTime();
     timout = setTimeout(fn, countdown);
 
-    return {cancel:cancel,pause:pause,resume:resume,complete:false,start_time:this.start_time};
+    return {
+      cancel:cancel,
+      pause:pause,
+      resume:resume,
+      complete:false,
+      start_time:this.start_time,
+      getRemaining:getRemaining
+    };
 }
 function TimeoutWrapper(fn, countdown){
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
@@ -61,17 +79,15 @@ function TimeoutWrapper(fn, countdown){
 	args.push(function(){
 		if(cv(3)) ll(colors.FgMagenta+"callback for timeout: "+colors.FgCyan+fnName+colors.Reset);
 		for(let k of Object.keys(timeouts)){
-			if(timeouts[k].complete){
-				timeouts[k].start_time = new Date().getTime();
-				if(cv(3)) ll(colors.FgMagenta+"restarted timeout for: "+colors.FgCyan+fnName+colors.Reset);
-			}
-			timeouts[k].resume();
+      timeouts[k].resume();
+      if(cv(3)) ll(colors.FgYellow+"resumed "+colors.FgMagenta+"timeout: "+colors.FgCyan+k+colors.FgMagenta+" remaining: "+colors.FgCyan+timeouts[k].remaining+colors.Reset);
 		}
 	});
 	if(cv(1)) ll(colors.FgMagenta+"set timeout for: "+colors.FgCyan+fnName+colors.FgMagenta+" to "+colors.FgCyan+countdown+colors.FgMagenta+"ms"+colors.Reset);
 	timeouts[fnName] = new Timer(function(){
 		for(let k of Object.keys(timeouts)){
-			timeouts[k].pause();
+      timeouts[k].pause();
+      if(cv(3)) ll(colors.FgBlue+"paused "+colors.FgMagenta+"timeout: "+colors.FgCyan+k+colors.FgMagenta+" remaining: "+colors.FgCyan+timeouts[k].remaining+colors.Reset);
 		}
 		if(cv(3)) ll(colors.FgMagenta+"called: "+colors.FgCyan+fnName+colors.FgMagenta+" with: "+colors.FgCyan,args.slice(1),colors.Reset);
 		fn.apply(null,args);
@@ -147,7 +163,7 @@ function connect(pool,onEnd,options,handles,callback){
 			try{
 				onEnd();
 			}catch(e){
-				if(cv(2)) lle(e);
+				//if(cv(2)) lle(e);
 			}
 		});
 		socket.on('end',function(){
@@ -155,7 +171,7 @@ function connect(pool,onEnd,options,handles,callback){
 			try{
 				onEnd();
 			}catch(e){
-				if(cv(2)) lle(e);
+				//if(cv(2)) lle(e);
 			}
 		});
 		socket.connect(options,function(connection){
@@ -548,6 +564,26 @@ function SqlQuery(sqlPool,query,callback){
 		throw(e);
 	}*/
 }
+
+/*
+if(cv(3)){
+  setInterval(function(ts){
+  ll("");
+  for(let k of Object.keys(ts)){
+    var rem = ts[k].getRemaining().toString();
+    var ws = "";
+    for(let i=1;i<=12-k.length;i++){
+      ws += " ";
+    }
+    for(let i=1;i<=6-rem.length;i++){
+      ws += " ";
+    }
+    ll(colors.FgMagenta+k+colors.Reset+":"+ws+colors.FgCyan+rem+colors.FgMagenta+"ms"+colors.Reset);
+  }
+  ll("");
+},1000,timeouts);
+}
+*/
 
 module.exports.ascii=ascii;
 module.exports.TimeoutWrapper=TimeoutWrapper;
