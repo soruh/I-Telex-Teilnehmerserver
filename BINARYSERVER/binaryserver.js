@@ -505,28 +505,25 @@ function updateQueue(callback){
 	//});
 }
 function getFullQuery(callback){
-	// var pool = mysql.createConnection(mySqlConnectionOptions);
-	//pool.connect(()=>{
-		ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
-			for(let i in res){
-				if(res[i].addresse == config.get("FULL_QUERY_SERVER")){
-					res = res[i];
-				}
+	ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
+		for(let i in res){
+			if(res[i].addresse == config.get("FULL_QUERY_SERVER")){
+				res = res[i];
 			}
-			async.eachSeries(res,function(r,cb){
-				ITelexCom.connect(pool,function(e){
-					try{cb()}catch(e){}
-				},{port:r.port,host:r.addresse},handles,function(client,cnum){
-					client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
-						ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
-						ITelexCom.connections[cnum].cb = cb;
-					});
+		}
+		async.eachSeries(res,function(r,cb){
+			ITelexCom.connect(pool,function(e){
+				try{cb();}catch(e){}
+			},{port:r.port,host:r.addresse},handles,function(client,cnum){
+				client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
+					ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
+					ITelexCom.connections[cnum].cb = cb;
 				});
-			},function(){
-				if(typeof callback === "function") callback();
 			});
+		},function(){
+			if(typeof callback === "function") callback();
 		});
-	//});
+	});
 }
 function sendQueue(callback){
 	if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
@@ -569,7 +566,7 @@ function sendQueue(callback){
 											if(existing){
 												ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE uid="+serverdata.uid+";",function(res){
 													if(res.affectedRows > 0){
-                            ITelexCom.connections[cnum].writebuffer.push(existing);
+                            ITelexCom.connections[cnum].writebuffer.push(existing);//TODO
                             if(cv(1)) ll(colors.FgGreen+"deleted queue entry "+colors.FgCyan+existing.name+colors.FgGreen+" from queue"+colors.Reset);
 														scb();
 													}else{
