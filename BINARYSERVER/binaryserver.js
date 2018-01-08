@@ -62,22 +62,48 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		if(result_a&&(result_a.length>0)){
 			var res = result_a[0];
 			if(res.pin == pin){
-				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+ip+"' "+
-				(
-					(port!=res.port||ip!=res.ipaddresse)?
-					(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)+" "):
-					""
-				)
-				+"WHERE rufnummer = "+number+";",function(result_b){
-					ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
-						try{
-							connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
-						}catch(e){
-							if(cv(0)) ll(colors.FgRed,e,colors.Reset);
-							if(typeof cb === "function") cb();
-						}
-					});
-				});
+        if(res.typ == 5){
+  				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+ip+"' "+
+  				(
+  					(port!=res.port||ip!=res.ipaddresse)?
+  					(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)+" "):
+  					""
+  				)
+  				+"WHERE rufnummer = "+number+";",function(result_b){
+  					ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
+  						try{
+  							connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+  						}catch(e){
+  							if(cv(0)) ll(colors.FgRed,e,colors.Reset);
+  							if(typeof cb === "function") cb();
+  						}
+  					});
+  				});
+        }else{
+          if(cv(1)) ll(colors.FgRed+"not DynIp type"+colors.Reset);
+  				connection.end();
+  				let mailOptions = {
+  		        from: config.get("EMAIL").from,
+  		        to: config.get("EMAIL").to,
+  		        subject: config.get("EMAIL").messages.wrongDynIpType.subject
+  		    };
+          if(config.get("EMAIL").messages.wrongDynIpType.text){
+            mailOptions.text = config.get("EMAIL").messages.wrongDynIpType.text;
+          }else if(config.get("EMAIL").messages.wrongDynIpType.html){
+            mailOptions.html = config.get("EMAIL").messages.wrongDynIpType.html.replace(/(\[typ\])/g,res.typ).replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date());
+          }else{
+            mailOptions.text = "configuration error in config.json";
+          }
+  				if(cv(2)) ll("sending mail:",mailOptions);
+  				transporter.sendMail(mailOptions, function(error, info){
+  		        if (error) {
+  		            return lle(error);
+  		        }
+  		        if(cv(1)) ll('Message sent:', info.messageId);
+  		        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+  						if(typeof cb === "function") cb();
+  		    });
+        }
 			}else{
 				if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
 				connection.end();
