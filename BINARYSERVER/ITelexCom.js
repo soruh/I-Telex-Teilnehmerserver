@@ -360,10 +360,10 @@ function decPackage(packagetype,buffer){
 			break;
 		case 10:
 			var data = {
-				// version:BytearrayToValue(buffer.slice(0,1),"number"),
-				// pattern:BytearrayToValue(buffer.slice(1,41),"string")
-				pattern:BytearrayToValue(buffer.slice(0,40),"string"),
-				version:BytearrayToValue(buffer.slice(40,41),"number")
+				version:BytearrayToValue(buffer.slice(0,1),"number"),
+				pattern:BytearrayToValue(buffer.slice(1,41),"string")
+				//pattern:BytearrayToValue(buffer.slice(0,40),"string"),
+				//version:BytearrayToValue(buffer.slice(40,41),"number")
 			};
 			break;
 		default:
