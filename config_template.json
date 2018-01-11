@@ -47,6 +47,10 @@
         "subject":"wrong dynIp pin",
         "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with a wrong pin at <font color=\"blue\">[date]</font>"
       },
+      "wrongDynIpType":{
+        "subject":"wrong dynIp type",
+        "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>), which does not support dynIp(is type <font color=\"blue\">[typ]</font>) at <font color=\"blue\">[date]</font>"
+      },
       "wrongServerPin":{
         "subject":"wrong Server pin",
         "html":"<font color=\"blue\">[Ip]</font> tried to syncronize with the server with a wrong pin at <font color=\"blue\">[date]</font>"
