@@ -243,6 +243,19 @@ function encPackage(obj){
 			for(let i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
+			
+			if(data.extension==null){
+				var ext = 0;
+			}else if(data.extension == "0"){
+				var ext = 110;
+			}else if(data.extension == "00"){
+				var ext = 100;
+			}else if(data.extension.toString().length == 1){
+				var ext = parseInt(data.extension)+100;
+			}else{
+				var ext = parseInt(data.extension);
+			}
+			
 			var array = ValueToBytearray(data.rufnummer,4)
 			.concat(ValueToBytearray(data.name,40))
 			.concat(ValueToBytearray(flags,2))
@@ -250,7 +263,7 @@ function encPackage(obj){
 			.concat(ValueToBytearray(data.hostname,40))
 			.concat(ValueToBytearray(numip,4))
 			.concat(ValueToBytearray(parseInt(data.port),2))
-			.concat(ValueToBytearray(parseInt(data.extension),1))
+			.concat(ValueToBytearray(ext,1))
 			.concat(ValueToBytearray(parseInt(data.pin),2))
 			.concat(ValueToBytearray(parseInt(data.moddate)+2208988800,4));
 			break;
@@ -326,7 +339,9 @@ function decPackage(packagetype,buffer){
 			var c = (numip>>16)&255;
 			var d = (numip>>24)&255;
 			var ipaddresse = a+"."+b+"."+c+"."+d;
+			
 			var flags = buffer.slice(44,46);
+			
 			var data = {
 				rufnummer:BytearrayToValue(buffer.slice(0,4),"number"),
 				name:BytearrayToValue(buffer.slice(4,44),"string"),
@@ -339,6 +354,17 @@ function decPackage(packagetype,buffer){
 				pin:BytearrayToValue(buffer.slice(94,96),"number"),
 				timestamp:BytearrayToValue(buffer.slice(96,100),"number")-2208988800
 			};
+			
+			if(data.durchwahl==0){
+				data.durchwahl = null;
+			}else if(data.durchwahl == 110){
+				data.durchwahl = "0";
+			}else if(data.durchwahl == 100){
+				data.durchwahl = "00";
+			}else if(Math.floor(data.durchwahl/100) == 1){
+				data.durchwahl = (data.durchwahl-100).toString();
+			}
+			
 			break;
 		case 6:
 			var data = {
