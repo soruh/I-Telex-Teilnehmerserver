@@ -48,7 +48,7 @@ if(args[1]=="--help"||args[1]==null){
         console.log("wrong credentials");
         dbcon.end(process.exit);
       }else if(err.code=="ER_EMPTY_QUERY"){
-        create(parseCommands(args));
+        create(parseCommands(args.slice(2)));
       }else{
         console.error(err);
         dbcon.end(process.exit);
