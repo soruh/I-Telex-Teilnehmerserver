@@ -363,6 +363,8 @@ function decPackage(packagetype,buffer){
 				data.durchwahl = "00";
 			}else if(Math.floor(data.durchwahl/10) == 10){
 				data.durchwahl = (data.durchwahl-100).toString();
+			}else{
+				data.durchwahl = "0"+data.durchwahl;
 			}
 			
 			break;
