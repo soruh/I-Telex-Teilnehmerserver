@@ -361,7 +361,7 @@ function decPackage(packagetype,buffer){
 				data.durchwahl = "0";
 			}else if(data.durchwahl == 100){
 				data.durchwahl = "00";
-			}else if(Math.floor(data.durchwahl/100) == 1){
+			}else if(Math.floor(data.durchwahl/10) == 10){
 				data.durchwahl = (data.durchwahl-100).toString();
 			}
 			
