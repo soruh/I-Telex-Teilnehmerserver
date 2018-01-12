@@ -44,6 +44,7 @@ if(args[1]=="--help"||args[1]==null){
    console.log(err);
   });
   dbcon.query("",function(err,res){
+    console.log(err);
     if(err){
       if(err.code=="ER_ACCESS_DENIED_ERROR"){
         console.log("wrong credentials");
