@@ -28,11 +28,18 @@ var SQL = {
 }
 
 var args = JSON.parse(JSON.stringify(process.argv));
-args.splice(0,4);
-if(process.argv[2]=="--help"||process.argv[2]==null||process.argv[3]==null){
+if(/node/.test(args[0])) args.splice(0,1);
+if(args[1]=="--help"||args[1]!=null){
   printUsage();
 }else{
-  var dbcon = mysql.createConnection({host:options.host,user:process.argv[2],password:process.argv[3],insecureAuth: options.insecureAuth});
+  var opt = {
+   host:options.host,
+   user:args[1],
+   insecureAuth:options.insecureAuth
+  };
+  var dbcon = mysql.createConnection(opt,function(err){
+   console.log(err);
+  });
   dbcon.query("",function(err,res){
     if(err){
       if(err.code=="ER_ACCESS_DENIED_ERROR"){
