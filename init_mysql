@@ -39,6 +39,7 @@ if(args[1]=="--help"||args[1]==null){
    user:args[1],
    insecureAuth:options.insecureAuth
   };
+  console.log(opt);
   var dbcon = mysql.createConnection(opt,function(err){
    console.log(err);
   });
