@@ -33,6 +33,7 @@ console.log(args);
 if(args[1]=="--help"||args[1]==null){
   printUsage();
 }else{
+  console.log("connecting");
   var opt = {
    host:options.host,
    user:args[1],
