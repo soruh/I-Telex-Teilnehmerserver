@@ -12,7 +12,7 @@ function ll(){
     var line = stack[(module.exports.offset || 1) + 1].split("/").slice(-1)[0].replace(")","");
   }
   if(!module.exports.diabled){
-    console.log.apply(this,[colors.Underscore+colors.Dim+line+colors.Reset].concat(Object.values(arguments)));const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
+    console.log.apply(this,[colors.Underscore+colors.Dim+line+colors.Reset].concat(Object.values(arguments)));const {ll} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
   }else{
     console.log.apply(this,arguments);
   }
@@ -25,7 +25,7 @@ function lle(){
     var line = stack[(module.exports.offset || 1) + 1].split("/").slice(-1)[0].replace(")","");
   }
   if(!module.exports.diabled){
-    console.error.apply(this,[colors.Underscore+colors.Dim+line+colors.Reset].concat(Object.values(arguments)));const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
+    console.error.apply(this,[colors.Underscore+colors.Dim+line+colors.Reset].concat(Object.values(arguments)));const {ll} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
   }else{
     console.error.apply(this,arguments);
   }

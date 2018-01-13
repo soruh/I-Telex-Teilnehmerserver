@@ -4,8 +4,8 @@ const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..','..'));
 
 const express = require('express');
-const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
-const lle = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).lle;
+const {ll} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
+const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const mysql = require('mysql');
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
@@ -140,13 +140,12 @@ router.post('/edit', function(req, res){
           if(err){
             res.json({successful:false,message:err});
           }else{
-            let exists = false;
+            let existing = false;
             for(let t of teilnehmer){
-              if(t.rufnummer == req.body.rufnummer) exists = true;
+              if(t.rufnummer == req.body.rufnummer) existing = t;
             }
-            if(!exists){
-              pool.query("INSERT INTO teilnehmer "+
-              "(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+
+            let qstr =
+              "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+
               mysql.escape(req.body.rufnummer)+","+
               mysql.escape(req.body.name)+","+
               mysql.escape(req.body.typ)+","+
@@ -157,17 +156,49 @@ router.post('/edit', function(req, res){
               mysql.escape(req.body.pin)+","+
               mysql.escape(req.body.gesperrt)+","+
               mysql.escape(Math.floor(new Date().getTime()/1000))+
-              ")",
-              function (err, result) {
+              ");";
+            if(existing){
+              if(existing.typ == 0){
+                qstr = "DELETE FROM teilnehmer WHERE uid="+existing.uid+";"+qstr;
+                pool.query(qstr, function(err, result){
+                  if(err){
+                    res.json({successful:false,message:err});
+                  }else{
+                    res.json({successful:true,message:result});
+                  }
+                });
+              }else{
+                res.json({successful:false,message:"already exists"});
+              }
+            }else{
+              pool.query(qstr, function(err, result){
                 if(err){
                   res.json({successful:false,message:err});
                 }else{
                   res.json({successful:true,message:result});
                 }
               });
-            }else{
-              res.json({successful:false,message:"already exists"});
             }
+            /*pool.query("INSERT INTO teilnehmer "+
+            "(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+
+            mysql.escape(req.body.rufnummer)+","+
+            mysql.escape(req.body.name)+","+
+            mysql.escape(req.body.typ)+","+
+            mysql.escape(req.body.hostname)+","+
+            mysql.escape(req.body.ipaddresse)+","+
+            mysql.escape(req.body.port)+","+
+            mysql.escape(req.body.extension)+","+
+            mysql.escape(req.body.pin)+","+
+            mysql.escape(req.body.gesperrt)+","+
+            mysql.escape(Math.floor(new Date().getTime()/1000))+
+            ")",
+            function (err, result) {
+              if(err){
+                res.json({successful:false,message:err});
+              }else{
+                res.json({successful:true,message:result});
+              }
+            });*/
           }
         });
         break;

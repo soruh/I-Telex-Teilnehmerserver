@@ -3,8 +3,8 @@ if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slic
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
-const ll = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).ll;
-const lle = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js")).lle;
+const {ll} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
+const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
@@ -14,7 +14,6 @@ const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const cv = ITelexCom.cv;
 const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
-
 const nodemailer = require('nodemailer');
 
 if(config.get("EMAIL").useTestAccount){
