@@ -1,5 +1,5 @@
 "use strict";
-if(module.parent!=null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev = [];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[0m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[0m":"\x1b[33m"+load_order[i]+"\x1b[0m");}console.log("loaded: "+load_order_rev.join(" --> "));}
+if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev=[];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[0m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[0m":"\x1b[33m"+load_order[i]+"\x1b[0m");}console.log("loaded: "+load_order_rev.join(" --> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
@@ -243,7 +243,7 @@ function encPackage(obj){
 			for(let i in iparr){
 				numip += iparr[i]*Math.pow(2,(i*8));
 			}
-			
+
 			if(data.extension==null){
 				var ext = 0;
 			}else if(data.extension == "0"){
@@ -255,7 +255,7 @@ function encPackage(obj){
 			}else{
 				var ext = parseInt(data.extension);
 			}
-			
+
 			var array = ValueToBytearray(data.rufnummer,4)
 			.concat(ValueToBytearray(data.name,40))
 			.concat(ValueToBytearray(flags,2))
@@ -339,9 +339,9 @@ function decPackage(packagetype,buffer){
 			var c = (numip>>16)&255;
 			var d = (numip>>24)&255;
 			var ipaddresse = a+"."+b+"."+c+"."+d;
-			
+
 			var flags = buffer.slice(44,46);
-			
+
 			var data = {
 				rufnummer:BytearrayToValue(buffer.slice(0,4),"number"),
 				name:BytearrayToValue(buffer.slice(4,44),"string"),
@@ -354,7 +354,7 @@ function decPackage(packagetype,buffer){
 				pin:BytearrayToValue(buffer.slice(94,96),"number"),
 				timestamp:BytearrayToValue(buffer.slice(96,100),"number")-2208988800
 			};
-			
+
 			if(data.durchwahl==0){
 				data.durchwahl = null;
 			}else if(data.durchwahl == 110){
@@ -366,7 +366,7 @@ function decPackage(packagetype,buffer){
 			}else{
 				data.durchwahl = "0"+data.durchwahl;
 			}
-			
+
 			break;
 		case 6:
 			var data = {
