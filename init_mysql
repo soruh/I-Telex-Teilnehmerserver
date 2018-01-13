@@ -6,20 +6,20 @@ const mysql = require("mysql");
 var SQL = {
   drop:{
     tables:{
-      queue: 'DROP TABLE `queue`;',
-      server: 'DROP TABLE `servers`;',
-      teilnehmer: 'DROP TABLE `teilnehmer`;'/*,
-      deleted: 'DROP TABLE `deleted`;'*/
+      queue: 'DROP TABLE queue;',
+      server: 'DROP TABLE servers;',
+      teilnehmer: 'DROP TABLE teilnehmer;'/*,
+      deleted: 'DROP TABLE deleted;'*/
     },
     database: 'DROP DATABASE <database>;',
     user: 'drop user <user>@localhost;'
   },
   create:{
     tables:{
-      queue: 'CREATE TABLE `queue` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `server` int(11) DEFAULT NULL, `message` int(11) DEFAULT NULL, `timestamp` double unsigned DEFAULT NULL, PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`) ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;',
-      server: 'CREATE TABLE `servers` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `addresse` tinytext, `port` tinytext, PRIMARY KEY (`uid`) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8',
-      teilnehmer: 'CREATE TABLE `teilnehmer` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `rufnummer` int(10) NOT NULL, `name` tinytext CHARACTER SET utf8, `typ` int(8) DEFAULT NULL, `hostname` tinytext CHARACTER SET utf8, `ipaddresse` tinytext CHARACTER SET utf8, `port` tinytext CHARACTER SET utf8, `extension` tinytext CHARACTER SET utf8, `pin` tinytext CHARACTER SET utf8, `gesperrt` tinyint(4) DEFAULT NULL, `moddate` tinytext CHARACTER SET utf8, `changed` tinyint(4) DEFAULT \'1\', PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`), UNIQUE KEY `rufnummer_UNIQUE` (`rufnummer`) ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'/*,
-      deleted: 'CREATE TABLE `deleted` ( `uid` int(11) NOT NULL AUTO_INCREMENT, `rufnummer` int(10) NOT NULL, `name` tinytext CHARACTER SET utf8, `typ` int(8) DEFAULT NULL, `hostname` tinytext CHARACTER SET utf8, `ipaddresse` tinytext CHARACTER SET utf8, `port` tinytext CHARACTER SET utf8, `extension` tinytext CHARACTER SET utf8, `pin` tinytext CHARACTER SET utf8, `gesperrt` tinyint(4) DEFAULT NULL, `moddate` tinytext CHARACTER SET utf8, PRIMARY KEY (`uid`), UNIQUE KEY `uid_UNIQUE` (`uid`)) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'*/
+      queue: 'CREATE TABLE queue ( uid int(11) NOT NULL AUTO_INCREMENT, server int(11) DEFAULT NULL, message int(11) DEFAULT NULL, timestamp double unsigned DEFAULT NULL, PRIMARY KEY (uid), UNIQUE KEY uid_UNIQUE (uid) ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;',
+      server: 'CREATE TABLE servers ( uid int(11) NOT NULL AUTO_INCREMENT, addresse tinytext, port tinytext, PRIMARY KEY (uid) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8',
+      teilnehmer: 'CREATE TABLE teilnehmer ( uid int(11) NOT NULL AUTO_INCREMENT, rufnummer int(10) NOT NULL, name tinytext CHARACTER SET utf8, typ int(8) DEFAULT NULL, hostname tinytext CHARACTER SET utf8, ipaddresse tinytext CHARACTER SET utf8, port tinytext CHARACTER SET utf8, extension tinytext CHARACTER SET utf8, pin tinytext CHARACTER SET utf8, gesperrt tinyint(4) DEFAULT NULL, moddate tinytext CHARACTER SET utf8, changed tinyint(4) DEFAULT \'1\', PRIMARY KEY (uid), UNIQUE KEY uid_UNIQUE (uid), UNIQUE KEY rufnummer_UNIQUE (rufnummer) ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'/*,
+      deleted: 'CREATE TABLE deleted ( uid int(11) NOT NULL AUTO_INCREMENT, rufnummer int(10) NOT NULL, name tinytext CHARACTER SET utf8, typ int(8) DEFAULT NULL, hostname tinytext CHARACTER SET utf8, ipaddresse tinytext CHARACTER SET utf8, port tinytext CHARACTER SET utf8, extension tinytext CHARACTER SET utf8, pin tinytext CHARACTER SET utf8, gesperrt tinyint(4) DEFAULT NULL, moddate tinytext CHARACTER SET utf8, PRIMARY KEY (uid), UNIQUE KEY uid_UNIQUE (uid)) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'*/
     },
     database: 'CREATE DATABASE <database>;',
     user: 'CREATE USER <user>@localhost IDENTIFIED BY <password>;'
@@ -29,7 +29,6 @@ var SQL = {
 
 var args = JSON.parse(JSON.stringify(process.argv));
 if(/node/.test(args[0])) args.splice(0,1);
-console.log(args);
 if(args[1]=="--help"||args[1]==null){
   printUsage();
 }else{
@@ -39,16 +38,36 @@ if(args[1]=="--help"||args[1]==null){
    user:args[1],
    insecureAuth:options.insecureAuth
   };
-  console.log(opt);
   var dbcon = mysql.createConnection(opt,function(err){
    console.log(err);
   });
   dbcon.query("",function(err,res){
-    console.log(err);
     if(err){
       if(err.code=="ER_ACCESS_DENIED_ERROR"){
-        console.log("wrong credentials");
-        dbcon.end(process.exit);
+        dbcon.end();
+        console.log("Please enter password!");
+        var Int = setInterval(function(){process.stdout.write("                         \r")},1);
+        process.stdin.on('data',function passwd(data){
+          clearInterval(Int);
+          process.stdin.removeListener("data",passwd);
+          opt.password = data.toString().replace(/\n/,"").replace(/\r/,"");
+          dbcon = mysql.createConnection(opt,function(err){
+           console.log(err);
+          });
+          dbcon.query("",function(err,res){
+            if(err){
+              if(err.code=="ER_ACCESS_DENIED_ERROR"){
+                console.log("wrong credentials");
+                dbcon.end(process.exit);
+              }else if(err.code=="ER_EMPTY_QUERY"){
+                create(parseCommands(args.slice(2)));
+              }else{
+                console.error(err);
+                dbcon.end(process.exit);
+              }
+            }
+          });
+        });
       }else if(err.code=="ER_EMPTY_QUERY"){
         create(parseCommands(args.slice(2)));
       }else{
@@ -61,6 +80,80 @@ if(args[1]=="--help"||args[1]==null){
 
 var existing = {};
 
+function parseCommands(commands){
+  //console.log("")
+  var creates = {};
+  for(command of commands){
+    switch(command){
+      case "all":
+        creates = {0:database,1:tables,2:user,3:grant};
+        break;
+      case "database":
+        creates[0] = database;
+        break;
+      case "tables":
+        creates[1] = tables;
+        break;
+      case "user":
+        creates[2] = user;
+        break;
+      case "grant":
+        creates[3] = grant;
+        break;
+      default:
+        printUsage();
+    }
+  }
+  return creates;
+}
+function create(creates){
+  if(Object.keys(creates).length>0){
+    async.eachSeries(creates,function(funct,cb){
+      process.stdout.write("creating: "+funct.toString().split("(")[0].split(" ")[1]+" ...");
+      funct(cb);
+    },function(){
+      if(Object.keys(existing).length>0){
+        var toCreate = "";
+        for(let k of Object.keys(creates)){
+          let ex = false;
+          for(i in existing){
+            if(existing[i] === creates[k].toString().split(" ")[1].split("(")[0]) ex = true;
+          }
+          if(ex){
+            if(toCreate.length > 0) toCreate += ", ";
+            toCreate += creates[k].toString().split(" ")[1].split("(")[0];
+          }
+        }
+        if(toCreate.length > 0) console.log("created: "+toCreate);
+        console.log("\nthe following could not be created, because they already existed:\n");
+        for(k in existing){
+          console.log("- "+k);
+        }
+        console.log("\noverwrite the existing?\n!!!THIS WILL REMOVE ALL OF THEIR CONTENTS!!! (Y/n)");
+        process.stdin.on("data",function(data){
+          var datastr = data.toString().replace(/[\n\r]/g,"");
+          if(datastr == "Y"||datastr =="y"){
+            remove(create);
+          }else if(datastr == "N"||datastr == "n"){
+            dbcon.end(process.exit);
+          }else{
+            console.log("(Y/n)");
+          }
+        })
+      }else{
+        var toCreate = "";
+        for(let k of Object.keys(creates)){
+          if(toCreate.length > 0) toCreate += ", ";
+          toCreate += creates[k].toString().split(" ")[1].split("(")[0];
+        }
+        if(toCreate.length > 0) console.log("created: "+toCreate);
+        dbcon.end(process.exit);
+      }
+    });
+  }else{
+    printUsage();
+  }
+}
 function remove(callback){
   var ret = {};
   for(i in existing){
@@ -75,7 +168,7 @@ function remove(callback){
       ret[Object.keys(ret).length] = tables;
     }else if(i == "user"){
       ret[Object.keys(ret).length] = existing[i];
-      if(parseCommands(args)[3]==grant){
+      if(parseCommands(args.slice(2))[3]==grant){
         ret[Object.keys(ret).length] = grant;
       }
     }else{
@@ -153,7 +246,7 @@ function remove(callback){
       case "tables":
         process.stdout.write("\n");
         async.eachSeries(SQL.drop.tables,function(table,callback){
-          process.stdout.write("removing: "+table.split(" ")[2].replace(/;/g,"")+" ...");
+          process.stdout.write("          "+table.split(" ")[2].replace(/;/g,"")+"...");
           dbcon.query(replaceTags(table),function(err,res){
             if(err){
               console.error(err);
@@ -163,75 +256,17 @@ function remove(callback){
             }
             callback();
           });
-        },cb);
+        },cback);
         break;
       default:
         console.log("error, unknown function");
         cb();
     }
   },function(){
-    console.log("removed: ",removed);
+    console.log("removed: ",removed.join(", "));
     existing={};
     if(typeof callback === "function") callback(ret);
   });
-}
-function parseCommands(commands){
-  //  console.log("parseCommands")
-  var creates = {};
-  for(command of commands){
-    var key = Object.keys(creates).length;
-    switch(command){
-      case "all":
-        creates = {0:database,1:tables,2:user,3:grant};
-        break;
-      case "database":
-        creates[0] = database;
-        break;
-      case "tables":
-        creates[1] = tables;
-        break;
-      case "user":
-        creates[2] = user;
-        break;
-      case "grant":
-        creates[3] = grant;
-        break;
-      default:
-        printUsage();
-    }
-  }
-  return creates;
-}
-function create(creates){
-  if(Object.keys(creates).length>0){
-    async.eachSeries(creates,function(funct,cb){
-      process.stdout.write("creating: "+funct.toString().split("(")[0].split(" ")[1]+" ...");
-      funct(cb);
-    },function(){
-      if(Object.keys(existing).length>0){
-        console.log("the following could not be created, because they already existed:\n");
-        for(k in existing){
-          console.log(k);
-        }
-        console.log("\noverwrite the existing?\n!!!THIS WILL REMOVE ALL OF THEIR CONTENTS!!! (Y/n)");
-        process.stdin.on("data",function(data){
-          var datastr = data.toString().replace(/[\n\r]/g,"");
-          if(datastr == "Y"||datastr =="y"){
-            remove(create);
-            
-          }else if(datastr == "N"||datastr == "n"){
-            dbcon.end(process.exit);
-          }else{
-            console.log("(Y/n)");
-          }
-        })
-      }else{
-        dbcon.end(process.exit);
-      }
-    });
-  }else{
-    printUsage();
-  }
 }
 function database(callback){
   //  console.log("database");
@@ -246,14 +281,15 @@ function tables(callback){
   process.stdout.write("selecting database...");
   dbcon.query("USE "+options.database+";",function(err_u,res_u){
     handelResErr(res_u,err_u, " done!\n");
+    process.stdout.write("creating: tables...\n");
     async.eachSeries(SQL.create.tables,function(table,cb){
-      process.stdout.write("creating: "+table.split("(")[0].split(" ")[2]+"...");
+      process.stdout.write(/*"creating: "*/"          "+table.split("(")[0].split(" ")[2]+"...");
       dbcon.query(replaceTags(table),function(err,res){
         handelResErr(res,err," done!\n",tables);
         cb();
       });
     },function(){
-      handelResErr(res_u,err_u, " done!\n");
+      handelResErr(res_u,err_u,/*" done!\n"*/"");
       if(typeof callback === "function") callback();
     });
   });
@@ -290,6 +326,7 @@ function replaceTags(str){
 function printUsage(){
   console.log("USAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" [MYSQL ROOT USER] [OPTION 1] [OPTION 2] [...]\n\nSYNOPSIS:\n\tInitialize mysql from config.js\n\nOPTIONS:\n"+
   "\nall:\n\tIntialize all\n\ntables:\n\tInitialize only tables (database has to exist)\n\nuser:\n\tCreate User\n\ndatabase:\n\tCreate database\n\ngrant:\n\tGrant rights to database (database and user have to exist)\n\nOptions can be in any order, because they are ordered in the script");
+  console.log(new Error());
   try{
     dbcon.end();
     process.exit();
