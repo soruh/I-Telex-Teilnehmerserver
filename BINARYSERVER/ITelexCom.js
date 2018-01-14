@@ -218,8 +218,8 @@ function encPackage(obj){
 	switch(obj.packagetype){
 		case 1:
 			var array = ValueToBytearray(data.rufnummer,4)
-			.concat(ValueToBytearray(data.pin,2))
-			.concat(ValueToBytearray(data.port,2));
+    			.concat(ValueToBytearray(data.pin,2))
+    			.concat(ValueToBytearray(data.port,2));
 			break;
 		case 2:
 			var iparr = data.ipaddresse.split(".");
@@ -231,7 +231,7 @@ function encPackage(obj){
 			break;
 		case 3:
 			var array = ValueToBytearray(data.rufnummer,4)
-			.concat(ValueToBytearray(data.version,1));
+    			.concat(ValueToBytearray(data.version,1));
 			break;
 		case 4:
 		var array = [];
@@ -257,23 +257,23 @@ function encPackage(obj){
 			}
 
 			var array = ValueToBytearray(data.rufnummer,4)
-			.concat(ValueToBytearray(data.name,40))
-			.concat(ValueToBytearray(flags,2))
-			.concat(ValueToBytearray(data.typ,1))
-			.concat(ValueToBytearray(data.hostname,40))
-			.concat(ValueToBytearray(numip,4))
-			.concat(ValueToBytearray(parseInt(data.port),2))
-			.concat(ValueToBytearray(ext,1))
-			.concat(ValueToBytearray(parseInt(data.pin),2))
-			.concat(ValueToBytearray(parseInt(data.moddate)+2208988800,4));
+    			.concat(ValueToBytearray(data.name,40))
+    			.concat(ValueToBytearray(flags,2))
+    			.concat(ValueToBytearray(data.typ,1))
+    			.concat(ValueToBytearray(data.hostname,40))
+    			.concat(ValueToBytearray(numip,4))
+    			.concat(ValueToBytearray(parseInt(data.port),2))
+    			.concat(ValueToBytearray(ext,1))
+    			.concat(ValueToBytearray(parseInt(data.pin),2))
+    			.concat(ValueToBytearray(parseInt(data.moddate)+2208988800,4));
 			break;
 		case 6:
 			var array = ValueToBytearray(data.version,1)
-			.concat(ValueToBytearray(config.get("SERVERPIN"),4));
+    			.concat(ValueToBytearray(config.get("SERVERPIN"),4));
 			break;
 		case 7:
 			var array = ValueToBytearray(data.version,1)
-			.concat(ValueToBytearray(config.get("SERVERPIN"),4));
+    			.concat(ValueToBytearray(config.get("SERVERPIN"),4));
 			break;
 		case 8:
 			var array = [];
@@ -285,7 +285,7 @@ function encPackage(obj){
 			// var array = ValueToBytearray(data.version,1)
 			// .concat(ValueToBytearray(data.pattern,40));
 			var array = ValueToBytearray(data.pattern,40)
-			.concat(ValueToBytearray(data.version,1));
+    			.concat(ValueToBytearray(data.version,1));
 			break;
 	}
 	var header = [obj.packagetype,array.length];

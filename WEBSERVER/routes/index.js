@@ -99,7 +99,7 @@ router.post('/edit', function(req, res){
               ",port="+mysql.escape(req.body.port)+
               ",extension="+mysql.escape(req.body.extension)+
               ",gesperrt="+mysql.escape(req.body.gesperrt)+
-              ", moddate="+mysql.escape(Math.floor(new Date().getTime()/1000))+
+              ",moddate="+mysql.escape(Math.floor(new Date().getTime()/1000))+
               ",changed=1 "+
               "WHERE uid="+mysql.escape(req.body.uid)+";";
               if(existing&&toEdit.rufnummer!=req.body.rufnummer){

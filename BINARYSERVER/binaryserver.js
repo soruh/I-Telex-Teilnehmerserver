@@ -209,9 +209,11 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 				for(let k in o){
 					if(o[k]!=undefined){
 						sets+=k+" = "+mysql.escape(o[k])+", ";
+					}else if(k=="extension"){
+						sets+=k+" = NULL, ";
 					}
 				}
-				var q = "UPDATE teilnehmer SET "+sets.substring(0, sets.length - 2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
+				var q = "UPDATE teilnehmer SET "+sets.substring(0,sets.length-2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
 				ITelexCom.SqlQuery(pool,q,function(res2){
 					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
 				});
