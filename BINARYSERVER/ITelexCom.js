@@ -362,9 +362,9 @@ function decPackage(packagetype,buffer){
 			}else if(data.durchwahl == 100){
 				data.durchwahl = "00";
 			}else if(Math.floor(data.durchwahl/10) == 10){
-				data.durchwahl = (data.durchwahl-100).toString();
+				data.durchwahl = "0"+(data.durchwahl-100);
 			}else{
-				data.durchwahl = "0"+data.durchwahl;
+				data.durchwahl = data.durchwahl;
 			}
 
 			break;
