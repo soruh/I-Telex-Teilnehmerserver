@@ -159,7 +159,7 @@ function connect(pool,onEnd,options,handles,callback){
 			}else{
 				if(cv(0)) lle("in "+module.parent.filename+"\n",colors.FgRed,error,colors.Reset);
 			}
-			if(connections[cnum].connection = socket) connections.splice(cnum,1);
+			if(connections[cnum].connection = socket) delete connections[cnum];
 			try{
 				onEnd();
 			}catch(e){
@@ -361,10 +361,12 @@ function decPackage(packagetype,buffer){
 				data.durchwahl = "0";
 			}else if(data.durchwahl == 100){
 				data.durchwahl = "00";
-			}else if(Math.floor(data.durchwahl/10) == 10){
-				data.durchwahl = "0"+(data.durchwahl-100);
+			}else if(data.durchwahl > 100){
+				data.durchwahl = data.durchwahl-100;
+			}else if(data.durchwahl < 10){
+				data.durchwahl = "0"+data.durchwahl
 			}else{
-				data.durchwahl = data.durchwahl;
+				data.durchwahl = data.durchwahl.toString();
 			}
 
 			break;
