@@ -554,7 +554,7 @@ function SqlQuery(sqlPool,query,callback){
 	if(cv(2)) ll(colors.BgWhite+colors.FgBlack,query,colors.Reset+colors.Reset);
 	sqlPool.query(query,function(err,res){
 		try{
-			if(cv(2)) ll("number of open connections: "+sqlPool._allConnections.length);
+			if(cv(3)) ll("number of open connections: "+sqlPool._allConnections.length);
 		}catch(e){
 			if(cv(2)) ll("not a pool");
 		}
