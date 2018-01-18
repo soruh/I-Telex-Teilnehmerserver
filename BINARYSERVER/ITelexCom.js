@@ -370,7 +370,7 @@ function decPackage(packagetype, buffer){
 		var b = (numip >> 8) & 255;
 		var c = (numip >> 16) & 255;
 		var d = (numip >> 24) & 255;
-		var ipaddresse = a + "." + b + "." + c + "." + d;
+		var ipaddresse = numip==0?null:(a + "." + b + "." + c + "." + d);
 
 		var flags = buffer.slice(44, 46);
 
