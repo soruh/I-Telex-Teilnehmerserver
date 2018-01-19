@@ -366,12 +366,15 @@ function decPackage(packagetype, buffer){
 		}
 		var ipaddresse = iparr.join(".");
 		*/
-		var a = (numip >> 0) & 255;
-		var b = (numip >> 8) & 255;
-		var c = (numip >> 16) & 255;
-		var d = (numip >> 24) & 255;
-		var ipaddresse = numip==0?null:(a + "." + b + "." + c + "." + d);
-
+		if(numip == 0){
+			var ipaddresse = null;
+		}else{
+			var a = (numip >> 0) & 255;
+			var b = (numip >> 8) & 255;
+			var c = (numip >> 16) & 255;
+			var d = (numip >> 24) & 255;
+			var ipaddresse = a + "." + b + "." + c + "." + d;
+		}
 		var flags = buffer.slice(44, 46);
 
 		var data = {
