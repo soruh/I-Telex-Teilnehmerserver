@@ -34,20 +34,29 @@ $ npm install pm2 -g
 $ npm install
 ```
 ### create SQL database, tables and user
-this can be done manually, or with a supplied script.
+this can be done manually, or with the supplied script.
 The script uses the config file, so it is important to at least configure `mySqlConnectionOptions` before executing it.
 
+If you already use mariadb you might have to run:
 ```
-$ node I-Telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] all
+$ sudo mysql -u root
+> USE mysql;
+> UPDATE user SET Plugin='' WHERE Plugin='unix_pipe';
+> FLUSH PRIVILEGES;
+> exit
+```
+
+```
+$ node I-Telex-Teilnehmerserver/init\_mysql [mysql-root user] [mysql-root-password] all
 ```
 If you want to create the database and the user manually do so and execute
 ```
-$ node I-Telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] tables
+$ node I-Telex-Teilnehmerserver/init\_mysql \[mysql-root user\] \[mysql-root-password\] tables
 ```
 for help on the script execute
 
 ```
-$ node I-Telex-Teilnehmerserver/init_mysql --help
+$ node I-Telex-Teilnehmerserver/init\_mysql --help
 ```
 You might have to run ```chmod u+x init_mysql``` to be able to execute the script.
 
@@ -59,7 +68,7 @@ The servers are stored in the servers database.
 
 They can be managed manually using mysql or with the supplied script.
 ```
-$ node I-Telex-Teilnehmerserver/manage_servers --help
+$ node I-Telex-Teilnehmerserver/manage\_servers --help
 ```
 You might have to run ```chmod u+x manage_servers``` to be able to execute the script.
 
@@ -117,24 +126,24 @@ Print linenumbers before log messages
   The pin for updates between servers
 ### UPDATEQUEUEINTERVAL
   The interval in which to look for changed entrys and write them to the queue
-### QUEUE_SEND_INTERVAL
+### QUEUE\_SEND\_INTERVAL
   The interval in which to try to send the queue
 ### FULLQUERYINTERVAL
   The interval in which to perform a `Full_Query`
-### FULL_QUERY_SERVER
+### FULL\_QUERY\_SERVER
   The server on which to perform a `Full_Query`.
 
 
   If left empty, or if the chosen server is not in the `servers` table `ALL` known servers will be queried!
 ### CONNECTIONTIMEOUT
   The Timeout duration for client connections
-### QWD_STDOUT_LOG
+### QWD\_STDOUT\_LOG
   The File to which the queuewatchdog should write it's standard logging
 
   "" will write to the stdout of the binaryserver process
 
   "\-" will discard all messages
-### QWD_STDERR_LOG
+### QWD\_STDERR\_LOG
   The File to which the queuewatchdog should write it's errors
 
   "" will write to the stderr of the binaryserver process
@@ -142,7 +151,7 @@ Print linenumbers before log messages
   "\-" will discard all errors
 ### BINARYPORT
   The port on which the binaryserver should listen
-### LOGGING_VERBOSITY
+### LOGGING\_VERBOSITY
   The level of logging verbosity:
 
   0 -> only errors
