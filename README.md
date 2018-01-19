@@ -37,15 +37,6 @@ $ npm install
 this can be done manually, or with the supplied script.
 The script uses the config file, so it is important to at least configure `mySqlConnectionOptions` before executing it.
 
-If you already use mariadb you might have to run:
-```
-$ sudo mysql -u root
-> USE mysql;
-> UPDATE user SET Plugin='' WHERE Plugin='unix_pipe';
-> FLUSH PRIVILEGES;
-> exit
-```
-
 ```
 $ node I-Telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] all
 ```
@@ -59,6 +50,16 @@ for help on the script execute
 $ node I-Telex-Teilnehmerserver/init_mysql --help
 ```
 You might have to run ```chmod u+x init_mysql``` to be able to execute the script.
+
+
+If you already use mariadb you might have to run:
+```
+$ sudo mysql -u root
+> USE mysql;
+> UPDATE user SET Plugin='' WHERE Plugin='unix_pipe';
+> FLUSH PRIVILEGES;
+> exit
+```
 
 the user defaults to <user_name>`@localhost`, which only makes it accessible from `localhost`. This should be sufficient for normal use, but if you want to host your database on a different machine you will have to change the user manually.
 
