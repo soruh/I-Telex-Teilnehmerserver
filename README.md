@@ -47,16 +47,16 @@ $ sudo mysql -u root
 ```
 
 ```
-$ node I-Telex-Teilnehmerserver/init\_mysql [mysql-root user] [mysql-root-password] all
+$ node I-Telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-password] all
 ```
 If you want to create the database and the user manually do so and execute
 ```
-$ node I-Telex-Teilnehmerserver/init\_mysql \[mysql-root user\] \[mysql-root-password\] tables
+$ node I-Telex-Teilnehmerserver/init_mysql \[mysql-root user\] \[mysql-root-password\] tables
 ```
 for help on the script execute
 
 ```
-$ node I-Telex-Teilnehmerserver/init\_mysql --help
+$ node I-Telex-Teilnehmerserver/init_mysql --help
 ```
 You might have to run ```chmod u+x init_mysql``` to be able to execute the script.
 
@@ -68,7 +68,7 @@ The servers are stored in the servers database.
 
 They can be managed manually using mysql or with the supplied script.
 ```
-$ node I-Telex-Teilnehmerserver/manage\_servers --help
+$ node I-Telex-Teilnehmerserver/manage_servers --help
 ```
 You might have to run ```chmod u+x manage_servers``` to be able to execute the script.
 
@@ -126,24 +126,24 @@ Print linenumbers before log messages
   The pin for updates between servers
 ### UPDATEQUEUEINTERVAL
   The interval in which to look for changed entrys and write them to the queue
-### QUEUE\_SEND\_INTERVAL
+### QUEUE_SEND_INTERVAL
   The interval in which to try to send the queue
 ### FULLQUERYINTERVAL
   The interval in which to perform a `Full_Query`
-### FULL\_QUERY\_SERVER
+### FULL_QUERY_SERVER
   The server on which to perform a `Full_Query`.
 
 
   If left empty, or if the chosen server is not in the `servers` table `ALL` known servers will be queried!
 ### CONNECTIONTIMEOUT
   The Timeout duration for client connections
-### QWD\_STDOUT\_LOG
+### QWD_STDOUT_LOG
   The File to which the queuewatchdog should write it's standard logging
 
   "" will write to the stdout of the binaryserver process
 
   "\-" will discard all messages
-### QWD\_STDERR\_LOG
+### QWD_STDERR_LOG
   The File to which the queuewatchdog should write it's errors
 
   "" will write to the stderr of the binaryserver process
@@ -151,7 +151,7 @@ Print linenumbers before log messages
   "\-" will discard all errors
 ### BINARYPORT
   The port on which the binaryserver should listen
-### LOGGING\_VERBOSITY
+### LOGGING_VERBOSITY
   The level of logging verbosity:
 
   0 -> only errors
