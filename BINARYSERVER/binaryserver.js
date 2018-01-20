@@ -752,7 +752,7 @@ pool.getConnection(function(err, connection){
 			if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
 			//startQWD();
 			init();
-			//getFullQuery();
+			getFullQuery();
 			//updateQueue();
       ITelexCom.TimeoutWrapper(getFullQuery, config.get("FULLQUERYINTERVAL"));
       ITelexCom.TimeoutWrapper(updateQueue,config.get("UPDATEQUEUEINTERVAL"));
