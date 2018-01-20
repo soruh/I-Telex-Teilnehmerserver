@@ -23,6 +23,13 @@ const COLORS = {
 	BgBlue: "\x1b[44m",
 	BgMagenta: "\x1b[45m",
 	BgCyan: "\x1b[46m",
-	BgWhite: "\x1b[47m"
+	BgWhite: "\x1b[47m",
+	disable:function disable(bool){
+		if(bool){
+			for(let i in this){
+				if(typeof this[i] === "string") this[i] = "";
+			}
+		}
+	}
 }
 module.exports=COLORS;

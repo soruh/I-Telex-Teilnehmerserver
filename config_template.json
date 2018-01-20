@@ -18,9 +18,12 @@
   "QWD_STDERR_LOG":"",
   "BINARYPORT":11811,
   "LOGGING_VERBOSITY":2,
+  "INSPECT_WITHOUT_COLORS":true,
 
   "WEBSERVERPORT":3030,
   "WEBINTERFACEPASSWORD":"XXX",
+
+  "WARN_AT_ERROR_COUNTS":"1 10",
 
   "EMAIL":{
     "useTestAccount":true,
@@ -54,6 +57,10 @@
       "wrongServerPin":{
         "subject":"wrong Server pin",
         "html":"<font color=\"blue\">[Ip]</font> tried to syncronize with the server with a wrong pin at <font color=\"blue\">[date]</font>"
+      },
+      "ServerError":{
+        "subject":"Could not connect to server",
+        "html":"Could not connect to server: <font color=\"blue\">[server]</font>. Error counter: <font color=\"blue\">[errorCounter]</font> at <font color=\"blue\">[date]</font>"
       }
     }
   }

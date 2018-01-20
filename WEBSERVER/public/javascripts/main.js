@@ -875,14 +875,14 @@ function edit(vals, cb){
     success: function(response){
       getList(updateTable);
       if(cb) cb(response.message,null);
-      if((response.message.code!=1)&&(response.message.code!=-1)) $("#log").text(JSON.stringify(response.message));
+      if((response.message.code!=1)&&(response.message.code!=-1)&&($("#log").length==1)) $("#log").text(JSON.stringify(response.message));
       if(!response.successful){
         console.log(response.message);
       }
     },
     error: function(error){
       console.error(error);
-      $("#log").text(JSON.stringify(error));
+      if($("#log").length==1) $("#log").text(JSON.stringify(error));
       if(cb) cb(null,error);
     }
   });

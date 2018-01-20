@@ -9,6 +9,7 @@ const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const mysql = require('mysql');
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
+colors.disable((process.execArgv.indexOf("--inspect")>-1)&&config.get("INSPECT_WITHOUT_COLORS"));
 
 var mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 mySqlConnectionOptions.multipleStatements = true;
@@ -203,7 +204,7 @@ router.post('/edit', function(req, res){
         });
         break;
       case "delete":
-        pool.query("UPDATE teilnehmer SET typ=0, changed=1 WHERE uid="+mysql.escape(req.body.uid)+";",function(err,result){
+        pool.query("UPDATE teilnehmer SET typ=0, changed=1, moddate="+Math.floor(new Date().getTime()/1000)+" WHERE typ!=0 AND uid="+mysql.escape(req.body.uid)+";",function(err,result){
           if(err){
             res.json({successful:false,message:err});
           }else{
