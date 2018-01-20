@@ -143,6 +143,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 		};
 		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
 		socket.on('timeout', function (){
+			if (cv(2)) ll(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
 			socket.destroy();
 			socket.end();
 		});
