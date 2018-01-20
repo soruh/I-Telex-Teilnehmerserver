@@ -249,7 +249,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}
 		});
 		socket.connect(options, function (connection){
-			if (cv(2)) ll(colors.FgGreen, "trying connected to:" + colors.FgCyan, options, colors.Reset);
+			if (cv(2)) ll(colors.FgGreen, "connected to:" + colors.FgCyan, options, colors.Reset);
 			if(sErrors[serverkey]&&(sErrors[serverkey].errorCounter>0)){
 				sErrors[serverkey].errorCounter=0;
 				if (cv(2)) ll(colors.FgGreen+"reset error counter for: "+colors.FgCyan,options,colors.Reset);
