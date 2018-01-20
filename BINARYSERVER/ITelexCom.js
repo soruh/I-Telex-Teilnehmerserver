@@ -147,10 +147,6 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			socket.end();
 		});
 		socket.on('data', function (data){
-			if(sErrors[serverkey].errorCounter>0){
-				sErrors[serverkey].errorCounter=0;
-				if (cv(2)) ll(colors.FgGreen+"reset error counter for: "+colors.FgCyan,options,colors.Reset);
-			}
 			//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
 			//if(cv(2)) ll(connections.readbuffer);
 			var res = checkFullPackage(data, connections.readbuffer);
@@ -252,6 +248,11 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}
 		});
 		socket.connect(options, function (connection){
+			if (cv(2)) ll(colors.FgGreen, "trying connected to:" + colors.FgCyan, options, colors.Reset);
+			if(sErrors[serverkey].errorCounter>0){
+				sErrors[serverkey].errorCounter=0;
+				if (cv(2)) ll(colors.FgGreen+"reset error counter for: "+colors.FgCyan,options,colors.Reset);
+			}
 			return (callback(socket, cnum));
 		});
 	} catch (e){
