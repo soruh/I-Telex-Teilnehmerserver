@@ -569,7 +569,7 @@ function getFullQuery(callback){
           }catch(e){
             //if(cv(2)) lle(e);
           }
-  			},{port:r.port,host:r.addresse},handles,function(client,cnum){
+  			},{host:r.addresse,port:r.port},handles,function(client,cnum){
   				client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("SERVERPIN"),version:1}}),function(){
   					ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
   					ITelexCom.connections[cnum].cb = cb;
