@@ -336,12 +336,13 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
   }
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
-	if(cv(2)){
-		var toSend = [];
+
+  if(cv(1)){
+    var toSend = [];
 		for(let o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
-		ll(colors.FgGreen,"entrys to transmit:",colors.FgCyan,toSend,colors.Reset);
+		ll(colors.FgGreen,"entrys to transmit:",colors.FgCyan,(cv(2)?toSend:toSend.length),colors.Reset);
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),function(){
