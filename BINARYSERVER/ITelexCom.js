@@ -325,7 +325,7 @@ function encPackage(obj){
 			numip += iparr[i] * Math.pow(2, (i * 8));
 		}
 
-		if (data.extension == ""){
+		if (data.extension == ""||data.extension==null){
 			var ext = 0;
 		} else if (data.extension == "0"){
 			var ext = 110;
