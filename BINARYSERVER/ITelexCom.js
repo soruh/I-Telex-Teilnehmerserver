@@ -319,7 +319,7 @@ function encPackage(obj){
 		break;
 	case 5:
 		var flags = data.gesperrt * 2;
-		var iparr = data.ipaddresse.split(".");
+		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
 		var numip = 0;
 		for (let i in iparr){
 			numip += iparr[i] * Math.pow(2, (i * 8));

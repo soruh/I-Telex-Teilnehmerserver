@@ -265,7 +265,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
   		});
   	}else{
   		if(cv(1)){
-  			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);//TODO: remove pin logging
+  			ll(colors.FgRed+"serverpin is incorrect! "+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+" ending connection!"+colors.Reset);//TODO: remove pin logging
   			connection.end();
   		}
       let message = config.get("EMAIL").messages.wrongServerPin;
