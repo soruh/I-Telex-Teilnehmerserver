@@ -543,6 +543,7 @@ function checkFullPackage(buffer, part){
 		]);
 	}
 } //return(data, part)
+
 function BytearrayToValue(arr, type){
 	if (type === "number"){
 		var num = 0;
