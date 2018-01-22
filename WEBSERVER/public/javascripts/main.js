@@ -910,7 +910,8 @@ function search(list,str){
   return(returnlist);
 }
 function sortFunction(x,y){
-  //console.log(x[sortby],y[sortby],x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:true}));
+  x[sortby]=x[sortby]==null?"":x[sortby];
+  y[sortby]=y[sortby]==null?"":y[sortby];
   return(x[sortby].toString().localeCompare(y[sortby].toString(),'de',{numeric:false}));
 }
 function sort(usli){

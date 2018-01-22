@@ -336,7 +336,6 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
   }
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
-
   if(cv(1)){
     var toSend = [];
 		for(let o of ITelexCom.connections[cnum].writebuffer){
