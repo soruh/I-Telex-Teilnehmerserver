@@ -490,7 +490,7 @@ function decPackage(packagetype, buffer){
 		};
 		break;
 	default:
-		lle("invalid/unsupported packagetype: " + packagetype);
+		if(cv(1)) lle("invalid/unsupported packagetype: " + packagetype);
 		data = false;
 		break;
 	}
@@ -516,7 +516,7 @@ function decData(buffer){
 				data: data
 			});
 		} else {
-			ll("error, no data");
+			if(cv(1)) lle("error, no data");
 		}
 		typepos += datalength + 2;
 	}
