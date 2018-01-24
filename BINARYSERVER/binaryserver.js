@@ -455,7 +455,8 @@ function init(){
 									clearTimeout(ITelexCom.connections[cnum].timeout);
 									ITelexCom.connections[cnum].timeout = null;
 								}
-								async.eachOfSeries(ITelexCom.connections[cnum].packages,function(pkg,key,cb){
+                let packages = ITelexCom.connections[cnum].packages;
+								async.eachOfSeries((packages!=undefined?packages:[]),function(pkg,key,cb){
 									if((cv(1)&&(Object.keys(ITelexCom.connections[cnum].packages).length > 1))||cv(2)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(ITelexCom.connections[cnum].packages).length+colors.Reset);
 									ITelexCom.handlePackage(pkg,cnum,pool,connection,handles,function(){
 										ITelexCom.connections[cnum].packages.splice(key,1);
