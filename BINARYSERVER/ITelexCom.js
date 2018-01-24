@@ -148,7 +148,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 				socket.destroy();
 				socket.end();
 			}catch(e) {
-				
+
 			}
 		});
 		socket.on('data', function (data){
@@ -615,7 +615,7 @@ function ascii(data, connection, pool){
 				send += "unknown\n\r";
 				send += "+++\n\r";
 				connection.write(send, function (){
-					if (cv(1)) m = colors.FgRed + "Entry not found/visible";
+					if (cv(1)) let m = colors.FgRed + "Entry not found/visible";
 					if (cv(2)){
 						m += ", sent:\n" + colors.FgYellow + send + colors.Reset;
 					} else {
