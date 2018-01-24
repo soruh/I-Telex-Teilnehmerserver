@@ -9,7 +9,6 @@ const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
-const cp = require('child_process');
 const fs = require('fs');
 const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const cv = ITelexCom.cv;
@@ -62,7 +61,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	var port = obj.data.port;
 	var ip = connection.remoteAddress.replace(/^.*:/,'');
 	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number,function(result_a){
-		if(result_a&&(result_a.length>0)){
+		if(result_a&&(result_a.length==1)){
 			var res = result_a[0];
 			if(res.pin == pin){
         if(res.typ == 5){
@@ -134,7 +133,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 						if(typeof cb === "function") cb();
 		    });
 			}
-		}else{
+		}else if(result_a&&(result_a.length==0)){
 			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1','1');",function(result_b, err){
 				if(err){
 					lle(colors.FgRed+"could not create entry",err,colors.Reset);
@@ -147,12 +146,12 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			        subject: message.subject
 			    };
 					if(message.text){
-											mailOptions.text = message.text;
-									}else if(message.html){
-											mailOptions.html = message.html.replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date());
-									}else{
-										mailOptions.text = "configuration error in config.json";
-									}
+            mailOptions.text = message.text;
+          }else if(message.html){
+            mailOptions.html = message.html.replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[number\])/g,number).replace(/(\[date\])/g,new Date());
+          }else{
+            mailOptions.text = "configuration error in config.json";
+					}
 					if(cv(2)) ll("sending mail:",mailOptions);
 					transporter.sendMail(mailOptions, function(error, info){
 			        if (error) {
@@ -172,7 +171,9 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 					}
 				}
 			});
-		}
+		}else{
+      console.error(res);
+    }
 	});
 };
 handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){

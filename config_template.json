@@ -5,7 +5,11 @@
     "user":"telefonbuch",
     "password":"XXX",
     "database":"telefonbuch",
-    "insecureAuth":true
+    "insecureAuth":true,
+
+    "connectTimeout"  :31557600000,
+    "aquireTimeout"   :31557600000,
+    "timeout"         :31557600000
   },
   "LOGLINENUMBERS":true,
   "SERVERPIN":118120815,
