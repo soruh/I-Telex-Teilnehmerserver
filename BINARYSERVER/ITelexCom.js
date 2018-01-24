@@ -143,106 +143,114 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 		};
 		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
 		socket.on('timeout', function (){
-			if (cv(2)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
-			socket.destroy();
-			socket.end();
+			try {
+				if (cv(2)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
+				socket.destroy();
+				socket.end();
+			}catch(e) {
+				
+			}
 		});
 		socket.on('data', function (data){
-			//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
-			//if(cv(2)) ll(connections.readbuffer);
-			var res = checkFullPackage(data, connections.readbuffer);
-			//if(cv(2)) ll(res);
-			if (res[1]){
-				connections[cnum].readbuffer = res[1];
-			}
-			if (res[0]){
-				if (typeof connections[cnum].packages != "object") connections[cnum].packages = [];
-				connections[cnum].packages = connections[cnum].packages.concat(decData(res[0]));
-				let timeout = function (){
-					if (cv(2)) ll(colors.FgGreen + "handling: " + colors.FgCyan + connections[cnum].handling + colors.Reset);
-					if (connections[cnum].handling === false){
-						connections[cnum].handling = true;
-						if (connections[cnum].timeout != null){
-							clearTimeout(connections[cnum].timeout);
-							connections[cnum].timeout = null;
-						}
-						async.eachOfSeries(connections[cnum].packages, function (pkg, key, cb){
-							if ((cv(1) && (Object.keys(connections[cnum].packages).length > 1)) || cv(2)) ll(colors.FgGreen + "handling package " + colors.FgCyan + (key + 1) + "/" + Object.keys(connections[cnum].packages).length + colors.Reset);
-							handlePackage(pkg, cnum, pool, socket, handles, function (){
-								connections[cnum].packages.splice(key, 1);
-								cb();
+			try {
+				//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
+				//if(cv(2)) ll(connections.readbuffer);
+				var res = checkFullPackage(data, connections.readbuffer);
+				//if(cv(2)) ll(res);
+				if (res[1]){
+					connections[cnum].readbuffer = res[1];
+				}
+				if (res[0]){
+					if (typeof connections[cnum].packages != "object") connections[cnum].packages = [];
+					connections[cnum].packages = connections[cnum].packages.concat(decData(res[0]));
+					let timeout = function (){
+						if (cv(2)) ll(colors.FgGreen + "handling: " + colors.FgCyan + connections[cnum].handling + colors.Reset);
+						if (connections[cnum].handling === false){
+							connections[cnum].handling = true;
+							if (connections[cnum].timeout != null){
+								clearTimeout(connections[cnum].timeout);
+								connections[cnum].timeout = null;
+							}
+							async.eachOfSeries(connections[cnum].packages, function (pkg, key, cb){
+								if ((cv(1) && (Object.keys(connections[cnum].packages).length > 1)) || cv(2)) ll(colors.FgGreen + "handling package " + colors.FgCyan + (key + 1) + "/" + Object.keys(connections[cnum].packages).length + colors.Reset);
+								handlePackage(pkg, cnum, pool, socket, handles, function (){
+									connections[cnum].packages.splice(key, 1);
+									cb();
+								});
+							}, function (){
+								connections[cnum].handling = false;
 							});
-						}, function (){
-							connections[cnum].handling = false;
-						});
-					} else {
-						if (connections[cnum].timeout == null){
-							connections[cnum].timeout = setTimeout(timeout, 10);
+						} else {
+							if (connections[cnum].timeout == null){
+								connections[cnum].timeout = setTimeout(timeout, 10);
+							}
 						}
 					}
+					timeout();
 				}
-				timeout();
+				/*if(res[0]){
+					handlePackage(decData(res[0]),cnum,pool,socket,handles);
+				}*/
+			}catch(e) {
+
 			}
-			/*if(res[0]){
-				handlePackage(decData(res[0]),cnum,pool,socket,handles);
-			}*/
 		});
 		socket.on('error', function (error){
-			if (error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
-				let exists = false;
-				for(let k in sErrors){
-					if(k == serverkey){
-						exists = true;
-
-						sErrors[serverkey].errors.push({error:error,timeStamp:new Date()});
-						sErrors[serverkey].errorCounter += 1;
-					}
-				}
-				if(!exists){
-					sErrors[serverkey] = {
-						errors: [{error: error,timeStamp:new Date()}],
-						errorCounter: 1
-					}
-				}
-				if(config.get("WARN_AT_ERROR_COUNTS").split(" ").indexOf(sErrors[serverkey].errorCounter.toString())>-1){
-					let message = config.get("EMAIL").messages.ServerError;
-					 let mailOptions = {
-						from: config.get("EMAIL").from,
-						to: config.get("EMAIL").to,
-						subject: message.subject
-					};
-					if(message.text){
-						mailOptions.text = message.text;
-					}else if(message.html){
-				    		mailOptions.html = message.html.replace(/(\[server\])/g,serverkey).replace(/(\[errorCounter\])/g,sErrors[serverkey].errorCounter).replace(/(\[date\])/g,new Date());
-				  	}else{
-				  		mailOptions.text = "configuration error in config.json";
-				  	}
-					if(cv(2)) ll("sending mail:",mailOptions);
-					transporter.sendMail(mailOptions, function(error, info){
-						if (error) {
-							return lle(error);
-						}
-						if(cv(1)) ll('Message sent:', info.messageId);
-						if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-					});
-
-				}
-				ll(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached errorCounter: "+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
-
-			} else {
-				if (cv(0)) lle(colors.FgRed, error, colors.Reset);
-			}
-			if (connections[cnum].connection = socket) delete connections[cnum];
 			try {
+				if (error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
+					let exists = false;
+					for(let k in sErrors){
+						if(k == serverkey){
+							exists = true;
+
+							sErrors[serverkey].errors.push({error:error,timeStamp:new Date()});
+							sErrors[serverkey].errorCounter += 1;
+						}
+					}
+					if(!exists){
+						sErrors[serverkey] = {
+							errors: [{error: error,timeStamp:new Date()}],
+							errorCounter: 1
+						}
+					}
+					if(config.get("WARN_AT_ERROR_COUNTS").split(" ").indexOf(sErrors[serverkey].errorCounter.toString())>-1){
+						let message = config.get("EMAIL").messages.ServerError;
+						 let mailOptions = {
+							from: config.get("EMAIL").from,
+							to: config.get("EMAIL").to,
+							subject: message.subject
+						};
+						if(message.text){
+							mailOptions.text = message.text;
+						}else if(message.html){
+					    		mailOptions.html = message.html.replace(/(\[server\])/g,serverkey).replace(/(\[errorCounter\])/g,sErrors[serverkey].errorCounter).replace(/(\[date\])/g,new Date());
+					  	}else{
+					  		mailOptions.text = "configuration error in config.json";
+					  	}
+						if(cv(2)) ll("sending mail:",mailOptions);
+						transporter.sendMail(mailOptions, function(error, info){
+							if (error) {
+								return lle(error);
+							}
+							if(cv(1)) ll('Message sent:', info.messageId);
+							if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+						});
+
+					}
+					ll(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached errorCounter: "+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
+
+				} else {
+					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
+				}
+				if (connections[cnum].connection = socket) delete connections[cnum];
 				onEnd();
 			} catch (e){
 				//if(cv(2)) lle(e);
 			}
 		});
 		socket.on('end', function (){
-			if (connections[cnum].connection = socket) delete connections[cnum];
 			try {
+				if (connections[cnum].connection = socket) delete connections[cnum];
 				onEnd();
 			} catch (e){
 				//if(cv(2)) lle(e);
