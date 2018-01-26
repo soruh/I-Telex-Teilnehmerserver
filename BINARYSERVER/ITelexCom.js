@@ -95,7 +95,6 @@ function Timer(fn, countdown){
 		getRemaining: getRemaining
 	};
 }
-
 function TimeoutWrapper(fn, countdown){
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
 	var args = [];
@@ -119,6 +118,328 @@ function TimeoutWrapper(fn, countdown){
 		fn.apply(null, args);
 	}, countdown);
 }
+
+
+function handlePackage(obj, cnum, pool, connection, handles, cb){
+	if (!obj){
+		if (cv(0)) lle(colors.FgRed + "no package to handle" + colors.Reset);
+		if (typeof cb === "function") cb();
+	} else {
+		if (cv(2)) ll(colors.FgGreen + "state: " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
+		if (obj.packagetype == 0xff){
+			if (cv(0)) lle(colors.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
+			if (typeof cb === "function") cb();
+		} else {
+			try {
+				if (cv(2)){
+					ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connection.remoteAddress) + colors.Reset);
+				} else if (cv(1)){
+					ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connection.remoteAddress) + colors.Reset);
+				}
+				if (typeof handles[obj.packagetype][connections[cnum].state] == "function"){
+					handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
+					if (cv(2)) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
+				} else {
+					if (cv(0)) lle(colors.FgRed + "packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgRed + " not supported in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
+					if (typeof cb === "function") cb();
+				}
+			} catch (e){
+				if (cv(0)) lle(colors.FgRed, e, colors.Reset);
+				if (typeof cb === "function") cb();
+			}
+		}
+	}
+}
+
+function checkFullPackage(buffer, part){
+	//if(cv(2)) ll(part);
+	//if(cv(2)) ll(buffer);
+	buffer = Array.prototype.slice.call(buffer, 0);
+	var data = buffer;
+	if (part){
+		data = part.concat(buffer);
+	}
+	//if(cv(2)) ll(data);
+	var packagetype = data[0];
+	var packagelength = data[1] + 2;
+	if (data.length == packagelength){
+		return ([data, []]);
+	} else if (data.length > packagelength){
+		var res = checkFullPackage(data.slice(packagelength + 1, data.length));
+		return ([data.slice(0, packagelength).concat(res[0]), res[1]]);
+	} else if (data.length < packagelength){
+		return ([
+			[], data
+		]);
+	} else {
+		return ([
+			[],
+			[]
+		]);
+	}
+} //return(data, part)
+function encPackage(obj){
+	if (cv(2)) ll(colors.FgGreen, "encoding:", colors.FgCyan, obj, colors.Reset);
+	var data = obj.data;
+	switch (obj.packagetype){
+	case 1:
+		var array = ValueToBytearray(data.rufnummer, 4)
+			.concat(ValueToBytearray(data.pin, 2))
+			.concat(ValueToBytearray(data.port, 2));
+		break;
+	case 2:
+		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
+		var numip = 0
+		for (let i in iparr){
+			numip += iparr[i] * Math.pow(2, (i * 8));
+		}
+		var array = ValueToBytearray(numip, 4);
+		break;
+	case 3:
+		var array = ValueToBytearray(data.rufnummer, 4)
+			.concat(ValueToBytearray(data.version, 1));
+		break;
+	case 4:
+		var array = [];
+		break;
+	case 5:
+		var flags = data.gesperrt * 2;
+		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
+		var numip = 0;
+		for (let i in iparr){
+			numip += iparr[i] * Math.pow(2, (i * 8));
+		}
+
+		if (data.extension == ""||data.extension==null){
+			var ext = 0;
+		} else if (data.extension == "0"){
+			var ext = 110;
+		} else if (data.extension == "00"){
+			var ext = 100;
+		} else if (data.extension.toString().length == 1){
+			var ext = parseInt(data.extension) + 100;
+		} else {
+			var ext = parseInt(data.extension);
+		}
+
+		var array = ValueToBytearray(data.rufnummer, 4)
+			.concat(ValueToBytearray(data.name, 40))
+			.concat(ValueToBytearray(flags, 2))
+			.concat(ValueToBytearray(data.typ, 1))
+			.concat(ValueToBytearray(data.hostname, 40))
+			.concat(ValueToBytearray(numip, 4))
+			.concat(ValueToBytearray(parseInt(data.port), 2))
+			.concat(ValueToBytearray(ext, 1))
+			.concat(ValueToBytearray(parseInt(data.pin), 2))
+			.concat(ValueToBytearray(parseInt(data.moddate) + 2208988800, 4));
+		break;
+	case 6:
+		var array = ValueToBytearray(data.version, 1)
+			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
+		break;
+	case 7:
+		var array = ValueToBytearray(data.version, 1)
+			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
+		break;
+	case 8:
+		var array = [];
+		break;
+	case 9:
+		var array = [];
+		break;
+	case 10:
+		// var array = ValueToBytearray(data.version,1)
+		// .concat(ValueToBytearray(data.pattern,40));
+		var array = ValueToBytearray(data.pattern, 40)
+			.concat(ValueToBytearray(data.version, 1));
+		break;
+	}
+	var header = [obj.packagetype, array.length];
+	if (array.length != obj.datalength){
+		if (cv(0)) lle("Buffer had unexpected size:\n" + array.length + " != " + obj.datalength);
+		return (Buffer.from([]));
+	}
+	if (cv(2)) ll(colors.FgGreen + "encoded:" + colors.FgCyan, Buffer.from(header.concat(array)), colors.Reset);
+	return (Buffer.from(header.concat(array)));
+}
+function decPackage(packagetype, buffer){
+	switch (packagetype){
+	case 1:
+		var data = {
+			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
+			pin: BytearrayToValue(buffer.slice(4, 6), "number"),
+			port: BytearrayToValue(buffer.slice(6, 8), "number")
+		};
+		break;
+		/*
+		case 2:
+			var data = {
+				ipaddresse:BytearrayToValue(buffer.slice(0,4),"string")
+			};
+			break;
+		The 2(0x02) package is not supposed to be sent to the server*/
+	case 3:
+		var data = {
+			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number")
+		};
+		if (buffer.slice(4, 5).length > 0){
+			data["version"] = BytearrayToValue(buffer.slice(4, 5), "number");
+		} else {
+			data["version"] = 1;
+		}
+		break;
+	case 4:
+		var data = {};
+		break;
+	case 5:
+		var numip = BytearrayToValue(buffer.slice(87, 91), "number");
+		/*
+		var iparr = [];
+		for(let i=0;i<=3;i++){
+			iparr[i] = (numip>>i*8)&255
+		}
+		var ipaddresse = iparr.join(".");
+		*/
+		if(numip == 0){
+			var ipaddresse = null;
+		}else{
+			var a = (numip >> 0) & 255;
+			var b = (numip >> 8) & 255;
+			var c = (numip >> 16) & 255;
+			var d = (numip >> 24) & 255;
+			var ipaddresse = a + "." + b + "." + c + "." + d;
+		}
+		var flags = buffer.slice(44, 46);
+
+		var data = {
+			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
+			name: BytearrayToValue(buffer.slice(4, 44), "string"),
+			gesperrt: flags[0] / 2,
+			typ: BytearrayToValue(buffer.slice(46, 47), "number"),
+			addresse: BytearrayToValue(buffer.slice(47, 87), "string"),
+			ipaddresse: ipaddresse,
+			port: BytearrayToValue(buffer.slice(91, 93), "number"),
+			durchwahl: BytearrayToValue(buffer.slice(93, 94), "number"),
+			pin: BytearrayToValue(buffer.slice(94, 96), "number"),
+			timestamp: BytearrayToValue(buffer.slice(96, 100), "number") - 2208988800
+		};
+		if (data.durchwahl == 0){
+			data.durchwahl = null;
+		} else if (data.durchwahl == 110){
+			data.durchwahl = "0";
+		} else if (data.durchwahl == 100){
+			data.durchwahl = "00";
+		} else if (data.durchwahl > 100){
+			data.durchwahl = data.durchwahl - 100;
+		} else if (data.durchwahl < 10){
+			data.durchwahl = "0" + data.durchwahl
+		} else {
+			data.durchwahl = data.durchwahl.toString();
+		}
+
+		break;
+	case 6:
+		var data = {
+			version: BytearrayToValue(buffer.slice(0, 1), "number"),
+			serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
+		};
+		break;
+	case 7:
+		var data = {
+			version: BytearrayToValue(buffer.slice(0, 1), "number"),
+			serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
+		};
+		break;
+	case 8:
+		var data = {};
+		break;
+	case 9:
+		var data = {};
+		break;
+	case 10:
+		var data = {
+			version: BytearrayToValue(buffer.slice(0, 1), "number"),
+			pattern: BytearrayToValue(buffer.slice(1, 41), "string")
+			//pattern:BytearrayToValue(buffer.slice(0,40),"string"),
+			//version:BytearrayToValue(buffer.slice(40,41),"number")
+		};
+		break;
+	default:
+		if(cv(1)) lle("invalid/unsupported packagetype: " + packagetype);
+		data = false;
+		break;
+	}
+	return (data);
+}
+function decData(buffer){
+	if (cv(2)) ll(colors.FgGreen + "decoding:", colors.FgCyan, Buffer.from(buffer), colors.Reset);
+	var typepos = 0;
+	var out = [];
+	while (typepos < buffer.length - 1){
+		var packagetype = parseInt(buffer[typepos], 10);
+		var datalength = parseInt(buffer[typepos + 1], 10);
+		var blockdata = [];
+		for (let i = 0; i < datalength; i++){
+			blockdata[i] = buffer[typepos + 2 + i];
+		}
+		var data = decPackage(packagetype, blockdata);
+		if (data){
+			out.push({
+				packagetype: packagetype,
+				datalength: datalength,
+				data: data
+			});
+		} else {
+			if(cv(1)) lle("error, no data");
+		}
+		typepos += datalength + 2;
+	}
+	if (cv(2)) ll(colors.FgGreen + "decoded:", colors.FgCyan, out, colors.Reset);
+	return(out);
+}
+
+function BytearrayToValue(arr, type){
+	if (type === "number"){
+		var num = 0;
+		for (let i = arr.length - 1; i >= 0; i--){
+			num *= 256;
+			num += arr[i];
+		}
+		return (num);
+	} else if (type === "string"){
+		var str = "";
+		for (let i = 0; i < arr.length; i++){
+			if (arr[i] != 0){
+				str += String.fromCharCode(arr[i]);
+			} else {
+				break;
+			}
+		}
+		return (str.replace(/(\u0000)/g, ""));
+	}
+}
+function ValueToBytearray(value, size){
+	//if(cv(2)) ll(value);
+	var array = [];
+	if (typeof value === "string"){
+		for (let i = 0; i < value.length; i++){
+			array[i] = value.charCodeAt(i);
+		}
+	} else if (typeof value === "number"){
+		while (value > 0){
+			array[array.length] = value % 256;
+			value = Math.floor(value / 256);
+		}
+	}
+	if (array.length > size || array.length == undefined){
+		if (cv(0)) lle("Value " + value + " turned into a bigger than expecte Bytearray!\n" + array.length + " > " + size);
+	}
+	while (array.length < size){
+		array[array.length] = 0;
+	}
+	return (array);
+}
+
 
 function connect(pool, transporter, onEnd, options, handles, callback){
 	if (cv(2)) ll(colors.FgGreen, "trying to connect to:" + colors.FgCyan, options, colors.Reset);
@@ -269,332 +590,6 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 		//cb();
 	}
 }
-
-function handlePackage(obj, cnum, pool, connection, handles, cb){
-	if (!obj){
-		if (cv(0)) lle(colors.FgRed + "no package to handle" + colors.Reset);
-		if (typeof cb === "function") cb();
-	} else {
-		if (cv(2)) ll(colors.FgGreen + "state: " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
-		if (obj.packagetype == 0xff){
-			if (cv(0)) lle(colors.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
-			if (typeof cb === "function") cb();
-		} else {
-			try {
-				if (cv(2)){
-					ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connection.remoteAddress) + colors.Reset);
-				} else if (cv(1)){
-					ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connection.remoteAddress) + colors.Reset);
-				}
-				if (typeof handles[obj.packagetype][connections[cnum].state] == "function"){
-					handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
-					if (cv(2)) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
-				} else {
-					if (cv(0)) lle(colors.FgRed + "packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgRed + " not supported in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
-					if (typeof cb === "function") cb();
-				}
-			} catch (e){
-				if (cv(0)) lle(colors.FgRed, e, colors.Reset);
-				if (typeof cb === "function") cb();
-			}
-		}
-	}
-}
-
-function encPackage(obj){
-	if (cv(2)) ll(colors.FgGreen, "encoding:", colors.FgCyan, obj, colors.Reset);
-	var data = obj.data;
-	switch (obj.packagetype){
-	case 1:
-		var array = ValueToBytearray(data.rufnummer, 4)
-			.concat(ValueToBytearray(data.pin, 2))
-			.concat(ValueToBytearray(data.port, 2));
-		break;
-	case 2:
-		var iparr = data.ipaddresse.split(".");
-		var numip = 0
-		for (let i in iparr){
-			numip += iparr[i] * Math.pow(2, (i * 8));
-		}
-		var array = ValueToBytearray(numip, 4);
-		break;
-	case 3:
-		var array = ValueToBytearray(data.rufnummer, 4)
-			.concat(ValueToBytearray(data.version, 1));
-		break;
-	case 4:
-		var array = [];
-		break;
-	case 5:
-		var flags = data.gesperrt * 2;
-		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
-		var numip = 0;
-		for (let i in iparr){
-			numip += iparr[i] * Math.pow(2, (i * 8));
-		}
-
-		if (data.extension == ""||data.extension==null){
-			var ext = 0;
-		} else if (data.extension == "0"){
-			var ext = 110;
-		} else if (data.extension == "00"){
-			var ext = 100;
-		} else if (data.extension.toString().length == 1){
-			var ext = parseInt(data.extension) + 100;
-		} else {
-			var ext = parseInt(data.extension);
-		}
-
-		var array = ValueToBytearray(data.rufnummer, 4)
-			.concat(ValueToBytearray(data.name, 40))
-			.concat(ValueToBytearray(flags, 2))
-			.concat(ValueToBytearray(data.typ, 1))
-			.concat(ValueToBytearray(data.hostname, 40))
-			.concat(ValueToBytearray(numip, 4))
-			.concat(ValueToBytearray(parseInt(data.port), 2))
-			.concat(ValueToBytearray(ext, 1))
-			.concat(ValueToBytearray(parseInt(data.pin), 2))
-			.concat(ValueToBytearray(parseInt(data.moddate) + 2208988800, 4));
-		break;
-	case 6:
-		var array = ValueToBytearray(data.version, 1)
-			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
-		break;
-	case 7:
-		var array = ValueToBytearray(data.version, 1)
-			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
-		break;
-	case 8:
-		var array = [];
-		break;
-	case 9:
-		var array = [];
-		break;
-	case 10:
-		// var array = ValueToBytearray(data.version,1)
-		// .concat(ValueToBytearray(data.pattern,40));
-		var array = ValueToBytearray(data.pattern, 40)
-			.concat(ValueToBytearray(data.version, 1));
-		break;
-	}
-	var header = [obj.packagetype, array.length];
-	if (array.length != obj.datalength){
-		if (cv(0)) lle("Buffer had unexpected size:\n" + array.length + " != " + obj.datalength);
-		return (Buffer.from([]));
-	}
-	if (cv(2)) ll(colors.FgGreen + "encoded:" + colors.FgCyan, Buffer.from(header.concat(array)), colors.Reset);
-	return (Buffer.from(header.concat(array)));
-}
-
-function decPackage(packagetype, buffer){
-	switch (packagetype){
-	case 1:
-		var data = {
-			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
-			pin: BytearrayToValue(buffer.slice(4, 6), "number"),
-			port: BytearrayToValue(buffer.slice(6, 8), "number")
-		};
-		break;
-		/*
-		case 2:
-			var data = {
-				ipaddresse:BytearrayToValue(buffer.slice(0,4),"string")
-			};
-			break;
-		The 2(0x02) package is not supposed to be sent to the server*/
-	case 3:
-		var data = {
-			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number")
-		};
-		if (buffer.slice(4, 5).length > 0){
-			data["version"] = BytearrayToValue(buffer.slice(4, 5), "number");
-		} else {
-			data["version"] = 1;
-		}
-		break;
-	case 4:
-		var data = {};
-		break;
-	case 5:
-		var numip = BytearrayToValue(buffer.slice(87, 91), "number");
-		/*
-		var iparr = [];
-		for(let i=0;i<=3;i++){
-			iparr[i] = (numip>>i*8)&255
-		}
-		var ipaddresse = iparr.join(".");
-		*/
-		if(numip == 0){
-			var ipaddresse = null;
-		}else{
-			var a = (numip >> 0) & 255;
-			var b = (numip >> 8) & 255;
-			var c = (numip >> 16) & 255;
-			var d = (numip >> 24) & 255;
-			var ipaddresse = a + "." + b + "." + c + "." + d;
-		}
-		var flags = buffer.slice(44, 46);
-
-		var data = {
-			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
-			name: BytearrayToValue(buffer.slice(4, 44), "string"),
-			gesperrt: flags[0] / 2,
-			typ: BytearrayToValue(buffer.slice(46, 47), "number"),
-			addresse: BytearrayToValue(buffer.slice(47, 87), "string"),
-			ipaddresse: ipaddresse,
-			port: BytearrayToValue(buffer.slice(91, 93), "number"),
-			durchwahl: BytearrayToValue(buffer.slice(93, 94), "number"),
-			pin: BytearrayToValue(buffer.slice(94, 96), "number"),
-			timestamp: BytearrayToValue(buffer.slice(96, 100), "number") - 2208988800
-		};
-
-		if (data.durchwahl == 0){
-			data.durchwahl = null;
-		} else if (data.durchwahl == 110){
-			data.durchwahl = "0";
-		} else if (data.durchwahl == 100){
-			data.durchwahl = "00";
-		} else if (data.durchwahl > 100){
-			data.durchwahl = data.durchwahl - 100;
-		} else if (data.durchwahl < 10){
-			data.durchwahl = "0" + data.durchwahl
-		} else {
-			data.durchwahl = data.durchwahl.toString();
-		}
-
-		break;
-	case 6:
-		var data = {
-			version: BytearrayToValue(buffer.slice(0, 1), "number"),
-			serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
-		};
-		break;
-	case 7:
-		var data = {
-			version: BytearrayToValue(buffer.slice(0, 1), "number"),
-			serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
-		};
-		break;
-	case 8:
-		var data = {};
-		break;
-	case 9:
-		var data = {};
-		break;
-	case 10:
-		var data = {
-			version: BytearrayToValue(buffer.slice(0, 1), "number"),
-			pattern: BytearrayToValue(buffer.slice(1, 41), "string")
-			//pattern:BytearrayToValue(buffer.slice(0,40),"string"),
-			//version:BytearrayToValue(buffer.slice(40,41),"number")
-		};
-		break;
-	default:
-		if(cv(1)) lle("invalid/unsupported packagetype: " + packagetype);
-		data = false;
-		break;
-	}
-	return (data);
-}
-
-function decData(buffer){
-	if (cv(2)) ll(colors.FgGreen + "decoding:", colors.FgCyan, Buffer.from(buffer), colors.Reset);
-	var typepos = 0;
-	var out = [];
-	while (typepos < buffer.length - 1){
-		var packagetype = parseInt(buffer[typepos], 10);
-		var datalength = parseInt(buffer[typepos + 1], 10);
-		var blockdata = [];
-		for (let i = 0; i < datalength; i++){
-			blockdata[i] = buffer[typepos + 2 + i];
-		}
-		var data = decPackage(packagetype, blockdata);
-		if (data){
-			out.push({
-				packagetype: packagetype,
-				datalength: datalength,
-				data: data
-			});
-		} else {
-			if(cv(1)) lle("error, no data");
-		}
-		typepos += datalength + 2;
-	}
-	if (cv(2)) ll(colors.FgGreen + "decoded:", colors.FgCyan, out[0], colors.Reset);
-	return (out); //TODO
-}
-
-function checkFullPackage(buffer, part){
-	//if(cv(2)) ll(part);
-	//if(cv(2)) ll(buffer);
-	buffer = Array.prototype.slice.call(buffer, 0);
-	var data = buffer;
-	if (part){
-		data = part.concat(buffer);
-	}
-	//if(cv(2)) ll(data);
-	var packagetype = data[0];
-	var packagelength = data[1] + 2;
-	if (data.length == packagelength){
-		return ([data, []]);
-	} else if (data.length > packagelength){
-		var res = checkFullPackage(data.slice(packagelength + 1, data.length));
-		return ([data.slice(0, packagelength).concat(res[0]), res[1]]);
-	} else if (data.length < packagelength){
-		return ([
-			[], data
-		]);
-	} else {
-		return ([
-			[],
-			[]
-		]);
-	}
-} //return(data, part)
-
-function BytearrayToValue(arr, type){
-	if (type === "number"){
-		var num = 0;
-		for (let i = arr.length - 1; i >= 0; i--){
-			num *= 256;
-			num += arr[i];
-		}
-		return (num);
-	} else if (type === "string"){
-		var str = "";
-		for (let i = 0; i < arr.length; i++){
-			if (arr[i] != 0){
-				str += String.fromCharCode(arr[i]);
-			} else {
-				break;
-			}
-		}
-		return (str.replace(/(\u0000)/g, ""));
-	}
-}
-
-function ValueToBytearray(value, size){
-	//if(cv(2)) ll(value);
-	var array = [];
-	if (typeof value === "string"){
-		for (let i = 0; i < value.length; i++){
-			array[i] = value.charCodeAt(i);
-		}
-	} else if (typeof value === "number"){
-		while (value > 0){
-			array[array.length] = value % 256;
-			value = Math.floor(value / 256);
-		}
-	}
-	if (array.length > size || array.length == undefined){
-		if (cv(0)) lle("Value " + value + " turned into a bigger than expecte Bytearray!\n" + array.length + " > " + size);
-	}
-	while (array.length < size){
-		array[array.length] = 0;
-	}
-	return (array);
-}
-
 function ascii(data, connection, pool){
 	var number = "";
 	for (let i = 0; i < data.length; i++){
@@ -657,7 +652,6 @@ function ascii(data, connection, pool){
 function cv(level){ //check verbosity
 	return (level <= config.get("LOGGING_VERBOSITY"));
 }
-
 function SqlQuery(sqlPool, query, callback){
 	if (cv(2)) ll(colors.BgWhite + colors.FgBlack, query, colors.Reset + colors.Reset);
 	sqlPool.query(query, function (err, res){
