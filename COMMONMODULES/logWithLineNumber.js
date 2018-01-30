@@ -1,10 +1,19 @@
 "use strict";
 if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev=[];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[0m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[0m":"\x1b[33m"+load_order[i]+"\x1b[0m");}console.log("loaded: "+load_order_rev.join(" ––> "));}
+
 const util = require('util');
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..'));
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
-const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
+const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
+
+var lineMaxlen=0;
+var dateMaxlen=0;
+var offset = 2;
+var bufferWs = config.get("BUFFERLOGWITHWHITESPACE");
+var line_disabled = !config.get("LOGLINENUMBERS");
+var date_disabled = !config.get("LOGDATE");
+
 function to2digits(x){
   let str = x.toString();
   return(str.length<2?"0"+str:str);
@@ -24,17 +33,10 @@ function Logger(error){
     var dateWsBuffer="";
     for(let i=0;i<dateMaxlen-date.length;i++){dateWsBuffer+=" ";}
 
-    let totalBuffer = lineWsBuffer+dateWsBuffer;
-    if(!line_disabled){
-      for(let i=0;i<line.length;i++){totalBuffer+=" ";}
-    }
-    if(!date_disabled){
-      for(let i=0;i<date.length;i++){totalBuffer+=" ";}
-    }
-    if((!date_disabled)&&(!line_disabled)){
-      totalBuffer+=" ";
-    }
-
+    let totalBuffer=lineWsBuffer+dateWsBuffer;
+    if(!line_disabled) for(let i=0;i<line.length;i++){totalBuffer+=" ";}
+    if(!date_disabled) for(let i=0;i<date.length;i++){totalBuffer+=" ";}
+    if((!date_disabled)&&(!line_disabled)) totalBuffer+=" ";
     totalBuffer+=" ";
 
     for(let i in args){
@@ -44,29 +46,14 @@ function Logger(error){
     var lineWsBuffer = "";
     var dateWsBuffer = "";
   }
-
   let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset;
-  //console.log([preLog].concat(args));
-  if(error){
-    for(let s of [preLog].concat(args)){
-      process.stderr.write(s+" ");
-    }
-    process.stderr.write("\n");
-    //console.error.apply(this,[preLog].concat(args));
-  }else{
-    for(let s of [preLog].concat(args)){
-      process.stdout.write(s+" ");
-    }
-    process.stdout.write("\n");
-    //console.log.apply(this,[preLog].concat(args));
+
+  let writeTo = error?process.stderr:process.stdout;
+  for(let s of [preLog].concat(args)){
+    writeTo.write(s+" ");
   }
+  writeTo.write("\n");
 }
-var lineMaxlen=0;
-var dateMaxlen=0;
-var offset = 2;
-var bufferWs = config.get("BUFFERLOGWITHWHITESPACE");
-var line_disabled = !config.get("LOGLINENUMBERS");
-var date_disabled = !config.get("LOGDATE");
 
 module.exports.setLine = function setLine(val){line_disabled=val;};
 module.exports.setDate = function setDate(val){date_disabled=val;};
