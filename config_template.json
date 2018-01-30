@@ -7,17 +7,21 @@
     "database":"telefonbuch",
     "insecureAuth":true,
 
-    "connectTimeout"  :31557600000,
-    "aquireTimeout"   :31557600000,
-    "timeout"         :31557600000
+    "connectTimeout"  :2147483647,
+    "aquireTimeout"   :2147483647,
+    "timeout"         :2147483647
   },
+
   "LOGLINENUMBERS":true,
+  "LOGDATE":false,
+  "BUFFERLOGWITHWHITESPACE":true,
+
   "SERVERPIN":118120815,
   "UPDATEQUEUEINTERVAL":60000,
   "QUEUE_SEND_INTERVAL":300000,
   "FULLQUERYINTERVAL":1800000,
   "FULL_QUERY_SERVER":"",
-  "CONNECTIONTIMEOUT":6000,
+  "CONNECTIONTIMEOUT":60000,
   "QWD_STDOUT_LOG":"",
   "QWD_STDERR_LOG":"",
   "BINARYPORT":11811,

@@ -1,5 +1,5 @@
 "use strict";
-if (module.parent != null){var mod = module;var load_order = [module.id.split("/").slice(-1)];while (mod.parent) {load_order.push(mod.parent.filename.split("/").slice(-1));mod = mod.parent;}var load_order_rev = [];for (let i = load_order.length - 1; i >= 0; i--) {load_order_rev.push(i == 0 ? "\x1b[32m" + load_order[i] + "\x1b[0m" : i == load_order.length - 1 ? "\x1b[36m" + load_order[i] + "\x1b[0m" : "\x1b[33m" + load_order[i] + "\x1b[0m");}console.log("loaded: " + load_order_rev.join(" --> "));}
+if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev=[];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[0m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[0m":"\x1b[33m"+load_order[i]+"\x1b[0m");}console.log("loaded: "+load_order_rev.join(" ––> "));}
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname, '..'));
 
@@ -179,7 +179,7 @@ function checkFullPackage(buffer, part){
 	}
 } //return(data, part)
 function encPackage(obj){
-	if (cv(2)) ll(colors.FgGreen, "encoding:", colors.FgCyan, obj, colors.Reset);
+	if (cv(2)) ll(colors.FgGreen+"encoding:"+colors.FgCyan,obj,colors.Reset);
 	var data = obj.data;
 	switch (obj.packagetype){
 	case 1:
@@ -442,7 +442,7 @@ function ValueToBytearray(value, size){
 
 
 function connect(pool, transporter, onEnd, options, handles, callback){
-	if (cv(2)) ll(colors.FgGreen, "trying to connect to:" + colors.FgCyan, options, colors.Reset);
+	if (cv(2)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host+":"+options.port;
 		var socket = new net.Socket();
@@ -578,7 +578,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}
 		});
 		socket.connect(options, function (connection){
-			if (cv(2)) ll(colors.FgGreen, "connected to:" + colors.FgCyan, options, colors.Reset);
+			if (cv(2)) ll(colors.FgGreen+"connected to:" + colors.FgCyan, options, colors.Reset);
 			if(sErrors[serverkey]&&(sErrors[serverkey].errorCounter>0)){
 				sErrors[serverkey].errorCounter=0;
 				if (cv(2)) ll(colors.FgGreen+"reset error counter for: "+colors.FgCyan,options,colors.Reset);
@@ -653,15 +653,15 @@ function cv(level){ //check verbosity
 	return (level <= config.get("LOGGING_VERBOSITY"));
 }
 function SqlQuery(sqlPool, query, callback){
-	if (cv(2)) ll(colors.BgWhite + colors.FgBlack, query, colors.Reset + colors.Reset);
+	if (cv(2)) ll(colors.BgWhite+colors.FgBlack+query+colors.Reset);
 	sqlPool.query(query, function (err, res){
 		try {
-			if (cv(3)) ll("number of open connections: " + sqlPool._allConnections.length);
+			if (cv(3)) ll("number of open connections: "+sqlPool._allConnections.length);
 		} catch (e){
 			if (cv(2)) ll("not a pool");
 		}
 		if (err){
-			if (cv(0)) lle(colors.FgRed, err, colors.Reset);
+			if (cv(0)) lle(colors.FgRed,err,colors.Reset);
 			if (typeof callback === "function") callback([]);
 		} else {
 			if (typeof callback === "function") callback(res);
