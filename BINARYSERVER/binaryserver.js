@@ -346,7 +346,7 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 		for(let o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
-		ll(colors.FgGreen+"entrys to transmit:"+colors.FgCyan+(cv(2)?util.inspect(toSend).replace(/\n/,""):toSend.length)+colors.Reset);
+		ll(colors.FgGreen+"entrys to transmit:"+colors.FgCyan+(cv(2)?util.inspect(toSend).replace(/\n/g,""):toSend.length)+colors.Reset);
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),function(){
