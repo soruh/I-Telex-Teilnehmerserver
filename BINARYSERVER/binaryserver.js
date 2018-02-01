@@ -1,18 +1,22 @@
 "use strict";
 if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev=[];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[0m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[0m":"\x1b[33m"+load_order[i]+"\x1b[0m");}console.log("loaded: "+load_order_rev.join(" ––> "));}
+const util = require('util');
+const net = require('net');
+const fs = require('fs');
 const path = require('path');
+
+const async = require('async');
+const mysql = require('mysql');
+
 const PWD = path.normalize(path.join(__dirname,'..'));
 
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const {ll} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
-const net = require('net');
-const mysql = require('mysql');
-const async = require('async');
-const fs = require('fs');
+const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const cv = ITelexCom.cv;
-const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
+
 colors.disable((process.execArgv.indexOf("--inspect")>-1)&&config.get("INSPECT_WITHOUT_COLORS"));
 
 const readonly = (config.get("SERVERPIN") == null);
@@ -342,7 +346,7 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 		for(let o of ITelexCom.connections[cnum].writebuffer){
 			toSend.push(o.rufnummer);
 		}
-		ll(colors.FgGreen,"entrys to transmit:",colors.FgCyan,(cv(2)?toSend:toSend.length),colors.Reset);
+		ll(colors.FgGreen+"entrys to transmit:"+colors.FgCyan+(cv(2)?util.inspect(toSend).replace(/\n/,""):toSend.length)+colors.Reset);
 	}
 	if(ITelexCom.connections[cnum].writebuffer.length > 0){
 		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),function(){
