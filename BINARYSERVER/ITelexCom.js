@@ -570,6 +570,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}
 		});
 		socket.on('end', function (){
+			console.log(colors.FgYellow+"The connection to server "+colors.FgCyan+cnum+colors.FgYellow+" ended!"+colors.Reset);
 			try {
 				if (connections[cnum].connection = socket) delete connections[cnum];
 				onEnd();
