@@ -54,7 +54,7 @@ function Logger(error){
   
   let write = error?
   (errlog==""?function(buff){process.stderr.write(buff);}:function(str){fs.appendFileSync(errlog,str);}):
-  (outlog==""?function(buff){process.stderr.write(buff);}:function(str){fs.appendFileSync(outlog,str);});
+  (outlog==""?function(buff){process.stdout.write(buff);}:function(str){fs.appendFileSync(outlog,str);});
   
   for(let s of [preLog].concat(args)){
     write(s+" ");
