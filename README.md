@@ -138,18 +138,16 @@ Print linenumbers before log messages
   If left empty, or if the chosen server is not in the `servers` table `ALL` known servers will be queried!
 ### CONNECTIONTIMEOUT
   The Timeout duration for client connections
-### QWD_STDOUT_LOG
-  The File to which the queuewatchdog should write it's standard logging
+### STDOUT_LOG
+  The File to which the programm should write it's standard logging
 
-  "" will write to the stdout of the binaryserver process
+  "" will write to the stdout
 
-  "\-" will discard all messages
-### QWD_STDERR_LOG
-  The File to which the queuewatchdog should write it's errors
+### STDERR_LOG
+  The File to which the programm should write it's errors
 
-  "" will write to the stderr of the binaryserver process
+  "" will write to the stderr
 
-  "\-" will discard all errors
 ### BINARYPORT
   The port on which the binaryserver should listen
 ### LOGGING_VERBOSITY
