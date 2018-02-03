@@ -13,7 +13,8 @@ var offset = 2;
 var bufferWs = config.get("BUFFERLOGWITHWHITESPACE");
 var line_disabled = !config.get("LOGLINENUMBERS");
 var date_disabled = !config.get("LOGDATE");
-
+const outlog = config.get("STDOUT_LOG");
+const errlog = config.get("STDERR_LOG");
 function to2digits(x){
   let str = x.toString();
   return(str.length<2?"0"+str:str);
@@ -47,14 +48,18 @@ function Logger(error){
     var dateWsBuffer = "";
   }
   let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset;
-
-  let writeTo = error?process.stderr:process.stdout;
+  
+  
+  let write = error?
+  (errlog==""?process.stderr.write:function(buff){fs.writeFile/*Sync*/(errlog,b);}):
+  (outlog==""?process.stderr.write:function(buff){fs.writeFile/*Sync*/(errlog,b);}):
+  
+  
   for(let s of [preLog].concat(args)){
-    writeTo.write(s+" ");
+    write(s+" ");
   }
-  writeTo.write("\n");
+  write("\n");
 }
-
 module.exports.setLine = function setLine(val){line_disabled=val;};
 module.exports.setDate = function setDate(val){date_disabled=val;};
 module.exports.setOffset = function setOffset(val){offset=val;};
