@@ -303,7 +303,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
   if(readonly){
     if(typeof callback === "function") cb();
   }else{
-  	if(obj.data.serverpin == config.get("SERVERPIN")){
+  	if((obj.data.serverpin == config.get("SERVERPIN"))||readonly){
   		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
   		connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){
   			ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
