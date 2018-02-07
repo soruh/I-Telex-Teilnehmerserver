@@ -560,7 +560,14 @@ function updateQueue(callback){
 }
 function getFullQuery(callback){
 	if(readonly){
-    if(typeof callback === "function") callback();
+    ITelexCom.connect(pool,transporter,function(e){
+      if(typeof callback === "function") callback();
+    },
+    {host:config.get("READONLYHOST"),port:config.get("READONLYPORT")},handles,function(client,cnum){
+      client.write(ITelexCom.encPackage({packagetype:10,datalength:41,data:{pattern:'',version:1}}),function(){
+        ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
+      });
+    });
   }else{
     ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
   		for(let i in res){
