@@ -220,7 +220,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
       let args = Object.values(arguments);
       if(host){
         dnslookup(host,{verbatim:true},function(err, address, family){
-          if(cv(1)&&err) lle(colors.FgRed,err,colors.Reset);
+          if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
           if(typeof callback === "function") callback(address,res,o,connection,cb);
         });
       }else{
@@ -471,6 +471,7 @@ function init(){
               async.eachOf(res,function(r,key,cb){
                 if(r.ipaddresse==null&&r.hostname&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
                   dnslookup(res.hostname,{verbatim:true},function(err, address, family){
+                    if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
                     ips.push(address);
                     cb();
                   });
