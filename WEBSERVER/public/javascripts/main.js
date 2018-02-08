@@ -656,7 +656,7 @@ function UtcToString(Utc){
   if(SHOWALLDATEINFO){
     return(d.toString());
   }else{
-    if(language=="english"){
+    if(language=="english"){//TODO remove?
       return(twodigit(d.getMonth()+1)+"."+twodigit(d.getDate())+"."+d.getFullYear()+" "+
       twodigit(((d.getHours()>12)?(d.getHours()-12):d.getHours()))
       +":"+twodigit(d.getMinutes())

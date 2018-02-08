@@ -8,6 +8,7 @@ const dnslookup = require('dns').lookup;
 
 const async = require('async');
 const mysql = require('mysql');
+const ip = require('ip');
 
 const PWD = path.normalize(path.join(__dirname,'..'));
 
@@ -464,27 +465,35 @@ function init(){
 					ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation //probably not needed
 				}else if(data[0] == 99){
           var IpAddr = data.slice(1).toString().replace(/\n/g,"").replace(/\r/g,"");
-          ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer;", function(res){
-            var ips = [];
-            async.eachOf(res,function(r,key,cb){
-              if(r.ipaddresse==null&&r.hostname){
-                dnslookup(res.hostname,{verbatim:true},function(err, address, family){
-                  ips.push(address);
+          if(ip.isV4Format(IpAddr)||ip.isV6Format(IpAddr)){
+            ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", function(res){
+              var ips = [];
+              async.eachOf(res,function(r,key,cb){
+                if(r.ipaddresse==null&&r.hostname&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
+                  dnslookup(res.hostname,{verbatim:true},function(err, address, family){
+                    ips.push(address);
+                    cb();
+                  });
+                }else if(r.ipaddresse!=null&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
+                  ips.push(r.ipaddresse);
                   cb();
+                }else{
+                  cb();
+                }
+              },function(){
+                ips = ips.filter(function(elem, pos){
+                  return ips.indexOf(elem) == pos;
                 });
-              }else if(r.ipaddresse!=null){
-                ips.push(r.ipaddresse);
-                cb();
-              }else{
-                cb();
-              }
-            },function(){
-              ips = ips.filter(function(elem, pos){
-                return ips.indexOf(elem) == pos;
+                var exists = 0;
+                for(var i in ips){
+                  if(ip.isEqual(ips[i],IpAddr)) exists = 1;
+                }
+                connection.write(exists+"\r\n");
               });
-              connection.write(((ips.indexOf(IpAddr)>1)?"1":"0"));
             });
-          });
+          }else{
+            connection.write("-1\r\n");
+          }
         }else{
 					if(cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
 					var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
