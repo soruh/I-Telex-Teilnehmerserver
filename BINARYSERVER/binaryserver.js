@@ -4,6 +4,7 @@ const util = require('util');
 const net = require('net');
 const fs = require('fs');
 const path = require('path');
+const dnslookup = require('dns').lookup;
 
 const async = require('async');
 const mysql = require('mysql');
@@ -183,7 +184,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	if(obj.data.version == 1){
 		var rufnummer = obj.data.rufnummer;
-		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+rufnummer+";",function(result){
+		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+mysql.escape(rufnummer)+";",function(result){ //TODO check if escape breaks things
 			if(cv(2)) ll(colors.FgCyan,result,colors.Reset);
 			if((result[0] != undefined)&&(result != [])&&(obj.gesperrt != 1)&&(obj.typ != 0)){
 				result[0].pin = 0;
@@ -213,43 +214,61 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			moddate:obj.data.timestamp,
 			changed:0
 		};
-		if(res.length == 1){
-      var res=res[0];
-			if(obj.data.timestamp > res.moddate){
-        if(cv(0)) ll(obj.data.timestamp+" > "+res.moddate);
-				var sets = ""
-				for(let k in o){
-					if(o[k]!=undefined){
-						sets+=k+" = "+mysql.escape(o[k])+", ";
-					}else{
-						sets+=k+" = DEFAULT, ";
-					}
-				}
-				var q = "UPDATE teilnehmer SET "+sets.substring(0,sets.length-2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
-				ITelexCom.SqlQuery(pool,q,function(res2){
-					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-				});
-			}else{
-        if(cv(2)) ll(colors.FgYellow+"recieved entry is "+colors.FgCyan+(parseInt(res.moddate)-parseInt(obj.data.timestamp))+colors.FgYellow+" seconds older and was ignored"+colors.Reset);
-        connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-			}
-		}else if(res.length == 0){
-			var names = "";
-			var values = "";
-			for(let k in o){
-				if(o[k]!=undefined){
-					names+=k+", ";
-					values+=mysql.escape(o[k])+", ";
-				}
-			}
-			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
-			ITelexCom.SqlQuery(pool,q,function(res2){
-				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-			});
-		}else{
-			if(cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
-			if(typeof cb === "function") cb();
-		}
+    var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("DODNSLOOKUPS"));
+    (function(host,callback){
+      let args = Object.values(arguments);
+      if(host){
+        dnslookup(host,{verbatim:true},function(err, address, family){
+          if(cv(1)&&err) lle(colors.FgRed,err,colors.Reset);
+          if(typeof callback === "function") callback(address,res,o,connection,cb);
+        });
+      }else{
+        if(typeof callback === "function") callback(null,res,o,connection,cb);
+      }
+    })((doLU?o.hostname:false),function(addr,res,o,connection,cb){
+      var didLU = false;
+      if(doLU&&addr){
+        o.ipaddresse = addr;
+        didLU=true;
+      }
+  		if(res.length == 1){
+        var res=res[0];
+  			if(obj.data.timestamp > res.moddate||didLU){
+          if(cv(0)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
+  				var sets = ""
+  				for(let k in o){
+  					if(o[k]!=undefined){
+  						sets+=k+" = "+mysql.escape(o[k])+", ";
+  					}else{
+  						sets+=k+" = DEFAULT, ";
+  					}
+  				}
+  				var q = "UPDATE teilnehmer SET "+sets.substring(0,sets.length-2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
+  				ITelexCom.SqlQuery(pool,q,function(res2){
+  					connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
+  				});
+  			}else{
+          if(cv(2)) ll(colors.FgYellow+"recieved entry is "+colors.FgCyan+(parseInt(res.moddate)-parseInt(obj.data.timestamp))+colors.FgYellow+" seconds older and was ignored"+colors.Reset);
+          connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
+  			}
+  		}else if(res.length == 0){
+  			var names = "";
+  			var values = "";
+  			for(let k in o){
+  				if(o[k]!=undefined){
+  					names+=k+", ";
+  					values+=mysql.escape(o[k])+", ";
+  				}
+  			}
+  			var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
+  			ITelexCom.SqlQuery(pool,q,function(res2){
+  				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
+  			});
+  		}else{
+  			if(cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
+  			if(typeof cb === "function") cb();
+  		}
+    });
 	});
 };
 handles[5][ITelexCom.states.LOGIN] = handles[5][ITelexCom.states.FULLQUERY];
@@ -418,8 +437,9 @@ function init(){
 			var connectionpin;
 			connection.setTimeout(config.get("CONNECTIONTIMEOUT"));
 			connection.on('timeout', function(){
-			    connection.destroy();
-					connection.end();
+        if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" timed out"+colors.Reset);
+			  connection.destroy();
+				connection.end();
 			})
 			connection.on('end', function(){
 				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
@@ -439,10 +459,33 @@ function init(){
 					ll(colors.FgCyan,data,colors.Reset);
 					ll(colors.FgYellow,data.toString(),colors.Reset);
 				}
-				if(data[0] == 0x71&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
+				if(data[0] == 113&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
 					if(cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
-					ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation
-				}else{
+					ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation //probably not needed
+				}else if(data[0] == 99){
+          var IpAddr = data.slice(1).toString().replace(/\n/g,"").replace(/\r/g,"");
+          ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer;", function(res){
+            var ips = [];
+            async.eachOf(res,function(r,key,cb){
+              if(r.ipaddresse==null&&r.hostname){
+                dnslookup(res.hostname,{verbatim:true},function(err, address, family){
+                  ips.push(address);
+                  cb();
+                });
+              }else if(r.ipaddresse!=null){
+                ips.push(r.ipaddresse);
+                cb();
+              }else{
+                cb();
+              }
+            },function(){
+              ips = ips.filter(function(elem, pos){
+                return ips.indexOf(elem) == pos;
+              });
+              connection.write("entry "+((ips.indexOf(IpAddr)>1)?"exists":"does not exist")+"\n\r");
+            });
+          });
+        }else{
 					if(cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
 					var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
 					if(res[1].length > 0){
