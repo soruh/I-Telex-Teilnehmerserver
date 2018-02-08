@@ -482,7 +482,7 @@ function init(){
               ips = ips.filter(function(elem, pos){
                 return ips.indexOf(elem) == pos;
               });
-              connection.write("entry "+((ips.indexOf(IpAddr)>1)?"1":"0")+"\n\r");
+              connection.write(((ips.indexOf(IpAddr)>1)?"1":"0"));
             });
           });
         }else{
