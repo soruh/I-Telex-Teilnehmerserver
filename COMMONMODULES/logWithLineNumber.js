@@ -42,23 +42,35 @@ function Logger(error){
     if((!date_disabled)&&(!line_disabled)) totalBuffer+=" ";
     totalBuffer+=" ";
 
+    var lastColor = "";
     for(let i in args){
-      if(typeof args[i]!="string") args[i]=util.inspect(args[i]).replace(/\n/g,"\n"+totalBuffer,{});
+      if(typeof args[i]!="string"){
+        args[i]=util.inspect(args[i]);
+      }
+      var colorsAt = colors.colorsAt(args[i]);
+      var lastColorInArg = colorsAt[Object.keys(colorsAt).sort().slice(-1)];
+      lastColor = lastColorInArg?lastColorInArg:lastColor;
+      //console.log(colorsAt);
+      //console.log(lastColorInArg?(lastColorInArg+util.inspect(lastColorInArg)+colors.Reset):"no last color");
+      if(!(i==0&&colorsAt[0]!=null)){
+        args[i]=args[i]+" ";
+      }
+      args[i]=args[i].replace(/\n/g,"\n"+lastColor+totalBuffer);
     }
+    //console.log("final color → "+(lastColor?(lastColor+util.inspect(lastColor)+colors.Reset):"no last color"));
   }else{
     var lineWsBuffer = "";
     var dateWsBuffer = "";
   }
   let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset;
-  
-  
+
+
   let write = error?
   (errlog==""?function(buff){process.stderr.write(buff);}:function(str){fs.appendFileSync(errlog,str);}):
   (outlog==""?function(buff){process.stdout.write(buff);}:function(str){fs.appendFileSync(outlog,str);});
-  
-  for(let s of [preLog].concat(args)){
-    write(s+" ");
-  }
+
+
+  write(([preLog].concat(args)).join(""));
   write("\n");
 }
 module.exports.setLine = function setLine(val){line_disabled=val;};

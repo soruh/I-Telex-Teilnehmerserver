@@ -24,12 +24,32 @@ const COLORS = {
 	BgMagenta: "\x1b[45m",
 	BgCyan: "\x1b[46m",
 	BgWhite: "\x1b[47m",
-	disable:function disable(bool){
-		if(bool){
-			for(let i in this){
-				if(typeof this[i] === "string") this[i] = "";
-			}
+}
+
+
+module.exports=COLORS;
+module.exports["disable"]=
+function disable(bool){
+	if(bool){
+		for(let i in this){
+			if(typeof this[i] === "string") this[i] = "";
 		}
 	}
-}
-module.exports=COLORS;
+};
+module.exports["colorsAt"]=
+function colorsAt(str){
+	if(typeof str === "string"){
+		var colors = {};
+		for(let i in this){
+			if(typeof this[i] === "string"){
+				var index = str.indexOf(this[i]);
+				if(index!=-1){
+					colors[index]=this[i];
+				}
+			}
+		}
+		return(colors);
+	}else{
+		return(colors);
+	}
+};
