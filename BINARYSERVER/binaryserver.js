@@ -487,7 +487,9 @@ function init(){
                 });
                 var exists = 0;
                 for(var i in ips){
-                  if(ip.isEqual(ips[i],IpAddr)) exists = 1;
+                  if(ip.isEqual(ips[i],IpAddr)){
+                    exists = 1;
+                  }
                 }
                 connection.write(exists+"\r\n");
               });

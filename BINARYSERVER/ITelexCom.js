@@ -570,7 +570,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}
 		});
 		socket.on('end', function (){
-			console.log(colors.FgYellow+"The connection to server "+colors.FgCyan+cnum+colors.FgYellow+" ended!"+colors.Reset);
+			ll(colors.FgYellow+"The connection to server "+colors.FgCyan+cnum+colors.FgYellow+" ended!"+colors.Reset);
 			try {
 				if (connections[cnum].connection = socket) delete connections[cnum];
 				onEnd();
@@ -654,7 +654,7 @@ function cv(level){ //check verbosity
 	return (level <= config.get("LOGGING_VERBOSITY"));
 }
 function SqlQuery(sqlPool, query, callback){
-	if (cv(2)) ll(colors.BgWhite+colors.FgBlack+query+colors.Reset);
+	if (cv(2)) ll(colors.BgLightBlue+colors.FgBlack+query+colors.Reset);
 	sqlPool.query(query, function (err, res){
 		try {
 			if (cv(3)) ll("number of open connections: "+sqlPool._allConnections.length);

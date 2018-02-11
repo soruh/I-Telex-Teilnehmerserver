@@ -34,7 +34,7 @@ function Logger(error){
 
     dateMaxlen=dateMaxlen<date.length?date.length:dateMaxlen;
     var dateWsBuffer="";
-    for(let i=0;i<dateMaxlen-date.length;i++){dateWsBuffer+=" ";}
+    for(let i=0;i<dateMaxlen-date.length;i++){dateWsBuffer+="#";}
 
     let totalBuffer=lineWsBuffer+dateWsBuffer;
     if(!line_disabled) for(let i=0;i<line.length;i++){totalBuffer+=" ";}
@@ -42,27 +42,38 @@ function Logger(error){
     if((!date_disabled)&&(!line_disabled)) totalBuffer+=" ";
     totalBuffer+=" ";
 
-    var lastColor = "";
+    var currentColor = "";
     for(let i in args){
       if(typeof args[i]!="string"){
         args[i]=util.inspect(args[i]);
       }
       var colorsAt = colors.colorsAt(args[i]);
-      var lastColorInArg = colorsAt[Object.keys(colorsAt).sort().slice(-1)];
-      lastColor = lastColorInArg?lastColorInArg:lastColor;
-      //console.log(colorsAt);
-      //console.log(lastColorInArg?(lastColorInArg+util.inspect(lastColorInArg)+colors.Reset):"no last color");
       if(!(i==0&&colorsAt[0]!=null)){
         args[i]=args[i]+" ";
       }
-      args[i]=args[i].replace(/\n/g,"\n"+lastColor+totalBuffer);
+      args[i]=args[i].replace(/\n/g,function(replacing,index,fullstring){
+        var keys = Object.keys(colorsAt).sort();
+        for(i=0;i<keys.length;i++){
+          if(keys[i] <= index){
+            currentColor = colorsAt[keys[i]];
+          }
+        }
+        //console.log(colorsAt);
+        //console.log(index+"|"+(currentColor?(currentColor+util.inspect(currentColor)+colors.Reset):"no last color"));
+        //var currentColorInArg = colorsAt[keys.slice(-1)];
+        //currentColor = currentColorInArg?currentColorInArg:currentColor;
+        return(colors.Reset+"\n"+totalBuffer+currentColor);
+      });
+      if(currentColor == ""){
+        currentColor = colorsAt[Object.keys(colorsAt).sort().slice(-1)];
+      }
     }
-    //console.log("final color → "+(lastColor?(lastColor+util.inspect(lastColor)+colors.Reset):"no last color"));
+    //console.log("final color → "+(currentColor?(currentColor+util.inspect(currentColor)+colors.Reset):"no last color"));
   }else{
     var lineWsBuffer = "";
     var dateWsBuffer = "";
   }
-  let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset;
+  let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset+" ";
 
 
   let write = error?
