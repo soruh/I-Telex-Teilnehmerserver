@@ -22,6 +22,7 @@ function to2digits(x){
   return(str.length<2?"0"+str:str);
 }
 function Logger(error){
+  //console.time();
   let args = Object.values(arguments).slice(1);
   let stack = new Error().stack.split('\n');
   var line = stack[(offset||1) + 1].split((/^win/.test(process.platform))?("\\"):("/")).slice(-1)[0].replace(")","");
@@ -42,7 +43,7 @@ function Logger(error){
     if((!date_disabled)&&(!line_disabled)) totalBuffer+=" ";
     totalBuffer+=" ";
 
-    var currentColor = "";
+    var currentColors = {Fg:null,Bg:null,Mod:null};
     for(let i in args){
       if(typeof args[i]!="string"){
         args[i]=util.inspect(args[i]);
@@ -55,20 +56,40 @@ function Logger(error){
         var keys = Object.keys(colorsAt).sort();
         for(i=0;i<keys.length;i++){
           if(keys[i] <= index){
-            currentColor = colorsAt[keys[i]];
+            var color;
+            for(var c in colors){
+              if(typeof c === "string"&&colors[c] == colorsAt[keys[i]]){
+                color = c;
+                break;
+              }
+            }
+            var prefix = color.slice(0,2);
+            if(prefix=="Fg"||prefix=="Bg"){
+              currentColors[prefix] = colorsAt[keys[i]];
+            }else{
+              currentColors["Mod"] = colorsAt[keys[i]];
+            }
           }
         }
-        //console.log(colorsAt);
-        //console.log(index+"|"+(currentColor?(currentColor+util.inspect(currentColor)+colors.Reset):"no last color"));
-        //var currentColorInArg = colorsAt[keys.slice(-1)];
-        //currentColor = currentColorInArg?currentColorInArg:currentColor;
-        return(colors.Reset+"\n"+totalBuffer+currentColor);
+        return(colors.Reset+"\n"+totalBuffer+(currentColors.Fg?currentColors.Fg:"")+(currentColors.Bg?currentColors.Bg:"")+(currentColors.Mod?currentColors.Mod:""));
       });
-      if(currentColor == ""){
-        currentColor = colorsAt[Object.keys(colorsAt).sort().slice(-1)];
+      var keys = Object.keys(colorsAt).sort();
+      for(i=0;i<keys.length;i++){
+        var color;
+        for(var c in colors){
+          if(typeof c === "string"&&colors[c] == colorsAt[keys[i]]){
+            color = c;
+            break;
+          }
+        }
+        var prefix = color.slice(0,2);
+        if(prefix=="Fg"||prefix=="Bg"){
+          currentColors[prefix] = colorsAt[keys[i]];
+        }else{
+          currentColors["Mod"] = colorsAt[keys[i]];
+        }
       }
     }
-    //console.log("final color → "+(currentColor?(currentColor+util.inspect(currentColor)+colors.Reset):"no last color"));
   }else{
     var lineWsBuffer = "";
     var dateWsBuffer = "";
@@ -83,6 +104,7 @@ function Logger(error){
 
   write(([preLog].concat(args)).join(""));
   write("\n");
+  //console.timeEnd();
 }
 module.exports.setLine = function setLine(val){line_disabled=val;};
 module.exports.setDate = function setDate(val){date_disabled=val;};

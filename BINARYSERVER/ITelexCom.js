@@ -654,7 +654,7 @@ function cv(level){ //check verbosity
 	return (level <= config.get("LOGGING_VERBOSITY"));
 }
 function SqlQuery(sqlPool, query, callback){
-	if (cv(2)) ll(colors.BgLightBlue+colors.FgBlack+query+colors.Reset);
+	if (cv(2)) ll(colors.BgLightBlue+colors.FgBlack+query.replace(/,/g,",")+colors.Reset);
 	sqlPool.query(query, function (err, res){
 		try {
 			if (cv(3)) ll("number of open connections: "+sqlPool._allConnections.length);
