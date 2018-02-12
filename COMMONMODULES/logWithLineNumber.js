@@ -12,6 +12,7 @@ var lineMaxlen=0;
 var dateMaxlen=0;
 var offset = 2;
 var bufferWs = config.get("BUFFERLOGWITHWHITESPACE");
+var repairC = config.get("REPAIRPM2COLORS");//TODO apply
 var line_disabled = !config.get("LOGLINENUMBERS");
 var date_disabled = !config.get("LOGDATE");
 const outlog = config.get("STDOUT_LOG");
@@ -22,7 +23,6 @@ function to2digits(x){
   return(str.length<2?"0"+str:str);
 }
 function Logger(error){
-  //console.time();
   let args = Object.values(arguments).slice(1);
   let stack = new Error().stack.split('\n');
   var line = stack[(offset||1) + 1].split((/^win/.test(process.platform))?("\\"):("/")).slice(-1)[0].replace(")","");
@@ -37,26 +37,32 @@ function Logger(error){
     var dateWsBuffer="";
     for(let i=0;i<dateMaxlen-date.length;i++){dateWsBuffer+="#";}
 
-    let totalBuffer=lineWsBuffer+dateWsBuffer;
+    var totalBuffer=lineWsBuffer+dateWsBuffer;
     if(!line_disabled) for(let i=0;i<line.length;i++){totalBuffer+=" ";}
     if(!date_disabled) for(let i=0;i<date.length;i++){totalBuffer+=" ";}
     if((!date_disabled)&&(!line_disabled)) totalBuffer+=" ";
     totalBuffer+=" ";
+  }else{
+    var lineWsBuffer = "";
+    var dateWsBuffer = "";
+    var totalBuffer = "";
+  }
 
-    var currentColors = {Fg:null,Bg:null,Mod:null};
-    for(let i in args){
-      if(typeof args[i]!="string"){
-        args[i]=util.inspect(args[i]);
-      }
-      var colorsAt = colors.colorsAt(args[i]);
-      if(!(i==0&&colorsAt[0]!=null)){
-        args[i]=args[i]+" ";
-      }
-      args[i]=args[i].replace(/\n/g,function(replacing,index,fullstring){
-        var keys = Object.keys(colorsAt).sort();
+  var currentColors = {Fg:null,Bg:null,Mod:null};
+  for(let i in args){
+    if(typeof args[i]!="string"){
+      args[i]=util.inspect(args[i]);
+    }
+    var colorsAt = colors.colorsAt(args[i]);
+    var keys = Object.keys(colorsAt).sort();
+    if(!(i==0&&colorsAt[0]!=null)){
+      args[i]=args[i]+" ";
+    }
+    args[i]=args[i].replace(/\n/g,function(replacing,index,fullstring){
+      if(repairC){
         for(i=0;i<keys.length;i++){
           if(keys[i] <= index){
-            var color;
+            let color;
             for(var c in colors){
               if(typeof c === "string"&&colors[c] == colorsAt[keys[i]]){
                 color = c;
@@ -71,18 +77,19 @@ function Logger(error){
             }
           }
         }
-        return(colors.Reset+"\n"+totalBuffer+(currentColors.Fg?currentColors.Fg:"")+(currentColors.Bg?currentColors.Bg:"")+(currentColors.Mod?currentColors.Mod:""));
-      });
-      var keys = Object.keys(colorsAt).sort();
+      }
+      return(colors.Reset+"\n"+totalBuffer+(currentColors.Fg?currentColors.Fg:"")+(currentColors.Bg?currentColors.Bg:"")+(currentColors.Mod?currentColors.Mod:""));
+    });
+    if(repairC){
       for(i=0;i<keys.length;i++){
-        var color;
+        let color;
         for(var c in colors){
           if(typeof c === "string"&&colors[c] == colorsAt[keys[i]]){
             color = c;
             break;
           }
         }
-        var prefix = color.slice(0,2);
+        let prefix = color.slice(0,2);
         if(prefix=="Fg"||prefix=="Bg"){
           currentColors[prefix] = colorsAt[keys[i]];
         }else{
@@ -90,12 +97,9 @@ function Logger(error){
         }
       }
     }
-  }else{
-    var lineWsBuffer = "";
-    var dateWsBuffer = "";
   }
-  let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset+" ";
 
+  let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset+" ";
 
   let write = error?
   (errlog==""?function(buff){process.stderr.write(buff);}:function(str){fs.appendFileSync(errlog,str);}):
@@ -104,7 +108,6 @@ function Logger(error){
 
   write(([preLog].concat(args)).join(""));
   write("\n");
-  //console.timeEnd();
 }
 module.exports.setLine = function setLine(val){line_disabled=val;};
 module.exports.setDate = function setDate(val){date_disabled=val;};
