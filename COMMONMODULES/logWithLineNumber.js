@@ -62,14 +62,8 @@ function Logger(error){
       if(repairC){
         for(i=0;i<keys.length;i++){
           if(keys[i] <= index){
-            let color;
-            for(var c in colors){
-              if(typeof c === "string"&&colors[c] == colorsAt[keys[i]]){
-                color = c;
-                break;
-              }
-            }
-            var prefix = color.slice(0,2);
+            let colorName = Object.keys(colors)[Object.values(colors).indexOf(colorsAt[keys[i]])];
+            let prefix = colorName.slice(0,2);
             if(prefix=="Fg"||prefix=="Bg"){
               currentColors[prefix] = colorsAt[keys[i]];
             }else{
@@ -82,14 +76,8 @@ function Logger(error){
     });
     if(repairC){
       for(i=0;i<keys.length;i++){
-        let color;
-        for(var c in colors){
-          if(typeof c === "string"&&colors[c] == colorsAt[keys[i]]){
-            color = c;
-            break;
-          }
-        }
-        let prefix = color.slice(0,2);
+        let colorName = Object.keys(colors)[Object.values(colors).indexOf(colorsAt[keys[i]])];
+        let prefix = colorName.slice(0,2);
         if(prefix=="Fg"||prefix=="Bg"){
           currentColors[prefix] = colorsAt[keys[i]];
         }else{
