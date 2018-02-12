@@ -35,7 +35,7 @@ function Logger(error){
 
     dateMaxlen=dateMaxlen<date.length?date.length:dateMaxlen;
     var dateWsBuffer="";
-    for(let i=0;i<dateMaxlen-date.length;i++){dateWsBuffer+="#";}
+    for(let i=0;i<dateMaxlen-date.length;i++){dateWsBuffer+=" ";}
 
     var totalBuffer=lineWsBuffer+dateWsBuffer;
     if(!line_disabled) for(let i=0;i<line.length;i++){totalBuffer+=" ";}
