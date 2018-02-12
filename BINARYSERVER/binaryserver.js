@@ -235,8 +235,8 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
   		if(res.length == 1){
         var res=res[0];
   			if(obj.data.timestamp > res.moddate||didLU){
-          if(cv(0)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
-  				var sets = ""
+          if(cv(2)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
+  				var sets = "";
   				for(let k in o){
   					if(o[k]!=undefined){
   						sets+=k+" = "+mysql.escape(o[k])+", ";
@@ -614,6 +614,7 @@ function updateQueue(callback){
   }
 }
 function getFullQuery(callback){
+  console.time("FullQuery");
 	if(readonly){
     ITelexCom.connect(pool,transporter,function(e){
       if(typeof callback === "function") callback();
@@ -644,6 +645,7 @@ function getFullQuery(callback){
   				});
   			});
   		},function(){
+        console.timeEnd("FullQuery");
   			if(typeof callback === "function") callback();
   		});
   	});
