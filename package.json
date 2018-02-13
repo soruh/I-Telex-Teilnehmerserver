@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "pm2 start BINARYSERVER/binaryserver.js;pm2 start WEBSERVER/bin/webserver.js",
+    "start": "pm2 start BINARYSERVER/binaryserver.js -i max;pm2 start WEBSERVER/bin/webserver.js -i max",
     "restart": "pm2 reload webserver;pm2 reload binaryserver;",
     "stop": "pm2 delete webserver;pm2 delete binaryserver;"
   },
