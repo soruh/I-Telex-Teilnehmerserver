@@ -637,7 +637,7 @@ function ascii(data, connection, pool){
 				send += result[0]["extension"] + "\n\r";
 				send += "+++\n\r";
 				connection.write(send, function (){
-					if (cv(1)) m = colors.FgGreen + "Entry found";
+					if (cv(1)) var m = colors.FgGreen + "Entry found";
 					if (cv(2)){
 						m += ", sent:\n" + colors.FgYellow + send + colors.Reset;
 					} else {
