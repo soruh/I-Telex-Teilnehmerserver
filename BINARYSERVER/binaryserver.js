@@ -215,27 +215,25 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			moddate:obj.data.timestamp,
 			changed:0
 		};
-    var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("DODNSLOOKUPS"));
-    (function(host,callback){
-      let args = Object.values(arguments);
-      if(host){
-        dnslookup(host,{verbatim:true},function(err, address, family){
-          if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-          if(typeof callback === "function") callback(address,res,o,connection,cb);
-        });
-      }else{
-        if(typeof callback === "function") callback(null,res,o,connection,cb);
-      }
-    })((doLU?o.hostname:false),function(addr,res,o,connection,cb){
-      var didLU = false;
-      if(doLU&&addr){
-        o.ipaddresse = addr;
-        didLU=true;
-      }
-  		if(res.length == 1){
+	  if(res.length == 1){
         var res=res[0];
-  			if(obj.data.timestamp > res.moddate||didLU){
-          if(cv(2)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
+  	    if(obj.data.timestamp > res.moddate){
+  	       var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("DODNSLOOKUPS"));
+		  (function(host,callback){
+            let args = Object.values(arguments);
+            if(host){
+              dnslookup(host,{verbatim:true},function(err, address, family){
+                if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
+                if(typeof callback === "function") callback(address,res,o,connection,cb);
+              });
+            }else{
+              if(typeof callback === "function") callback(null,res,o,connection,cb);
+            }
+          })((doLU?o.hostname:false),function(addr,res,o,connection,cb){
+		    if(doLU&&addr){
+              o.ipaddresse = addr;
+            }
+                if(cv(2)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
   				var sets = "";
   				for(let k in o){
   					if(o[k]!=undefined){
@@ -514,7 +512,7 @@ function init(){
 									clearTimeout(ITelexCom.connections[cnum].timeout);
 									ITelexCom.connections[cnum].timeout = null;
 								}
-                let packages = ITelexCom.connections[cnum].packages;
+                                let packages = ITelexCom.connections[cnum].packages;
 								async.eachOfSeries((packages!=undefined?packages:[]),function(pkg,key,cb){
 									if((cv(1)&&(Object.keys(ITelexCom.connections[cnum].packages).length > 1))||cv(2)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(ITelexCom.connections[cnum].packages).length+colors.Reset);
 									ITelexCom.handlePackage(pkg,cnum,pool,connection,handles,function(){
