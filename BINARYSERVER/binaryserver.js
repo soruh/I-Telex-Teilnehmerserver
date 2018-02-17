@@ -66,7 +66,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	var pin = obj.data.pin;
 	var port = obj.data.port;
 	var ip = connection.remoteAddress.replace(/^.*:/,'');
-	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+" AND type != 0",function(result_a){
+	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+" AND typ != 0;",function(result_a){
 		if(result_a&&(result_a.length==1)){
 			var res = result_a[0];
 			if(res.pin == pin){
@@ -178,7 +178,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				}
 			});
 		}else{
-      console.error(res);
+      console.error(colors.FgRed,res,solors.Reset);
     }
 	});
 };
