@@ -44,6 +44,8 @@ if(config.get("EMAIL").useTestAccount){
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 
+
+
 /*<PKGTYPES>
 Client_update: 1
 Address_confirm: 2
@@ -65,15 +67,23 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	var number = obj.data.rufnummer;
 	var pin = obj.data.pin;
 	var port = obj.data.port;
-	var ip = connection.remoteAddress.replace(/^.*:/,'');
-	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+" AND typ != 0;",function(result_a){
-		if(result_a&&(result_a.length==1)){
-			var res = result_a[0];
+	var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
+	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_a){
+    let results = [];
+    if(result_a){
+      for(let r of result_a){
+        if(r.typ != 0){
+          results.push(r);
+        }
+      }
+    }
+		if(results.length==1){
+			var res = results[0];
 			if(res.pin == pin){
         if(res.typ == 5){
-  				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+ip+"' "+
+  				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+ipaddress+"' "+
   				(
-  					(port!=res.port||ip!=res.ipaddresse)?
+  					(port!=res.port||ipaddress!=res.ipaddresse)?
   					(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)+" "):
   					""
   				)
@@ -90,91 +100,44 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
         }else{
           if(cv(1)) ll(colors.FgRed+"not DynIp type"+colors.Reset);
   				connection.end();
-          let message = config.get("EMAIL").messages.wrongDynIpType;
-  				let mailOptions = {
-  		        from: config.get("EMAIL").from,
-  		        to: config.get("EMAIL").to,
-  		        subject: message.subject
-  		    };
-          if(message.text){
-            mailOptions.text = message.text;
-          }else if(message.html){
-            mailOptions.html = message.html.replace(/(\[typ\])/g,res.typ).replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date());
-          }else{
-            mailOptions.text = "configuration error in config.json";
-          }
-  				if(cv(2)) ll("sending mail:",mailOptions);
-  				transporter.sendMail(mailOptions, function(error, info){
-  		        if (error) {
-  		            return lle(error);
-  		        }
-  		        if(cv(1)) ll('Message sent:', info.messageId);
-  		        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-  						if(typeof cb === "function") cb();
-  		    });
+          ITelexCom.sendEmail(transporter,"wrongDynIpType",{
+            "[typ]":res.typ,
+            "[IpFull]":connection.remoteAddress,
+            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+            "[number]":res.rufnummer,
+            "[name]":res.name,
+            "[date]":new Date()
+          },cb);
         }
 			}else{
 				if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
 				connection.end();
-        let message = config.get("EMAIL").messages.wrongDynIpPin;
-				let mailOptions = {
-		        from: config.get("EMAIL").from,
-		        to: config.get("EMAIL").to,
-		        subject: message.subject
-		    };
-        if(message.text){
-          mailOptions.text = message.text;
-        }else if(message.html){
-          mailOptions.html = message.html.replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[number\])/g,res.rufnummer).replace(/(\[name\])/g,res.name).replace(/(\[date\])/g,new Date());
-        }else{
-          mailOptions.text = "configuration error in config.json";
-        }
-				if(cv(2)) ll("sending mail:",mailOptions);
-				transporter.sendMail(mailOptions, function(error, info){
-		        if (error) {
-		            return lle(error);
-		        }
-		        if(cv(1)) ll('Message sent:', info.messageId);
-		        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-						if(typeof cb === "function") cb();
-		    });
+        ITelexCom.sendEmail(transporter,"wrongDynIpPin",{},cb);
 			}
-		}else if(result_a&&(result_a.length==0)){
-			ITelexCom.SqlQuery(pool,"INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','"+Math.floor(new Date().getTime()/1000)+"','5','"+number+"','"+port+"','"+pin+"','"+connection.remoteAddress.replace(/^.*:/,'')+"','1','1');",function(result_b, err){
-				if(err){
-					lle(colors.FgRed+"could not create entry",err,colors.Reset);
-					if(typeof cb === "function") cb();
-				}else{
-          let message = config.get("EMAIL").messages.new;
-					let mailOptions = {
-			        from: config.get("EMAIL").from,
-			        to: config.get("EMAIL").to,
-			        subject: message.subject
-			    };
-					if(message.text){
-            mailOptions.text = message.text;
-          }else if(message.html){
-            mailOptions.html = message.html.replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[number\])/g,number).replace(/(\[date\])/g,new Date());
-          }else{
-            mailOptions.text = "configuration error in config.json";
-					}
-					if(cv(2)) ll("sending mail:",mailOptions);
-					transporter.sendMail(mailOptions, function(error, info){
-			        if (error) {
-			            return lle(error);
-			        }
-			        if(cv(1)) ll('Message sent:', info.messageId);
-			        if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-							if(typeof cb === "function") cb();
-			    });
-					try{
-						connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:connection.remoteAddress}}),"binary",function(){
-							if(typeof cb === "function") cb();
-						});
-					}catch(e){
-						if(cv(0)) ll(colors.FgRed,e,colors.Reset);
-						if(typeof cb === "function") cb();
-					}
+		}else if(results.length==0){
+      let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
+      if(result_a&&(result_a.length>0)){
+          query = `DELETE FROM teilnehmer WHERE rufnummer=${result_a.rufnummer};`+query;
+      }
+			ITelexCom.SqlQuery(pool,query,function(result_b){
+        if(result_b){
+          ITelexCom.sendEmail(transporter,"new",{
+            "[IpFull]":connection.remoteAddress,
+            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+            "[number]":number,
+            "[date]":new Date()
+          },cb);
+          ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
+            try{
+              connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+            }catch(e){
+              if(cv(0)) ll(colors.FgRed,e,colors.Reset);
+              if(typeof cb === "function") cb();
+            }
+          });
+        }else{
+          lle(colors.FgRed+"could not create entry",err,colors.Reset);
+          if(typeof cb === "function") cb();
 				}
 			});
 		}else{
@@ -221,7 +184,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
         if(cv(2)) ll(colors.FgGreen+"starting nslookup for: "+colors.FgCyan+host+colors.FgGreen+" ..."+colors.Reset);
         dnslookup(host,{verbatim:true},function(err, address, family){
           if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-          if(cv(2)&&(!(err))) ll(colors.FgGreen+"nslookuo got ip: "+colors.FgCyan+address+colors.Reset);
+          if(cv(2)&&(!(err))) ll(colors.FgGreen+"nslookup got ip: "+colors.FgCyan+address+colors.Reset);
           if(typeof callback === "function") callback(address,res,o,connection,cb);
         });
       }else{
@@ -298,29 +261,11 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
   			ll(colors.FgRed+"serverpin is incorrect! "+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+" ending connection!"+colors.Reset);//TODO: remove pin logging
   			connection.end();
   		}
-      let message = config.get("EMAIL").messages.wrongServerPin;
-  		let mailOptions = {
-  			from: config.get("EMAIL").from,
-  			to: config.get("EMAIL").to,
-  			subject: message.subject
-  		};
-      if(message.text){
-        mailOptions.text = message.text;
-      }else if(message.html){
-        mailOptions.html = message.html.replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[date\])/g,new Date());
-      }else{
-        mailOptions.text = "configuration error in config.json";
-      }
-  		if(cv(2)) ll("sending mail:",mailOptions);
-  		transporter.sendMail(mailOptions, function(error, info){
-  				if (error) {
-  						return lle(error);
-  				}
-  				if(cv(1)) ll('Message sent:', info.messageId);
-  				if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-  				if(typeof cb === "function") cb();
-  		});
-  		if(typeof cb === "function") cb();
+      ITelexCom.sendEmail(transporter,"wrongServerPin",{
+        "[IpFull]":connection.remoteAddress,
+        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+        "[date]":new Date()
+      },cb);
   	}
   }
 };
@@ -339,29 +284,11 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
   			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("SERVERPIN")+colors.FgRed+"ending connection!"+colors.Reset);
   			connection.end();
   		}
-      let message = config.get("EMAIL").messages.wrongServerPin;
-  		let mailOptions = {
-  				from: config.get("EMAIL").from,
-  				to: config.get("EMAIL").to,
-  				subject: message.subject
-  		};
-      if(message.text){
-        mailOptions.text = message.text;
-      }else if(message.html){
-        mailOptions.html = message.html.replace(/(\[IpFull\])/g,connection.remoteAddress).replace(/(\[Ip\])/g,connection.remoteAddress.split(":").slice(-1)).replace(/(\[date\])/g,new Date());
-      }else{
-        mailOptions.text = "configuration error in config.json";
-      }
-  		if(cv(2)) ll("sending mail:",mailOptions);
-  		transporter.sendMail(mailOptions, function(error, info){
-  				if (error) {
-  						return lle(error);
-  				}
-  				if(cv(1)) ll('Message sent:', info.messageId);
-  				if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-  				if(typeof cb === "function") cb();
-  		});
-  		if(typeof cb === "function") cb();
+      ITelexCom.sendEmail(transporter,"wrongServerPin",{
+        "[IpFull]":connection.remoteAddress,
+        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+        "[date]":new Date()
+      },cb);
   	}
   }
 };
@@ -450,20 +377,20 @@ function init(){
 			connection.on('end', function(){
 				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
 				if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
-          delete ITelexCom.connections[cnum];
+          setTimeout(function(cnum){delete ITelexCom.connections[cnum];},1000,cnum);
         }
 			});
 			connection.on('error', function(err) {
 				if(cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
         if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
-          delete ITelexCom.connections[cnum];
+          setTimeout(function(cnum){delete ITelexCom.connections[cnum];},1000,cnum);
         }
 			});
 			connection.on('data', function(data) {
 				if(cv(2)){
 					ll(colors.FgGreen+"recieved data:"+colors.Reset);
 					ll(colors.FgCyan,data,colors.Reset);
-					ll(colors.FgYellow,data.toString(),colors.Reset);
+					ll(colors.FgCyan,data.toString().replace(/\u0000/g,"").replace(/[^ -~]/g," "),colors.Reset);
 				}
 				if(data[0] == 113&&/[0-9]/.test(String.fromCharCode(data[1]))/*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/){
 					if(cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
@@ -519,7 +446,7 @@ function init(){
 									clearTimeout(ITelexCom.connections[cnum].timeout);
 									ITelexCom.connections[cnum].timeout = null;
 								}
-                                let packages = ITelexCom.connections[cnum].packages;
+                let packages = ITelexCom.connections[cnum].packages;
 								async.eachOfSeries((packages!=undefined?packages:[]),function(pkg,key,cb){
 									if((cv(1)&&(Object.keys(ITelexCom.connections[cnum].packages).length > 1))||cv(2)) ll(colors.FgGreen+"handling package "+colors.FgCyan+(key+1)+"/"+Object.keys(ITelexCom.connections[cnum].packages).length+colors.Reset);
 									ITelexCom.handlePackage(pkg,cnum,pool,connection,handles,function(){
@@ -527,7 +454,7 @@ function init(){
 										cb();
 									});
 								},function(){
-									ITelexCom.connections[cnum].handling = false;
+                    ITelexCom.connections[cnum].handling = false;
 								});
 							}else{
 								if(ITelexCom.connections[cnum].timeout == null){

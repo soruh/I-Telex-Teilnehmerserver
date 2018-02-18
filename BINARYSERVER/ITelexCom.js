@@ -8,6 +8,7 @@ const {lle} = require(path.join(PWD, "/COMMONMODULES/logWithLineNumber.js"));
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
+const ip = require('ip');
 const colors = require(path.join(PWD, "/COMMONMODULES/colors.js"));
 const config = require(path.join(PWD, '/COMMONMODULES/config.js'));
 const nodemailer = require("nodemailer");
@@ -188,6 +189,8 @@ function encPackage(obj){
 			.concat(ValueToBytearray(data.port, 2));
 		break;
 	case 2:
+		data.ipaddresse = ip.isV4Format(data.ipaddresse)?data.ipaddresse:(ip.isV6Format(data.ipaddresse)?(ip.isV4Format(data.ipaddresse.split("::")[1])?data.ipaddresse.split("::")[1]:""):"");
+		console.log(data);
 		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
 		var numip = 0
 		for (let i in iparr){
@@ -271,13 +274,21 @@ function decPackage(packagetype, buffer){
 			port: BytearrayToValue(buffer.slice(6, 8), "number")
 		};
 		break;
-		/*
-		case 2:
-			var data = {
-				ipaddresse:BytearrayToValue(buffer.slice(0,4),"string")
-			};
-			break;
-		The 2(0x02) package is not supposed to be sent to the server*/
+	case 2:
+		var numip = BytearrayToValue(buffer.slice(0, 4), "number");
+		if(numip == 0){
+			var ipaddresse = null;
+		}else{
+			var a = (numip >> 0) & 255;
+			var b = (numip >> 8) & 255;
+			var c = (numip >> 16) & 255;
+			var d = (numip >> 24) & 255;
+			var ipaddresse = a + "." + b + "." + c + "." + d;
+		}
+		var data = {
+			ipaddresse:ipaddresse
+		};
+		break;
 	case 3:
 		var data = {
 			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number")
@@ -473,6 +484,11 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}
 		});
 		socket.on('data', function (data){
+			if(cv(2)){
+				ll(colors.FgGreen+"recieved data:"+colors.Reset);
+				ll(colors.FgCyan,data,colors.Reset);
+				ll(colors.FgCyan,data.toString().replace(/\u0000/g,"").replace(/[^ -~]/g," "),colors.Reset);
+			}
 			try {
 				//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
 				//if(cv(2)) ll(connections.readbuffer);
@@ -535,35 +551,18 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 						}
 					}
 					if(config.get("WARN_AT_ERROR_COUNTS").split(" ").indexOf(sErrors[serverkey].errorCounter.toString())>-1){
-						let message = config.get("EMAIL").messages.ServerError;
-						 let mailOptions = {
-							from: config.get("EMAIL").from,
-							to: config.get("EMAIL").to,
-							subject: message.subject
-						};
-						if(message.text){
-							mailOptions.text = message.text;
-						}else if(message.html){
-					    		mailOptions.html = message.html.replace(/(\[server\])/g,serverkey).replace(/(\[errorCounter\])/g,sErrors[serverkey].errorCounter).replace(/(\[date\])/g,new Date());
-					  	}else{
-					  		mailOptions.text = "configuration error in config.json";
-					  	}
-						if(cv(2)) ll("sending mail:",mailOptions);
-						transporter.sendMail(mailOptions, function(error, info){
-							if (error) {
-								return lle(error);
-							}
-							if(cv(1)) ll('Message sent:', info.messageId);
-							if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-						});
-
+						sendEmail(transporter,"ServerError",{
+							"[server]":serverkey,
+							"[errorCounter]":sErrors[serverkey].errorCounter,
+	            "[date]":new Date()
+	          },cb);
 					}
 					ll(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached errorCounter: "+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
 
 				} else {
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
 				}
-				if (connections[cnum].connection = socket) delete connections[cnum];
+				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
 				onEnd();
 			} catch (e){
 				//if(cv(2)) lle(e);
@@ -572,7 +571,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 		socket.on('end', function (){
 			ll(colors.FgYellow+"The connection to server "+colors.FgCyan+cnum+colors.FgYellow+" ended!"+colors.Reset);
 			try {
-				if (connections[cnum].connection = socket) delete connections[cnum];
+				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
 				onEnd();
 			} catch (e){
 				//if(cv(2)) lle(e);
@@ -654,7 +653,7 @@ function cv(level){ //check verbosity
 	return (level <= config.get("LOGGING_VERBOSITY"));
 }
 function SqlQuery(sqlPool, query, callback){
-	if (cv(2)) ll(colors.BgLightBlue+colors.FgBlack+query.replace(/,/g,",")+colors.Reset);
+	if (cv(2)) ll(colors.BgLightBlue+colors.FgBlack+query+colors.Reset);
 	sqlPool.query(query, function (err, res){
 		try {
 			if (cv(3)) ll("number of open connections: "+sqlPool._allConnections.length);
@@ -663,7 +662,7 @@ function SqlQuery(sqlPool, query, callback){
 		}
 		if (err){
 			if (cv(0)) lle(colors.FgRed,err,colors.Reset);
-			if (typeof callback === "function") callback([]);
+			if (typeof callback === "function") callback(null);
 		} else {
 			if (typeof callback === "function") callback(res);
 		}
@@ -698,6 +697,36 @@ function SqlQuery(sqlPool, query, callback){
 	}*/
 }
 
+function sendEmail(transporter,messageName,values,callback){
+  let message = config.get("EMAIL").messages[messageName];
+  let mailOptions = {
+      from: config.get("EMAIL").from,
+      to: config.get("EMAIL").to,
+      subject: message.subject
+  };
+	let content = {};
+  if(message.text){
+    content.text = message.text;
+  }else if(message.html){
+    content.html = message.html;
+  }else{
+    mailOptions.text = "configuration error in config.json";
+  }
+	let type = Object.keys(content)[0];
+	mailOptions[type] = content[type];
+	for(let k in values){
+		mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g,"\\[").replace(/\]/g,"\\]"),"g"),values[k]);
+	}
+  if(cv(2)) ll("sending mail:",mailOptions);
+  transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+          return lle(error);
+      }
+      if(cv(1)) ll('Message sent:', info.messageId);
+      if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+      if(typeof callback === "function") callback();
+  });
+}
 /*
 if(cv(3)){
 	setInterval(function(ts){
@@ -738,3 +767,4 @@ module.exports.states = {
 	FULLQUERY: FULLQUERY,
 	LOGIN: LOGIN
 };
+module.exports.sendEmail = sendEmail;
