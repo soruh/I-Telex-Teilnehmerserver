@@ -549,7 +549,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 	            "[date]":new Date()
 	          },cb);
 					}
-					ll(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached errorCounter: "+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
+					ll(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter: "+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
 
 				} else {
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);

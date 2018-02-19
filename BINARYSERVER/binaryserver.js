@@ -535,8 +535,7 @@ function getFullQuery(callback){
 	if(readonly){
     ITelexCom.connect(pool,transporter,function(e){
       if(typeof callback === "function") callback();
-    },
-    {host:config.get("readonlyHost"),port:config.get("readonlyPort")},handles,function(client,cnum){
+    },{host:config.get("readonlyHost"),port:config.get("readonlyPort")},handles,function(client,cnum){
       client.write(ITelexCom.encPackage({packagetype:10,datalength:41,data:{pattern:'',version:1}}),function(){
         ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
       });
@@ -664,7 +663,6 @@ pool.getConnection(function(err, connection){
 		connection.release();
 		if(module.parent === null){
 			if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
-			//startQWD();
 			init();
 			getFullQuery();
 			//updateQueue();
