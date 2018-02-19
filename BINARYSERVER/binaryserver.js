@@ -25,30 +25,10 @@ const readonly = (config.get("serverPin") == null);
 
 const nodemailer = require('nodemailer');
 
-var transporter;
-if(config.get("eMail").useTestAccount){
-  nodemailer.createTestAccount(function(err, account){
-    console.log("err:",err);
-    console.log("account:",account);
-    transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: account.user, // generated ethereal user
-        pass: account.pass  // generated ethereal password
-      }
-    });
-  });
-}else{
-  transporter = nodemailer.createTransport(config.get("eMail").account);
-}
-console.log(transporter);
-
-
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 
 
+var transporter;
 
 /*<PKGTYPES>
 Client_update: 1
@@ -667,12 +647,31 @@ pool.getConnection(function(err, connection){
 		connection.release();
 		if(module.parent === null){
 			if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
-			init();
-			getFullQuery();
-			//updateQueue();
-      ITelexCom.TimeoutWrapper(getFullQuery, config.get("fullQueryInterval"));
-      ITelexCom.TimeoutWrapper(updateQueue,config.get("updateQueueInterval"));
-      ITelexCom.TimeoutWrapper(sendQueue,config.get("queueSendInterval"));
+      function start(){
+    		init();
+    		getFullQuery();
+    		//updateQueue();
+        ITelexCom.TimeoutWrapper(getFullQuery, config.get("fullQueryInterval"));
+        ITelexCom.TimeoutWrapper(updateQueue,config.get("updateQueueInterval"));
+        ITelexCom.TimeoutWrapper(sendQueue,config.get("queueSendInterval"));
+      }
+      if(config.get("eMail").useTestAccount){
+        nodemailer.createTestAccount(function(err, account){
+          transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            auth: {
+              user: account.user, // generated ethereal user
+              pass: account.pass  // generated ethereal password
+            }
+          });
+          start();
+        });
+      }else{
+        transporter = nodemailer.createTransport(config.get("eMail").account);
+        start();
+      }
 		}else{
 			module.exports = {
 				init:init,
