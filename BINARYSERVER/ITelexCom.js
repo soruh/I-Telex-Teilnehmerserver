@@ -534,6 +534,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 
 							sErrors[serverkey].errors.push({error:error,timeStamp:new Date()});
 							sErrors[serverkey].errorCounter += 1;
+							break;
 						}
 					}
 					if(!exists){
@@ -742,6 +743,7 @@ module.exports.cv 							= cv;
 //variables
 module.exports.connections			= connections;
 module.exports.timeouts					= timeouts;
+module.exports.sErrors					= sErrors;
 
 //constants
 module.exports.PackageNames 		= PackageNames;
