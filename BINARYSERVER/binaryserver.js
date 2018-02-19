@@ -647,7 +647,7 @@ pool.getConnection(function(err, connection){
 		connection.release();
 		if(module.parent === null){
 			if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
-      function start(){
+      let start = function start(){
     		init();
     		getFullQuery();
     		//updateQueue();
