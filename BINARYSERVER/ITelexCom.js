@@ -532,7 +532,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 						if(k == serverkey){
 							exists = true;
 
-							sErrors[serverkey].errors.push({error:error,timeStamp:new Date()});
+							sErrors[serverkey].errors.push({error:error,timeStamp:Date.now()});
 							sErrors[serverkey].errorCounter += 1;
 							break;
 						}
