@@ -25,8 +25,8 @@ const readonly = (config.get("serverPin") == null);
 
 const nodemailer = require('nodemailer');
 
+var transporter;
 if(config.get("eMail").useTestAccount){
-  var transporter;
   nodemailer.createTestAccount(function(err, account){
     transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
@@ -39,7 +39,7 @@ if(config.get("eMail").useTestAccount){
     });
   });
 }else{
-  var transporter = nodemailer.createTransport(config.get("eMail").account);
+  transporter = nodemailer.createTransport(config.get("eMail").account);
 }
 console.log(transporter);
 
