@@ -14,6 +14,7 @@ const config = require(path.join(PWD, '/COMMONMODULES/config.js'));
 const nodemailer = require("nodemailer");
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
+mySqlConnectionOptions.multipleStatements = true;
 
 //<STATES>
 const STANDBY = 0;
