@@ -531,15 +531,15 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 					for(let k in sErrors){
 						if(k == serverkey){
 							exists = true;
-
-							sErrors[serverkey].errors.push({error:error,timeStamp:Date.now()});
-							sErrors[serverkey].errorCounter += 1;
 							break;
 						}
 					}
-					if(!exists){
+					if(exists){
+						sErrors[serverkey].errors.push({error:error,timeStamp:Date.now()});
+						sErrors[serverkey].errorCounter++;
+					}else{
 						sErrors[serverkey] = {
-							errors: [{error: error,timeStamp:new Date()}],
+							errors: [{error: error,timeStamp:Date.now()}],
 							errorCounter: 1
 						}
 					}
@@ -551,10 +551,10 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 	          },cb);
 					}
 					ll(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter: "+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
-
 				} else {
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
 				}
+
 				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
 				if(typeof onEnd === "function") onEnd();
 			} catch (e){
