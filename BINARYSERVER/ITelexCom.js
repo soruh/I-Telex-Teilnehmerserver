@@ -444,7 +444,6 @@ function ValueToBytearray(value, size){
 
 
 function connect(pool, transporter, onEnd, options, handles, callback){
-	console.log(transporter);
 	if (cv(2)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host+":"+options.port;
@@ -551,7 +550,6 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 	            "[date]":new Date()
 	          },function(){});
 					}
-					console.log(require('util').inspect(sErrors, { depth: 10 }));
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
 				} else {
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
@@ -560,9 +558,8 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
 				if(typeof onEnd === "function") onEnd();
 			} catch (e){
-				console.log(e);
 				if(typeof onEnd === "function") onEnd();
-				//if(cv(2)) lle(e);
+				if(cv(2)) lle(e);
 			}
 		});
 		socket.on('end', function (){
