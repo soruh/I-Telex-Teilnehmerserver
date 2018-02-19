@@ -117,7 +117,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		}else if(results.length==0){
       let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
       if(result_a&&(result_a.length>0)){
-          query = `DELETE FROM teilnehmer WHERE rufnummer=${result_a.rufnummer};`+query;
+          query = `DELETE FROM teilnehmer WHERE rufnummer=${number};`+query;
       }
 			ITelexCom.SqlQuery(pool,query,function(result_b){
         if(result_b){
@@ -136,7 +136,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
             }
           });
         }else{
-          lle(colors.FgRed+"could not create entry",err,colors.Reset);
+          lle(colors.FgRed+"could not create entry",colors.Reset);
           if(typeof cb === "function") cb();
 				}
 			});
