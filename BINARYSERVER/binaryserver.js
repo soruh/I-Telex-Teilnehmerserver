@@ -68,7 +68,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	var pin = obj.data.pin;
 	var port = obj.data.port;
 	var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
-	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_a){
+	ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_a){
     let results = [];
     if(result_a){
       for(let r of result_a){
@@ -81,14 +81,8 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			var res = results[0];
 			if(res.pin == pin){
         if(res.typ == 5){
-  				ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET port = '"+port+"', ipaddresse = '"+ipaddress+"' "+
-  				(
-  					(port!=res.port||ipaddress!=res.ipaddresse)?
-  					(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)+" "):
-  					""
-  				)
-  				+"WHERE rufnummer = "+number+";",function(result_b){
-  					ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
+  				ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' "${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)+" "):"")} WHERE rufnummer = ${number};`,function(result_b){
+  					ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
   						try{
   							connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
   						}catch(e){
@@ -127,7 +121,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
             "[number]":number,
             "[date]":new Date()
           },cb);
-          ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+number+";",function(result_c){
+          ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
             try{
               connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
             }catch(e){
@@ -148,7 +142,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	if(obj.data.version == 1){
 		var rufnummer = obj.data.rufnummer;
-		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE rufnummer = "+mysql.escape(rufnummer)+";",function(result){ //TODO check if escape breaks things
+		ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${mysql.escape(rufnummer)};`,function(result){ //TODO check if escape breaks things
 			if(cv(2)) ll(colors.FgCyan,result,colors.Reset);
 			if((result[0] != undefined)&&(result != [])&&(obj.gesperrt != 1)&&(obj.typ != 0)){
 				result[0].pin = 0;
@@ -164,7 +158,7 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 };
 handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
   if(cv(1)) ll(colors.FgGreen+"got dataset for:",colors.FgCyan,obj.data.rufnummer,colors.Reset);
-	ITelexCom.SqlQuery(pool,"SELECT * from teilnehmer WHERE rufnummer = "+mysql.escape(obj.data.rufnummer)+";",function(res){
+	ITelexCom.SqlQuery(pool,`SELECT * from teilnehmer WHERE rufnummer = ${mysql.escape(obj.data.rufnummer)};`,function(res){
 		var o = {
 			rufnummer:obj.data.rufnummer,
 			name:obj.data.name,
@@ -207,7 +201,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
               sets+=k+" = DEFAULT, ";
             }
           }
-          var q = "UPDATE teilnehmer SET "+sets.substring(0,sets.length-2)+" WHERE rufnummer = "+obj.data.rufnummer+";";
+          var q = `UPDATE teilnehmer SET ${sets.substring(0,sets.length-2)} WHERE rufnummer = ${obj.data.rufnummer};`;
           ITelexCom.SqlQuery(pool,q,function(res2){
             connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
           });
@@ -229,7 +223,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
             values+=mysql.escape(o[k])+", ";
           }
         }
-        var q = "INSERT INTO teilnehmer("+names.substring(0, names.length - 2)+") VALUES ("+values.substring(0, values.length - 2)+");";
+        var q = `INSERT INTO teilnehmer(${names.substring(0, names.length - 2)}) VALUES (${values.substring(0, values.length - 2)});`;
         ITelexCom.SqlQuery(pool,q,function(res2){
           connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
         });

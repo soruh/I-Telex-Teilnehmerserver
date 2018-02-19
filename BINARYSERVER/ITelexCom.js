@@ -39,6 +39,7 @@ const PackageNames = {
 	9: "End_of_List",
 	10: "Peer_search"
 };
+
 //</STATES>
 var connections = {}; //list of active connections
 
@@ -48,21 +49,17 @@ var sErrors = {};
 
 function Timer(fn, countdown){
 	var timout;
-
 	function _time_diff(date1, date2){
 		return date2 ? date2 - date1 : new Date().getTime() - date1;
 	}
-
 	function cancel(){
 		clearTimeout(timout);
 	}
-
 	function getRemaining(){
 		this.total_time_run = _time_diff(this.start_time);
 		this.remaining = countdown - this.total_time_run;
 		return (this.remaining);
 	}
-
 	function pause(){
 		this.paused = true;
 		clearTimeout(timout);
@@ -70,7 +67,6 @@ function Timer(fn, countdown){
 		this.complete = this.total_time_run >= countdown;
 		this.remaining = countdown - this.total_time_run;
 	}
-
 	function resume(){
 		this.paused = false;
 		this.total_time_run = _time_diff(this.start_time);
@@ -187,23 +183,26 @@ function encPackage(obj){
 		var array = ValueToBytearray(data.rufnummer, 4)
 			.concat(ValueToBytearray(data.pin, 2))
 			.concat(ValueToBytearray(data.port, 2));
+		if(obj.datalength == null) obj.datalength = 8;
 		break;
 	case 2:
 		data.ipaddresse = ip.isV4Format(data.ipaddresse)?data.ipaddresse:(ip.isV6Format(data.ipaddresse)?(ip.isV4Format(data.ipaddresse.split("::")[1])?data.ipaddresse.split("::")[1]:""):"");
-		console.log(data);
 		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
 		var numip = 0
 		for (let i in iparr){
 			numip += iparr[i] * Math.pow(2, (i * 8));
 		}
 		var array = ValueToBytearray(numip, 4);
+		if(obj.datalength == null) obj.datalength = 4;
 		break;
 	case 3:
 		var array = ValueToBytearray(data.rufnummer, 4)
 			.concat(ValueToBytearray(data.version, 1));
+		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 4:
 		var array = [];
+		if(obj.datalength == null) obj.datalength = 0;
 		break;
 	case 5:
 		var flags = data.gesperrt * 2;
@@ -235,26 +234,32 @@ function encPackage(obj){
 			.concat(ValueToBytearray(ext, 1))
 			.concat(ValueToBytearray(parseInt(data.pin), 2))
 			.concat(ValueToBytearray(parseInt(data.moddate) + 2208988800, 4));
+		if(obj.datalength == null) obj.datalength = 100;
 		break;
 	case 6:
 		var array = ValueToBytearray(data.version, 1)
 			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
+		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 7:
 		var array = ValueToBytearray(data.version, 1)
 			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
+		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 8:
 		var array = [];
+		if(obj.datalength == null) obj.datalength = 0;
 		break;
 	case 9:
 		var array = [];
+		if(obj.datalength == null) obj.datalength = 0;
 		break;
 	case 10:
 		// var array = ValueToBytearray(data.version,1)
 		// .concat(ValueToBytearray(data.pattern,40));
 		var array = ValueToBytearray(data.pattern, 40)
 			.concat(ValueToBytearray(data.version, 1));
+		if(obj.datalength == null) obj.datalength = 41;
 		break;
 	}
 	var header = [obj.packagetype, array.length];
@@ -275,18 +280,8 @@ function decPackage(packagetype, buffer){
 		};
 		break;
 	case 2:
-		var numip = BytearrayToValue(buffer.slice(0, 4), "number");
-		if(numip == 0){
-			var ipaddresse = null;
-		}else{
-			var a = (numip >> 0) & 255;
-			var b = (numip >> 8) & 255;
-			var c = (numip >> 16) & 255;
-			var d = (numip >> 24) & 255;
-			var ipaddresse = a + "." + b + "." + c + "." + d;
-		}
 		var data = {
-			ipaddresse:ipaddresse
+			ipaddresse:BytearrayToValue(buffer.slice(0, 4), "ip")
 		};
 		break;
 	case 3:
@@ -303,23 +298,7 @@ function decPackage(packagetype, buffer){
 		var data = {};
 		break;
 	case 5:
-		var numip = BytearrayToValue(buffer.slice(87, 91), "number");
-		/*
-		var iparr = [];
-		for(let i=0;i<=3;i++){
-			iparr[i] = (numip>>i*8)&255
-		}
-		var ipaddresse = iparr.join(".");
-		*/
-		if(numip == 0){
-			var ipaddresse = null;
-		}else{
-			var a = (numip >> 0) & 255;
-			var b = (numip >> 8) & 255;
-			var c = (numip >> 16) & 255;
-			var d = (numip >> 24) & 255;
-			var ipaddresse = a + "." + b + "." + c + "." + d;
-		}
+
 		var flags = buffer.slice(44, 46);
 
 		var data = {
@@ -328,7 +307,7 @@ function decPackage(packagetype, buffer){
 			gesperrt: flags[0] / 2,
 			typ: BytearrayToValue(buffer.slice(46, 47), "number"),
 			addresse: BytearrayToValue(buffer.slice(47, 87), "string"),
-			ipaddresse: ipaddresse,
+			ipaddresse: BytearrayToValue(buffer.slice(87, 91), "ip"),
 			port: BytearrayToValue(buffer.slice(91, 93), "number"),
 			durchwahl: BytearrayToValue(buffer.slice(93, 94), "number"),
 			pin: BytearrayToValue(buffer.slice(94, 96), "number"),
@@ -417,7 +396,7 @@ function BytearrayToValue(arr, type){
 			num += arr[i];
 		}
 		return (num);
-	} else if (type === "string"){
+	}else if (type === "string"){
 		var str = "";
 		for (let i = 0; i < arr.length; i++){
 			if (arr[i] != 0){
@@ -427,6 +406,17 @@ function BytearrayToValue(arr, type){
 			}
 		}
 		return (str.replace(/(\u0000)/g, ""));
+	}else if(type === "ip"){
+		let numip = BytearrayToValue(arr, "number");
+		if(numip == 0){
+			return(null);
+		}else{
+			let str = "";
+			for(let i=0;i<4;i++){
+				str += ((numip >> (8*i)) & 255)+(i==3?"":".")
+			}
+			return(str);
+		}
 	}
 }
 function ValueToBytearray(value, size){
@@ -604,7 +594,8 @@ function ascii(data, connection, pool){
 	if (!isNaN(number) && number != ""){
 		if (cv(1)) ll(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
 		SqlQuery(pool, "SELECT * FROM teilnehmer WHERE rufnummer=" + number + ";", function (result){
-			if (result.length == 0 || result.gesperrt == 1 || result.typ == 0){
+
+			if((!result)||result.length == 0 || result.gesperrt == 1 || result.typ == 0){
 				var send = "fail\n\r";
 				send += number + "\n\r";
 				send += "unknown\n\r";
@@ -620,7 +611,7 @@ function ascii(data, connection, pool){
 					}
 					if (cv(1)) ll(m);
 				});
-			} else {
+			}else{
 				var send = "ok\n\r";
 				send += result[0]["rufnummer"] + "\n\r";
 				send += result[0]["name"] + "\n\r";
@@ -662,7 +653,7 @@ function SqlQuery(sqlPool, query, callback){
 		}
 		if (err){
 			if (cv(0)) lle(colors.FgRed,err,colors.Reset);
-			if (typeof callback === "function") callback(null);
+			if (typeof callback === "function") callback(false);
 		} else {
 			if (typeof callback === "function") callback(res);
 		}
@@ -727,44 +718,32 @@ function sendEmail(transporter,messageName,values,callback){
       if(typeof callback === "function") callback();
   });
 }
-/*
-if(cv(3)){
-	setInterval(function(ts){
-		ll("");
-		for(let k of Object.keys(ts)){
-			var rem = ts[k].getRemaining().toString();
-			var ws = "";
-			for(let i=1;i<=12-k.length;i++){
-				ws += " ";
-			}
-			for(let i=1;i<=6-rem.length;i++){
-				ws += " ";
-			}
-			ll(colors.FgMagenta+k+colors.Reset+":"+ws+colors.FgCyan+rem+colors.FgMagenta+"ms"+colors.Reset);
-		}
-		ll("");
-	},1000,timeouts);
-}
-*/
 
-module.exports.ascii = ascii;
-module.exports.TimeoutWrapper = TimeoutWrapper;
-module.exports.timeouts = timeouts;
-module.exports.connect = connect;
-module.exports.handlePackage = handlePackage;
-module.exports.encPackage = encPackage;
-module.exports.decPackage = decPackage;
-module.exports.decData = decData;
+//functions
+module.exports.checkFullPackage = checkFullPackage;
 module.exports.BytearrayToValue = BytearrayToValue;
 module.exports.ValueToBytearray = ValueToBytearray;
-module.exports.checkFullPackage = checkFullPackage;
-module.exports.connections = connections;
-module.exports.cv = cv;
-module.exports.SqlQuery = SqlQuery;
-module.exports.states = {
+module.exports.TimeoutWrapper 	= TimeoutWrapper;
+module.exports.handlePackage 		= handlePackage;
+module.exports.decPackage 			= decPackage;
+module.exports.encPackage 			= encPackage;
+module.exports.sendEmail 				= sendEmail;
+module.exports.SqlQuery 				= SqlQuery;
+module.exports.decData 					= decData;
+module.exports.connect 					= connect;
+module.exports.ascii 						= ascii;
+module.exports.cv 							= cv;
+
+//variables
+module.exports.connections			= connections;
+module.exports.timeouts					= timeouts;
+
+//constants
+module.exports.PackageNames 		= PackageNames;
+module.exports.stateNames   		= stateNames;
+module.exports.states       		= {
 	STANDBY: STANDBY,
 	RESPONDING: RESPONDING,
 	FULLQUERY: FULLQUERY,
 	LOGIN: LOGIN
 };
-module.exports.sendEmail = sendEmail;
