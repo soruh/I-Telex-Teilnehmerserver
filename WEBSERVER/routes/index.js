@@ -9,7 +9,7 @@ const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const mysql = require('mysql');
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
-colors.disable((process.execArgv.indexOf("--inspect")>-1)&&config.get("INSPECT_WITHOUT_COLORS"));
+colors.disable((process.execArgv.indexOf("--inspect")>-1)&&config.get("inspectWithoutColors"));
 
 var mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 mySqlConnectionOptions.multipleStatements = true;
@@ -41,15 +41,15 @@ router.post('/list', function(req, res){
       var resultPublic = [];
       for(let a in result){
         if(
-          (result[a].gesperrt===0||req.body.password==config.get("WEBINTERFACEPASSWORD"))&&
-          ((result[a].typ != 0)||req.body.password==config.get("WEBINTERFACEPASSWORD"))
+          (result[a].gesperrt===0||req.body.password==config.get("webInterfacePassword"))&&
+          ((result[a].typ != 0)||req.body.password==config.get("webInterfacePassword"))
         ){
           var i=resultPublic.length;
           resultPublic[i] = {};
           for(let b in result[a]){
             if(
-              ((b != "pin")||(false&&req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
-              ((b != "gesperrt")||(req.body.password == config.get("WEBINTERFACEPASSWORD")))&&
+              ((b != "pin")||(false&&req.body.password == config.get("webInterfacePassword")))&&
+              ((b != "gesperrt")||(req.body.password == config.get("webInterfacePassword")))&&
               (b != "changed")
             ){
               resultPublic[i][b] = result[a][b];
@@ -65,7 +65,7 @@ router.post('/list', function(req, res){
 router.post('/edit', function(req, res){
   ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
-  if(req.body.password==config.get("WEBINTERFACEPASSWORD")){
+  if(req.body.password==config.get("webInterfacePassword")){
     switch(req.body.typekey){
       case "edit":
         pool.query("SELECT * FROM teilnehmer;", function(err, r){

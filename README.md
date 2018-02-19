@@ -118,39 +118,39 @@ The following can then be configured in `config.json`
   - database: the mysql database name \*
 
   \* required for `init_mysql` script
-### LOGLINENUMBERS
+### logLineNumbers
 
 Print linenumbers before log messages
 
-### SERVERPIN
+### serverPin
 
   The pin for updates between servers
-### UPDATEQUEUEINTERVAL
+### updateQueueInterval
   The interval in which to look for changed entrys and write them to the queue
-### QUEUE_SEND_INTERVAL
+### queueSendInterval
   The interval in which to try to send the queue
-### FULLQUERYINTERVAL
+### fullQueryInterval
   The interval in which to perform a `Full_Query`
-### FULL_QUERY_SERVER
+### fullQueryServer
   The server on which to perform a `Full_Query`.
 
 
   If left empty, or if the chosen server is not in the `servers` table `ALL` known servers will be queried!
-### CONNECTIONTIMEOUT
+### connectionTimeout
   The Timeout duration for client connections
-### STDOUT_LOG
+### stdoutLog
   The File to which the programm should write it's standard logging
 
   "" will write to the stdout
 
-### STDERR_LOG
+### stderrLog
   The File to which the programm should write it's errors
 
   "" will write to the stderr
 
-### BINARYPORT
+### binaryPort
   The port on which the binaryserver should listen
-### LOGGING_VERBOSITY
+### loggingVerbosity
   The level of logging verbosity:
 
   0 -> only errors
@@ -158,12 +158,12 @@ Print linenumbers before log messages
   1 -> relevant information
 
   2 -> all (debug)
-### WEBSERVERPORT
+### webServerPort
   The port on which to serve the webinterface
-### WEBINTERFACEPASSWORD
+### webInterfacePassword
   The password for the webinterface
 
-### EMAIL
+### eMail
 
   #### account
   E-mail account, to which to send messages
@@ -175,5 +175,5 @@ Print linenumbers before log messages
   #### messages
   coustomized messages [value] will be replaced with the value
 
-### LOGLINENUMBERS
+### logLineNumbers
   print line numbers in front of log messages

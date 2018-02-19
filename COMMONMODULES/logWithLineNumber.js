@@ -11,12 +11,12 @@ const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
 var lineMaxlen=0;
 var dateMaxlen=0;
 var offset = 2;
-var bufferWs = config.get("BUFFERLOGWITHWHITESPACE");
-var repairC = config.get("REPAIRPM2COLORS");//TODO apply
-var line_disabled = !config.get("LOGLINENUMBERS");
-var date_disabled = !config.get("LOGDATE");
-const outlog = config.get("STDOUT_LOG");
-const errlog = config.get("STDERR_LOG");
+var bufferWs = config.get("bufferLogWithWhitespace");
+var repairC = config.get("repairPm2Colors");//TODO apply
+var line_disabled = !config.get("logLineNumbers");
+var date_disabled = !config.get("logDate");
+const outlog = config.get("stdoutLog");
+const errlog = config.get("stderrLog");
 
 function to2digits(x){
   let str = x.toString();

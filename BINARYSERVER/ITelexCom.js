@@ -239,12 +239,12 @@ function encPackage(obj){
 		break;
 	case 6:
 		var array = ValueToBytearray(data.version, 1)
-			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
+			.concat(ValueToBytearray(config.get("serverPin"), 4));
 		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 7:
 		var array = ValueToBytearray(data.version, 1)
-			.concat(ValueToBytearray(config.get("SERVERPIN"), 4));
+			.concat(ValueToBytearray(config.get("serverPin"), 4));
 		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 8:
@@ -464,7 +464,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			packages: [],
 			handling: false
 		};
-		socket.setTimeout(config.get("CONNECTIONTIMEOUT"));
+		socket.setTimeout(config.get("connectionTimeout"));
 		socket.on('timeout', function (){
 			try {
 				if (cv(2)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
@@ -473,6 +473,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}catch(e) {
 
 			}
+			if(typeof onEnd === "function") onEnd();
 		});
 		socket.on('data', function (data){
 			if(cv(2)){
@@ -541,7 +542,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 							errorCounter: 1
 						}
 					}
-					if(config.get("WARN_AT_ERROR_COUNTS").split(" ").indexOf(sErrors[serverkey].errorCounter.toString())>-1){
+					if(config.get("warnAtErrorCounts").split(" ").indexOf(sErrors[serverkey].errorCounter.toString())>-1){
 						sendEmail(transporter,"ServerError",{
 							"[server]":serverkey,
 							"[errorCounter]":sErrors[serverkey].errorCounter,
@@ -554,8 +555,9 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
 				}
 				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
-				onEnd();
+				if(typeof onEnd === "function") onEnd();
 			} catch (e){
+				if(typeof onEnd === "function") onEnd();
 				//if(cv(2)) lle(e);
 			}
 		});
@@ -563,8 +565,9 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			ll(colors.FgYellow+"The connection to server "+colors.FgCyan+cnum+colors.FgYellow+" ended!"+colors.Reset);
 			try {
 				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
-				onEnd();
+				if(typeof onEnd === "function") onEnd();
 			} catch (e){
+				if(typeof onEnd === "function") onEnd();
 				//if(cv(2)) lle(e);
 			}
 		});
@@ -642,7 +645,7 @@ function ascii(data, connection, pool){
 }
 
 function cv(level){ //check verbosity
-	return (level <= config.get("LOGGING_VERBOSITY"));
+	return (level <= config.get("loggingVerbosity"));
 }
 function SqlQuery(sqlPool, query, callback){
 	if (cv(2)) ll(colors.BgLightBlue+colors.FgBlack+query+colors.Reset);
@@ -690,10 +693,10 @@ function SqlQuery(sqlPool, query, callback){
 }
 
 function sendEmail(transporter,messageName,values,callback){
-  let message = config.get("EMAIL").messages[messageName];
+  let message = config.get("eMail").messages[messageName];
   let mailOptions = {
-      from: config.get("EMAIL").from,
-      to: config.get("EMAIL").to,
+      from: config.get("eMail").from,
+      to: config.get("eMail").to,
       subject: message.subject
   };
 	let content = {};
@@ -715,10 +718,11 @@ function sendEmail(transporter,messageName,values,callback){
           return lle(error);
       }
       if(cv(1)) ll('Message sent:', info.messageId);
-      if(config.get("EMAIL").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+      if(config.get("eMail").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
       if(typeof callback === "function") callback();
   });
 }
+
 
 //functions
 module.exports.checkFullPackage = checkFullPackage;
