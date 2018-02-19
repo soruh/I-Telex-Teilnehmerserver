@@ -41,6 +41,8 @@ if(config.get("eMail").useTestAccount){
 }else{
   var transporter = nodemailer.createTransport(config.get("eMail").account);
 }
+console.log(transporter);
+
 
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 

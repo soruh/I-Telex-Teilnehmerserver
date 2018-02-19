@@ -444,6 +444,7 @@ function ValueToBytearray(value, size){
 
 
 function connect(pool, transporter, onEnd, options, handles, callback){
+	console.log(transporter);
 	if (cv(2)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host+":"+options.port;
