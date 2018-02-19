@@ -26,9 +26,9 @@ const readonly = (config.get("serverPin") == null);
 const nodemailer = require('nodemailer');
 
 var transporter;
-console.log(config.get("eMail"));
 if(config.get("eMail").useTestAccount){
   nodemailer.createTestAccount(function(err, account){
+    console.log(err,account);
     transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
