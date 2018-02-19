@@ -551,7 +551,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 	            "[date]":new Date()
 	          },cb);
 					}
-					throw(require('util').inspect(sErrors[serverkey], { depth: 10 })); //TODO remove
+					console.log(require('util').inspect(sErrors, { depth: 10 }));
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
 				} else {
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
