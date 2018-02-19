@@ -560,6 +560,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
 				if(typeof onEnd === "function") onEnd();
 			} catch (e){
+				console.log(e);
 				if(typeof onEnd === "function") onEnd();
 				//if(cv(2)) lle(e);
 			}
