@@ -525,7 +525,6 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			}
 		});
 		socket.on('error', function (error){
-			console.error(colors.FgRed+"there was an error",error,colors.Reset);
 			try {
 				if (error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
 					let exists = false;
@@ -549,7 +548,7 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 							"[server]":serverkey,
 							"[errorCounter]":sErrors[serverkey].errorCounter,
 	            "[date]":new Date()
-	          },cb);
+	          },function(){});
 					}
 					console.log(require('util').inspect(sErrors, { depth: 10 }));
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
