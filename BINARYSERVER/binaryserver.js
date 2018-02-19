@@ -657,6 +657,7 @@ pool.getConnection(function(err, connection){
       }
       if(config.get("eMail").useTestAccount){
         nodemailer.createTestAccount(function(err, account){
+					if(err) throw err
           transporter = nodemailer.createTransport({
             host: 'smtp.ethereal.email',
             port: 587,
