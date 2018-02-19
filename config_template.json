@@ -21,6 +21,7 @@
   "readonlyHost":"",
   "readonlyPort":11811,
   "allowFullQueryInReadonly":true,
+  "allowLoginInReadonly":true,
   "doDnsLookups":true,
   "updateQueueInterval":60000,
   "queueSendInterval":300000,

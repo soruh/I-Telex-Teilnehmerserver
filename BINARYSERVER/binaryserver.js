@@ -260,27 +260,23 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	}
 };
 handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
-  if(readonly){
-    if(typeof callback === "function") cb();
-  }else{
-  	if((obj.data.serverpin == config.get("serverPin"))||readonly){
-  		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
-  		connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){
-  			ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
-  			if(typeof cb === "function") cb();
-  		});
-  	}else{
-  		if(cv(1)){
-  			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("serverPin")+colors.FgRed+"ending connection!"+colors.Reset);
-  			connection.end();
-  		}
-      ITelexCom.sendEmail(transporter,"wrongServerPin",{
-        "[IpFull]":connection.remoteAddress,
-        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-        "[date]":new Date()
-      },cb);
-  	}
-  }
+	if((obj.data.serverpin == config.get("serverPin"))||(readonly&&config.get("allowLoginInReadonly"))){
+		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
+		connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){
+			ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
+			if(typeof cb === "function") cb();
+		});
+	}else{
+		if(cv(1)){
+			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("serverPin")+colors.FgRed+"ending connection!"+colors.Reset);
+			connection.end();
+		}
+    ITelexCom.sendEmail(transporter,"wrongServerPin",{
+      "[IpFull]":connection.remoteAddress,
+      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+      "[date]":new Date()
+    },cb);
+	}
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
   if(cv(1)){
