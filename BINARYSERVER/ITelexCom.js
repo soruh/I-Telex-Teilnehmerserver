@@ -321,8 +321,10 @@ function decPackage(packagetype, buffer){
 			data.durchwahl = "0";
 		} else if (data.durchwahl == 100){
 			data.durchwahl = "00";
+		} else if(data.durchwahl > 110){
+			data.durchwahl = null;
 		} else if (data.durchwahl > 100){
-			data.durchwahl = data.durchwahl - 100;
+			data.durchwahl = (data.durchwahl - 100).toString();
 		} else if (data.durchwahl < 10){
 			data.durchwahl = "0" + data.durchwahl
 		} else {
