@@ -180,7 +180,7 @@ Print linenumbers before log messages
   messages will not be sent to the account specified above!
 
   #### messages
-  customized messages [value] will be replaced with the value
+  customized messages [value] will be replaced with the corresponding value
 
 ### logLineNumbers
   print line numbers in front of log messages
