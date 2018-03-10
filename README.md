@@ -19,7 +19,7 @@ $ sudo apt install mysql-server nodejs
 ```
 if npm doesn't come with your node installation you'll have to install it manually using
 ```
-$ sudo apt install mysql-server nodejs
+$ sudo apt install npm
 ```
 ### update node.js using npm
 ```
@@ -177,7 +177,7 @@ Print linenumbers before log messages
   !messages will not be sent to the above specified account!
 
   #### messages
-  coustomized messages [value] will be replaced with the value
+  customized messages [value] will be replaced with the value
 
 ### logLineNumbers
   print line numbers in front of log messages
