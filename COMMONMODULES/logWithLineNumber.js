@@ -103,3 +103,9 @@ module.exports.setOffset = function setOffset(val){offset=val;};
 module.exports.setBuffer = function setLine(val){bufferWs=val;};
 module.exports.ll = function(){Logger.apply(null,[false].concat(Object.values(arguments)));};
 module.exports.lle = function(){Logger.apply(null,[true].concat(Object.values(arguments)));};
+module.exports.llo = function llo(ofs){
+  let totalOffset = ofs+1
+  offset+=totalOffset
+  module.exports.ll.apply(null,Object.values(arguments).slice(1));
+  offset-=totalOffset
+}

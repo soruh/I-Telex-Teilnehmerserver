@@ -5,6 +5,7 @@ const PWD = path.normalize(path.join(__dirname, '..'));
 
 const {ll} = require(path.join(PWD, "/COMMONMODULES/logWithLineNumber.js"));
 const {lle} = require(path.join(PWD, "/COMMONMODULES/logWithLineNumber.js"));
+const {llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
@@ -650,7 +651,7 @@ function cv(level){ //check verbosity
 	return (level <= config.get("loggingVerbosity"));
 }
 function SqlQuery(sqlPool, query, callback){
-	if (cv(2)) ll(colors.BgLightBlue+colors.FgBlack+query+colors.Reset);
+	if (cv(2)) llo(1,colors.BgLightBlue+colors.FgBlack+query+colors.Reset);
 	sqlPool.query(query, function (err, res){
 		try {
 			if (cv(3)) ll("number of open connections: "+sqlPool._allConnections.length);
