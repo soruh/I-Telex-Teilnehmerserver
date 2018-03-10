@@ -175,8 +175,9 @@ Print linenumbers before log messages
   E-mail account, to which to send messages
 
   #### useTestAccount
-  if true a link to an online service, for previewing emails will be printed in the console, after a message was sent
-  !messages will not be sent to the above specified account!
+  if true a link to an online service, for previewing emails will be printed in the console, after a message was sent!
+  
+  messages will not be sent to the account specified above!
 
   #### messages
   customized messages [value] will be replaced with the value
