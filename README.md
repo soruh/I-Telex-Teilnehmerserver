@@ -161,7 +161,9 @@ Print linenumbers before log messages
 
   1 -> only relevant information
 
-  2 -> all (debug)
+  2 -> debug
+  
+  3 -> all
 ### webServerPort
   The port on which to serve the webinterface
 ### webInterfacePassword
