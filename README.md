@@ -52,7 +52,7 @@ $ node I-Telex-Teilnehmerserver/init_mysql --help
 You might have to run ```chmod u+x init_mysql``` to be able to execute the script.
 
 
-If you already use mariadb you might have to run:
+If you are using mariadb you might have to run:
 ```
 $ sudo mysql -u root
 > USE mysql;
