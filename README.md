@@ -46,7 +46,7 @@ $ node I-Telex-Teilnehmerserver/init_mysql [mysql-root user] [mysql-root-passwor
 ```
 If you want to create the database and the user manually do so and execute
 ```
-$ node I-Telex-Teilnehmerserver/init_mysql \[mysql-user\] \[mysql-password\] tables
+$ node I-Telex-Teilnehmerserver/init_mysql \[mysql-root-user\] \[mysql-root-password\] tables
 ```
 for help on the script execute
 
