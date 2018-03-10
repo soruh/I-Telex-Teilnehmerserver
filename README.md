@@ -111,7 +111,7 @@ $ pm2 help
 ---
 ## Config
 
-Please rename `config_template.json` to `config.json` and remove the fist line.
+Rename `config_template.json` to `config.json` and remove the fist line.
 
 The following can then be configured in `config.json`
 
