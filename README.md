@@ -159,7 +159,7 @@ Print linenumbers before log messages
 
   0 -> only errors
 
-  1 -> relevant information
+  1 -> only relevant information
 
   2 -> all (debug)
 ### webServerPort
