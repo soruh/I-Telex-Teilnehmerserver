@@ -17,6 +17,10 @@ which responds to binary (and ascii) requests
 ```
 $ sudo apt install mysql-server nodejs
 ```
+if npm doesn't come with your node installation you'll have to install it manually using
+```
+$ sudo apt install mysql-server nodejs
+```
 ### update node.js using npm
 ```
 $ sudo npm cache clean -f
