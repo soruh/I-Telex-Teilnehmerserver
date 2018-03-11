@@ -18,8 +18,6 @@
   "repairPm2Colors":true,
 
   "serverPin":1234512345,
-  "readonlyHost":"",
-  "readonlyPort":11811,
   "allowFullQueryInReadonly":true,
   "allowLoginInReadonly":true,
   "doDnsLookups":true,
@@ -32,7 +30,6 @@
   "stderrLog":"",
   "binaryPort":11811,
   "loggingVerbosity":2,
-  "inspectWithoutColors":false,
 
   "webServerPort":3030,
   "webInterfacePassword":"XXX",

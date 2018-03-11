@@ -115,6 +115,8 @@ Rename `config_template.json` to `config.json` and remove the fist line.
 
 The following can then be configured in `config.json`
 
+
+
 ### mySqlConnectionOptions:
   - host: the mysql database host \*
   - user: the mysql user \*
@@ -126,9 +128,27 @@ The following can then be configured in `config.json`
 
 Print line numbers before log messages
 
-### serverPin
+### logDate
 
+Print line date before log messages
+
+### bufferLogWithWhitespace
+
+Print whitespace before log messages, to allow for a consistent indentation
+
+### repairPm2Colors
+
+Have consistent color after newlines in the pm2 log
+!!This is quite performance hungry and should be deactivated in production!!
+
+### serverPin
   The pin for updates between servers
+
+  If set to null the server enters read-only mode (see "read-only mode")
+### allowFullQueryInReadonly
+
+Respond to Full_Querys in read-only mode
+
 ### updateQueueInterval
   The interval in which to look for changed entries and write them to the queue
 ### queueSendInterval
@@ -138,8 +158,12 @@ Print line numbers before log messages
 ### fullQueryServer
   The server on which to perform a `Full_Query`.
 
-
   If left empty, or if the chosen server is not in the `servers` table `ALL` known servers will be queried!
+
+### doDnsLookups
+
+Do a DNS-lookup when receiving entries to allow for a quicker response to "c"(check if an IP-address belongs to a registered participant)
+
 ### connectionTimeout
   The Timeout duration for client connections
 ### stdoutLog
@@ -169,18 +193,35 @@ Print line numbers before log messages
 ### webInterfacePassword
   The password for the web interface
 
+### warnAtErrorCounts
+
+Send an EMAIL to the configured account when a server wasn't reachable n times.
+
+multiple values should be separated by spaces
+
 ### eMail
 
   #### account
   E-mail account, to which to send messages
 
   #### useTestAccount
-  if true a link to an online service, for previewing emails will be printed in the console, after a message was sent!
+  if true a link to an online service, for previewing emails will be printed to the console, after a message was sent!
 
   messages will not be sent to the account specified above!
 
   #### messages
-  customized messages [value] will be replaced with the corresponding value
+  customized messages  
+  [value] will be replaced with the corresponding value
 
 ### logLineNumbers
   print line numbers in front of log messages
+
+## read-only mode
+  The server enters read-only mode if the "serverPin" is set to null.
+
+  In read-only the servers doesn't perform logins on other servers.  
+  It does however still perform Full_Querys (simulated by Peer_Query with search-pattern "").
+
+
+  if "allowFullQueryInReadonly" is set to true it also responds to FullQuerys.  
+  similarly if "allowLoginInReadonly" is set to true it accepts Logins.

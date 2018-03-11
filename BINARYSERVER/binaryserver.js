@@ -20,7 +20,6 @@ const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const cv = ITelexCom.cv;
 
-colors.disable((process.execArgv.indexOf("--inspect")>-1)&&config.get("inspectWithoutColors"));
 
 const readonly = (config.get("serverPin") == null);
 
@@ -517,7 +516,7 @@ function updateQueue(callback){
   }
 }
 function getFullQuery(callback){
-	if(readonly){
+	/*if(readonly){
     ITelexCom.connect(pool,transporter,function(e){
       if(typeof callback === "function") callback();
     },{host:config.get("readonlyHost"),port:config.get("readonlyPort")},handles,function(client,cnum){
@@ -525,31 +524,34 @@ function getFullQuery(callback){
         ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
       });
     });
-  }else{
-    ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
-  		for(let i in res){
-  			if(res[i].addresse == config.get("fullQueryServer")){
-  				res = res[i];
-  			}
-  		}
-  		async.eachSeries(res,function(r,cb){
-  			ITelexCom.connect(pool,transporter,function(e){
-  				try{
-            cb();
-          }catch(e){
-            //if(cv(2)) lle(e);
-          }
-  			},{host:r.addresse,port:r.port},handles,function(client,cnum){
-  				client.write(ITelexCom.encPackage({packagetype:6,datalength:5,data:{serverpin:config.get("serverPin"),version:1}}),function(){
-  					ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
-  					ITelexCom.connections[cnum].cb = cb;
-  				});
-  			});
-  		},function(){
-  			if(typeof callback === "function") callback();
-  		});
-  	});
-  }
+  }else{*/
+  ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
+		for(let i in res){
+			if(res[i].addresse == config.get("fullQueryServer")){
+				res = res[i];
+			}
+		}
+		async.eachSeries(res,function(r,cb){
+			ITelexCom.connect(pool,transporter,function(e){
+				try{
+          cb();
+        }catch(e){
+          //if(cv(2)) lle(e);
+        }
+			},{host:r.addresse,port:r.port},handles,function(client,cnum){
+				let request = readonly?
+											{packagetype:10,datalength:41,data:{pattern:'',version:1}}:
+											{packagetype:6,datalength:5,data:{serverpin:config.get("serverPin"),version:1}};
+				client.write(ITelexCom.encPackage(request),function(){
+					ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
+					ITelexCom.connections[cnum].cb = cb;
+				});
+			});
+		},function(){
+			if(typeof callback === "function") callback();
+		});
+	});
+  //}
 }
 function sendQueue(callback){
 	if(readonly){
