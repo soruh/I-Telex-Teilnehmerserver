@@ -7,7 +7,7 @@ The program consists of 2 processes:
 
 which allows manual altering of the database over http
 ###### the binary server:
-which responds to binary (and ascii) requests
+which responds to binary (and ASCII) requests
 
 ---
 ## Setup
@@ -71,14 +71,14 @@ the user defaults to <user_name>`@localhost`, which only makes it accessible fro
 
 The servers are stored in the servers database.
 
-They can be managed manually using mysql or with the supplied script.
+They can be managed manually using MySQL or with the supplied script.
 ```
 $ node I-Telex-Teilnehmerserver/manage_servers --help
 ```
 You might have to run ```chmod u+x manage_servers``` to be able to execute the script.
 
 ---
-## Starting/Stoping Server
+## Starting/Stopping Server
 the following must be executed in the root directory of the git
 ### to start:
 ```
@@ -124,13 +124,13 @@ The following can then be configured in `config.json`
   \* required for `init_mysql` script
 ### logLineNumbers
 
-Print linenumbers before log messages
+Print line numbers before log messages
 
 ### serverPin
 
   The pin for updates between servers
 ### updateQueueInterval
-  The interval in which to look for changed entrys and write them to the queue
+  The interval in which to look for changed entries and write them to the queue
 ### queueSendInterval
   The interval in which to try to send the queue
 ### fullQueryInterval
@@ -143,17 +143,17 @@ Print linenumbers before log messages
 ### connectionTimeout
   The Timeout duration for client connections
 ### stdoutLog
-  The File to which the programm should write it's standard logging
+  The File to which the program should write it's standard logging
 
   "" will write to the stdout
 
 ### stderrLog
-  The File to which the programm should write it's errors
+  The File to which the program should write it's errors
 
   "" will write to the stderr
 
 ### binaryPort
-  The port on which the binaryserver should listen
+  The port on which the binary server should listen
 ### loggingVerbosity
   The level of logging verbosity:
 
@@ -162,12 +162,12 @@ Print linenumbers before log messages
   1 -> only relevant information
 
   2 -> debug
-  
+
   3 -> all
 ### webServerPort
-  The port on which to serve the webinterface
+  The port on which to serve the web interface
 ### webInterfacePassword
-  The password for the webinterface
+  The password for the web interface
 
 ### eMail
 
@@ -176,7 +176,7 @@ Print linenumbers before log messages
 
   #### useTestAccount
   if true a link to an online service, for previewing emails will be printed in the console, after a message was sent!
-  
+
   messages will not be sent to the account specified above!
 
   #### messages
