@@ -446,7 +446,8 @@ function ValueToBytearray(value, size){
 }
 
 
-function connect(pool, transporter, onEnd, options, handles, callback){
+function connect(pool, transporter, after, options, handles, callback){
+	let onEnd = function(){try{}catch(e){after.apply(null,arguments)}}
 	if (cv(2)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host+":"+options.port;
@@ -570,10 +571,10 @@ function connect(pool, transporter, onEnd, options, handles, callback){
 			ll(colors.FgYellow+"The connection to server "+colors.FgCyan+cnum+colors.FgYellow+" ended!"+colors.Reset);
 			try {
 				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
-				if(typeof onEnd === "function") onEnd();
 			} catch (e){
-				if(typeof onEnd === "function") onEnd();
 				//if(cv(2)) lle(e);
+			} finally {
+				if(typeof onEnd === "function") onEnd();
 			}
 		});
 		socket.connect(options, function (connection){
