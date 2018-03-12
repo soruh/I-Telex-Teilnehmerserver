@@ -606,10 +606,10 @@ function ascii(data, connection, pool){
 		SqlQuery(pool, "SELECT * FROM teilnehmer WHERE rufnummer=" + number + ";", function (result){
 
 			if((!result)||result.length == 0 || result.gesperrt == 1 || result.typ == 0){
-				var send = "fail\n\r";
-				send += number + "\n\r";
-				send += "unknown\n\r";
-				send += "+++\n\r";
+				var send = "fail\r\n";
+				send += number + "\r\n";
+				send += "unknown\r\n";
+				send += "+++\r\n";
 				connection.write(send, function (){
 					if (cv(1)){
 						var m = colors.FgRed + "Entry not found/visible";
@@ -622,20 +622,20 @@ function ascii(data, connection, pool){
 					if (cv(1)) ll(m);
 				});
 			}else{
-				var send = "ok\n\r";
-				send += result[0]["rufnummer"] + "\n\r";
-				send += result[0]["name"] + "\n\r";
-				send += result[0]["typ"] + "\n\r";
+				var send = "ok\r\n";
+				send += result[0]["rufnummer"] + "\r\n";
+				send += result[0]["name"] + "\r\n";
+				send += result[0]["typ"] + "\r\n";
 				if ((result[0]["typ"] == 2) || (result[0]["typ"] == 4) || (result[0]["typ"] == 5)){
-					send += result[0]["ipaddresse"] + "\n\r";
+					send += result[0]["ipaddresse"] + "\r\n";
 				} else if ((result[0]["typ"] == 1) || (result[0]["typ"] == 3)){
-					send += result[0]["hostname"] + "\n\r";
+					send += result[0]["hostname"] + "\r\n";
 				} else if (result[0]["typ"] == 6){
-					send += result[0]["hostname"] + "\n\r";
+					send += result[0]["hostname"] + "\r\n";
 				}
-				send += result[0]["port"] + "\n\r";
-				send += result[0]["extension"] + "\n\r";
-				send += "+++\n\r";
+				send += result[0]["port"] + "\r\n";
+				send += result[0]["extension"]||0 + "\r\n";
+				send += "+++\r\n";
 				connection.write(send, function (){
 					if (cv(1)) var m = colors.FgGreen + "Entry found";
 					if (cv(2)){

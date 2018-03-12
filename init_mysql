@@ -131,7 +131,7 @@ function create(creates){
         }
         console.log("\noverwrite the existing?\n!!!THIS WILL REMOVE ALL OF THEIR CONTENTS!!! (Y/n)");
         process.stdin.on("data",function(data){
-          var datastr = data.toString().replace(/[\n\r]/g,"");
+          var datastr = data.toString().replace(/[\r\n]/g,"");
           if(datastr == "Y"||datastr =="y"){
             remove(create);
           }else if(datastr == "N"||datastr == "n"){
