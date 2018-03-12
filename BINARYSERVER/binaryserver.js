@@ -22,7 +22,7 @@ const cv = ITelexCom.cv;
 
 
 const readonly = (config.get("serverPin") == null);
-if(readonly) ll(`${colors.FgMagenta}Entering read-only mode!${colors.Reset}`);
+if(readonly) ll(`${colors.FgMagenta}Starting in read-only mode!${colors.Reset}`);
 
 const nodemailer = require('nodemailer');
 
