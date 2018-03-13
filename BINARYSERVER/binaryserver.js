@@ -323,6 +323,7 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 	});
 };
 function init(){
+	if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
 	var server = net.createServer(function(connection){
 		try{
 			var cnum = -1;
@@ -443,80 +444,87 @@ function init(){
 	});
 	server.listen(config.get("binaryPort"), function(){
 		if(cv(0)) ll(colors.FgMagenta+"server is listening on port "+colors.FgCyan+config.get("binaryPort"),colors.Reset);
+
+		ITelexCom.TimeoutWrapper(getFullQuery, config.get("fullQueryInterval"));
+		ITelexCom.TimeoutWrapper(updateQueue,config.get("updateQueueInterval"));
+		ITelexCom.TimeoutWrapper(sendQueue,config.get("queueSendInterval"));
+		getFullQuery();
+		//updateQueue();
 	});
 }
 function updateQueue(callback){
-  if(readonly){
-    if(typeof callback === "function") callback();
-  }else{
-  	if(cv(2)) ll(colors.FgGreen+"Updating Queue!"+colors.Reset);
-  	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE changed = "+1, function(changed){
-  		if(changed.length > 0){
-  			if(cv(2)){
-  				var changed_numbers = [];
-  				for(let o of changed){
-  					changed_numbers.push(o.rufnummer);
-  				}
-  				ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,changed_numbers,colors.Reset);
-  			}
+	if(cv(2)) ll(colors.FgMagenta+"updating "+colors.FgCyan+"Queue"+colors.FgMagenta+"!"+colors.Reset);
+	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE changed = "+1, function(changed){
+		if(changed.length > 0){
+			if(cv(2)){
+				var changed_numbers = [];
+				for(let o of changed){
+					changed_numbers.push(o.rufnummer);
+				}
+				ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,changed_numbers,colors.Reset);
+			}
 
-  			//if(cv(1)&&!cv(2)) ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,result1.length,colors.Reset);
-  			ITelexCom.SqlQuery(pool,"SELECT * FROM servers;", function(servers){
-  				async.each(servers,function(server,cb1){
-  					async.each(changed,function(message,cb2){
-  						ITelexCom.SqlQuery(pool,"SELECT * FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(qentry){
-  							if(qentry.length == 1){
-  								ITelexCom.SqlQuery(pool,"UPDATE queue SET timestamp = "+Math.floor(new Date().getTime()/1000)+" WHERE server = "+server.uid+" AND message = "+message.uid,function(){
-  									ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-  										if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
-  										cb2();
-  									});
-  								});
-  							}else if(qentry.length == 0){
-  								ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
-  									ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-  										if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
-  										cb2();
-  									});
-  								});
-  							}else{
-  								lle("duplicate queue entry!");
-  								ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(){
-  									ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
-  										ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-  											if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
-  											cb2();
-  										});
-  									});
-  								});
-  							}
-  						});
-  					},cb1);
-  				},function(){
-  					//pool.end(()=>{
-  						//TODO qwd.stdin.write("sendQueue");
-  						//setTimeout(updateQueue,config.get("updateQueueInterval"));
-  						if(typeof callback === "function") callback();
-  					//});
-  				});
-  			});
-  		}else{
-  			if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
-  			/*if(qwdec == null){
-  				qwdec = "unknown";
-  				//TODO qwd.stdin.write("sendQueue",callback);
-          if(typeof callback === "function") callback();
-  			}else{
-          if(typeof callback === "function") callback();
-  			}*/
+			//if(cv(1)&&!cv(2)) ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,result1.length,colors.Reset);
+			ITelexCom.SqlQuery(pool,"SELECT * FROM servers;", function(servers){
+				if(servers.length>0){
+					async.each(servers,function(server,cb1){
+						async.each(changed,function(message,cb2){
+							ITelexCom.SqlQuery(pool,"SELECT * FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(qentry){
+								if(qentry.length == 1){
+									ITelexCom.SqlQuery(pool,"UPDATE queue SET timestamp = "+Math.floor(new Date().getTime()/1000)+" WHERE server = "+server.uid+" AND message = "+message.uid,function(){
+										ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+											if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
+											cb2();
+										});
+									});
+								}else if(qentry.length == 0){
+									ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
+										ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+											if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
+											cb2();
+										});
+									});
+								}else{
+									lle("duplicate queue entry!");
+									ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(){
+										ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
+											ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+												if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
+												cb2();
+											});
+										});
+									});
+								}
+							});
+						},cb1);
+					},function(){
+						//pool.end(()=>{
+							//TODO qwd.stdin.write("sendQueue");
+							//setTimeout(updateQueue,config.get("updateQueueInterval"));
+							if(typeof callback === "function") callback();
+						//});
+					});
+				}else{
+					ll(colors.FgYellow+"No configured servers -> aborting "+colors.FgCyan+"updateQueue"+colors.Reset)
+					if(typeof callback === "function") callback();
+				}
+			});
+		}else{
+			if(cv(2)) ll(colors.FgYellow+"no numbers to enqueue"+colors.Reset);
+			/*if(qwdec == null){
+				qwdec = "unknown";
+				//TODO qwd.stdin.write("sendQueue",callback);
         if(typeof callback === "function") callback();
-  			//setTimeout(updateQueue,config.get("updateQueueInterval"));
-  		}
-  	});
-     //});
-  }
+			}else{
+        if(typeof callback === "function") callback();
+			}*/
+      if(typeof callback === "function") callback();
+			//setTimeout(updateQueue,config.get("updateQueueInterval"));
+		}
+	});
 }
 function getFullQuery(callback){
+	if(cv(2)) ll(colors.FgMagenta+"geting "+colors.FgCyan+"FullQuery"+colors.FgMagenta+"!"+colors.Reset);
 	/*if(readonly){
     ITelexCom.connect(pool,transporter,function(e){
       if(typeof callback === "function") callback();
@@ -526,39 +534,45 @@ function getFullQuery(callback){
       });
     });
   }else{*/
-  ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
-		for(let i in res){
-			if(res[i].addresse == config.get("fullQueryServer").split(":")[0] && res[i].port== config.get("fullQueryServer").split(":")[1]){
-				res = [res[i]];
+  ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(servers){
+		if(servers.length>0){
+			for(let i in servers){
+				if(servers[i].addserversse == config.get("fullQueryServer").split(":")[0] && servers[i].port== config.get("fullQueryServer").split(":")[1]){
+					servers = [servers[i]];
+				}
 			}
-		}
-		async.eachSeries(res,function(r,cb){
-			ITelexCom.connect(pool,transporter,function(e){
-				try{
-          cb();
-        }catch(e){
-          //if(cv(2)) lle(e);
-        }
-			},{host:r.addresse,port:r.port},handles,function(client,cnum){
-				let request = readonly?
-											{packagetype:10,datalength:41,data:{pattern:'',version:1}}:
-											{packagetype:6,datalength:5,data:{serverpin:config.get("serverPin"),version:1}};
-				client.write(ITelexCom.encPackage(request),function(){
-					ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
-					ITelexCom.connections[cnum].cb = cb;
+			async.eachSeries(servers,function(r,cb){
+				ITelexCom.connect(pool,transporter,function(e){
+					try{
+	          cb();
+	        }catch(e){
+	          //if(cv(2)) lle(e);
+	        }
+				},{host:r.addresse,port:r.port},handles,function(client,cnum){
+					let request = readonly?
+												{packagetype:10,datalength:41,data:{pattern:'',version:1}}:
+												{packagetype:6,datalength:5,data:{serverpin:config.get("serverPin"),version:1}};
+					client.write(ITelexCom.encPackage(request),function(){
+						ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
+						ITelexCom.connections[cnum].cb = cb;
+					});
 				});
+			},function(){
+				if(typeof callback === "function") callback();
 			});
-		},function(){
+		}else{
+			ll(colors.FgYellow+"No configured servers -> aborting "+colors.FgCyan+"FullQuery"+colors.Reset)
 			if(typeof callback === "function") callback();
-		});
+		}
 	});
   //}
 }
 function sendQueue(callback){
+	if(cv(2)) ll(colors.FgMagenta+"sending "+colors.FgCyan+"Queue"+colors.FgMagenta+"!"+colors.Reset);
 	if(readonly){
+		if(cv(2)) ll(colors.FgYellow+"Read-only mode -> aborting "+colors.FgCyan+"sendQueue"+colors.Reset);
     if(typeof callback === "function") callback();
   }else{
-    if(cv(2)) ll(colors.FgCyan+"Sending Queue!"+colors.Reset);
   	ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer;",function(teilnehmer){
   		ITelexCom.SqlQuery(pool,"SELECT * FROM queue;",function(queue){
   			if(queue.length>0){
@@ -649,19 +663,12 @@ pool.getConnection(function(err, connection){
 		throw err;
 	}else{
 		connection.release();
+		if(cv(0)) ll(colors.FgMagenta+"Successfully connected to database!"+colors.Reset);
 		if(module.parent === null){
-			if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
-      let start = function start(){
-    		init();
-    		getFullQuery();
-    		//updateQueue();
-        ITelexCom.TimeoutWrapper(getFullQuery, config.get("fullQueryInterval"));
-        ITelexCom.TimeoutWrapper(updateQueue,config.get("updateQueueInterval"));
-        ITelexCom.TimeoutWrapper(sendQueue,config.get("queueSendInterval"));
-      }
       if(config.get("eMail").useTestAccount){
         nodemailer.createTestAccount(function(err, account){
-					if(err) throw err
+					if(err) throw err;
+					if(cv(0)) ll(colors.FgMagenta+"Got email test account:\n"+colors.FgCyan+util.inspect(account)+colors.Reset);
           transporter = nodemailer.createTransport({
             host: 'smtp.ethereal.email',
             port: 587,
@@ -671,18 +678,20 @@ pool.getConnection(function(err, connection){
               pass: account.pass  // generated ethereal password
             }
           });
-          start();
+          init();
         });
       }else{
         transporter = nodemailer.createTransport(config.get("eMail").account);
-        start();
+        init();
       }
 		}else{
+			if(cv(0)) ll(colors.FgMagenta+"Was required by another file -> Initialising exports"+colors.Reset);
 			module.exports = {
 				init:init,
 				startQWD:startQWD,
 				updateQueue:updateQueue,
-				getFullQuery:getFullQuery
+				getFullQuery:getFullQuery,
+				ITelexCom:ITelexCom
 			};
 		}
 	}

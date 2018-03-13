@@ -615,7 +615,7 @@ function ascii(data, connection, pool){
 						var m = colors.FgRed + "Entry not found/visible";
 					}
 					if (cv(2)){
-						m += ", sent:\n" + colors.FgYellow + send + colors.Reset;
+						m += ", sent:\n" + colors.FgCyan + send + colors.Reset;
 					} else {
 						m += colors.Reset;
 					}

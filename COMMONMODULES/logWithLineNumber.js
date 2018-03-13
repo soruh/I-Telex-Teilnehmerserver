@@ -12,7 +12,7 @@ var lineMaxlen=0;
 var dateMaxlen=0;
 var offset = 2;
 var bufferWs = config.get("bufferLogWithWhitespace");
-var repairC = config.get("repairPm2Colors");//TODO apply
+var repairC = config.get("repairPm2Colors");
 var line_disabled = !config.get("logLineNumbers");
 var date_disabled = !config.get("logDate");
 const outlog = config.get("stdoutLog");
@@ -24,42 +24,37 @@ function to2digits(x){
 }
 function Logger(error){
   let args = Object.values(arguments).slice(1);
+  args = args.map(function(a){
+    return(((typeof a!="string")?util.inspect(a):a)+" ");
+  });
   let stack = new Error().stack.split('\n');
   var line = stack[(offset||1) + 1].split((/^win/.test(process.platform))?("\\"):("/")).slice(-1)[0].replace(")","");
   let d = new Date();
   let date = d.getDate()+"."+(d.getMonth()+1)+"."+(d.getFullYear()+"").split("").slice(2,4).join("")+" "+d.getHours()+":"+to2digits(d.getMinutes())+":"+to2digits(d.getSeconds());
   if(bufferWs){
     lineMaxlen=lineMaxlen<line.length?line.length:lineMaxlen;
-    var lineWsBuffer="";
-    for(let i=0;i<lineMaxlen-line.length;i++){lineWsBuffer+=" ";}
+    var lineWsBuffer=" ".repeat(lineMaxlen-line.length);
 
     dateMaxlen=dateMaxlen<date.length?date.length:dateMaxlen;
-    var dateWsBuffer="";
-    for(let i=0;i<dateMaxlen-date.length;i++){dateWsBuffer+=" ";}
+    var dateWsBuffer=" ".repeat(dateMaxlen-date.length);
 
     var totalBuffer=lineWsBuffer+dateWsBuffer;
-    if(!line_disabled) for(let i=0;i<line.length;i++){totalBuffer+=" ";}
-    if(!date_disabled) for(let i=0;i<date.length;i++){totalBuffer+=" ";}
-    if((!date_disabled)&&(!line_disabled)) totalBuffer+=" ";
-    totalBuffer+=" ";
+    if(!line_disabled) totalBuffer+=" ".repeat(line.length);
+    if(!date_disabled) totalBuffer+=" ".repeat(date.length);
+
+    if((!date_disabled)&&(!line_disabled)) totalBuffer+=" "; //space for pipe
+    if(!(date_disabled&&line_disabled)) totalBuffer+=" "; //space after pre log
   }else{
     var lineWsBuffer = "";
     var dateWsBuffer = "";
     var totalBuffer = "";
   }
-
-  var currentColors = {Fg:null,Bg:null,Mod:null};
-  for(let i in args){
-    if(typeof args[i]!="string"){
-      args[i]=util.inspect(args[i]);
-    }
-    var colorsAt = colors.colorsAt(args[i]);
-    var keys = Object.keys(colorsAt).sort();
-    if(!(i==0&&colorsAt[0]!=null)){
-      args[i]=args[i]+" ";
-    }
-    args[i]=args[i].replace(/\n/g,function(replacing,index,fullstring){
-      if(repairC){
+  if(repairC){
+    var currentColors = {Fg:null,Bg:null,Mod:null};
+    for(let i in args){
+      var colorsAt = colors.colorsAt(args[i]);
+      var keys = Object.keys(colorsAt).sort();
+      args[i]=args[i].replace(/\n/g,function(replacing,index,fullstring){
         for(i=0;i<keys.length;i++){
           if(keys[i] <= index){
             let colorName = Object.keys(colors)[Object.values(colors).indexOf(colorsAt[keys[i]])];
@@ -71,10 +66,8 @@ function Logger(error){
             }
           }
         }
-      }
-      return(colors.Reset+"\n"+totalBuffer+(currentColors.Fg?currentColors.Fg:"")+(currentColors.Bg?currentColors.Bg:"")+(currentColors.Mod?currentColors.Mod:""));
-    });
-    if(repairC){
+        return(colors.Reset+"\n"+(currentColors.Fg?currentColors.Fg:"")+(currentColors.Bg?currentColors.Bg:"")+(currentColors.Mod?currentColors.Mod:""));
+      });
       for(i=0;i<keys.length;i++){
         let colorName = Object.keys(colors)[Object.values(colors).indexOf(colorsAt[keys[i]])];
         let prefix = colorName.slice(0,2);
@@ -86,16 +79,18 @@ function Logger(error){
       }
     }
   }
-
-  let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset+" ";
-
+  args=args.map(function(a){
+    return(a.replace(/\n/g,function(replacing,index,fullstring){
+      return(replacing+totalBuffer);
+    }));
+  });
+  let preLog = colors.Underscore+colors.Dim+(line_disabled?"":line+lineWsBuffer)+(((!date_disabled)&&(!line_disabled))?"|":"")+(date_disabled?"":date+dateWsBuffer)+colors.Reset+((date_disabled&&line_disabled)?"":" ");
   let write = error?
   (errlog==""?function(buff){process.stderr.write(buff);}:function(str){fs.appendFileSync(errlog,str);}):
   (outlog==""?function(buff){process.stdout.write(buff);}:function(str){fs.appendFileSync(outlog,str);});
 
 
-  write(([preLog].concat(args)).join(""));
-  write("\n");
+  write(([preLog].concat(args)).join("")+"\n");
 }
 module.exports.setLine = function setLine(val){line_disabled=val;};
 module.exports.setDate = function setDate(val){date_disabled=val;};
