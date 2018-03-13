@@ -149,6 +149,10 @@ Have consistent color after newlines in the pm2 log
 
 Respond to Full_Querys in read-only mode
 
+### allowLoginInReadonly
+
+Accept Logins in read-only mode
+
 ### updateQueueInterval
   The interval in which to look for changed entries and write them to the queue
 ### queueSendInterval
