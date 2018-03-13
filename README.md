@@ -160,10 +160,11 @@ Accept Logins in [read-only mode](#readonly)
 ### fullQueryInterval
   The interval in which to perform a `Full_Query`
 ### fullQueryServer
-  The server on which to perform a `Full_Query`.
+  The server on which to perform a `Full_Query`.  
 
-  If left empty, or if the chosen server is not in the `servers` table `ALL` known servers will be queried!
+  Should be formated like: `host`:`port`  
 
+  If left empty, or if the specified server is not in the `servers` table **ALL** known servers will be queried!
 ### doDnsLookups
 
 Do a DNS-lookup when receiving entries to allow for a quicker response to "c"(check if an IP-address belongs to a registered participant)
