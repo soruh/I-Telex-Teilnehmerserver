@@ -130,7 +130,7 @@ Print line numbers before log messages
 
 ### logDate
 
-Print line date before log messages
+Print date before log messages
 
 ### bufferLogWithWhitespace
 
@@ -138,16 +138,20 @@ Print whitespace before log messages, to allow for a consistent indentation
 
 ### repairPm2Colors
 
-Have consistent color after newlines in the pm2 log
-!!This is quite performance hungry and should be deactivated in production!!
+Have consistent color after newlines in the pm2 log  
+**!!This is very performance hungry and should be deactivated in production!!**
 
 ### serverPin
   The pin for updates between servers
 
-  If set to null the server enters read-only mode (see "read-only mode")
+  If set to null the server enters [read-only mode](#readonly)
 ### allowFullQueryInReadonly
 
-Respond to Full_Querys in read-only mode
+Respond to Full_Querys in [read-only mode](#readonly)
+
+### allowLoginInReadonly
+
+Accept Logins in [read-only mode](#readonly)
 
 ### updateQueueInterval
   The interval in which to look for changed entries and write them to the queue
@@ -207,7 +211,7 @@ multiple values should be separated by spaces
   #### useTestAccount
   if true a link to an online service, for previewing emails will be printed to the console, after a message was sent!
 
-  messages will not be sent to the account specified above!
+  **messages will not be sent to the account specified above!**
 
   #### messages
   customized messages  
@@ -216,8 +220,8 @@ multiple values should be separated by spaces
 ### logLineNumbers
   print line numbers in front of log messages
 
-## read-only mode
-  The server enters read-only mode if the "serverPin" is set to null.
+## <a name="readonly">read-only mode</a>
+  aThe server enters read-only mode if the "serverPin" is set to null.
 
   In read-only the servers doesn't perform logins on other servers.  
   It does however still perform Full_Querys (simulated by Peer_Query with search-pattern "").

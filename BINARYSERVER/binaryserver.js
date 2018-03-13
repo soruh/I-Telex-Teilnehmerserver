@@ -528,8 +528,8 @@ function getFullQuery(callback){
   }else{*/
   ITelexCom.SqlQuery(pool,"SELECT * FROM servers",function(res){
 		for(let i in res){
-			if(res[i].addresse == config.get("fullQueryServer")){
-				res = res[i];
+			if(res[i].addresse == config.get("fullQueryServer").split(":")[0] && res[i].port== config.get("fullQueryServer").split(":")[1]){
+				res = [res[i]];
 			}
 		}
 		async.eachSeries(res,function(r,cb){
