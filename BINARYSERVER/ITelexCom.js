@@ -662,7 +662,7 @@ function SqlQuery(sqlPool, query, callback){
 			if (cv(2)) ll("not a pool");
 		}
 		if (err){
-			if (cv(0)) lle(colors.FgRed,err,colors.Reset);
+			if (cv(0)) llo(1,colors.FgRed,err,colors.Reset);
 			if (typeof callback === "function") callback(false);
 		} else {
 			if (typeof callback === "function") callback(res);
