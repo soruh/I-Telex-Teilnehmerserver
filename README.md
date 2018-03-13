@@ -139,6 +139,7 @@ Print whitespace before log messages, to allow for a consistent indentation
 ### repairPm2Colors
 
 Have consistent color after newlines in the pm2 log  
+
 **!!This is very performance hungry and should be deactivated in production!!**
 
 ### serverPin
