@@ -130,7 +130,7 @@ Print line numbers before log messages
 
 ### logDate
 
-Print line date before log messages
+Print date before log messages
 
 ### bufferLogWithWhitespace
 
