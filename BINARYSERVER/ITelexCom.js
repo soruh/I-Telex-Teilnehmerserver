@@ -634,7 +634,7 @@ function ascii(data, connection, pool){
 					send += result[0]["hostname"] + "\r\n";
 				}
 				send += result[0]["port"] + "\r\n";
-				send += result[0]["extension"]||0 + "\r\n";
+				send += (result[0]["extension"]||0) + "\r\n";
 				send += "+++\r\n";
 				connection.write(send, function (){
 					if (cv(1)) var m = colors.FgGreen + "Entry found";
