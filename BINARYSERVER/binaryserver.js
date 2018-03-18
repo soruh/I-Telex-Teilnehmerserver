@@ -342,6 +342,7 @@ function init(){
 			}
 			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false};
 			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset); //.replace(/^.*:/,'')
+			if(connection.remoteAddress == undefined) setTimeout(function(){ll(connection.remoteAddress)},1000);
 			var queryresultpos = -1;
 			var queryresult = [];
 			var connectionpin;
