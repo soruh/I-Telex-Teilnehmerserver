@@ -28,7 +28,8 @@ var SQL = {
 }
 
 var args = JSON.parse(JSON.stringify(process.argv));
-if(/node/.test(args[0])) args.splice(0,1);
+if(args.indexOf("node") > -1) args.splice(args.indexOf("node"),1);
+if(args.indexOf("sudo") > -1) args.splice(args.indexOf("sudo"),1);
 if(args[1]=="--help"||args[1]==null){
   printUsage();
 }else{
@@ -39,7 +40,12 @@ if(args[1]=="--help"||args[1]==null){
    insecureAuth:options.insecureAuth
   };
   var dbcon = mysql.createConnection(opt,function(err){
-   console.log(err);
+    console.log(err);
+    console.log("trying to use unix-socket");
+    opt.socketPath = "/var/run/mysqld/mysqld.sock";
+    dbcon = mysql.createConnection(opt,function(err){
+      console.log(err);
+    });
   });
   dbcon.query("",function(err,res){
     if(err){
