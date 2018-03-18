@@ -131,9 +131,9 @@ function handlePackage(obj, cnum, pool, connection, handles, cb){
 		} else {
 			try {
 				if (cv(2)){
-					ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connection.remoteAddress) + colors.Reset);
+					ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connections[cnum].ipAddress) + colors.Reset);
 				} else if (cv(1)){
-					ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connection.remoteAddress) + colors.Reset);
+					ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connections[cnum].ipAddress) + colors.Reset);
 				}
 				if (typeof handles[obj.packagetype][connections[cnum].state] == "function"){
 					handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
@@ -578,6 +578,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			}
 		});
 		socket.connect(options, function (connection){
+			connections[cnum].ipAddress = socket.remoteAddress;
 			if (cv(2)) ll(colors.FgGreen+"connected to:" + colors.FgCyan, options, colors.Reset);
 			if(sErrors[serverkey]&&(sErrors[serverkey].errorCounter>0)){
 				sErrors[serverkey].errorCounter=0;
