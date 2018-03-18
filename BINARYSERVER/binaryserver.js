@@ -52,7 +52,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 	var number = obj.data.rufnummer;
 	var pin = obj.data.pin;
 	var port = obj.data.port;
-	var ipaddress = ITelexCom.connections[cnum].ipAddress.replace(/^.*:/,'');
+	var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
 	ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_a){
     let results = [];
     if(result_a){
@@ -81,8 +81,8 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
   				connection.end();
           ITelexCom.sendEmail(transporter,"wrongDynIpType",{
             "[typ]":res.typ,
-            "[IpFull]":ITelexCom.connections[cnum].ipAddress,
-            "[Ip]":(ip.isV4Format(ITelexCom.connections[cnum].ipAddress.split("::")[1])?ITelexCom.connections[cnum].ipAddress.split("::")[1]:ITelexCom.connections[cnum].ipAddress),
+            "[IpFull]":connection.remoteAddress,
+            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
             "[number]":res.rufnummer,
             "[name]":res.name,
             "[date]":new Date().toString()
@@ -92,22 +92,22 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
 				connection.end();
         ITelexCom.sendEmail(transporter,"wrongDynIpPin",{
-		        "[Ip]":(ip.isV4Format(ITelexCom.connections[cnum].ipAddress.split("::")[1])?ITelexCom.connections[cnum].ipAddress.split("::")[1]:ITelexCom.connections[cnum].ipAddress),
+		        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
 						"[number]":res.rufnummer,
 						"[name]":res.name,
 						"[date]":new Date().toString()
 				},cb);
 			}
 		}else if(results.length==0){
-      let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${ITelexCom.connections[cnum].ipAddress.replace(/^.*:/,'')}','1','1');`;
+      let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
       if(result_a&&(result_a.length>0)){
           query = `DELETE FROM teilnehmer WHERE rufnummer=${number};`+query;
       }
 			ITelexCom.SqlQuery(pool,query,function(result_b){
         if(result_b){
           ITelexCom.sendEmail(transporter,"new",{
-            "[IpFull]":ITelexCom.connections[cnum].ipAddress,
-            "[Ip]":(ip.isV4Format(ITelexCom.connections[cnum].ipAddress.split("::")[1])?ITelexCom.connections[cnum].ipAddress.split("::")[1]:ITelexCom.connections[cnum].ipAddress),
+            "[IpFull]":connection.remoteAddress,
+            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
             "[number]":number,
             "[date]":new Date().toString()
           },cb);
@@ -243,8 +243,8 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			connection.end();
 		}
     ITelexCom.sendEmail(transporter,"wrongServerPin",{
-      "[IpFull]":ITelexCom.connections[cnum].ipAddress,
-      "[Ip]":(ip.isV4Format(ITelexCom.connections[cnum].ipAddress.split("::")[1])?ITelexCom.connections[cnum].ipAddress.split("::")[1]:ITelexCom.connections[cnum].ipAddress),
+      "[IpFull]":connection.remoteAddress,
+      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
       "[date]":new Date().toString()
     },cb);
 	}
@@ -262,8 +262,8 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			connection.end();
 		}
     ITelexCom.sendEmail(transporter,"wrongServerPin",{
-      "[IpFull]":ITelexCom.connections[cnum].ipAddress,
-      "[Ip]":(ip.isV4Format(ITelexCom.connections[cnum].ipAddress.split("::")[1])?ITelexCom.connections[cnum].ipAddress.split("::")[1]:ITelexCom.connections[cnum].ipAddress),
+      "[IpFull]":connection.remoteAddress,
+      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
       "[date]":new Date().toString()
     },cb);
 	}
@@ -340,8 +340,8 @@ function init(){
 			if(cnum == -1){
 				cnum = Object.keys(ITelexCom.connections).length;
 			}
-			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false, ipAddress:connection.address().address};
-			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+ITelexCom.connections[cnum].ipAddress+colors.Reset); //.replace(/^.*:/,'')
+			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false};
+			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset); //.replace(/^.*:/,'')
 			var queryresultpos = -1;
 			var queryresult = [];
 			var connectionpin;
