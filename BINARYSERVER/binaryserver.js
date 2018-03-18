@@ -85,13 +85,18 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
             "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
             "[number]":res.rufnummer,
             "[name]":res.name,
-            "[date]":new Date()
+            "[date]":new Date().toString()
           },cb);
         }
 			}else{
 				if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
 				connection.end();
-        ITelexCom.sendEmail(transporter,"wrongDynIpPin",{},cb);
+        ITelexCom.sendEmail(transporter,"wrongDynIpPin",{
+		        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+						"[number]":res.rufnummer,
+						"[name]":res.name,
+						"[date]":new Date().toString()
+				},cb);
 			}
 		}else if(results.length==0){
       let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
@@ -104,7 +109,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
             "[IpFull]":connection.remoteAddress,
             "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
             "[number]":number,
-            "[date]":new Date()
+            "[date]":new Date().toString()
           },cb);
           ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
             try{
@@ -240,7 +245,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
     ITelexCom.sendEmail(transporter,"wrongServerPin",{
       "[IpFull]":connection.remoteAddress,
       "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-      "[date]":new Date()
+      "[date]":new Date().toString()
     },cb);
 	}
 };
@@ -259,7 +264,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
     ITelexCom.sendEmail(transporter,"wrongServerPin",{
       "[IpFull]":connection.remoteAddress,
       "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-      "[date]":new Date()
+      "[date]":new Date().toString()
     },cb);
 	}
 };
