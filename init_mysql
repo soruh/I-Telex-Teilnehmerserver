@@ -41,11 +41,6 @@ if(args[1]=="--help"||args[1]==null){
   };
   var dbcon = mysql.createConnection(opt,function(err){
     console.log(err);
-    console.log("trying to use unix-socket");
-    opt.socketPath = "/var/run/mysqld/mysqld.sock";
-    dbcon = mysql.createConnection(opt,function(err){
-      console.log(err);
-    });
   });
   dbcon.query("",function(err,res){
     if(err){
