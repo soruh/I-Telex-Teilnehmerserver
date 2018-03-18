@@ -578,7 +578,6 @@ function connect(pool, transporter, after, options, handles, callback){
 			}
 		});
 		socket.connect(options, function (connection){
-			connection.remoteAddress = socket.remoteAddress;
 			if (cv(2)) ll(colors.FgGreen+"connected to:" + colors.FgCyan, options, colors.Reset);
 			if(sErrors[serverkey]&&(sErrors[serverkey].errorCounter>0)){
 				sErrors[serverkey].errorCounter=0;
