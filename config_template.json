@@ -17,7 +17,7 @@
   "logLineNumbers":true,
   "logDate":true,
   "bufferLogWithWhitespace":true,
-  "repairPm2Colors":true,
+  "repairPm2Colors":false,
 
   "serverPin":1234512345,
   "allowFullQueryInReadonly":true,
