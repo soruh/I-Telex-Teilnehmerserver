@@ -12,6 +12,8 @@
     "timeout"         :2147483647
   },
 
+  "setChangedOnNewerEntry":true,
+
   "logLineNumbers":true,
   "logDate":true,
   "bufferLogWithWhitespace":true,

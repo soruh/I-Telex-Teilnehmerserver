@@ -160,7 +160,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			pin:obj.data.pin,
 			gesperrt:obj.data.gesperrt,
 			moddate:obj.data.timestamp,
-			changed:0
+			changed:(config.get("setChangedOnNewerEntry")?1:0)
 		};
     var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("doDnsLookups"));
     function lookup(host,callback){
