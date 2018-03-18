@@ -154,6 +154,8 @@ Respond to Full_Querys in [read-only mode](#readonly)
 
 Accept Logins in [read-only mode](#readonly)
 
+This enables anyone to change and read entries on your server!
+
 ### updateQueueInterval
   The interval in which to look for changed entries and write them to the queue
 ### queueSendInterval
