@@ -52,6 +52,7 @@ if(args[1]=="--help"||args[1]==null){
           clearInterval(Int);
           process.stdin.removeListener("data",passwd);
           opt.password = data.toString().replace(/\n/,"").replace(/\r/,"");
+          if(opt.password == "") opt.password = null;
           dbcon = mysql.createConnection(opt,function(err){
            console.log(err);
           });
