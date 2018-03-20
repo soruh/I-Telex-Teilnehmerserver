@@ -22,7 +22,7 @@ if(process.argv[2]=="--help"){
                   console.error(err);
                 }else{
                   console.log("done!");
-                  console.log("Added entry:\n"+process.argv[3]+":"+process.argv[4]);
+                  console.log("Added entry:\n"+process.argv[3]+" "+process.argv[4]);
                 }
                 process.exit();
               });
@@ -38,7 +38,7 @@ if(process.argv[2]=="--help"){
                 }else if(res.affectedRows>0){
                   console.log("done!\ndeleted entrys: "+res.affectedRows);
                 }else{
-                  console.log("the entry:\n"+process.argv[3]+":"+process.argv[4]+"\ndoes not exist!");
+                  console.log("the entry:\n"+process.argv[3]+" "+process.argv[4]+"\ndoes not exist!");
                 }
                 process.exit();
               });
@@ -55,7 +55,7 @@ if(process.argv[2]=="--help"){
 
                 }
                 for(o of res){
-                  console.log(o.addresse+":"+o.port);
+                  console.log(o.addresse+" "+o.port);
                 }
                 process.exit();
               });
