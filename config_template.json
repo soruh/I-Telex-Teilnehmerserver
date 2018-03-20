@@ -33,7 +33,7 @@
   "binaryPort":11811,
   "loggingVerbosity":2,
 
-  "webServerPort":3030,
+  "webServerPort":80,
   "webInterfacePassword":"XXX",
 
   "warnAtErrorCounts":"1 10",
