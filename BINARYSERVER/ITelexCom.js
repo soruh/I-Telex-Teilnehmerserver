@@ -3,9 +3,7 @@ if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slic
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname, '..'));
 
-const {ll} = require(path.join(PWD, "/COMMONMODULES/logWithLineNumber.js"));
-const {lle} = require(path.join(PWD, "/COMMONMODULES/logWithLineNumber.js"));
-const {llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
+const {ll,lle,llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');

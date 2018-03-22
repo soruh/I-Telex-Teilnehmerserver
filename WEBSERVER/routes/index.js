@@ -3,13 +3,10 @@ if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slic
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname,'..','..'));
 
-const express = require('express');
-const {ll} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
-const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
+const {ll,lle,llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const mysql = require('mysql');
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
-colors.disable((process.execArgv.indexOf("--inspect")>-1)&&config.get("inspectWithoutColors"));
 
 var mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 mySqlConnectionOptions.multipleStatements = true;
@@ -25,11 +22,10 @@ pool.getConnection(function(err, connection){
   }
 });
 
-const router = express.Router();
+const router = require('express').Router();
 router.get('/', function(req, res, next){
   res.render('index');
 });
-module.exports = router;
 
 router.post('/list', function(req, res){
   ll(req.body);
@@ -223,3 +219,5 @@ router.post('/edit', function(req, res){
     res.json({successful:false,message:{code:-1,text:"wrong password!"}});
   }
 });
+
+module.exports = router;

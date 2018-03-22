@@ -13,9 +13,7 @@ const ip = require('ip');
 const PWD = path.normalize(path.join(__dirname,'..'));
 
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
-const {ll} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
-const {lle} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
-const {llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
+const {ll,lle,llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
 const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const cv = ITelexCom.cv;
