@@ -4,6 +4,7 @@ const path = require('path');
 const PWD = path.normalize(path.join(__dirname, '..'));
 
 const {ll,lle,llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
+const util = require('util');
 const net = require('net');
 const mysql = require('mysql');
 const async = require('async');
@@ -95,9 +96,6 @@ function Timer(fn, countdown){
 function TimeoutWrapper(fn, countdown){
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
 	var args = [];
-	for (let i in arguments){
-		if (i > 2) args.push(arguments[i]);
-	}
 	args.push(function (){
 		if (cv(3)) ll(colors.FgMagenta + "callback for timeout: " + colors.FgCyan + fnName + colors.Reset);
 		for (let k of Object.keys(timeouts)){
@@ -105,6 +103,9 @@ function TimeoutWrapper(fn, countdown){
 			if (cv(3)) ll(colors.FgYellow + "resumed " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
 		}
 	});
+	for (let i in arguments){
+		if (i > 2) args.push(arguments[i]);
+	}
 	if (cv(1)) ll(colors.FgMagenta + "set timeout for: " + colors.FgCyan + fnName + colors.FgMagenta + " to " + colors.FgCyan + countdown + colors.FgMagenta + "ms" + colors.Reset);
 	timeouts[fnName] = new Timer(function (){
 		for (let k of Object.keys(timeouts)){
@@ -134,8 +135,8 @@ function handlePackage(obj, cnum, pool, connection, handles, cb){
 					ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : connection.remoteAddress) + colors.Reset);
 				}
 				if (typeof handles[obj.packagetype][connections[cnum].state] == "function"){
-					handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
 					if (cv(2)) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
+					handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
 				} else {
 					if (cv(0)) lle(colors.FgRed + "packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgRed + " not supported in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
 					if (typeof cb === "function") cb();
@@ -445,7 +446,12 @@ function ValueToBytearray(value, size){
 
 
 function connect(pool, transporter, after, options, handles, callback){
-	let onEnd = function(){try{}catch(e){after.apply(null,arguments)}}
+	let onEnd = function(){
+		//if (cv(2)) ll(`${colors.FgYellow}calling onEnd handler for server ${util.inspect(options)}${colors.Reset}`);
+		try{
+			after();
+		}catch(e){}
+	}
 	if (cv(2)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host+":"+options.port;
@@ -529,13 +535,15 @@ function connect(pool, transporter, after, options, handles, callback){
 		socket.on('error', function (error){
 			try {
 				if (error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
-					let exists = false;
+					if(cv(1)) ll(`${colors.FgRed}couldn't connect to server ${util.inspect(options)}${colors.Reset}`)
+					/*let exists = false;
 					for(let k in sErrors){
 						if(k == serverkey){
 							exists = true;
 							break;
 						}
-					}
+					}*/
+					let exists = Object.keys(sErrors).findIndex(function(k){return(k==serverkey)})>-1;
 					if(exists){
 						sErrors[serverkey].errors.push({error:error,timeStamp:Date.now()});
 						sErrors[serverkey].errorCounter++;
@@ -557,12 +565,11 @@ function connect(pool, transporter, after, options, handles, callback){
 				} else {
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
 				}
-
+			} catch (e){
+				if(cv(2)) lle(e);
+			} finally {
 				if (connections[cnum].connection = socket) setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
 				if(typeof onEnd === "function") onEnd();
-			} catch (e){
-				if(typeof onEnd === "function") onEnd();
-				if(cv(2)) lle(e);
 			}
 		});
 		socket.on('end', function (){
@@ -581,11 +588,11 @@ function connect(pool, transporter, after, options, handles, callback){
 				sErrors[serverkey].errorCounter=0;
 				if (cv(2)) ll(colors.FgGreen+"reset error counter for: "+colors.FgCyan,options,colors.Reset);
 			}
-			return (callback(socket, cnum));
+			if(typeof callback === "function") callback(socket, cnum);
 		});
 	} catch (e){
 		if (cv(2)) lle(e);
-		//cb();
+		if(typeof onEnd === "function") onEnd();
 	}
 }
 function ascii(data, connection, pool){

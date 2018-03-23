@@ -548,19 +548,19 @@ function getFullQuery(callback){
 			}
 			async.eachSeries(servers,function(r,cb){
 				ITelexCom.connect(pool,transporter,function(e){
-					try{
-	          cb();
-	        }catch(e){
-	          //if(cv(2)) lle(e);
-	        }
+					try{cb();}catch(e){}
 				},{host:r.addresse,port:r.port},handles,function(client,cnum){
-					let request = readonly?
-												{packagetype:10,datalength:41,data:{pattern:'',version:1}}:
-												{packagetype:6,datalength:5,data:{serverpin:config.get("serverPin"),version:1}};
-					client.write(ITelexCom.encPackage(request),function(){
-						ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
-						ITelexCom.connections[cnum].cb = cb;
-					});
+					try{
+						let request = readonly?
+							{packagetype:10,datalength:41,data:{pattern:'',version:1}}:
+							{packagetype:6,datalength:5,data:{serverpin:config.get("serverPin"),version:1}};
+						client.write(ITelexCom.encPackage(request),function(){
+							ITelexCom.connections[cnum].state = ITelexCom.states.FULLQUERY;
+							ITelexCom.connections[cnum].cb = cb;
+						});
+					}catch(e){
+						try{cb();}catch(e){}
+					}
 				});
 			},function(){
 				if(typeof callback === "function") callback();
