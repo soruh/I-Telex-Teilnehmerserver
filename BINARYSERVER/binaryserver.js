@@ -466,10 +466,10 @@ function updateQueue(callback){
 				for(let o of changed){
 					changed_numbers.push(o.rufnummer);
 				}
-				ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,changed_numbers,colors.Reset);
+				ll(colors.FgGreen+"numbers to enqueue:"+colors.FgCyan,changed_numbers,colors.Reset);
 			}
+			if(cv(1)&&!cv(2)) ll(colors.FgCyan+changed.length+colors.FgGreen+" numbers to enqueue"+colors.Reset);
 
-			//if(cv(1)&&!cv(2)) ll(colors.FgGreen,"numbers to enqueue:",colors.FgCyan,result1.length,colors.Reset);
 			ITelexCom.SqlQuery(pool,"SELECT * FROM servers;", function(servers){
 				if(servers.length>0){
 					async.each(servers,function(server,cb1){
@@ -477,37 +477,38 @@ function updateQueue(callback){
 							ITelexCom.SqlQuery(pool,"SELECT * FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(qentry){
 								if(qentry.length == 1){
 									ITelexCom.SqlQuery(pool,"UPDATE queue SET timestamp = "+Math.floor(new Date().getTime()/1000)+" WHERE server = "+server.uid+" AND message = "+message.uid,function(){
-										ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+										//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
 											if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
 											cb2();
-										});
+										//});
 									});
 								}else if(qentry.length == 0){
 									ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
-										ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+										//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
 											if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
 											cb2();
-										});
+										//});
 									});
 								}else{
 									lle("duplicate queue entry!");
 									ITelexCom.SqlQuery(pool,"DELETE FROM queue WHERE server = "+server.uid+" AND message = "+message.uid,function(){
 										ITelexCom.SqlQuery(pool,"INSERT INTO queue (server,message,timestamp) VALUES ("+server.uid+","+message.uid+","+Math.floor(new Date().getTime()/1000)+")",function(){
-											ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+											//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
 												if(cv(2)) ll(colors.FgGreen,"enqueued:",colors.FgCyan,message.rufnummer,colors.Reset);
 												cb2();
-											});
+											//});
 										});
 									});
 								}
 							});
 						},cb1);
 					},function(){
-						//pool.end(()=>{
-							//TODO qwd.stdin.write("sendQueue");
-							//setTimeout(updateQueue,config.get("updateQueueInterval"));
+						if(cv(1)) ll(colors.FgGreen+"finished enqueueing"+colors.Reset);
+						if(cv(2)) ll(colors.FgGreen+"reseting changed flags..."+colors.Reset);
+						ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+changed.map(function(entry){return(entry.uid)}).join(" or uid=")+";", function(err, res){
+							if(cv(2)) ll(colors.FgGreen+"reset "+colors.FgCyan+changed.length+colors.FgGreen+" changed flags."+colors.Reset);
 							if(typeof callback === "function") callback();
-						//});
+						});
 					});
 				}else{
 					ll(colors.FgYellow+"No configured servers -> aborting "+colors.FgCyan+"updateQueue"+colors.Reset)
