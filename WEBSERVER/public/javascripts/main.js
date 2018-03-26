@@ -697,7 +697,7 @@ function updateTable(usli,cb){
     table.removeChild(table.firstChild);
   }
   var tr = document.createElement("div");
-  $(tr).addClass("tr");
+  $(tr).addClass("tr hr");
   for(let b in usli[Object.keys(usli)[0]]){
     if(b!="uid"){
       var th = document.createElement("div");
