@@ -15,6 +15,7 @@ const PWD = path.normalize(path.join(__dirname,'..'));
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 const {ll,lle,llo} = require(path.join(PWD,"/COMMONMODULES/logWithLineNumber.js"));
 const colors = require(path.join(PWD,"/COMMONMODULES/colors.js"));
+if(config.get("disableColors")) colors.disable();
 const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const cv = ITelexCom.cv;
 

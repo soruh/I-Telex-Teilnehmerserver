@@ -47,7 +47,7 @@ const COLORS = {
 module.exports=COLORS;
 module.exports["disable"]=
 function disable(bool){
-	if(bool){
+	if(bool==undefined||bool){
 		for(let i in this){
 			if(typeof this[i] === "string") this[i] = "";
 		}

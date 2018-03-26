@@ -32,6 +32,7 @@
   "stderrLog":"",
   "binaryPort":11811,
   "loggingVerbosity":2,
+  "disableColors":false,
 
   "webServerPort":80,
   "webInterfacePassword":"XXX",
