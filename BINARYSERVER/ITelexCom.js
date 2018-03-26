@@ -732,12 +732,14 @@ function sendEmail(transporter,messageName,values,callback){
 	}
   if(cv(2)) ll("sending mail:",mailOptions);
   transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-          return lle(error);
-      }
-      if(cv(1)) ll('Message sent:', info.messageId);
-      if(config.get("eMail").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-      if(typeof callback === "function") callback();
+      if (error){
+        lle(error);
+				if(typeof callback === "function") callback();
+      }else{
+	      if(cv(1)) ll('Message sent:', info.messageId);
+	      if(config.get("eMail").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+	      if(typeof callback === "function") callback();
+			}
   });
 }
 
