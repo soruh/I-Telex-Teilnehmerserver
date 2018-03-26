@@ -335,6 +335,7 @@ function init(){
 			for(let i = 0;i<maxKey+1;i++){
 				if(!ITelexCom.connections.hasOwnProperty(i)){
 					cnum = i;
+					break;
 				}
 			}
 			if(cnum == -1){

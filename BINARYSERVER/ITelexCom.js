@@ -462,6 +462,7 @@ function connect(pool, transporter, after, options, handles, callback){
 		for (let i = 0; i < maxKey+1; i++){
 			if (!connections.hasOwnProperty(i)){
 				cnum = i;
+				break;
 			}
 		}
 		if (cnum == -1){
