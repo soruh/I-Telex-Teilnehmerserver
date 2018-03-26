@@ -730,7 +730,7 @@ function sendEmail(transporter,messageName,values,callback){
 	for(let k in values){
 		mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g,"\\[").replace(/\]/g,"\\]"),"g"),values[k]);
 	}
-  if(cv(2)) ll("sending mail:",mailOptions);
+  if(cv(2)) ll("sending mail:\n",mailOptions,"\nto server",transporter.options.host);
   transporter.sendMail(mailOptions, function(error, info){
       if (error){
         if(cv(2)) lle(error);
