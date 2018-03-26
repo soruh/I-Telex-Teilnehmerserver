@@ -481,8 +481,9 @@ function connect(pool, transporter, after, options, handles, callback){
 				socket.destroy();
 			}catch(e) {
 
+			}finally{
+				if(typeof onEnd === "function") onEnd();
 			}
-			if(typeof onEnd === "function") onEnd();
 		});
 		socket.on('data', function (data){
 			if(cv(2)){
