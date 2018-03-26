@@ -475,7 +475,7 @@ function connect(pool, transporter, after, options, handles, callback){
 		socket.setTimeout(config.get("connectionTimeout"));
 		socket.on('timeout', function (){
 			try {
-				if (cv(1)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
+				if(cv(1)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
 				socket.emit("end");
 				socket.emit("error","timeout");
 				socket.destroy();
@@ -534,6 +534,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			}
 		});
 		socket.on('error', function (error){
+			if(cv(3)) lle(error);
 			try {
 				// if(error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
 				if(error.code != "ECONNRESET"){
