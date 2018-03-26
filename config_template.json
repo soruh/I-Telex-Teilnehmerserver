@@ -34,7 +34,7 @@
   "loggingVerbosity":2,
   "disableColors":false,
 
-  "webServerPort":80,
+  "webServerPort":3030,
   "webInterfacePassword":"XXX",
 
   "warnAtErrorCounts":[1,10],
