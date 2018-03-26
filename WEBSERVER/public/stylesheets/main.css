@@ -206,13 +206,13 @@ h2{
 	width: 83px;
 }
 .cell.cell_name{
-	width: 131px;
+	width: calc(160px + 40px);
 }
 .cell.cell_typ{
 	width: 106px;
 }
 .cell.cell_hostname{
-	width: 131px;
+	width: 200px;
 }
 .cell.cell_ipaddresse{
 	width: 131px;
