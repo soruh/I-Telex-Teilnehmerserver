@@ -480,7 +480,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			try {
 				if (cv(2)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
 				socket.emit("end");
-				//socket.emit("error","timeout");
+				socket.emit("error","timeout");
 				socket.destroy();
 			}catch(e) {
 
