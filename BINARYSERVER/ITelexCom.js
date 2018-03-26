@@ -565,7 +565,6 @@ function connect(pool, transporter, after, options, handles, callback){
 	            "[date]":new Date().toUTCString()
 	          },function(){});
 					}
-					if (cv(3)) lle(colors.FgRed+require('util').inspect(serverErrors,{depth:10})+colors.Reset);
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,serverErrors[serverkey].errorCounter,colors.Reset);
 				}
 				// } else {
