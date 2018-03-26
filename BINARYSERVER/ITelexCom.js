@@ -459,14 +459,11 @@ function connect(pool, transporter, after, options, handles, callback){
 		var cnum = -1;
 		let maxKey = Math.max.apply(Math,Object.keys(connections));
 		if(!isFinite(maxKey)) maxKey=0;
-		for (let i = 0; i < maxKey+1; i++){
+		for (let i = 0; i <= maxKey+1; i++){
 			if (!connections.hasOwnProperty(i)){
 				cnum = i;
 				break;
 			}
-		}
-		if (cnum == -1){
-			cnum = maxKey+1;
 		}
 		connections[cnum] = {
 			connection: socket,
