@@ -562,7 +562,7 @@ function connect(pool, transporter, after, options, handles, callback){
 						sendEmail(transporter,"ServerError",{
 							"[server]":serverkey,
 							"[errorCounter]":serverErrors[serverkey].errorCounter,
-	            "[date]":new Date()
+	            "[date]":new Date().toUTCString()
 	          },function(){});
 					}
 					if (cv(3)) lle(colors.FgRed+require('util').inspect(serverErrors,{depth:10})+colors.Reset);
@@ -710,7 +710,6 @@ function SqlQuery(sqlPool, query, callback){
 }
 
 function sendEmail(transporter,messageName,values,callback){
-	if(cv(2)) ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName+colors.Reset}`);
   let message = config.get("eMail").messages[messageName];
   let mailOptions = {
       from: config.get("eMail").from,
@@ -730,7 +729,11 @@ function sendEmail(transporter,messageName,values,callback){
 	for(let k in values){
 		mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g,"\\[").replace(/\]/g,"\\]"),"g"),values[k]);
 	}
-  if(cv(2)) ll("sending mail:\n",mailOptions,"\nto server",transporter.options.host);
+  if(cv(2)){
+		ll("sending mail:\n",mailOptions,"\nto server",transporter.options.host);
+	}else if(cv(1)){
+		ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName+colors.Reset}`);
+	}
   transporter.sendMail(mailOptions, function(error, info){
       if (error){
         if(cv(2)) lle(error);

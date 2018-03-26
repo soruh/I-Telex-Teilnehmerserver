@@ -84,7 +84,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
             "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
             "[number]":res.rufnummer,
             "[name]":res.name,
-            "[date]":new Date().toString()
+            "[date]":new Date().toUTCString()
           },cb);
         }
 			}else{
@@ -94,7 +94,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
 						"[number]":res.rufnummer,
 						"[name]":res.name,
-						"[date]":new Date().toString()
+						"[date]":new Date().toUTCString()
 				},cb);
 			}
 		}else if(results.length==0){
@@ -108,7 +108,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
             "[IpFull]":connection.remoteAddress,
             "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
             "[number]":number,
-            "[date]":new Date().toString()
+            "[date]":new Date().toUTCString()
           },cb);
           ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
             try{
@@ -244,7 +244,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
     ITelexCom.sendEmail(transporter,"wrongServerPin",{
       "[IpFull]":connection.remoteAddress,
       "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-      "[date]":new Date().toString()
+      "[date]":new Date().toUTCString()
     },cb);
 	}
 };
@@ -263,7 +263,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
     ITelexCom.sendEmail(transporter,"wrongServerPin",{
       "[IpFull]":connection.remoteAddress,
       "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-      "[date]":new Date().toString()
+      "[date]":new Date().toUTCString()
     },cb);
 	}
 };
