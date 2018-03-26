@@ -46,7 +46,7 @@ var connections = {}; //list of active connections
 
 var timeouts = {};
 
-var sErrors = {};
+var serverErrors = {};
 
 function Timer(fn, countdown){
 	var timout;
@@ -457,13 +457,15 @@ function connect(pool, transporter, after, options, handles, callback){
 		let serverkey = options.host+":"+options.port;
 		var socket = new net.Socket();
 		var cnum = -1;
-		for (let i = 0; i < Object.keys(connections).length; i++){
+		let maxKey = Math.max.apply(Math,Object.keys(connections));
+		if(!isFinite(maxKey)) maxKey=0;
+		for (let i = 0; i < maxKey+1; i++){
 			if (!connections.hasOwnProperty(i)){
 				cnum = i;
 			}
 		}
 		if (cnum == -1){
-			cnum = Object.keys(connections).length;
+			cnum = maxKey+1;
 		}
 		connections[cnum] = {
 			connection: socket,
@@ -537,31 +539,31 @@ function connect(pool, transporter, after, options, handles, callback){
 				if (error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
 					if(cv(1)) ll(`${colors.FgRed}couldn't connect to server ${util.inspect(options)}${colors.Reset}`)
 					/*let exists = false;
-					for(let k in sErrors){
+					for(let k in serverErrors){
 						if(k == serverkey){
 							exists = true;
 							break;
 						}
 					}*/
-					let exists = Object.keys(sErrors).findIndex(function(k){return(k==serverkey)})>-1;
+					let exists = Object.keys(serverErrors).findIndex(function(k){return(k==serverkey)})>-1;
 					if(exists){
-						sErrors[serverkey].errors.push({error:error,timeStamp:Date.now()});
-						sErrors[serverkey].errorCounter++;
+						serverErrors[serverkey].errors.push({error:error,timeStamp:Date.now()});
+						serverErrors[serverkey].errorCounter++;
 					}else{
-						sErrors[serverkey] = {
+						serverErrors[serverkey] = {
 							errors: [{error: error,timeStamp:Date.now()}],
 							errorCounter: 1
 						}
 					}
-					if(config.get("warnAtErrorCounts").split(" ").indexOf(sErrors[serverkey].errorCounter.toString())>-1){
+					if(config.get("warnAtErrorCounts").split(" ").indexOf(serverErrors[serverkey].errorCounter.toString())>-1){
 						sendEmail(transporter,"ServerError",{
 							"[server]":serverkey,
-							"[errorCounter]":sErrors[serverkey].errorCounter,
+							"[errorCounter]":serverErrors[serverkey].errorCounter,
 	            "[date]":new Date()
 	          },function(){});
 					}
-					if (cv(3)) lle(colors.FgRed+require('util').inspect(sErrors,{depth:10})+colors.Reset);
-					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,sErrors[serverkey].errorCounter,colors.Reset);
+					if (cv(3)) lle(colors.FgRed+require('util').inspect(serverErrors,{depth:10})+colors.Reset);
+					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,serverErrors[serverkey].errorCounter,colors.Reset);
 				} else {
 					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
 				}
@@ -584,8 +586,8 @@ function connect(pool, transporter, after, options, handles, callback){
 		});
 		socket.connect(options, function (connection){
 			if (cv(2)) ll(colors.FgGreen+"connected to:" + colors.FgCyan, options, colors.Reset);
-			if(sErrors[serverkey]&&(sErrors[serverkey].errorCounter>0)){
-				sErrors[serverkey].errorCounter=0;
+			if(serverErrors[serverkey]&&(serverErrors[serverkey].errorCounter>0)){
+				serverErrors[serverkey].errorCounter=0;
 				if (cv(2)) ll(colors.FgGreen+"reset error counter for: "+colors.FgCyan,options,colors.Reset);
 			}
 			if(typeof callback === "function") callback(socket, cnum);
@@ -753,7 +755,7 @@ module.exports.cv 							= cv;
 //variables
 module.exports.connections			= connections;
 module.exports.timeouts					= timeouts;
-module.exports.sErrors					= sErrors;
+module.exports.serverErrors					= serverErrors;
 
 //constants
 module.exports.PackageNames 		= PackageNames;

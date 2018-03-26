@@ -330,13 +330,15 @@ function init(){
 	var server = net.createServer(function(connection){
 		try{
 			var cnum = -1;
-			for(let i = 0;i<Object.keys(ITelexCom.connections).length;i++){
+			let maxKey = Math.max.apply(Math,Object.keys(ITelexCom.connections));
+			if(!isFinite(maxKey)) maxKey=0;
+			for(let i = 0;i<maxKey+1;i++){
 				if(!ITelexCom.connections.hasOwnProperty(i)){
 					cnum = i;
 				}
 			}
 			if(cnum == -1){
-				cnum = Object.keys(ITelexCom.connections).length;
+				cnum = maxKey+1;
 			}
 			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false};
 			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset); //.replace(/^.*:/,'')
