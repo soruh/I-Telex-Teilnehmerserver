@@ -37,7 +37,7 @@
   "webServerPort":80,
   "webInterfacePassword":"XXX",
 
-  "warnAtErrorCounts":"1 10",
+  "warnAtErrorCounts":[1,10],
 
   "eMail":{
     "useTestAccount":true,

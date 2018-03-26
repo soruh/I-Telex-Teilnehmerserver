@@ -452,7 +452,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			after();
 		}catch(e){}
 	}
-	if (cv(2)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
+	if (cv(1)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host+":"+options.port;
 		var socket = new net.Socket();
@@ -480,6 +480,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			try {
 				if (cv(2)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
 				socket.emit("end");
+				//socket.emit("error","timeout");
 				socket.destroy();
 			}catch(e) {
 
@@ -537,8 +538,8 @@ function connect(pool, transporter, after, options, handles, callback){
 		});
 		socket.on('error', function (error){
 			try {
-				if (error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
-					if(cv(1)) ll(`${colors.FgRed}couldn't connect to server ${util.inspect(options)}${colors.Reset}`)
+				// if(error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
+					if(cv(1)) ll(`${colors.FgRed}server ${colors.FgCyan+util.inspect(options)+colors.FgRed} had an error${colors.Reset}`)
 					/*let exists = false;
 					for(let k in serverErrors){
 						if(k == serverkey){
@@ -556,7 +557,7 @@ function connect(pool, transporter, after, options, handles, callback){
 							errorCounter: 1
 						}
 					}
-					if(config.get("warnAtErrorCounts").split(" ").indexOf(serverErrors[serverkey].errorCounter.toString())>-1){
+					if(config.get("warnAtErrorCounts").indexOf(serverErrors[serverkey].errorCounter)>-1){
 						sendEmail(transporter,"ServerError",{
 							"[server]":serverkey,
 							"[errorCounter]":serverErrors[serverkey].errorCounter,
@@ -565,9 +566,9 @@ function connect(pool, transporter, after, options, handles, callback){
 					}
 					if (cv(3)) lle(colors.FgRed+require('util').inspect(serverErrors,{depth:10})+colors.Reset);
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,serverErrors[serverkey].errorCounter,colors.Reset);
-				} else {
-					if (cv(0)) lle(colors.FgRed, error, colors.Reset);
-				}
+				// } else {
+				// 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);
+				// }
 			} catch (e){
 				if(cv(2)) lle(e);
 			} finally {
@@ -586,7 +587,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			}
 		});
 		socket.connect(options, function (connection){
-			if (cv(2)) ll(colors.FgGreen+"connected to:" + colors.FgCyan, options, colors.Reset);
+			if (cv(1)) ll(colors.FgGreen+"connected to:" + colors.FgCyan, options,colors.FgGreen+"as server "+colors.FgCyan+cnum, colors.Reset);
 			if(serverErrors[serverkey]&&(serverErrors[serverkey].errorCounter>0)){
 				serverErrors[serverkey].errorCounter=0;
 				if (cv(2)) ll(colors.FgGreen+"reset error counter for: "+colors.FgCyan,options,colors.Reset);
@@ -707,6 +708,7 @@ function SqlQuery(sqlPool, query, callback){
 }
 
 function sendEmail(transporter,messageName,values,callback){
+	if(cv(2)) ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName+colors.Reset}`);
   let message = config.get("eMail").messages[messageName];
   let mailOptions = {
       from: config.get("eMail").from,
