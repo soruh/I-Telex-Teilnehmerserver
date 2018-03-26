@@ -539,6 +539,7 @@ function connect(pool, transporter, after, options, handles, callback){
 		socket.on('error', function (error){
 			try {
 				// if(error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
+				if(error.code != "ECONNRESET"){
 					if(cv(1)) ll(`${colors.FgRed}server ${colors.FgCyan+util.inspect(options)+colors.FgRed} had an error${colors.Reset}`)
 					/*let exists = false;
 					for(let k in serverErrors){
@@ -566,6 +567,7 @@ function connect(pool, transporter, after, options, handles, callback){
 					}
 					if (cv(3)) lle(colors.FgRed+require('util').inspect(serverErrors,{depth:10})+colors.Reset);
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,serverErrors[serverkey].errorCounter,colors.Reset);
+				}
 				// } else {
 				// 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);
 				// }
