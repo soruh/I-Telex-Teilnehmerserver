@@ -205,8 +205,6 @@ Do a DNS-lookup when receiving entries to allow for a quicker response to "c"(ch
 
 Send an EMAIL to the configured account when a server wasn't reachable n times.
 
-multiple values should be separated by spaces
-
 ### eMail
 
   #### account
