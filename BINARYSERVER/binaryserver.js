@@ -350,8 +350,8 @@ function init(){
 			connection.setTimeout(config.get("connectionTimeout"));
 			connection.on('timeout', function(){
         if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" timed out"+colors.Reset);
+				connection.emit("end");
 			  connection.destroy();
-				connection.end();
 			})
 			connection.on('end', function(){
 				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);

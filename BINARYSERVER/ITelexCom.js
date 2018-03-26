@@ -479,8 +479,8 @@ function connect(pool, transporter, after, options, handles, callback){
 		socket.on('timeout', function (){
 			try {
 				if (cv(2)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
+				socket.emit("end");
 				socket.destroy();
-				socket.end();
 			}catch(e) {
 
 			}
