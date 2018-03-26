@@ -19,7 +19,6 @@ if(config.get("disableColors")) colors.disable();
 const ITelexCom = require(path.join(PWD,"/BINARYSERVER/ITelexCom.js"));
 const cv = ITelexCom.cv;
 
-
 const readonly = (config.get("serverPin") == null);
 if(readonly) ll(`${colors.FgMagenta}Starting in read-only mode!${colors.Reset}`);
 
@@ -706,3 +705,15 @@ pool.getConnection(function(err, connection){
 		}
 	}
 });
+
+if(cv(3)){
+	function exitHandler(options, err) {
+		if (options.cleanup) ll(`serverErrors:\n${util.inspect(ITelexCom.serverErrors,{depth:null})}`);
+		if (options.exit) process.exit();
+	}
+	process.on('exit', exitHandler.bind(null,{cleanup:true}));
+	process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+	process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+	process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+	process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
+}
