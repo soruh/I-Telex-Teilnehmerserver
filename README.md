@@ -170,7 +170,7 @@ This enables anyone to change and read entries on your server!
   If left empty, or if the specified server is not in the `servers` table **ALL** known servers will be queried!
 ### doDnsLookups
 
-Do a DNS-lookup when receiving entries to allow for a quicker response to "c"(check if an IP-address belongs to a registered participant)
+Respond to "c"+("ip"||"hostname")(check if an IP-address or host belongs to a registered participant)
 
 ### connectionTimeout
   The Timeout duration for client connections

@@ -160,26 +160,26 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			moddate:obj.data.timestamp,
 			changed:(config.get("setChangedOnNewerEntry")?1:0)
 		};
-    var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("doDnsLookups"));
-    function lookup(host,callback){
-      if(host){
-        if(cv(2)) ll(colors.FgGreen+"starting nslookup for: "+colors.FgCyan+host+colors.FgGreen+" ..."+colors.Reset);
-        dnslookup(host,{verbatim:true},function(err, address, family){
-          if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-          if(cv(2)&&(!(err))) ll(colors.FgGreen+"nslookup got ip: "+colors.FgCyan+address+colors.Reset);
-          if(typeof callback === "function") callback(address,res,o,connection,cb);
-        });
-      }else{
-        if(typeof callback === "function") callback(null,res,o,connection,cb);
-      }
-    }
+    // var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("doDnsLookups"));
+    // function lookup(host,callback){
+    //   if(host){
+    //     if(cv(2)) ll(colors.FgGreen+"starting nslookup for: "+colors.FgCyan+host+colors.FgGreen+" ..."+colors.Reset);
+    //     dnslookup(host,{verbatim:true},function(err, address, family){
+    //       if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
+    //       if(cv(2)&&(!(err))) ll(colors.FgGreen+"nslookup got ip: "+colors.FgCyan+address+colors.Reset);
+    //       if(typeof callback === "function") callback(address,res,o,connection,cb);
+    //     });
+    //   }else{
+    //     if(typeof callback === "function") callback(null,res,o,connection,cb);
+    //   }
+    // }
 	  if(res.length == 1){
       var res=res[0];
 	    if(obj.data.timestamp > res.moddate){
-        lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
-          if(doLU&&addr){
-            o.ipaddresse = addr;
-          }
+        // lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
+        //   if(doLU&&addr){
+        //     o.ipaddresse = addr;
+        //   }
           if(cv(2)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
           var sets = "";
           for(let k in o){
@@ -193,16 +193,16 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
           ITelexCom.SqlQuery(pool,q,function(res2){
             connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
           });
-        });
+        // });
       }else{
         if(cv(2)) ll(colors.FgYellow+"recieved entry is "+colors.FgCyan+(parseInt(res.moddate)-parseInt(obj.data.timestamp))+colors.FgYellow+" seconds older and was ignored"+colors.Reset);
         connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
       }
     }else if(res.length == 0){
-      lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
-        if(doLU&&addr){
-          o.ipaddresse = addr;
-        }
+      // lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
+      //   if(doLU&&addr){
+      //     o.ipaddresse = addr;
+      //   }
         var names = "";
         var values = "";
         for(let k in o){
@@ -215,7 +215,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
         ITelexCom.SqlQuery(pool,q,function(res2){
           connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
         });
-      });
+      // });
     }else{
       if(cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
       if(typeof cb === "function") cb();
@@ -374,39 +374,66 @@ function init(){
 					if(cv(2)) ll(colors.FgGreen+"serving ascii request"+colors.Reset);
 					ITelexCom.ascii(data,connection,pool); //TODO: check for fragmentation //probably not needed
 				}else if(data[0] == 99){
-          var IpAddr = data.slice(1).toString().replace(/\n/g,"").replace(/\r/g,"");
-          if(ip.isV4Format(IpAddr)||ip.isV6Format(IpAddr)){
-            ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", function(res){
-              var ips = [];
-              async.eachOf(res,function(r,key,cb){
-                if(r.ipaddresse==null&&r.hostname&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
-                  dnslookup(res.hostname,{verbatim:true},function(err, address, family){
-                    if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-                    ips.push(address);
-                    cb();
-                  });
-                }else if(r.ipaddresse!=null&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
-                  ips.push(r.ipaddresse);
-                  cb();
-                }else{
-                  cb();
-                }
-              },function(){
-                ips = ips.filter(function(elem, pos){
-                  return ips.indexOf(elem) == pos;
-                });
-                var exists = 0;
-                for(var i in ips){
-                  if(ip.isEqual(ips[i],IpAddr)){
-                    exists = 1;
-                  }
-                }
-                connection.write(exists+"\r\n");
-              });
-            });
-          }else{
-            connection.write("-1\r\n");
-          }
+					if(config.get("doDnsLookups")){
+						var arg = data.slice(1).toString().replace(/\n/g,"").replace(/\r/g,"");
+						if(cv(1)) ll(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to participant${colors.Reset}`);
+						if(ip.isV4Format(arg)||ip.isV6Format(arg)){
+							if(cv(2)) ll(`${colors.FgCyan+arg+colors.FgGreen} is an ip address${colors.Reset}`);
+							check(arg);
+						}else{
+							if(cv(2)) ll(`${colors.FgCyan+arg+colors.FgYellow} is not an ip address; starting nslookup${colors.Reset}`);
+							dnslookup(arg,{verbatim:true},function(err, address, family){
+								if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
+								if(cv(2)) ll(`${colors.FgGreen}nslookup found: ${colors.FgCyan+address+colors.Reset}`);
+								check(address);
+							});
+						}
+						function check(IpAddr){
+			          if(ip.isV4Format(IpAddr)||ip.isV6Format(IpAddr)){
+			            ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", function(res){
+			              var ips = [];
+			              async.eachOf(res,function(r,key,cb){
+			                if((!r.ipaddresse)&&r.hostname){
+												// ll(`hostname: ${r.hostname}`)
+			                  dnslookup(r.hostname,{verbatim:true},function(err, address, family){
+			                    if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
+			                    if(address){
+														ips.push(address);
+														// ll(`${r.hostname} resolved to ${address}`);
+													}
+			                    cb();
+			                  });
+			                }else if(r.ipaddresse&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
+												// ll(`ip: ${r.ipaddresse}`);
+			                  ips.push(r.ipaddresse);
+			                  cb();
+			                }else{
+			                  cb();
+			                }
+			              },function(){
+			                // ips = ips.filter(function(elem, pos){
+			                //   return ips.indexOf(elem) == pos;
+			                // });
+											// ll(JSON.stringify(ips))
+											let exists = ips.filter(function(i){return(ip.isEqual(i,IpAddr))}).length > 0;
+											// ll(exists);
+			                // var exists = 0;
+			                // for(var i in ips){
+			                //   if(ip.isEqual(ips[i],IpAddr)){
+			                //     exists = 1;
+			                //   }
+			                // }
+			                connection.write(exists+"\r\n");
+			              });
+			            });
+			          }else{
+			            // connection.write("-1\r\n");
+									connection.write("ERROR\r\nnot a valid host or ip\r\n");
+			          }
+							}
+					}else{
+						connection.write("ERROR\r\nthis server does not support this function\r\n");
+					}
         }else{
 					if(cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
 					var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
