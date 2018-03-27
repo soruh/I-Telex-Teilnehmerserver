@@ -378,13 +378,10 @@ function init(){
 						var arg = data.slice(1).toString().replace(/\n/g,"").replace(/\r/g,"");
 						if(cv(1)) ll(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to participant${colors.Reset}`);
 						if(ip.isV4Format(arg)||ip.isV6Format(arg)){
-							if(cv(2)) ll(`${colors.FgCyan+arg+colors.FgGreen} is an ip address${colors.Reset}`);
 							check(arg);
 						}else{
-							if(cv(2)) ll(`${colors.FgCyan+arg+colors.FgYellow} is not an ip address; starting nslookup${colors.Reset}`);
 							dnslookup(arg,{verbatim:true},function(err, address, family){
 								if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-								if(cv(2)) ll(`${colors.FgGreen}nslookup found: ${colors.FgCyan+address+colors.Reset}`);
 								check(address);
 							});
 						}
