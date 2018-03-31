@@ -386,48 +386,48 @@ function init(){
 							});
 						}
 						function check(IpAddr){
-			          if(ip.isV4Format(IpAddr)||ip.isV6Format(IpAddr)){
-			            ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", function(res){
-			              var ips = [];
-			              async.eachOf(res,function(r,key,cb){
-			                if((!r.ipaddresse)&&r.hostname){
-												// ll(`hostname: ${r.hostname}`)
-			                  dnslookup(r.hostname,{verbatim:true},function(err, address, family){
-			                    if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-			                    if(address){
-														ips.push(address);
-														// ll(`${r.hostname} resolved to ${address}`);
-													}
-			                    cb();
-			                  });
-			                }else if(r.ipaddresse&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
-												// ll(`ip: ${r.ipaddresse}`);
-			                  ips.push(r.ipaddresse);
-			                  cb();
-			                }else{
-			                  cb();
-			                }
-			              },function(){
-			                // ips = ips.filter(function(elem, pos){
-			                //   return ips.indexOf(elem) == pos;
-			                // });
-											// ll(JSON.stringify(ips))
-											let exists = ips.filter(function(i){return(ip.isEqual(i,IpAddr))}).length > 0;
-											// ll(exists);
-			                // var exists = 0;
-			                // for(var i in ips){
-			                //   if(ip.isEqual(ips[i],IpAddr)){
-			                //     exists = 1;
-			                //   }
-			                // }
-			                connection.write(exists+"\r\n");
-			              });
-			            });
-			          }else{
-			            // connection.write("-1\r\n");
-									connection.write("ERROR\r\nnot a valid host or ip\r\n");
-			          }
-							}
+		          if(ip.isV4Format(IpAddr)||ip.isV6Format(IpAddr)){
+		            ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", function(res){
+		              var ips = [];
+		              async.eachOf(res,function(r,key,cb){
+		                if((!r.ipaddresse)&&r.hostname){
+											// ll(`hostname: ${r.hostname}`)
+		                  dnslookup(r.hostname,{verbatim:true},function(err, address, family){
+		                    if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
+		                    if(address){
+													ips.push(address);
+													// ll(`${r.hostname} resolved to ${address}`);
+												}
+		                    cb();
+		                  });
+		                }else if(r.ipaddresse&&(ip.isV4Format(r.ipaddresse)||ip.isV6Format(r.ipaddresse))){
+											// ll(`ip: ${r.ipaddresse}`);
+		                  ips.push(r.ipaddresse);
+		                  cb();
+		                }else{
+		                  cb();
+		                }
+		              },function(){
+		                // ips = ips.filter(function(elem, pos){
+		                //   return ips.indexOf(elem) == pos;
+		                // });
+										// ll(JSON.stringify(ips))
+										let exists = ips.filter(function(i){return(ip.isEqual(i,IpAddr))}).length > 0;
+										// ll(exists);
+		                // var exists = 0;
+		                // for(var i in ips){
+		                //   if(ip.isEqual(ips[i],IpAddr)){
+		                //     exists = 1;
+		                //   }
+		                // }
+		                connection.write(exists+"\r\n");
+		              });
+		            });
+		          }else{
+		            // connection.write("-1\r\n");
+								connection.write("ERROR\r\nnot a valid host or ip\r\n");
+		          }
+						}
 					}else{
 						connection.write("ERROR\r\nthis server does not support this function\r\n");
 					}
@@ -697,17 +697,24 @@ pool.getConnection(function(err, connection){
 		if(module.parent === null){
       if(config.get("eMail").useTestAccount){
         nodemailer.createTestAccount(function(err, account){
-					if(err) throw err;
-					if(cv(0)) ll(colors.FgMagenta+"Got email test account:\n"+colors.FgCyan+util.inspect(account)+colors.Reset);
-          transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-              user: account.user, // generated ethereal user
-              pass: account.pass  // generated ethereal password
-            }
-          });
+					if(err){
+						lle(err);
+						transporter = {
+							sendMail:function sendMail(){lle("can't send mail after Mail error")},
+							options:{host:"Failed to get test Account"}
+						};
+					}else{
+						if(cv(0)) ll(colors.FgMagenta+"Got email test account:\n"+colors.FgCyan+util.inspect(account)+colors.Reset);
+	          transporter = nodemailer.createTransport({
+	            host: 'smtp.ethereal.email',
+	            port: 587,
+	            secure: false, // true for 465, false for other ports
+	            auth: {
+	              user: account.user, // generated ethereal user
+	              pass: account.pass  // generated ethereal password
+	            }
+	          });
+					}
           init();
         });
       }else{
