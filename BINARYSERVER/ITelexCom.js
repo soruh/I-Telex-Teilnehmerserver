@@ -136,7 +136,11 @@ function handlePackage(obj, cnum, pool, connection, handles, cb){
 				}
 				if (typeof handles[obj.packagetype][connections[cnum].state] == "function"){
 					if (cv(2)) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
-					handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
+					try{
+						handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
+					}catch(e){
+						if (typeof cb === "function") cb();
+					}
 				} else {
 					if (cv(0)) lle(colors.FgRed + "packagetype " + colors.FgCyan + PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgRed + " not supported in state " + colors.FgCyan + stateNames[connections[cnum].state] + "(" + connections[cnum].state + ")" + colors.Reset);
 					if (typeof cb === "function") cb();

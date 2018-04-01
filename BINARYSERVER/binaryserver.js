@@ -47,283 +47,315 @@ for(let i = 1;i <= 10;i++){handles[i] = {};}
 //handles[2][ITelexCom.states.STANDBY] = (obj,cnum,pool,connection)=>{}; NOT USED
 //handles[4][WAITING] = (obj,cnum,pool,connection)=>{}; NOT USED
 handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
-	var number = obj.data.rufnummer;
-	var pin = obj.data.pin;
-	var port = obj.data.port;
-	var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
-	ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_a){
-    let results = [];
-    if(result_a){
-      for(let r of result_a){
-        if(r.typ != 0){
-          results.push(r);
-        }
-      }
-    }
-		if(results.length==1){
-			var res = results[0];
-			if(res.pin == pin){
-        if(res.typ == 5){
-  				ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)):"")} WHERE rufnummer = ${number};`,function(result_b){
-  					ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
-  						try{
-  							connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
-  						}catch(e){
-  							if(cv(0)) ll(colors.FgRed,e,colors.Reset);
-  							if(typeof cb === "function") cb();
-  						}
-  					});
-  				});
-        }else{
-          if(cv(1)) ll(colors.FgRed+"not DynIp type"+colors.Reset);
-  				connection.end();
-          ITelexCom.sendEmail(transporter,"wrongDynIpType",{
-            "[typ]":res.typ,
-            "[IpFull]":connection.remoteAddress,
-            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-            "[number]":res.rufnummer,
-            "[name]":res.name,
-            "[date]":new Date().toUTCString()
-          },cb);
-        }
+	try{
+		var number = obj.data.rufnummer;
+		var pin = obj.data.pin;
+		var port = obj.data.port;
+		var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
+		ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_a){
+	    let results = [];
+	    if(result_a){
+	      for(let r of result_a){
+	        if(r.typ != 0){
+	          results.push(r);
+	        }
+	      }
+	    }
+			if(results.length==1){
+				var res = results[0];
+				if(res.pin == pin){
+	        if(res.typ == 5){
+	  				ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)):"")} WHERE rufnummer = ${number};`,function(result_b){
+	  					ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
+	  						try{
+	  							connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+	  						}catch(e){
+	  							if(cv(0)) ll(colors.FgRed,e,colors.Reset);
+	  							if(typeof cb === "function") cb();
+	  						}
+	  					});
+	  				});
+	        }else{
+	          if(cv(1)) ll(colors.FgRed+"not DynIp type"+colors.Reset);
+	  				connection.end();
+	          ITelexCom.sendEmail(transporter,"wrongDynIpType",{
+	            "[typ]":res.typ,
+	            "[IpFull]":connection.remoteAddress,
+	            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+	            "[number]":res.rufnummer,
+	            "[name]":res.name,
+	            "[date]":new Date().toUTCString()
+	          },cb);
+	        }
+				}else{
+					if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
+					connection.end();
+	        ITelexCom.sendEmail(transporter,"wrongDynIpPin",{
+			        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+							"[number]":res.rufnummer,
+							"[name]":res.name,
+							"[date]":new Date().toUTCString()
+					},cb);
+				}
+			}else if(results.length==0){
+	      let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
+	      if(result_a&&(result_a.length>0)){
+	          query = `DELETE FROM teilnehmer WHERE rufnummer=${number};`+query;
+	      }
+				ITelexCom.SqlQuery(pool,query,function(result_b){
+	        if(result_b){
+	          ITelexCom.sendEmail(transporter,"new",{
+	            "[IpFull]":connection.remoteAddress,
+	            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+	            "[number]":number,
+	            "[date]":new Date().toUTCString()
+	          },cb);
+	          ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
+	            try{
+	              connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+	            }catch(e){
+	              if(cv(0)) ll(colors.FgRed,e,colors.Reset);
+	              if(typeof cb === "function") cb();
+	            }
+	          });
+	        }else{
+	          lle(colors.FgRed+"could not create entry",colors.Reset);
+	          if(typeof cb === "function") cb();
+					}
+				});
 			}else{
-				if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
-				connection.end();
-        ITelexCom.sendEmail(transporter,"wrongDynIpPin",{
-		        "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-						"[number]":res.rufnummer,
-						"[name]":res.name,
-						"[date]":new Date().toUTCString()
-				},cb);
-			}
-		}else if(results.length==0){
-      let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
-      if(result_a&&(result_a.length>0)){
-          query = `DELETE FROM teilnehmer WHERE rufnummer=${number};`+query;
-      }
-			ITelexCom.SqlQuery(pool,query,function(result_b){
-        if(result_b){
-          ITelexCom.sendEmail(transporter,"new",{
-            "[IpFull]":connection.remoteAddress,
-            "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-            "[number]":number,
-            "[date]":new Date().toUTCString()
-          },cb);
-          ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
-            try{
-              connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
-            }catch(e){
-              if(cv(0)) ll(colors.FgRed,e,colors.Reset);
-              if(typeof cb === "function") cb();
-            }
-          });
-        }else{
-          lle(colors.FgRed+"could not create entry",colors.Reset);
-          if(typeof cb === "function") cb();
+	      console.error(colors.FgRed,res,solors.Reset);
+	    }
+		});
+	}catch(e){
+		if(typeof cb === "function") cb();
+	}
+};
+handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
+	try{
+		if(obj.data.version == 1){
+			var rufnummer = obj.data.rufnummer;
+			ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${mysql.escape(rufnummer)};`,function(result){ //TODO check if escape breaks things
+				if(cv(2)) ll(colors.FgCyan,result,colors.Reset);
+				if((result[0] != undefined)&&(result != [])&&(obj.gesperrt != 1)&&(obj.typ != 0)){
+					result[0].pin = 0;
+					connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:result[0]}),function(){if(typeof cb === "function") cb();});
+				}else{
+					connection.write(ITelexCom.encPackage({packagetype:4,datalength:0}),function(){if(typeof cb === "function") cb();});
 				}
 			});
 		}else{
-      console.error(colors.FgRed,res,solors.Reset);
-    }
-	});
-};
-handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
-	if(obj.data.version == 1){
-		var rufnummer = obj.data.rufnummer;
-		ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${mysql.escape(rufnummer)};`,function(result){ //TODO check if escape breaks things
-			if(cv(2)) ll(colors.FgCyan,result,colors.Reset);
-			if((result[0] != undefined)&&(result != [])&&(obj.gesperrt != 1)&&(obj.typ != 0)){
-				result[0].pin = 0;
-				connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:result[0]}),function(){if(typeof cb === "function") cb();});
-			}else{
-				connection.write(ITelexCom.encPackage({packagetype:4,datalength:0}),function(){if(typeof cb === "function") cb();});
-			}
-		});
-	}else{
-		if(cv(0)) ll(colors.FgRed,"unsupported package version, sending '0x04' package",colors.Reset);
-		connection.write(ITelexCom.encPackage({packagetype:4,datalength:0}),function(){if(typeof cb === "function") cb();});
+			if(cv(0)) ll(colors.FgRed,"unsupported package version, sending '0x04' package",colors.Reset);
+			connection.write(ITelexCom.encPackage({packagetype:4,datalength:0}),function(){if(typeof cb === "function") cb();});
+		}
+	}catch(e){
+		if(typeof cb === "function") cb();
 	}
 };
 handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
-  if(cv(1)) ll(colors.FgGreen+"got dataset for:",colors.FgCyan,obj.data.rufnummer,colors.Reset);
-	ITelexCom.SqlQuery(pool,`SELECT * from teilnehmer WHERE rufnummer = ${mysql.escape(obj.data.rufnummer)};`,function(res){
-		var o = {
-			rufnummer:obj.data.rufnummer,
-			name:obj.data.name,
-			typ:obj.data.typ,
-			hostname:obj.data.addresse,
-			ipaddresse:obj.data.ipaddresse,
-			port:obj.data.port,
-			extension:obj.data.durchwahl,
-			pin:obj.data.pin,
-			gesperrt:obj.data.gesperrt,
-			moddate:obj.data.timestamp,
-			changed:(config.get("setChangedOnNewerEntry")?1:0)
-		};
-    // var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("doDnsLookups"));
-    // function lookup(host,callback){
-    //   if(host){
-    //     if(cv(2)) ll(colors.FgGreen+"starting nslookup for: "+colors.FgCyan+host+colors.FgGreen+" ..."+colors.Reset);
-    //     dnslookup(host,{verbatim:true},function(err, address, family){
-    //       if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-    //       if(cv(2)&&(!(err))) ll(colors.FgGreen+"nslookup got ip: "+colors.FgCyan+address+colors.Reset);
-    //       if(typeof callback === "function") callback(address,res,o,connection,cb);
-    //     });
-    //   }else{
-    //     if(typeof callback === "function") callback(null,res,o,connection,cb);
-    //   }
-    // }
-	  if(res.length == 1){
-      var res=res[0];
-	    if(obj.data.timestamp > res.moddate){
-        // lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
-        //   if(doLU&&addr){
-        //     o.ipaddresse = addr;
-        //   }
-          if(cv(2)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
-          var sets = "";
-          for(let k in o){
-            if(o[k]!=undefined){
-              sets+=k+" = "+mysql.escape(o[k])+", ";
-            }else{
-              sets+=k+" = DEFAULT, ";
-            }
-          }
-          var q = `UPDATE teilnehmer SET ${sets.substring(0,sets.length-2)} WHERE rufnummer = ${obj.data.rufnummer};`;
-          ITelexCom.SqlQuery(pool,q,function(res2){
-            connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-          });
-        // });
-      }else{
-        if(cv(2)) ll(colors.FgYellow+"recieved entry is "+colors.FgCyan+(parseInt(res.moddate)-parseInt(obj.data.timestamp))+colors.FgYellow+" seconds older and was ignored"+colors.Reset);
-        connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-      }
-    }else if(res.length == 0){
-      // lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
-      //   if(doLU&&addr){
-      //     o.ipaddresse = addr;
-      //   }
-        var names = "";
-        var values = "";
-        for(let k in o){
-          if(o[k]!=undefined){
-            names+=k+", ";
-            values+=mysql.escape(o[k])+", ";
-          }
-        }
-        var q = `INSERT INTO teilnehmer(${names.substring(0, names.length - 2)}) VALUES (${values.substring(0, values.length - 2)});`;
-        ITelexCom.SqlQuery(pool,q,function(res2){
-          connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
-        });
-      // });
-    }else{
-      if(cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
-      if(typeof cb === "function") cb();
-    }
-  });
+	try{
+	  if(cv(1)) ll(colors.FgGreen+"got dataset for:",colors.FgCyan,obj.data.rufnummer,colors.Reset);
+		ITelexCom.SqlQuery(pool,`SELECT * from teilnehmer WHERE rufnummer = ${mysql.escape(obj.data.rufnummer)};`,function(res){
+			var o = {
+				rufnummer:obj.data.rufnummer,
+				name:obj.data.name,
+				typ:obj.data.typ,
+				hostname:obj.data.addresse,
+				ipaddresse:obj.data.ipaddresse,
+				port:obj.data.port,
+				extension:obj.data.durchwahl,
+				pin:obj.data.pin,
+				gesperrt:obj.data.gesperrt,
+				moddate:obj.data.timestamp,
+				changed:(config.get("setChangedOnNewerEntry")?1:0)
+			};
+	    // var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.get("doDnsLookups"));
+	    // function lookup(host,callback){
+	    //   if(host){
+	    //     if(cv(2)) ll(colors.FgGreen+"starting nslookup for: "+colors.FgCyan+host+colors.FgGreen+" ..."+colors.Reset);
+	    //     dnslookup(host,{verbatim:true},function(err, address, family){
+	    //       if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
+	    //       if(cv(2)&&(!(err))) ll(colors.FgGreen+"nslookup got ip: "+colors.FgCyan+address+colors.Reset);
+	    //       if(typeof callback === "function") callback(address,res,o,connection,cb);
+	    //     });
+	    //   }else{
+	    //     if(typeof callback === "function") callback(null,res,o,connection,cb);
+	    //   }
+	    // }
+		  if(res.length == 1){
+	      var res=res[0];
+		    if(obj.data.timestamp > res.moddate){
+	        // lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
+	        //   if(doLU&&addr){
+	        //     o.ipaddresse = addr;
+	        //   }
+	          if(cv(2)) ll(colors.FgGreen+"entry is older: "+colors.FgCyan+obj.data.timestamp+colors.FgGreen+" > "+colors.FgCyan+res.moddate+colors.Reset);
+	          var sets = "";
+	          for(let k in o){
+	            if(o[k]!=undefined){
+	              sets+=k+" = "+mysql.escape(o[k])+", ";
+	            }else{
+	              sets+=k+" = DEFAULT, ";
+	            }
+	          }
+	          var q = `UPDATE teilnehmer SET ${sets.substring(0,sets.length-2)} WHERE rufnummer = ${obj.data.rufnummer};`;
+	          ITelexCom.SqlQuery(pool,q,function(res2){
+	            connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
+	          });
+	        // });
+	      }else{
+	        if(cv(2)) ll(colors.FgYellow+"recieved entry is "+colors.FgCyan+(parseInt(res.moddate)-parseInt(obj.data.timestamp))+colors.FgYellow+" seconds older and was ignored"+colors.Reset);
+	        connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
+	      }
+	    }else if(res.length == 0){
+	      // lookup((doLU?o.hostname:false),function(addr,res,o,connection,cb){
+	      //   if(doLU&&addr){
+	      //     o.ipaddresse = addr;
+	      //   }
+	        var names = "";
+	        var values = "";
+	        for(let k in o){
+	          if(o[k]!=undefined){
+	            names+=k+", ";
+	            values+=mysql.escape(o[k])+", ";
+	          }
+	        }
+	        var q = `INSERT INTO teilnehmer(${names.substring(0, names.length - 2)}) VALUES (${values.substring(0, values.length - 2)});`;
+	        ITelexCom.SqlQuery(pool,q,function(res2){
+	          connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){if(typeof cb === "function") cb();});
+	        });
+	      // });
+	    }else{
+	      if(cv(0)) ll('Something really strange happened, the "rufnummer" field should be unique!');
+	      if(typeof cb === "function") cb();
+	    }
+	  });
+	}catch(e){
+		if(typeof cb === "function") cb();
+	}
 };
 handles[5][ITelexCom.states.LOGIN] = handles[5][ITelexCom.states.FULLQUERY];
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
-	if(obj.data.serverpin == config.get("serverPin")||(readonly&&config.get("allowFullQueryInReadonly"))){
-		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
-		ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer",function(result){
+	try{
+		if(obj.data.serverpin == config.get("serverPin")||(readonly&&config.get("allowFullQueryInReadonly"))){
+			if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
+			ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer",function(result){
+				if((result[0] != undefined)&&(result != [])){
+					ITelexCom.connections[cnum].writebuffer = result;
+					ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
+					ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles,cb);
+				}else{
+					connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}),function(){if(typeof cb === "function") cb();});
+				}
+			});
+		}else{
+			if(cv(1)){
+				ll(colors.FgRed+"serverpin is incorrect! "+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("serverPin")+colors.FgRed+" ending connection!"+colors.Reset);//TODO: remove pin logging
+				connection.end();
+			}
+	    ITelexCom.sendEmail(transporter,"wrongServerPin",{
+	      "[IpFull]":connection.remoteAddress,
+	      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+	      "[date]":new Date().toUTCString()
+	    },cb);
+		}
+	}catch(e){
+		if(typeof cb === "function") cb();
+	}
+};
+handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
+	try{
+		if((obj.data.serverpin == config.get("serverPin"))||(readonly&&config.get("allowLoginInReadonly"))){
+			if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
+			connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){
+				ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
+				if(typeof cb === "function") cb();
+			});
+		}else{
+			if(cv(1)){
+				ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("serverPin")+colors.FgRed+"ending connection!"+colors.Reset);
+				connection.end();
+			}
+	    ITelexCom.sendEmail(transporter,"wrongServerPin",{
+	      "[IpFull]":connection.remoteAddress,
+	      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+	      "[date]":new Date().toUTCString()
+	    },cb);
+		}
+	}catch(e){
+		if(typeof cb === "function") cb();
+	}
+};
+handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
+	try{
+	  if(cv(1)){
+	    var toSend = [];
+			for(let o of ITelexCom.connections[cnum].writebuffer){
+				toSend.push(o.rufnummer);
+			}
+			ll(colors.FgGreen+"entrys to transmit:"+colors.FgCyan+(cv(2)?util.inspect(toSend).replace(/\n/g,""):toSend.length)+colors.Reset);
+		}
+		if(ITelexCom.connections[cnum].writebuffer.length > 0){
+			connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),function(){
+	      if(cv(1)) ll(colors.FgGreen+"sent dataset for:",colors.FgCyan,ITelexCom.connections[cnum].writebuffer[0].rufnummer,colors.Reset);
+				ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.slice(1);
+				if(typeof cb === "function") cb();
+			});
+		}else if(ITelexCom.connections[cnum].writebuffer.length  ==  0){
+			connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}),function(){
+				ITelexCom.connections[cnum].writebuffer = [];
+				ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
+				if(typeof cb === "function") cb();
+			});
+		}else{
+			if(typeof cb === "function") cb();
+		}
+	}catch(e){
+		if(typeof cb === "function") cb();
+	}
+};
+handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
+	try{
+		ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
+	  if(typeof ITelexCom.connections[cnum].cb === "function") ITelexCom.connections[cnum].cb();
+		if(typeof cb === "function") cb();
+	  connection.end();
+	}catch(e){
+		if(typeof cb === "function") cb();
+	}
+};
+handles[9][ITelexCom.states.LOGIN] = handles[9][ITelexCom.states.FULLQUERY];
+handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
+	try{
+		if(cv(2)) ll(obj);
+		var version = obj.data.version;
+		var query = obj.data.pattern;
+		var searchstring = "SELECT * FROM teilnehmer WHERE";
+		var queryarr = query.split(" ");
+		for(let i in queryarr){
+			searchstring +=  " AND name LIKE '%"+queryarr[i]+"%'";
+		}
+		searchstring += ";"
+		searchstring = searchstring.replace("WHERE AND","WHERE");
+		ITelexCom.SqlQuery(pool,searchstring,function(result){
 			if((result[0] != undefined)&&(result != [])){
-				ITelexCom.connections[cnum].writebuffer = result;
+				var towrite = [];
+				for(let o of result){
+					if(o.gesperrt != 1&&o.typ != 0){
+						o.pin = 0;
+						towrite.push(o);
+					}
+				}
+				ITelexCom.connections[cnum].writebuffer = towrite;
 				ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
 				ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles,cb);
 			}else{
 				connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}),function(){if(typeof cb === "function") cb();});
 			}
 		});
-	}else{
-		if(cv(1)){
-			ll(colors.FgRed+"serverpin is incorrect! "+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("serverPin")+colors.FgRed+" ending connection!"+colors.Reset);//TODO: remove pin logging
-			connection.end();
-		}
-    ITelexCom.sendEmail(transporter,"wrongServerPin",{
-      "[IpFull]":connection.remoteAddress,
-      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-      "[date]":new Date().toUTCString()
-    },cb);
-	}
-};
-handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
-	if((obj.data.serverpin == config.get("serverPin"))||(readonly&&config.get("allowLoginInReadonly"))){
-		if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
-		connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){
-			ITelexCom.connections[cnum].state = ITelexCom.states.LOGIN;
-			if(typeof cb === "function") cb();
-		});
-	}else{
-		if(cv(1)){
-			ll(colors.FgRed+"serverpin is incorrect!"+colors.FgCyan+obj.data.serverpin+colors.FgRed+" != "+colors.FgCyan+config.get("serverPin")+colors.FgRed+"ending connection!"+colors.Reset);
-			connection.end();
-		}
-    ITelexCom.sendEmail(transporter,"wrongServerPin",{
-      "[IpFull]":connection.remoteAddress,
-      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-      "[date]":new Date().toUTCString()
-    },cb);
-	}
-};
-handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
-  if(cv(1)){
-    var toSend = [];
-		for(let o of ITelexCom.connections[cnum].writebuffer){
-			toSend.push(o.rufnummer);
-		}
-		ll(colors.FgGreen+"entrys to transmit:"+colors.FgCyan+(cv(2)?util.inspect(toSend).replace(/\n/g,""):toSend.length)+colors.Reset);
-	}
-	if(ITelexCom.connections[cnum].writebuffer.length > 0){
-		connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:ITelexCom.connections[cnum].writebuffer[0]}),function(){
-      if(cv(1)) ll(colors.FgGreen+"sent dataset for:",colors.FgCyan,ITelexCom.connections[cnum].writebuffer[0].rufnummer,colors.Reset);
-			ITelexCom.connections[cnum].writebuffer = ITelexCom.connections[cnum].writebuffer.slice(1);
-			if(typeof cb === "function") cb();
-		});
-	}else if(ITelexCom.connections[cnum].writebuffer.length  ==  0){
-		connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}),function(){
-			ITelexCom.connections[cnum].writebuffer = [];
-			ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
-			if(typeof cb === "function") cb();
-		});
-	}else{
+	}catch(e){
 		if(typeof cb === "function") cb();
 	}
-};
-handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
-	ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
-  if(typeof ITelexCom.connections[cnum].cb === "function") ITelexCom.connections[cnum].cb();
-	if(typeof cb === "function") cb();
-  connection.end();
-};
-handles[9][ITelexCom.states.LOGIN] = handles[9][ITelexCom.states.FULLQUERY];
-handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
-	if(cv(2)) ll(obj);
-	var version = obj.data.version;
-	var query = obj.data.pattern;
-	var searchstring = "SELECT * FROM teilnehmer WHERE";
-	var queryarr = query.split(" ");
-	for(let i in queryarr){
-		searchstring +=  " AND name LIKE '%"+queryarr[i]+"%'";
-	}
-	searchstring += ";"
-	searchstring = searchstring.replace("WHERE AND","WHERE");
-	ITelexCom.SqlQuery(pool,searchstring,function(result){
-		if((result[0] != undefined)&&(result != [])){
-			var towrite = [];
-			for(let o of result){
-				if(o.gesperrt != 1&&o.typ != 0){
-					o.pin = 0;
-					towrite.push(o);
-				}
-			}
-			ITelexCom.connections[cnum].writebuffer = towrite;
-			ITelexCom.connections[cnum].state = ITelexCom.states.RESPONDING;
-			ITelexCom.handlePackage({packagetype:8,datalength:0,data:{}},cnum,pool,connection,handles,cb);
-		}else{
-			connection.write(ITelexCom.encPackage({packagetype:9,datalength:0}),function(){if(typeof cb === "function") cb();});
-		}
-	});
 };
 function init(){
 	if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
