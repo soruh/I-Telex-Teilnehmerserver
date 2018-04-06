@@ -40,6 +40,18 @@ const PackageNames = {
 	9: "End_of_List",
 	10: "Peer_search"
 };
+const PackageSizes = {
+	1: 8,
+	2: 4,
+	3: 5,
+	4: 0,
+	5: 100,
+	6: 5,
+	7: 5,
+	8: 0,
+	9: 0,
+	10: 41
+};
 
 //</STATES>
 var connections = {}; //list of active connections
@@ -370,11 +382,16 @@ function decPackage(packagetype, buffer){
 }
 function decData(buffer){
 	if (cv(2)) ll(colors.FgGreen + "decoding:", colors.FgCyan, Buffer.from(buffer), colors.Reset);
-	var typepos = 0;
 	var out = [];
-	while (typepos < buffer.length - 1){
+  for(var typepos = 0;typepos < buffer.length - 1;typepos += datalength + 2){
 		var packagetype = parseInt(buffer[typepos], 10);
 		var datalength = parseInt(buffer[typepos + 1], 10);
+
+		if(PackageSizes[packagetype] != datalength){
+			ll(`size missmatch: ${PackageSizes[packagetype]} != ${datalength}`);
+			continue;
+		}
+
 		var blockdata = [];
 		for (let i = 0; i < datalength; i++){
 			blockdata[i] = buffer[typepos + 2 + i];
@@ -389,7 +406,6 @@ function decData(buffer){
 		} else {
 			if(cv(1)) lle("error, no data");
 		}
-		typepos += datalength + 2;
 	}
 	if (cv(2)) ll(colors.FgGreen + "decoded:", colors.FgCyan, out, colors.Reset);
 	return(out);
