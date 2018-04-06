@@ -8,6 +8,7 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
+const colors = require(path.join(PWD,'/COMMONMODULES/colors.js'));
 const config = require(path.join(PWD,'/COMMONMODULES/config.js'));
 
 
@@ -18,8 +19,40 @@ app.set('views', path.join(PWD,'/WEBSERVER/views'));
 app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
+//app.use(logger('dev'));
+// app.use(logger('tiny'));
+// app.use(logger(':method :url :status :res[content-length] - :response-time ms'))
+if(config.get("loggingVerbosity")>0) app.use(logger(function (tokens, req, res) {
+  if(config.get("loggingVerbosity")>1||tokens.url(req, res) == "/"){
+    let status = tokens.status(req, res);
+    let color;
+    switch(+status[0]){
+      case 1:
+        color = colors.FgYellow;
+        break;
+      case 2:
+        color = colors.FgGreen;
+        break;
+      case 3:
+        color = colors.FgCyan;
+        break;
+      case 4:
+      case 5:
+      default:
+        color = colors.FgRed;
+    }
+    let method = tokens.method(req, res);
+    return [
+      req._remoteAddress,
+      (method=="GET"?colors.FgGreen:colors.FgCyan)+method+colors.Reset+(method=="GET"?" ":""),
+      color+status+colors.Reset,
+      tokens.url(req, res).replace(/\//g,colors.Dim+"/"+colors.Reset)
+    ].join(' ')
+  }
+}));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());

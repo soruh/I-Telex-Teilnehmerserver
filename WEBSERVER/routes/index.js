@@ -28,7 +28,7 @@ router.get('/', function(req, res, next){
 });
 
 router.post('/list', function(req, res){
-  ll(req.body);
+  // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
   pool.query("SELECT * FROM teilnehmer", function(err,result){
     if(err){
@@ -59,7 +59,7 @@ router.post('/list', function(req, res){
 });
 
 router.post('/edit', function(req, res){
-  ll(req.body);
+  // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
   if(req.body.password==config.get("webInterfacePassword")){
     switch(req.body.typekey){
@@ -83,8 +83,8 @@ router.post('/edit', function(req, res){
                 existing = e;
               }
             }
-            ll(toEdit);
-            ll(existing);
+            // ll(toEdit);
+            // ll(existing);
             if(toEdit){
               let qstr = "UPDATE teilnehmer SET "+
               "rufnummer="+mysql.escape(req.body.rufnummer)+
