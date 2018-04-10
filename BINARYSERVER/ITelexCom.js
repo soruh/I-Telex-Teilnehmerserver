@@ -581,7 +581,7 @@ function connect(pool, transporter, after, options, handles, callback){
 						sendEmail(transporter,"ServerError",{
 							"[server]":serverkey,
 							"[errorCounter]":serverErrors[serverkey].errorCounter,
-	            "[date]":new Date().toUTCString()
+	            "[date]":new Date().toLocaleString()
 	          },function(){});
 					}
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,serverErrors[serverkey].errorCounter,colors.Reset);
