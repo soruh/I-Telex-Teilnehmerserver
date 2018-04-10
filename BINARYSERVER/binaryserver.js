@@ -54,8 +54,12 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			var port = obj.data.port;
 			var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
 			if(number.length<=4){
-			    ITelexCom.sendEmail(transporter,"invalidNumber",{                                                     "[IpFull]":connection.remoteAddress,                                                      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),                                                   "[number]":number,                                                                        "[date]":new Date().toLocaleString()
-                             },cb);
+			    ITelexCom.sendEmail(transporter,"invalidNumber",{
+						"[IpFull]":connection.remoteAddress,
+						"[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+						"[number]":number,
+						"[date]":new Date().toLocaleString()+" "+new Date().getTimezone()
+          },cb);
 			}else{
 			    ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_a){
 			    let results = [];
@@ -89,7 +93,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				    "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
 				    "[number]":res.rufnummer,
 				    "[name]":res.name,
-				    "[date]":new Date().toLocaleString()
+				    "[date]":new Date().toLocaleString()+" "+new Date().getTimezone()
 				  },cb);
 				}
 						}else{
@@ -99,7 +103,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 						"[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
 									"[number]":res.rufnummer,
 									"[name]":res.name,
-									"[date]":new Date().toLocaleString()
+									"[date]":new Date().toLocaleString()+" "+new Date().getTimezone()
 							},cb);
 						}
 					}else if(results.length==0){
@@ -113,7 +117,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 				    "[IpFull]":connection.remoteAddress,
 				    "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
 				    "[number]":number,
-				    "[date]":new Date().toLocaleString()
+				    "[date]":new Date().toLocaleString()+" "+new Date().getTimezone()
 				  },cb);
 				  ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
 				    try{
@@ -274,7 +278,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		    ITelexCom.sendEmail(transporter,"wrongServerPin",{
 		      "[IpFull]":connection.remoteAddress,
 		      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-		      "[date]":new Date().toLocaleString()
+		      "[date]":new Date().toLocaleString()+" "+new Date().getTimezone()
 		    },cb);
 			}
 		}else{
@@ -301,7 +305,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		    ITelexCom.sendEmail(transporter,"wrongServerPin",{
 		      "[IpFull]":connection.remoteAddress,
 		      "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-		      "[date]":new Date().toLocaleString()
+		      "[date]":new Date().toLocaleString()+" "+new Date().getTimezone()
 		    },cb);
 			}
 		}else{

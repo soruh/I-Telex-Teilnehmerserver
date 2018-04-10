@@ -1,5 +1,12 @@
 "use strict";
 if(module.parent!=null){var mod=module;var load_order=[module.id.split("/").slice(-1)];while(mod.parent){load_order.push(mod.parent.filename.split("/").slice(-1));mod=mod.parent;}var load_order_rev=[];for(let i=load_order.length-1;i>=0;i--){load_order_rev.push(i==0?"\x1b[32m"+load_order[i]+"\x1b[0m":i==load_order.length-1?"\x1b[36m"+load_order[i]+"\x1b[0m":"\x1b[33m"+load_order[i]+"\x1b[0m");}console.log("loaded: "+load_order_rev.join(" ––> "));}
+
+Date.prototype.getTimezone = function getTimezone(){
+   let offset = -1*this.getTimezoneOffset();
+   let offsetStr = ("0"+Math.floor(offset/60)).slice(-2)+":"+("0"+offset%60).slice(-2);
+   return("UTC"+(offsetStr[0]=="-"?"":"+")+offsetStr);
+}
+
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname, '..'));
 
@@ -581,7 +588,7 @@ function connect(pool, transporter, after, options, handles, callback){
 						sendEmail(transporter,"ServerError",{
 							"[server]":serverkey,
 							"[errorCounter]":serverErrors[serverkey].errorCounter,
-	            "[date]":new Date().toLocaleString()
+	            "[date]":new Date().toLocaleString()+" "+new Date().getTimezone()
 	          },function(){});
 					}
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,serverErrors[serverkey].errorCounter,colors.Reset);
