@@ -58,26 +58,27 @@
     "messages":{
       "new":{
         "subject":"new participant",
-        "html":"A new participant joined with number:<font color=\"blue\">[number]</font> and ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date]</font>"
+        "html":"A new participant joined with number:<font color=\"blue\">[number]</font> and ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
       },
       "invalidNumber":{
-        "subject":"invalid Number",                                                              "html":"A new participant tried to register with an invalid number:<font color=\"blue\">[number]</font> from ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date]</font>"
+        "subject":"invalid Number",
+        "html":"A new participant tried to register with an invalid number:<font color=\"blue\">[number]</font> from ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
       },
       "wrongDynIpPin":{
         "subject":"wrong dynIp pin",
-        "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with a wrong pin on <font color=\"blue\">[date]</font>"
+        "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with a wrong pin on <font color=\"blue\">[date] [timeZone]</font>"
       },
       "wrongDynIpType":{
         "subject":"wrong dynIp type",
-        "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>), which does not support dynIp(is type <font color=\"blue\">[typ]</font>) on <font color=\"blue\">[date]</font>"
+        "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>), which does not support dynIp(is type <font color=\"blue\">[typ]</font>) on <font color=\"blue\">[date] [timeZone]</font>"
       },
       "wrongServerPin":{
         "subject":"wrong Server pin",
-        "html":"<font color=\"blue\">[Ip]</font> tried to syncronize with the server with a wrong pin on <font color=\"blue\">[date]</font>"
+        "html":"<font color=\"blue\">[Ip]</font> tried to syncronize with the server with a wrong pin on <font color=\"blue\">[date] [timeZone]</font>"
       },
       "ServerError":{
         "subject":"Could not connect to server",
-        "html":"Could not connect to server: <font color=\"blue\">[server]</font>. Error counter: <font color=\"blue\">[errorCounter]</font> on <font color=\"blue\">[date]</font>"
+        "html":"Could not connect to server: <font color=\"blue\">[server]</font>. Error counter: <font color=\"blue\">[errorCounter]</font> on <font color=\"blue\">[date] [timeZone]</font>"
       }
     }
   }
