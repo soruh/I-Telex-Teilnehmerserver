@@ -53,7 +53,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			var pin = obj.data.pin;
 			var port = obj.data.port;
 			var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
-			if(number.length<=4){
+			if(number<10000){
 			    ITelexCom.sendEmail(transporter,"invalidNumber",{
 						"[IpFull]":connection.remoteAddress,
 						"[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
