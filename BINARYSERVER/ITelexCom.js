@@ -395,8 +395,13 @@ function decData(buffer){
 		var datalength = parseInt(buffer[typepos + 1], 10);
 
 		if(PackageSizes[packagetype] != datalength){
-			ll(`size missmatch: ${PackageSizes[packagetype]} != ${datalength}`);
-			continue;
+      if(cv(1))ll(`${colors.FgRed}size missmatch: ${PackageSizes[packagetype]} != ${datalength}${colors.Reset}`);
+			if(config.get("allowInvalidPackageSizes")){
+        if(cv(2)) ll(`${colors.FgRed}handling package of invalid size!${colors.Reset}`);
+      }else{
+        if(cv(2)) ll(`${colors.FgYellow}not handling package.${colors.Reset}`);
+        continue;
+      }
 		}
 
 		var blockdata = [];
