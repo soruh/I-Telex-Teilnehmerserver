@@ -58,11 +58,11 @@
     "messages":{
       "new":{
         "subject":"new participant",
-        "html":"A new participant joined with number:<font color=\"blue\">[number]</font> and ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
+        "html":"A new participant joined with number <font color=\"blue\">[number]</font> and ip <font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
       },
       "invalidNumber":{
         "subject":"invalid Number",
-        "html":"A new participant tried to register with an invalid number:<font color=\"blue\">[number]</font> from ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
+        "html":"A new participant tried to register with invalid number <font color=\"blue\">[number]</font> from ip <font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
       },
       "wrongDynIpPin":{
         "subject":"wrong dynIp pin",

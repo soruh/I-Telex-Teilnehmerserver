@@ -737,39 +737,43 @@ function SqlQuery(sqlPool, query, callback){
 
 function sendEmail(transporter,messageName,values,callback){
   let message = config.get("eMail").messages[messageName];
-  let mailOptions = {
-      from: config.get("eMail").from,
-      to: config.get("eMail").to,
-      subject: message.subject
-  };
-	let content = {};
-  if(message.text){
-    content.text = message.text;
-  }else if(message.html){
-    content.html = message.html;
+  if(!message){
+    callback();
   }else{
-    mailOptions.text = "configuration error in config.json";
+    let mailOptions = {
+        from: config.get("eMail").from,
+        to: config.get("eMail").to,
+        subject: message.subject
+    };
+  	let content = {};
+    if(message.text){
+      content.text = message.text;
+    }else if(message.html){
+      content.html = message.html;
+    }else{
+      mailOptions.text = "configuration error in config.json";
+    }
+  	let type = Object.keys(content)[0];
+  	mailOptions[type] = content[type];
+  	for(let k in values){
+  		mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g,"\\[").replace(/\]/g,"\\]"),"g"),values[k]);
+  	}
+    if(cv(2)){
+  		ll("sending mail:\n",mailOptions,"\nto server",transporter.options.host);
+  	}else if(cv(1)){
+  		ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName+colors.Reset}`);
+  	}
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error){
+          if(cv(2)) lle(error);
+  				if(typeof callback === "function") callback();
+        }else{
+  	      if(cv(1)) ll('Message sent:', info.messageId);
+  	      if(config.get("eMail").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+  	      if(typeof callback === "function") callback();
+  			}
+    });
   }
-	let type = Object.keys(content)[0];
-	mailOptions[type] = content[type];
-	for(let k in values){
-		mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g,"\\[").replace(/\]/g,"\\]"),"g"),values[k]);
-	}
-  if(cv(2)){
-		ll("sending mail:\n",mailOptions,"\nto server",transporter.options.host);
-	}else if(cv(1)){
-		ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName+colors.Reset}`);
-	}
-  transporter.sendMail(mailOptions, function(error, info){
-      if (error){
-        if(cv(2)) lle(error);
-				if(typeof callback === "function") callback();
-      }else{
-	      if(cv(1)) ll('Message sent:', info.messageId);
-	      if(config.get("eMail").useTestAccount) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-	      if(typeof callback === "function") callback();
-			}
-  });
 }
 
 

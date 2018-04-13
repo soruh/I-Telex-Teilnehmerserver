@@ -54,16 +54,17 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			var port = obj.data.port;
 			var ipaddress = connection.remoteAddress.replace(/^.*:/,'');
 			if(number<10000){
-			    ITelexCom.sendEmail(transporter,"invalidNumber",{
-						"[IpFull]":connection.remoteAddress,
-						"[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-						"[number]":number,
-						"[date]":new Date().toLocaleString(),
-						"[timeZone]":new Date().getTimezone()
-          },function(){
-						connection.end()
-						cb();
-					});
+				lle(`${colors.FgRed}number is too small(<10000)${colors.Reset}`);
+		    ITelexCom.sendEmail(transporter,"invalidNumber",{
+					"[IpFull]":connection.remoteAddress,
+					"[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+					"[number]":number,
+					"[date]":new Date().toLocaleString(),
+					"[timeZone]":new Date().getTimezone()
+        },function(){
+					connection.end();
+					cb();
+				});
 			}else{
 			    ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_a){
 				    let results = [];
