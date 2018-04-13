@@ -436,14 +436,20 @@ function init(){
 				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
 				try{clearTimeout(ITelexCom.connections[cnum].timeout)}catch(e){}
 				if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
-          setTimeout(function(cnum){delete ITelexCom.connections[cnum];},1000,cnum);
+          setTimeout(function(cnum){
+					  delete ITelexCom.connections[cnum];
+					  ll(`${colors.FgGreen}deleted connections[${cnum}]${colors.Reset}`);
+					},1000,cnum);
         }
 			});
 			connection.on('error', function(err) {
 				if(cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
 				try{clearTimeout(ITelexCom.connections[cnum].timeout)}catch(e){}
         if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
-          setTimeout(function(cnum){delete ITelexCom.connections[cnum];},1000,cnum);
+          setTimeout(function(cnum){
+					  delete ITelexCom.connections[cnum];
+					  ll(`${colors.FgGreen}deleted connections[${cnum}]${colors.Reset}`);
+					},1000,cnum);
         }
 			});
 			connection.on('data', function(data) {
