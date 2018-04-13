@@ -438,7 +438,7 @@ function init(){
 				if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
           setTimeout(function(cnum){
 					  delete ITelexCom.connections[cnum];
-					  ll(`${colors.FgGreen}deleted connections[${cnum}]${colors.Reset}`);
+					  ll(`${colors.FgGreen}deleted connections[${colors.FgCyan+cnum+colors.FgGreen}]${colors.Reset}`);
 					},1000,cnum);
         }
 			});
@@ -448,7 +448,7 @@ function init(){
         if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
           setTimeout(function(cnum){
 					  delete ITelexCom.connections[cnum];
-					  ll(`${colors.FgGreen}deleted connections[${cnum}]${colors.Reset}`);
+					  ll(`${colors.FgGreen}deleted connections[${colors.FgCyan+cnum+colors.FgGreen}]${colors.Reset}`);
 					},1000,cnum);
         }
 			});

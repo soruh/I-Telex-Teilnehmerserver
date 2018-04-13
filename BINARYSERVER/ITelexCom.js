@@ -600,11 +600,11 @@ function connect(pool, transporter, after, options, handles, callback){
 			} catch (e){
 				if(cv(2)) lle(e);
 			} finally {
-				if (connections[cnum]&&connections[cnum].connection = socket){
+				if(cnum in connections&&(connections[cnum].connection = socket)){
           //setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
           setTimeout(function(cnum){
 					  delete connections[cnum];
-					  ll(`${colors.FgGreen}deleted connections[${cnum}]${colors.Reset}`);
+					  ll(`${colors.FgGreen}deleted connections[${colors.FgCyan+cnum+colors.FgGreen}]${colors.Reset}`);
 					},1000,cnum);
         }
 				if(typeof onEnd === "function") onEnd();
@@ -613,11 +613,11 @@ function connect(pool, transporter, after, options, handles, callback){
 		socket.on('end', function (){
 			ll(colors.FgYellow+"The connection to server "+colors.FgCyan+cnum+colors.FgYellow+" ended!"+colors.Reset);
 			try {
-				if (connections[cnum]&&connections[cnum].connection = socket){
+				if(cnum in connections&&(connections[cnum].connection = socket)){
           //setTimeout(function(cnum){delete connections[cnum];},1000,cnum);
           setTimeout(function(cnum){
 					  delete connections[cnum];
-					  ll(`${colors.FgGreen}deleted connections[${cnum}]${colors.Reset}`);
+					  ll(`${colors.FgGreen}deleted connections[${colors.FgCyan+cnum+colors.FgGreen}]${colors.Reset}`);
 					},1000,cnum);
         }
 			} catch (e){
