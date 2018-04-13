@@ -60,80 +60,83 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 						"[number]":number,
 						"[date]":new Date().toLocaleString(),
 						"[timeZone]":new Date().getTimezone()
-          },cb);
+          },function(){
+						connection.end()
+						cb();
+					});
 			}else{
 			    ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_a){
-			    let results = [];
-			    if(result_a){
-			      for(let r of result_a){
-				if(r.typ != 0){
-				  results.push(r);
-				}
-			      }
-			    }
-					if(results.length==1){
-						var res = results[0];
-						if(res.pin == pin){
-				if(res.typ == 5){
-							ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)):"")} WHERE rufnummer = ${number};`,function(result_b){
-								ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
-									try{
-										connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
-									}catch(e){
-										if(cv(0)) ll(colors.FgRed,e,colors.Reset);
-										if(typeof cb === "function") cb();
-									}
-								});
-							});
-				}else{
-				  if(cv(1)) ll(colors.FgRed+"not DynIp type"+colors.Reset);
-							connection.end();
-				  ITelexCom.sendEmail(transporter,"wrongDynIpType",{
-				    "[typ]":res.typ,
-				    "[IpFull]":connection.remoteAddress,
-				    "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-				    "[number]":res.rufnummer,
-				    "[name]":res.name,
-				    "[date]":new Date().toLocaleString(),
-						"[timeZone]":new Date().getTimezone()
-				  },cb);
-				}
-						}else{
-							if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
-							connection.end();
-				ITelexCom.sendEmail(transporter,"wrongDynIpPin",{
-						"[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-									"[number]":res.rufnummer,
-									"[name]":res.name,
-									"[date]":new Date().toLocaleString(),
-									"[timeZone]":new Date().getTimezone()
-							},cb);
-						}
-					}else if(results.length==0){
-			      let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
-			      if(result_a&&(result_a.length>0)){
-				  query = `DELETE FROM teilnehmer WHERE rufnummer=${number};`+query;
-			      }
-						ITelexCom.SqlQuery(pool,query,function(result_b){
-				if(result_b){
-				  ITelexCom.sendEmail(transporter,"new",{
-				    "[IpFull]":connection.remoteAddress,
-				    "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
-				    "[number]":number,
-				    "[date]":new Date().toLocaleString(),
-						"[timeZone]":new Date().getTimezone()
-				  },cb);
-				  ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
-				    try{
-				      connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
-				    }catch(e){
-				      if(cv(0)) ll(colors.FgRed,e,colors.Reset);
-				      if(typeof cb === "function") cb();
+				    let results = [];
+				    if(result_a){
+				      for(let r of result_a){
+								if(r.typ != 0){
+								  results.push(r);
+								}
+				      }
 				    }
-				  });
-				}else{
-				  lle(colors.FgRed+"could not create entry",colors.Reset);
-				  if(typeof cb === "function") cb();
+						if(results.length==1){
+							var res = results[0];
+							if(res.pin == pin){
+								if(res.typ == 5){
+								ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)):"")} WHERE rufnummer = ${number};`,function(result_b){
+									ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
+										try{
+											connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+										}catch(e){
+											if(cv(0)) ll(colors.FgRed,e,colors.Reset);
+											if(typeof cb === "function") cb();
+										}
+									});
+								});
+							}else{
+							  if(cv(1)) ll(colors.FgRed+"not DynIp type"+colors.Reset);
+										connection.end();
+							  ITelexCom.sendEmail(transporter,"wrongDynIpType",{
+							    "[typ]":res.typ,
+							    "[IpFull]":connection.remoteAddress,
+							    "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+							    "[number]":res.rufnummer,
+							    "[name]":res.name,
+							    "[date]":new Date().toLocaleString(),
+									"[timeZone]":new Date().getTimezone()
+							  },cb);
+							}
+							}else{
+								if(cv(1)) ll(colors.FgRed+"wrong DynIp pin"+colors.Reset);
+								connection.end();
+					ITelexCom.sendEmail(transporter,"wrongDynIpPin",{
+							"[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+										"[number]":res.rufnummer,
+										"[name]":res.name,
+										"[date]":new Date().toLocaleString(),
+										"[timeZone]":new Date().getTimezone()
+								},cb);
+							}
+					}else if(results.length==0){
+				    let query = `INSERT INTO teilnehmer (name,moddate,typ,rufnummer,port,pin,ipaddresse,gesperrt,changed) VALUES ('?','${Math.floor(new Date().getTime()/1000)}','5','${number}','${port}','${pin}','${connection.remoteAddress.replace(/^.*:/,'')}','1','1');`;
+				    if(result_a&&(result_a.length>0)){
+					  	query = `DELETE FROM teilnehmer WHERE rufnummer=${number};`+query;
+				    }
+						ITelexCom.SqlQuery(pool,query,function(result_b){
+							if(result_b){
+							  ITelexCom.sendEmail(transporter,"new",{
+							    "[IpFull]":connection.remoteAddress,
+							    "[Ip]":(ip.isV4Format(connection.remoteAddress.split("::")[1])?connection.remoteAddress.split("::")[1]:connection.remoteAddress),
+							    "[number]":number,
+							    "[date]":new Date().toLocaleString(),
+									"[timeZone]":new Date().getTimezone()
+							  },cb);
+							  ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
+							    try{
+							      connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+							    }catch(e){
+							      if(cv(0)) ll(colors.FgRed,e,colors.Reset);
+							      if(typeof cb === "function") cb();
+							    }
+							  });
+							}else{
+					  		lle(colors.FgRed+"could not create entry",colors.Reset);
+					  		if(typeof cb === "function") cb();
 							}
 						});
 					}else{
@@ -426,8 +429,7 @@ function init(){
 			connection.setTimeout(config.get("connectionTimeout"));
 			connection.on('timeout', function(){
         if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" timed out"+colors.Reset);
-				connection.emit("end");
-			  connection.destroy();
+			  connection.end();
 			})
 			connection.on('end', function(){
 				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);

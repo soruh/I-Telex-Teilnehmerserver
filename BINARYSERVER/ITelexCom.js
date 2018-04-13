@@ -503,9 +503,9 @@ function connect(pool, transporter, after, options, handles, callback){
 		socket.on('timeout', function (){
 			try {
 				if(cv(1)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
-				socket.emit("end");
-				socket.emit("error",new Error("timeout"));
-				socket.destroy();
+				// socket.emit("end");
+				// socket.emit("error",new Error("timeout"));
+				socket.end();
 			}catch(e) {
 
 			}finally{
