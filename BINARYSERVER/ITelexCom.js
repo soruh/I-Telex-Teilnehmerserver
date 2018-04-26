@@ -657,7 +657,7 @@ function ascii(data, connection, pool){
 	}
 	if (!isNaN(number) && number != ""){
 		if (cv(1)) ll(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
-		SqlQuery(pool, "SELECT * FROM teilnehmer WHERE rufnummer=" + number + " and gesperrt!=1 and typ=0;", function (result){
+		SqlQuery(pool, "SELECT * FROM teilnehmer WHERE rufnummer=" + number + " and gesperrt!=1 and typ!=0;", function (result){
 
 			if((!result)||result.length == 0){
 				var send = "fail\r\n";
