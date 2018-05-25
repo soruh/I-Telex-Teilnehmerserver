@@ -18,6 +18,8 @@
   "logDate":true,
   "bufferLogWithWhitespace":true,
   "repairPm2Colors":false,
+  
+  "allowInvalidPackageSizes":true,
 
   "serverPin":1234512345,
   "allowFullQueryInReadonly":true,

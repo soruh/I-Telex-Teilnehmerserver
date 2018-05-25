@@ -156,9 +156,9 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		if(ITelexCom.connections.hasOwnProperty(cnum)){
 			if(obj.data.version == 1){
 				var rufnummer = obj.data.rufnummer;
-				ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${mysql.escape(rufnummer)};`,function(result){ //TODO check if escape breaks things
+				ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${mysql.escape(rufnummer)} and typ!=0 and gesperrt!=1;`,function(result){ //TODO check if escape breaks things
 					if(cv(2)) ll(colors.FgCyan,result,colors.Reset);
-					if((result[0] != undefined)&&(result != [])&&(obj.gesperrt != 1)&&(obj.typ != 0)){
+					if((result[0] != undefined)&&(result != [])){
 						result[0].pin = 0;
 						connection.write(ITelexCom.encPackage({packagetype:5,datalength:100,data:result[0]}),function(){if(typeof cb === "function") cb();});
 					}else{

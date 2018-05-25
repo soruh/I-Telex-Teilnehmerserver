@@ -156,6 +156,9 @@ Accept Logins in [read-only mode](#readonly)
 
 This enables anyone to change and read entries on your server!
 
+### allowInvalidPackageSizes
+  Handle Packages which don't have the correct size
+
 ### updateQueueInterval
   The interval in which to look for changed entries and write them to the queue
 ### queueSendInterval
