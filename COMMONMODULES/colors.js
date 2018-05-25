@@ -44,24 +44,24 @@ const COLORS = {
 }
 
 
-module.exports=COLORS;
+for(let i in COLORS){
+	module.exports[i] = COLORS[i];
+}
 module.exports["disable"]=
 function disable(bool){
-	if(bool==undefined||bool){
-		for(let i in this){
-			if(typeof this[i] === "string") this[i] = "";
-		}
+	for(let i in COLORS){
+		module.exports[i] = (typeof bool === "undefined"||bool)?"":COLORS[i];
 	}
 };
 module.exports["colorsAt"]=
 function colorsAt(str){
 	if(typeof str === "string"){
 		var colors = {};
-		for(let i in this){
-			if(typeof this[i] === "string"){
-				var index = str.indexOf(this[i]);
+		for(let i in COLORS){
+			if(typeof COLORS[i] === "string"){
+				var index = str.indexOf(COLORS[i]);
 				if(index!=-1){
-					colors[index]=this[i];
+					colors[index]=COLORS[i];
 				}
 			}
 		}

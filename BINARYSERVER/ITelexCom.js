@@ -20,6 +20,9 @@ const colors = require(path.join(PWD, "/COMMONMODULES/colors.js"));
 const config = require(path.join(PWD, '/COMMONMODULES/config.js'));
 const nodemailer = require("nodemailer");
 
+const verbosity = config.get("loggingVerbosity");
+var cv = level=>level<=verbosity; //check verbosity
+
 const mySqlConnectionOptions = config.get('mySqlConnectionOptions');
 mySqlConnectionOptions.multipleStatements = true;
 
@@ -704,9 +707,6 @@ function ascii(data, connection, pool){
 	}
 }
 
-function cv(level){ //check verbosity
-	return (level <= config.get("loggingVerbosity"));
-}
 function SqlQuery(sqlPool, query, callback){
 	if (cv(2)||(/(update)|(insert)/gi.test(query)&&cv(1))) llo(1,colors.BgLightBlue+colors.FgBlack+query+colors.Reset);
 	sqlPool.query(query, function (err, res){
