@@ -47,7 +47,7 @@ for(let i = 1;i <= 10;i++){handles[i] = {};}
 //handles[4][WAITING] = (obj,cnum,pool,connection)=>{}; NOT USED
 handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 			var number = obj.data.rufnummer;
 			var pin = obj.data.pin;
 			var port = obj.data.port;
@@ -153,7 +153,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 };
 handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 			if(obj.data.version == 1){
 				var rufnummer = obj.data.rufnummer;
 				ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${mysql.escape(rufnummer)};`,function(result){ //TODO check if escape breaks things
@@ -178,7 +178,7 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 };
 handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 		  if(cv(1)) ll(colors.FgGreen+"got dataset for:",colors.FgCyan,obj.data.rufnummer,colors.Reset);
 			ITelexCom.SqlQuery(pool,`SELECT * from teilnehmer WHERE rufnummer = ${mysql.escape(obj.data.rufnummer)};`,function(res){
 				var o = {
@@ -265,7 +265,7 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 handles[5][ITelexCom.states.LOGIN] = handles[5][ITelexCom.states.FULLQUERY];
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 			if(obj.data.serverpin == config.get("serverPin")||(readonly&&config.get("allowFullQueryInReadonly"))){
 				if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
 				ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer",function(result){
@@ -298,7 +298,7 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 };
 handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 			if((obj.data.serverpin == config.get("serverPin"))||(readonly&&config.get("allowLoginInReadonly"))){
 				if(cv(1)) ll(colors.FgGreen,"serverpin is correct!",colors.Reset);
 				connection.write(ITelexCom.encPackage({packagetype:8,datalength:0}),function(){
@@ -326,7 +326,7 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 		  if(cv(1)){
 		    var toSend = [];
 				for(let o of ITelexCom.connections[cnum].writebuffer){
@@ -358,7 +358,7 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 };
 handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 			ITelexCom.connections[cnum].state = ITelexCom.states.STANDBY;
 		  if(typeof ITelexCom.connections[cnum].cb === "function") ITelexCom.connections[cnum].cb();
 			if(typeof cb === "function") cb();
@@ -373,7 +373,7 @@ handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 handles[9][ITelexCom.states.LOGIN] = handles[9][ITelexCom.states.FULLQUERY];
 handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
-		if(ITelexCom.connections[cnum]){
+		if(ITelexCom.connections.hasOwnProperty(cnum)){
 			if(cv(2)) ll(obj);
 			var version = obj.data.version;
 			var query = obj.data.pattern;

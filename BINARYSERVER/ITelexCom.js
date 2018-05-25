@@ -177,23 +177,24 @@ function handlePackage(obj, cnum, pool, connection, handles, cb){
 function checkFullPackage(buffer, part){
 	//if(cv(2)) ll(part);
 	//if(cv(2)) ll(buffer);
-	buffer = Array.prototype.slice.call(buffer, 0);
+	buffer = Array.prototype.slice.call(buffer, 0); //TODO find out what this does
 	var data = buffer;
-	if (part){
-		data = part.concat(buffer);
-	}
+	if (part) data = part.concat(buffer);
 	//if(cv(2)) ll(data);
 	var packagetype = data[0];
 	var packagelength = data[1] + 2;
 	if (data.length == packagelength){
-		return ([data, []]);
+		return [data, []];
 	} else if (data.length > packagelength){
-		var res = checkFullPackage(data.slice(packagelength + 1, data.length));
-		return ([data.slice(0, packagelength).concat(res[0]), res[1]]);
+		let res = checkFullPackage(data.slice(packagelength + 1, data.length));
+		return [
+      data.slice(0, packagelength).concat(res[0]),
+      res[1]
+    ];
 	} else if (data.length < packagelength){
-		return ([
+		return [
 			[], data
-		]);
+		];
 	} else {
 		return ([
 			[],
@@ -294,7 +295,7 @@ function encPackage(obj){
 		return (Buffer.from([]));
 	}
 	if (cv(2)) ll(colors.FgGreen + "encoded:" + colors.FgCyan, Buffer.from(header.concat(array)), colors.Reset);
-	return (Buffer.from(header.concat(array)));
+	return Buffer.from(header.concat(array));
 }
 function decPackage(packagetype, buffer){
 	switch (packagetype){
