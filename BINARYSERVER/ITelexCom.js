@@ -69,7 +69,7 @@ var timeouts = {};
 
 var serverErrors = {};
 
-function Timer(fn, countdown){
+function Timer(fn, duration){
 	var timout;
 	function _time_diff(date1, date2){
 		return date2 ? date2 - date1 : new Date().getTime() - date1;
@@ -79,21 +79,21 @@ function Timer(fn, countdown){
 	}
 	function getRemaining(){
 		this.total_time_run = _time_diff(this.start_time);
-		this.remaining = countdown - this.total_time_run;
+		this.remaining = duration - this.total_time_run;
 		return (this.remaining);
 	}
 	function pause(){
 		this.paused = true;
 		clearTimeout(timout);
 		this.total_time_run = _time_diff(this.start_time);
-		this.complete = this.total_time_run >= countdown;
-		this.remaining = countdown - this.total_time_run;
+		this.complete = this.total_time_run >= duration;
+		this.remaining = duration - this.total_time_run;
 	}
 	function resume(){
 		this.paused = false;
 		this.total_time_run = _time_diff(this.start_time);
-		this.complete = this.total_time_run >= countdown;
-		this.remaining = countdown - this.total_time_run;
+		this.complete = this.total_time_run >= duration;
+		this.remaining = duration - this.total_time_run;
 		if (this.complete){
 			if (cv(3)) ll(colors.FgCyan + "restarted " + colors.FgMagenta + "timeout" + colors.Reset);
 			this.start_time = new Date().getTime();
@@ -103,7 +103,7 @@ function Timer(fn, countdown){
 		}
 	}
 	this.start_time = new Date().getTime();
-	timout = setTimeout(fn, countdown);
+	timout = setTimeout(fn, duration);
 
 	return {
 		cancel: cancel,
@@ -114,28 +114,23 @@ function Timer(fn, countdown){
 		getRemaining: getRemaining
 	};
 }
-function TimeoutWrapper(fn, countdown){
+function TimeoutWrapper(fn, duration, ...args){
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
-	var args = [];
-	args.push(function (){
-		if (cv(3)) ll(colors.FgMagenta + "callback for timeout: " + colors.FgCyan + fnName + colors.Reset);
-		for (let k of Object.keys(timeouts)){
-			timeouts[k].resume();
-			if (cv(3)) ll(colors.FgYellow + "resumed " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
-		}
-	});
-	for (let i in arguments){
-		if (i > 2) args.push(arguments[i]);
-	}
-	if (cv(1)) ll(colors.FgMagenta + "set timeout for: " + colors.FgCyan + fnName + colors.FgMagenta + " to " + colors.FgCyan + countdown + colors.FgMagenta + "ms" + colors.Reset);
+	if (cv(1)) ll(colors.FgMagenta + "set timeout for: " + colors.FgCyan + fnName + colors.FgMagenta + " to " + colors.FgCyan + duration + colors.FgMagenta + "ms" + colors.Reset);
 	timeouts[fnName] = new Timer(function (){
 		for (let k of Object.keys(timeouts)){
 			timeouts[k].pause();
 			if (cv(3)) ll(colors.FgBlue + "paused " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
 		}
 		if (cv(3)) ll(colors.FgMagenta + "called: " + colors.FgCyan + fnName + colors.FgMagenta + " with: " + colors.FgCyan, args.slice(1), colors.Reset);
-		fn.apply(null, args);
-	}, countdown);
+		fn.apply(null, [()=>{
+  		if (cv(3)) ll(colors.FgMagenta + "callback for timeout: " + colors.FgCyan + fnName + colors.Reset);
+  		for (let k of Object.keys(timeouts)){
+  			timeouts[k].resume();
+  			if (cv(3)) ll(colors.FgYellow + "resumed " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
+  		}
+  	},...args]);
+	}, duration);
 }
 
 
