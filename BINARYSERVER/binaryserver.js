@@ -78,16 +78,20 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 							var res = results[0];
 							if(res.pin == pin){
 								if(res.typ == 5){
-								ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(Date.now()/1000)):"")} WHERE rufnummer = ${number} OR (Left(name, ${config.get("DynIpUpdateNameDifference")}) = Left('${res.name}', ${config.get("DynIpUpdateNameDifference")}) AND port = '${res.port}' AND pin = '${res.pin}')`,function(result_b){
-									ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
-										try{
-											connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
-										}catch(e){
-											if(cv(0)) ll(colors.FgRed,e,colors.Reset);
-											if(typeof cb === "function") cb();
-										}
-									});
-								});
+									if(true||ipaddress != res.ipaddresse || port != res.port){
+										ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(Date.now()/1000)):"")} WHERE rufnummer = ${number} OR (Left(name, ${config.get("DynIpUpdateNameDifference")}) = Left('${res.name}', ${config.get("DynIpUpdateNameDifference")}) AND port = '${res.port}' AND pin = '${res.pin}')`,function(result_b){
+											ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
+												try{
+													connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+												}catch(e){
+													if(cv(0)) ll(colors.FgRed,e,colors.Reset);
+													if(typeof cb === "function") cb();
+												}
+											});
+										});
+									}else{
+										connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:res.ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
+									}
 							}else{
 							  if(cv(1)) ll(colors.FgRed+"not DynIp type"+colors.Reset);
 										connection.end();
@@ -147,9 +151,10 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -172,9 +177,10 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -258,9 +264,10 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 handles[5][ITelexCom.states.LOGIN] = handles[5][ITelexCom.states.FULLQUERY];
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
@@ -292,9 +299,10 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -320,9 +328,10 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -352,9 +361,10 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -366,9 +376,10 @@ handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 handles[9][ITelexCom.states.LOGIN] = handles[9][ITelexCom.states.FULLQUERY];
 handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
@@ -403,9 +414,10 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 		}else{
 			if(typeof cb === "function") cb();
 		}
-	}catch(e){
-		if(typeof cb === "function") cb();
-	}
+	} catch (e) {
+  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+  if (typeof cb === "function") cb();
+}
 };
 function init(){
 	if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
