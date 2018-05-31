@@ -78,7 +78,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 							var res = results[0];
 							if(res.pin == pin){
 								if(res.typ == 5){
-								ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}' ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(new Date().getTime()/1000)):"")} WHERE rufnummer = ${number};`,function(result_b){
+								ITelexCom.SqlQuery(pool,`UPDATE teilnehmer SET port = '${port}', ipaddresse = '${ipaddress}', ${((port!=res.port||ipaddress!=res.ipaddresse)?(",changed = '1', moddate ="+Math.floor(Date.now()/1000)):"")} WHERE rufnummer = ${number} OR (Left(name, ${config.get("DynIpUpdateNameDifference")}) = Left('${res.name}', ${config.get("DynIpUpdateNameDifference")}) AND port = '${res.port}' AND pin = '${res.pin}'`,function(result_b){
 									ITelexCom.SqlQuery(pool,`SELECT * FROM teilnehmer WHERE rufnummer = ${number};`,function(result_c){
 										try{
 											connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:result_c[0].ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
@@ -558,6 +558,7 @@ function init(){
 			lle(e);
 		}
 	});
+	server.on("error",err=>lle("server error:",err));
 	server.listen(config.get("binaryPort"), function(){
 		if(cv(0)) ll(colors.FgMagenta+"server is listening on port "+colors.FgCyan+config.get("binaryPort"),colors.Reset);
 

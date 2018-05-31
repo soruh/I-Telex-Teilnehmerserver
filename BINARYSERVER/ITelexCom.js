@@ -474,6 +474,37 @@ function ValueToBytearray(value, size){
 	return (array);
 }
 
+function increaseErrorCounter(transporter, serverkey, error, code){
+  let exists = Object.keys(serverErrors).findIndex(function(k){return(k==serverkey)})>-1;
+  if(exists){
+    serverErrors[serverkey].errors.push({
+      error:error,
+      code:code,
+      timeStamp:Date.now()
+    });
+    serverErrors[serverkey].errorCounter++;
+  }else{
+    serverErrors[serverkey] = {
+      errors: [{
+        error: error,
+        code:code,
+        timeStamp:Date.now()
+      }],
+      errorCounter: 1
+    }
+  }
+  let warn = config.get("warnAtErrorCounts").indexOf(serverErrors[serverkey].errorCounter)>-1;
+  if(cv(1)) lle(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${serverErrors[serverkey].errorCounter}${colors.Reset}`);
+  if(warn){
+    sendEmail(transporter,"ServerError",{
+      "[server]":serverkey,
+      "[errorCounter]":serverErrors[serverkey].errorCounter,
+      "[lastError]":serverErrors[serverkey].errors.slice(-1)[0].code,
+      "[date]":new Date().toLocaleString(),
+      "[timeZone]":new Date().getTimezone()
+    },function(){});
+  }
+}
 
 function connect(pool, transporter, after, options, handles, callback){
 	let onEnd = function(){
@@ -508,6 +539,7 @@ function connect(pool, transporter, after, options, handles, callback){
 				if(cv(1)) lle(colors.FgRed+"server: "+colors.FgCyan,options,colors.FgRed+" timed out"+colors.Reset);
 				// socket.emit("end");
 				// socket.emit("error",new Error("timeout"));
+        increaseErrorCounter(transporter, serverkey, new Error("timed out"), "TIMEOUT");
 				socket.end();
 			}catch(e) {
 
@@ -568,7 +600,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			if(cv(3)) lle(error);
 			try {
 				// if(error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
-				if(error.code != "ECONNRESET"){
+				if(error.code != "ECONNRESET"){ //TODO:  alert on ECONNRESET?
 					if(cv(1)) ll(`${colors.FgRed}server ${colors.FgCyan+util.inspect(options)+colors.FgRed} had an error${colors.Reset}`)
 					/*let exists = false;
 					for(let k in serverErrors){
@@ -577,24 +609,7 @@ function connect(pool, transporter, after, options, handles, callback){
 							break;
 						}
 					}*/
-					let exists = Object.keys(serverErrors).findIndex(function(k){return(k==serverkey)})>-1;
-					if(exists){
-						serverErrors[serverkey].errors.push({error:error,timeStamp:Date.now()});
-						serverErrors[serverkey].errorCounter++;
-					}else{
-						serverErrors[serverkey] = {
-							errors: [{error: error,timeStamp:Date.now()}],
-							errorCounter: 1
-						}
-					}
-					if(config.get("warnAtErrorCounts").indexOf(serverErrors[serverkey].errorCounter)>-1){
-						sendEmail(transporter,"ServerError",{
-							"[server]":serverkey,
-							"[errorCounter]":serverErrors[serverkey].errorCounter,
-	            "[date]":new Date().toLocaleString(),
-              "[timeZone]":new Date().getTimezone()
-	          },function(){});
-					}
+          increaseErrorCounter(transporter, serverkey, error, error.code);
 					if (cv(0)) lle(colors.FgRed+"server "+colors.FgCyan,options,colors.FgRed+" could not be reached; errorCounter:"+colors.FgCyan,serverErrors[serverkey].errorCounter,colors.Reset);
 				}
 				// } else {
