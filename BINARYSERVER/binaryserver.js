@@ -90,6 +90,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 											});
 										});
 									}else{
+										if(cv(2)) lle(`${colors.FgYellow}not UPDATING, nothing to update${colors.Reset}`);
 										connection.write(ITelexCom.encPackage({packagetype:2,datalength:4,data:{ipaddresse:res.ipaddresse}}),"binary",function(){if(typeof cb === "function") cb();});
 									}
 							}else{
