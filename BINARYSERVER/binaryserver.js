@@ -146,6 +146,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 						});
 					}else{
 			      console.error(colors.FgRed,res,solors.Reset);
+					if(typeof cb === "function") cb();
 			    }
 				});
 			}
