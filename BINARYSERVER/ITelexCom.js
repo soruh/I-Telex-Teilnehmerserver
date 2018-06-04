@@ -392,22 +392,21 @@ function decData(buffer){
 		var packagetype = parseInt(buffer[typepos], 10);
 		var datalength = parseInt(buffer[typepos + 1], 10);
 
-		if(PackageSizes[packagetype] != datalength){
-      if(cv(1))ll(`${colors.FgRed}size missmatch: ${PackageSizes[packagetype]} != ${datalength}${colors.Reset}`);
-			if(config.get("allowInvalidPackageSizes")){
-        if(cv(2)) ll(`${colors.FgRed}handling package of invalid size!${colors.Reset}`);
-      }else{
-        if(cv(2)) ll(`${colors.FgYellow}not handling package.${colors.Reset}`);
-        continue;
-      }
-		}
-
 		var blockdata = [];
 		for (let i = 0; i < datalength; i++){
 			blockdata[i] = buffer[typepos + 2 + i];
 		}
 		var data = decPackage(packagetype, blockdata);
 		if (data){
+      if(PackageSizes[packagetype] != datalength){
+        if(cv(1))ll(`${colors.FgRed}size missmatch: ${PackageSizes[packagetype]} != ${datalength}${colors.Reset}`);
+  			if(config.get("allowInvalidPackageSizes")){
+          if(cv(2)) ll(`${colors.FgRed}handling package of invalid size!${colors.Reset}`);
+        }else{
+          if(cv(2)) ll(`${colors.FgYellow}not handling package.${colors.Reset}`);
+          continue;
+        }
+  		}
 			out.push({
 				packagetype: packagetype,
 				datalength: datalength,
@@ -555,9 +554,11 @@ function connect(pool, transporter, after, options, handles, callback){
 			}
 			try {
 				//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
-				//if(cv(2)) ll(connections.readbuffer);
-				var res = checkFullPackage(data, connections.readbuffer);
-				//if(cv(2)) ll(res);
+				// if(cv(2)) ll("Buffer for client "+cnum+":"+colors.FgCyan,connections[cnum].readbuffer,colors.Reset);
+        // if(cv(2)) ll("New Data for client "+cnum+":"+colors.FgCyan,data,colors.Reset);
+				var res = checkFullPackage(data, connections[cnum].readbuffer);
+				// if(cv(2)) ll("New Buffer "+cnum+":"+colors.FgCyan,res[1],colors.Reset);
+        // if(cv(2)) ll("Package "+cnum+":"+colors.FgCyan,res[0],colors.Reset);
 				if (res[1]){
 					connections[cnum].readbuffer = res[1];
 				}
@@ -593,7 +594,7 @@ function connect(pool, transporter, after, options, handles, callback){
 					handlePackage(decData(res[0]),cnum,pool,socket,handles);
 				}*/
 			}catch(e) {
-
+        if(cv(2)) lle(e);
 			}
 		});
 		socket.on('error', function (error){

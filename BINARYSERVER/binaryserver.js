@@ -153,9 +153,9 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -179,9 +179,9 @@ handles[3][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -266,9 +266,9 @@ handles[5][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 handles[5][ITelexCom.states.LOGIN] = handles[5][ITelexCom.states.FULLQUERY];
 handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
@@ -301,9 +301,9 @@ handles[6][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -330,9 +330,9 @@ handles[7][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -363,9 +363,9 @@ handles[8][ITelexCom.states.RESPONDING] = function(obj,cnum,pool,connection,hand
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handles,cb){
 	try{
@@ -378,9 +378,9 @@ handles[9][ITelexCom.states.FULLQUERY] = function(obj,cnum,pool,connection,handl
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 handles[9][ITelexCom.states.LOGIN] = handles[9][ITelexCom.states.FULLQUERY];
 handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles,cb){
@@ -416,9 +416,9 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 			if(typeof cb === "function") cb();
 		}
 	} catch (e) {
-  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-  if (typeof cb === "function") cb();
-}
+	  if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+	  if (typeof cb === "function") cb();
+	}
 };
 function init(){
 	if(cv(0)) ll(colors.FgMagenta+"Initialising!"+colors.Reset);
@@ -533,9 +533,14 @@ function init(){
 					}
         }else{
 					if(cv(2)) ll(colors.FgGreen+"serving binary request"+colors.Reset);
-					var res = ITelexCom.checkFullPackage(data, ITelexCom.connections.readbuffer);
+
+					if(cv(2)) ll("Buffer for client "+cnum+":"+colors.FgCyan,ITelexCom.connections[cnum].readbuffer,colors.Reset);
+	        if(cv(2)) ll("New Data for client "+cnum+":"+colors.FgCyan,data,colors.Reset);
+					var res = ITelexCom.checkFullPackage(data, ITelexCom.connections[cnum].readbuffer);
+					if(cv(2)) ll("New Buffer:"+colors.FgCyan,res[1],colors.Reset);
+	        if(cv(2)) ll("Complete Package:"+colors.FgCyan,res[0],colors.Reset);
 					if(res[1].length > 0){
-						ITelexCom.connections.readbuffer = res[1];
+						ITelexCom.connections[cnum].readbuffer = res[1];
 					}
 					if(res[0]){
 						if(typeof ITelexCom.connections[cnum].packages != "object") ITelexCom.connections[cnum].packages = [];
