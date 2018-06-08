@@ -1,0 +1,22 @@
+module.exports = {
+  apps : [
+    {
+      name: "binaryserver",
+      script: "./BINARYSERVER/binaryserver.js",
+/*
+      interpreter: "0x",
+      interpreter_args:" -D flamegraph",
+      kill_timeout: 30000
+*/
+    },
+    {
+      name: "webserver",
+      script: "./WEBSERVER/bin/webserver.js",
+/*
+      interpreter: "0x",
+      interpreter_args:" -D flamegraph",
+      kill_timeout: 30000
+*/
+    }
+  ]
+}
