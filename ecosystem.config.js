@@ -10,7 +10,7 @@ module.exports = {
 */
     },
     {
-      name: "",
+      name: "webserver",
       script: "./WEBSERVER/bin/webserver.js",
 /*
       interpreter: "0x",
