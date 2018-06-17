@@ -145,7 +145,7 @@ handles[1][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handles
 							}
 						});
 					}else{
-			      console.error(colors.FgRed,res,solors.Reset);
+			      console.error(colors.FgRed,res,colors.Reset);
 					if(typeof cb === "function") cb();
 			    }
 				});
@@ -395,7 +395,7 @@ handles[10][ITelexCom.states.STANDBY] = function(obj,cnum,pool,connection,handle
 			for(let i in queryarr){
 				searchstring +=  " AND name LIKE '%"+queryarr[i]+"%'";
 			}
-			searchstring += ";"
+			searchstring += ";";
 			searchstring = searchstring.replace("WHERE AND","WHERE");
 			ITelexCom.SqlQuery(pool,searchstring,function(result){
 				if((result[0] != undefined)&&(result != [])){
@@ -436,7 +436,7 @@ function init(){
 			}
 			ITelexCom.connections[cnum] = {connection:connection,state:ITelexCom.states.STANDBY,handling:false};
 			if(cv(1)) ll(colors.FgGreen+"client "+colors.FgCyan+cnum+colors.FgGreen+" connected with ipaddress: "+colors.FgCyan+connection.remoteAddress+colors.Reset); //.replace(/^.*:/,'')
-			if(connection.remoteAddress == undefined) setTimeout(function(){ll(connection.remoteAddress)},1000);
+			if(connection.remoteAddress == undefined) setTimeout(function(){ll(connection.remoteAddress);},1000);
 			var queryresultpos = -1;
 			var queryresult = [];
 			var connectionpin;
@@ -444,10 +444,14 @@ function init(){
 			connection.on('timeout', function(){
         if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" timed out"+colors.Reset);
 			  connection.end();
-			})
+			});
 			connection.on('end', function(){
 				if(cv(1)) ll(colors.FgYellow+"client "+colors.FgCyan+cnum+colors.FgYellow+" disconnected"+colors.Reset);
-				try{clearTimeout(ITelexCom.connections[cnum].timeout)}catch(e){}
+				try{
+					clearTimeout(ITelexCom.connections[cnum].timeout);
+				}catch(e){
+					if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+				}
 				if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
           setTimeout(function(cnum){
 					  delete ITelexCom.connections[cnum];
@@ -457,7 +461,11 @@ function init(){
 			});
 			connection.on('error', function(err) {
 				if(cv(1)) ll(colors.FgRed+"client "+colors.FgCyan+cnum+colors.FgRed+" had an error:\n",err,colors.Reset);
-				try{clearTimeout(ITelexCom.connections[cnum].timeout)}catch(e){}
+				try{
+					clearTimeout(ITelexCom.connections[cnum].timeout);
+				}catch(e){
+					if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+				}
         if(ITelexCom.connections[cnum]&&ITelexCom.connections[cnum].connection == connection){
           setTimeout(function(cnum){
 					  delete ITelexCom.connections[cnum];
@@ -478,15 +486,8 @@ function init(){
 					if(config.get("doDnsLookups")){
 						var arg = data.slice(1).toString().replace(/\n/g,"").replace(/\r/g,"");
 						if(cv(1)) ll(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to participant${colors.Reset}`);
-						if(ip.isV4Format(arg)||ip.isV6Format(arg)){
-							check(arg);
-						}else{
-							dnslookup(arg,{verbatim:true},function(err, address, family){
-								if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-								check(address);
-							});
-						}
-						function check(IpAddr){
+
+						let check = function check(IpAddr){
 		          if(ip.isV4Format(IpAddr)||ip.isV6Format(IpAddr)){
 		            ITelexCom.SqlQuery(pool,"SELECT * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", function(res){
 		              var ips = [];
@@ -513,7 +514,7 @@ function init(){
 		                //   return ips.indexOf(elem) == pos;
 		                // });
 										// ll(JSON.stringify(ips))
-										let exists = ips.filter(function(i){return(ip.isEqual(i,IpAddr))}).length > 0;
+										let exists = ips.filter(i=>ip.isEqual(i,IpAddr)).length > 0;
 										// ll(exists);
 		                // var exists = 0;
 		                // for(var i in ips){
@@ -528,6 +529,15 @@ function init(){
 		            // connection.write("-1\r\n");
 								connection.write("ERROR\r\nnot a valid host or ip\r\n");
 		          }
+						};
+
+						if(ip.isV4Format(arg)||ip.isV6Format(arg)){
+							check(arg);
+						}else{
+							dnslookup(arg,{verbatim:true},function(err, address, family){
+								if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
+								check(address);
+							});
 						}
 					}else{
 						connection.write("ERROR\r\nthis server does not support this function\r\n");
@@ -568,13 +578,13 @@ function init(){
 									ITelexCom.connections[cnum].timeout = setTimeout(timeout,10);
 								}
 							}
-						}
+						};
 						timeout();
 					}
 				}
 			});
 		}catch(e){
-			lle(e);
+			if (cv(0)) lle(colors.FgRed, e, colors.Reset);
 		}
 	});
 	server.on("error",err=>lle("server error:",err));
@@ -636,13 +646,13 @@ function updateQueue(callback){
 					},function(){
 						if(cv(1)) ll(colors.FgGreen+"finished enqueueing"+colors.Reset);
 						if(cv(2)) ll(colors.FgGreen+"reseting changed flags..."+colors.Reset);
-						ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+changed.map(function(entry){return(entry.uid)}).join(" or uid=")+";", function(err, res){
+						ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+changed.map(entry=>entry.uid).join(" or uid=")+";", function(err, res){
 							if(cv(2)) ll(colors.FgGreen+"reset "+colors.FgCyan+changed.length+colors.FgGreen+" changed flags."+colors.Reset);
 							if(typeof callback === "function") callback();
 						});
 					});
 				}else{
-					ll(colors.FgYellow+"No configured servers -> aborting "+colors.FgCyan+"updateQueue"+colors.Reset)
+					ll(colors.FgYellow+"No configured servers -> aborting "+colors.FgCyan+"updateQueue"+colors.Reset);
 					if(typeof callback === "function") callback();
 				}
 			});
@@ -680,7 +690,11 @@ function getFullQuery(callback){
 			}
 			async.eachSeries(servers,function(r,cb){
 				ITelexCom.connect(pool,transporter,function(e){
-					try{cb();}catch(e){}
+					try{
+						cb();
+					}catch(e){
+						if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+					}
 				},{host:r.addresse,port:r.port},handles,function(client,cnum){
 					try{
 						let request = readonly?
@@ -691,14 +705,19 @@ function getFullQuery(callback){
 							ITelexCom.connections[cnum].cb = cb;
 						});
 					}catch(e){
-						try{cb();}catch(e){}
+						if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+						try{
+							cb();
+						}catch(e){
+							if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+						}
 					}
 				});
 			},function(){
 				if(typeof callback === "function") callback();
 			});
 		}else{
-			ll(colors.FgYellow+"No configured servers -> aborting "+colors.FgCyan+"FullQuery"+colors.Reset)
+			ll(colors.FgYellow+"No configured servers -> aborting "+colors.FgCyan+"FullQuery"+colors.Reset);
 			if(typeof callback === "function") callback();
 		}
 	});
@@ -807,7 +826,7 @@ pool.getConnection(function(err, connection){
 					if(err){
 						lle(err);
 						transporter = {
-							sendMail:function sendMail(){lle("can't send mail after Mail error")},
+							sendMail:function sendMail(){lle("can't send mail after Mail error");},
 							options:{host:"Failed to get test Account"}
 						};
 					}else{
@@ -832,7 +851,6 @@ pool.getConnection(function(err, connection){
 			if(cv(0)) ll(colors.FgMagenta+"Was required by another file -> Initialising exports"+colors.Reset);
 			module.exports = {
 				init:init,
-				startQWD:startQWD,
 				updateQueue:updateQueue,
 				getFullQuery:getFullQuery,
 				ITelexCom:ITelexCom
@@ -842,10 +860,10 @@ pool.getConnection(function(err, connection){
 });
 
 if(cv(3)){
-	function exitHandler(options, err) {
+	let exitHandler = function exitHandler(options, err) {
 		if (options.cleanup) ll(`serverErrors:\n${util.inspect(ITelexCom.serverErrors,{depth:null})}`);
 		if (options.exit) process.exit();
-	}
+	};
 	process.on('exit', exitHandler.bind(null,{cleanup:true}));
 	process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 	process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));

@@ -48,7 +48,7 @@ if(config.get("loggingVerbosity")>0) app.use(logger(function (tokens, req, res) 
       (method=="GET"?colors.FgGreen:colors.FgCyan)+method+colors.Reset+(method=="GET"?" ":""),
       color+status+colors.Reset,
       tokens.url(req, res).replace(/\//g,colors.Dim+"/"+colors.Reset)
-    ].join(' ')
+    ].join(' ');
   }
 }));
 

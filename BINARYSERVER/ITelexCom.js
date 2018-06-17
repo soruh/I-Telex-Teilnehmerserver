@@ -4,7 +4,7 @@ Date.prototype.getTimezone = function getTimezone(){
    let offset = -1*this.getTimezoneOffset();
    let offsetStr = ("0"+Math.floor(offset/60)).slice(-2)+":"+("0"+offset%60).slice(-2);
    return("UTC"+(offsetStr[0]=="-"?"":"+")+offsetStr);
-}
+};
 
 const path = require('path');
 const PWD = path.normalize(path.join(__dirname, '..'));
@@ -69,50 +69,48 @@ var timeouts = {};
 
 var serverErrors = {};
 
-function Timer(fn, duration){
-	var timout;
-	function _time_diff(date1, date2){
+class Timer{
+	constructor(fn, duration){
+		this.duration = duration;
+		this.fn = fn;
+
+		this.complete = false;
+		this.start_time = new Date().getTime();
+		this.timeout = setTimeout(fn, duration);
+	}
+	
+	_time_diff(date1, date2){
 		return date2 ? date2 - date1 : new Date().getTime() - date1;
 	}
-	function cancel(){
-		clearTimeout(timout);
+	cancel(){
+		clearTimeout(this.timeout);
+		this.remaining = 0;
 	}
-	function getRemaining(){
-		this.total_time_run = _time_diff(this.start_time);
-		this.remaining = duration - this.total_time_run;
-		return (this.remaining);
+	getRemaining(){
+		this.total_time_run = this._time_diff(this.start_time);
+		this.remaining = this.duration - this.total_time_run;
+		return this.remaining;
 	}
-	function pause(){
+	pause(){
 		this.paused = true;
-		clearTimeout(timout);
-		this.total_time_run = _time_diff(this.start_time);
-		this.complete = this.total_time_run >= duration;
-		this.remaining = duration - this.total_time_run;
+		clearTimeout(this.timeout);
+		this.total_time_run = this._time_diff(this.start_time);
+		this.complete = this.total_time_run >= this.duration;
+		this.remaining = this.duration - this.total_time_run;
 	}
-	function resume(){
+	resume(){
 		this.paused = false;
-		this.total_time_run = _time_diff(this.start_time);
-		this.complete = this.total_time_run >= duration;
-		this.remaining = duration - this.total_time_run;
+		this.total_time_run = this._time_diff(this.start_time);
+		this.complete = this.total_time_run >= this.duration;
+		this.remaining = this.duration - this.total_time_run;
 		if (this.complete){
 			if (cv(3)) ll(colors.FgCyan + "restarted " + colors.FgMagenta + "timeout" + colors.Reset);
 			this.start_time = new Date().getTime();
 			this.resume();
 		} else {
-			timout = setTimeout(fn, this.remaining);
+			this.timeout = setTimeout(this.fn, this.remaining);
 		}
 	}
-	this.start_time = new Date().getTime();
-	timout = setTimeout(fn, duration);
-
-	return {
-		cancel: cancel,
-		pause: pause,
-		resume: resume,
-		complete: false,
-		start_time: this.start_time,
-		getRemaining: getRemaining
-	};
 }
 function TimeoutWrapper(fn, duration, ...args){
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
@@ -155,6 +153,7 @@ function handlePackage(obj, cnum, pool, connection, handles, cb){
 					try{
 						handles[obj.packagetype][connections[cnum].state](obj, cnum, pool, connection, handles, cb);
 					}catch(e){
+						if (cv(0)) lle(colors.FgRed, e, colors.Reset);
 						if (typeof cb === "function") cb();
 					}
 				} else {
@@ -200,9 +199,10 @@ function checkFullPackage(buffer, part){
 function encPackage(obj){
 	if (cv(2)) ll(colors.FgGreen+"encoding:"+colors.FgCyan,obj,colors.Reset);
 	var data = obj.data;
+	var array;
 	switch (obj.packagetype){
 	case 1:
-		var array = ValueToBytearray(data.rufnummer, 4)
+		array = ValueToBytearray(data.rufnummer, 4)
 			.concat(ValueToBytearray(data.pin, 2))
 			.concat(ValueToBytearray(data.port, 2));
 		if(obj.datalength == null) obj.datalength = 8;
@@ -210,43 +210,44 @@ function encPackage(obj){
 	case 2:
 		data.ipaddresse = ip.isV4Format(data.ipaddresse)?data.ipaddresse:(ip.isV6Format(data.ipaddresse)?(ip.isV4Format(data.ipaddresse.split("::")[1])?data.ipaddresse.split("::")[1]:""):"");
 		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
-		var numip = 0
+		var numip = 0;
 		for (let i in iparr){
 			numip += iparr[i] * Math.pow(2, (i * 8));
 		}
-		var array = ValueToBytearray(numip, 4);
+		array = ValueToBytearray(numip, 4);
 		if(obj.datalength == null) obj.datalength = 4;
 		break;
 	case 3:
-		var array = ValueToBytearray(data.rufnummer, 4)
+		array = ValueToBytearray(data.rufnummer, 4)
 			.concat(ValueToBytearray(data.version, 1));
 		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 4:
-		var array = [];
+		array = [];
 		if(obj.datalength == null) obj.datalength = 0;
 		break;
 	case 5:
-		var flags = data.gesperrt * 2;
+		let flags = data.gesperrt * 2;
 		var iparr = data.ipaddresse==null?[]:data.ipaddresse.split(".");
 		var numip = 0;
 		for (let i in iparr){
 			numip += iparr[i] * Math.pow(2, (i * 8));
 		}
 
+		let ext;
 		if (data.extension == ""||data.extension==null){
-			var ext = 0;
+			ext = 0;
 		} else if (data.extension == "0"){
-			var ext = 110;
+			ext = 110;
 		} else if (data.extension == "00"){
-			var ext = 100;
+			ext = 100;
 		} else if (data.extension.toString().length == 1){
-			var ext = parseInt(data.extension) + 100;
+			ext = parseInt(data.extension) + 100;
 		} else {
-			var ext = parseInt(data.extension);
+			ext = parseInt(data.extension);
 		}
 
-		var array = ValueToBytearray(data.rufnummer, 4)
+		array = ValueToBytearray(data.rufnummer, 4)
 			.concat(ValueToBytearray(data.name, 40))
 			.concat(ValueToBytearray(flags, 2))
 			.concat(ValueToBytearray(data.typ, 1))
@@ -259,30 +260,32 @@ function encPackage(obj){
 		if(obj.datalength == null) obj.datalength = 100;
 		break;
 	case 6:
-		var array = ValueToBytearray(data.version, 1)
+		array = ValueToBytearray(data.version, 1)
 			.concat(ValueToBytearray(config.get("serverPin"), 4));
 		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 7:
-		var array = ValueToBytearray(data.version, 1)
+		array = ValueToBytearray(data.version, 1)
 			.concat(ValueToBytearray(config.get("serverPin"), 4));
 		if(obj.datalength == null) obj.datalength = 5;
 		break;
 	case 8:
-		var array = [];
+		array = [];
 		if(obj.datalength == null) obj.datalength = 0;
 		break;
 	case 9:
-		var array = [];
+		array = [];
 		if(obj.datalength == null) obj.datalength = 0;
 		break;
 	case 10:
-		// var array = ValueToBytearray(data.version,1)
+		// array = ValueToBytearray(data.version,1)
 		// .concat(ValueToBytearray(data.pattern,40));
-		var array = ValueToBytearray(data.pattern, 40)
+		array = ValueToBytearray(data.pattern, 40)
 			.concat(ValueToBytearray(data.version, 1));
 		if(obj.datalength == null) obj.datalength = 41;
 		break;
+	default:
+		array = [];
 	}
 	var header = [obj.packagetype, array.length];
 	if (array.length != obj.datalength){
@@ -293,37 +296,38 @@ function encPackage(obj){
 	return Buffer.from(header.concat(array));
 }
 function decPackage(packagetype, buffer){
+	let data;
 	switch (packagetype){
 	case 1:
-		var data = {
+		data = {
 			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
 			pin: BytearrayToValue(buffer.slice(4, 6), "number"),
 			port: BytearrayToValue(buffer.slice(6, 8), "number")
 		};
 		break;
 	case 2:
-		var data = {
+		data = {
 			ipaddresse:BytearrayToValue(buffer.slice(0, 4), "ip")
 		};
 		break;
 	case 3:
-		var data = {
+		data = {
 			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number")
 		};
 		if (buffer.slice(4, 5).length > 0){
-			data["version"] = BytearrayToValue(buffer.slice(4, 5), "number");
+			data.version = BytearrayToValue(buffer.slice(4, 5), "number");
 		} else {
-			data["version"] = 1;
+			data.version = 1;
 		}
 		break;
 	case 4:
-		var data = {};
+		data = {};
 		break;
 	case 5:
 
 		var flags = buffer.slice(44, 46);
 
-		var data = {
+		data = {
 			rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
 			name: BytearrayToValue(buffer.slice(4, 44), "string"),
 			gesperrt: flags[0] / 2,
@@ -346,32 +350,32 @@ function decPackage(packagetype, buffer){
 		} else if (data.durchwahl > 100){
 			data.durchwahl = (data.durchwahl - 100).toString();
 		} else if (data.durchwahl < 10){
-			data.durchwahl = "0" + data.durchwahl
+			data.durchwahl = "0" + data.durchwahl;
 		} else {
 			data.durchwahl = data.durchwahl.toString();
 		}
 
 		break;
 	case 6:
-		var data = {
+		data = {
 			version: BytearrayToValue(buffer.slice(0, 1), "number"),
 			serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
 		};
 		break;
 	case 7:
-		var data = {
+		data = {
 			version: BytearrayToValue(buffer.slice(0, 1), "number"),
 			serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
 		};
 		break;
 	case 8:
-		var data = {};
+		data = {};
 		break;
 	case 9:
-		var data = {};
+		data = {};
 		break;
 	case 10:
-		var data = {
+		data = {
 			version: BytearrayToValue(buffer.slice(0, 1), "number"),
 			pattern: BytearrayToValue(buffer.slice(1, 41), "string")
 			//pattern:BytearrayToValue(buffer.slice(0,40),"string"),
@@ -445,7 +449,7 @@ function BytearrayToValue(arr, type){
 		}else{
 			let str = "";
 			for(let i=0;i<4;i++){
-				str += ((numip >> (8*i)) & 255)+(i==3?"":".")
+				str += ((numip >> (8*i)) & 255)+(i==3?"":".");
 			}
 			return(str);
 		}
@@ -474,7 +478,7 @@ function ValueToBytearray(value, size){
 }
 
 function increaseErrorCounter(transporter, serverkey, error, code){
-  let exists = Object.keys(serverErrors).findIndex(function(k){return(k==serverkey)})>-1;
+  let exists = Object.keys(serverErrors).findIndex(k=>k==serverkey)>-1;
   if(exists){
     serverErrors[serverkey].errors.push({
       error:error,
@@ -490,7 +494,7 @@ function increaseErrorCounter(transporter, serverkey, error, code){
         timeStamp:Date.now()
       }],
       errorCounter: 1
-    }
+    };
   }
   let warn = config.get("warnAtErrorCounts").indexOf(serverErrors[serverkey].errorCounter)>-1;
   if(cv(1)) lle(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${serverErrors[serverkey].errorCounter}${colors.Reset}`);
@@ -510,8 +514,10 @@ function connect(pool, transporter, after, options, handles, callback){
 		//if (cv(2)) ll(`${colors.FgYellow}calling onEnd handler for server ${util.inspect(options)}${colors.Reset}`);
 		try{
 			after();
-		}catch(e){}
-	}
+		}catch(e){
+			if (cv(0)) lle(colors.FgRed, e, colors.Reset);
+		}
+	};
 	if (cv(1)) ll(colors.FgGreen+"trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host+":"+options.port;
@@ -541,7 +547,7 @@ function connect(pool, transporter, after, options, handles, callback){
         increaseErrorCounter(transporter, serverkey, new Error("timed out"), "TIMEOUT");
 				socket.end();
 			}catch(e) {
-
+				if (cv(0)) lle(colors.FgRed, e, colors.Reset);
 			}finally{
 				if(typeof onEnd === "function") onEnd();
 			}
@@ -587,14 +593,14 @@ function connect(pool, transporter, after, options, handles, callback){
 								connections[cnum].timeout = setTimeout(timeout, 10);
 							}
 						}
-					}
+					};
 					timeout();
 				}
 				/*if(res[0]){
 					handlePackage(decData(res[0]),cnum,pool,socket,handles);
 				}*/
 			}catch(e) {
-        if(cv(2)) lle(e);
+       			 if(cv(2)) lle(e);
 			}
 		});
 		socket.on('error', function (error){
@@ -602,7 +608,7 @@ function connect(pool, transporter, after, options, handles, callback){
 			try {
 				// if(error.code == "ECONNREFUSED"||error.code == "EHOSTUNREACH"){
 				if(error.code != "ECONNRESET"){ //TODO:  alert on ECONNRESET?
-					if(cv(1)) ll(`${colors.FgRed}server ${colors.FgCyan+util.inspect(options)+colors.FgRed} had an error${colors.Reset}`)
+					if(cv(1)) ll(`${colors.FgRed}server ${colors.FgCyan+util.inspect(options)+colors.FgRed} had an error${colors.Reset}`);
 					/*let exists = false;
 					for(let k in serverErrors){
 						if(k == serverkey){
@@ -640,7 +646,7 @@ function connect(pool, transporter, after, options, handles, callback){
 					},1000,cnum);
         }
 			} catch (e){
-				//if(cv(2)) lle(e);
+				// if(cv(2)) lle(e);
 			} finally {
 				if(typeof onEnd === "function") onEnd();
 			}
@@ -691,18 +697,18 @@ function ascii(data, connection, pool){
 				});
 			}else{
 				var send = "ok\r\n";
-				send += result[0]["rufnummer"] + "\r\n";
-				send += result[0]["name"] + "\r\n";
-				send += result[0]["typ"] + "\r\n";
-				if ((result[0]["typ"] == 2) || (result[0]["typ"] == 4) || (result[0]["typ"] == 5)){
-					send += result[0]["ipaddresse"] + "\r\n";
-				} else if ((result[0]["typ"] == 1) || (result[0]["typ"] == 3)){
-					send += result[0]["hostname"] + "\r\n";
-				} else if (result[0]["typ"] == 6){
-					send += result[0]["hostname"] + "\r\n";
+				send += result[0].rufnummer + "\r\n";
+				send += result[0].name + "\r\n";
+				send += result[0].typ + "\r\n";
+				if ((result[0].typ == 2) || (result[0].typ == 4) || (result[0].typ == 5)){
+					send += result[0].ipaddresse + "\r\n";
+				} else if ((result[0].typ == 1) || (result[0].typ == 3)){
+					send += result[0].hostname + "\r\n";
+				} else if (result[0].typ == 6){
+					send += result[0].hostname + "\r\n";
 				}
-				send += result[0]["port"] + "\r\n";
-				send += (result[0]["extension"]||"-") + "\r\n";
+				send += result[0].port + "\r\n";
+				send += (result[0].extension || "-") + "\r\n";
 				send += "+++\r\n";
 				connection.write(send, function (){
 					if (cv(1)) var m = colors.FgGreen + "Entry found";
