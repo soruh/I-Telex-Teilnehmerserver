@@ -1,6 +1,6 @@
 {
   "name": "i-telex-teilnehmerserver",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "scripts": {
     "start": "pm2 start ecosystem.config.js",
