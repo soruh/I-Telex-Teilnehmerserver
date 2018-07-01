@@ -1,4 +1,17 @@
 "use strict";
+if (module.parent != null) {
+	var mod = module;
+	var load_order = [module.id.split("/").slice(-1)];
+	while (mod.parent) {
+		load_order.push(mod.parent.filename.split("/").slice(-1));
+		mod = mod.parent;
+	}
+	var load_order_rev = [];
+	for (let i = load_order.length - 1; i >= 0; i--) {
+		load_order_rev.push(i == 0 ? "\x1b[32m" + load_order[i] + "\x1b[0m" : i == load_order.length - 1 ? "\x1b[36m" + load_order[i] + "\x1b[0m" : "\x1b[33m" + load_order[i] + "\x1b[0m");
+	}
+	console.log("loaded: " + load_order_rev.join(" ––> " + "\x1b[0m"))
+}
 const COLORS = {
 	Reset: "\x1b[000m",
 	Bright: "\x1b[001m",
@@ -40,32 +53,34 @@ const COLORS = {
 	BgLightMagenta: "\x1b[105m",
 	BgLightCyan: "\x1b[106m",
 	BgLightWhite: "\x1b[107m"
-}
+};
 
 
-for(let i in COLORS){
-	module.exports[i] = COLORS[i];
-}
-module.exports["disable"]=
-function disable(bool){
-	for(let i in COLORS){
-		module.exports[i] = (typeof bool === "undefined"||bool)?"":COLORS[i];
+function disable(bool?:boolean):void{
+	if (bool) {
+		for (let i in this) {
+			if (typeof this[i] === "string") this[i] = "";
+		}
 	}
 };
-module.exports["colorsAt"]=
-function colorsAt(str){
-	if(typeof str === "string"){
-		var colors = {};
-		for(let i in COLORS){
-			if(typeof COLORS[i] === "string"){
-				var index = str.indexOf(COLORS[i]);
-				if(index!=-1){
-					colors[index]=COLORS[i];
-				}
+
+function colorsAt(str:string):{
+	[index:string]: string;
+}{
+	var colors = {};
+	for (let i in COLORS) {
+		if (typeof COLORS[i] === "string") {
+			var index = str.indexOf(COLORS[i]);
+			if (index != -1) {
+				colors[index] = COLORS[i];
 			}
 		}
-		return(colors);
-	}else{
-		return(colors);
 	}
+	return colors;
 };
+
+var exp = Object.assign(COLORS, {
+	disable,
+	colorsAt
+});
+export default exp;

@@ -1,8 +1,8 @@
-module.exports = {
+exports = {
   apps : [
     {
       name: "binaryserver",
-      script: "./BINARYSERVER/binaryserver.js",
+      script: "./compiled/BINARYSERVER/binaryserver.js",
 /*
       interpreter: "0x",
       interpreter_args:" -D flamegraph_binaryserver",
@@ -11,7 +11,7 @@ module.exports = {
     },
     {
       name: "webserver",
-      script: "./WEBSERVER/bin/webserver.js",
+      script: "./compiled/WEBSERVER/bin/webserver.js",
 /*
       interpreter: "0x",
       interpreter_args:" -D flamegraph_webserver",

@@ -5,6 +5,10 @@
 4: peer only supporting “ascii texting” (or a standard telnet client), accessible by a given IP address (IPv4)
 5: same as 2, but IP address may change frequently
 6: not a real peer, but an “official” email address.*/
+
+import "jquery";
+
+
 var UTCDATE = false;
 var SHOWALLDATEINFO = false;
 var DEFAULTLANGUAGE = "german";
@@ -178,12 +182,12 @@ const languages = {
       hostname: "Bitte geben sie einen gültigen Hostnamen ein.",
       number: "Bitte geben sie eine gültige Zahl ein.",
       digits: "Bitte geben sie nur Ziffern ein.",
-      maxlength: jQuery.validator.format("Bitte geben sie nicht mehr als {0} Zeichen ein."),
-      minlength: jQuery.validator.format("Bitte geben sie mindestens {0} Zeichen ein."),
-      rangelength: jQuery.validator.format("Bitte geben sie einen Wert zwischen {0} und {1} Zeichen ein"),
-      range: jQuery.validator.format("Bitte geben sie einen Wert zwischen {0} und {1} ein."),
-      max: jQuery.validator.format("Bitte geben sie einen Wert kleiner als oder gleich {0} ein."),
-      min: jQuery.validator.format("Bitte geben sie einen Wert größer als oder gleich {0} ein."),
+      maxlength: (<any>$).validator.format("Bitte geben sie nicht mehr als {0} Zeichen ein."),
+      minlength: (<any>$).validator.format("Bitte geben sie mindestens {0} Zeichen ein."),
+      rangelength: (<any>$).validator.format("Bitte geben sie einen Wert zwischen {0} und {1} Zeichen ein"),
+      range: (<any>$).validator.format("Bitte geben sie einen Wert zwischen {0} und {1} ein."),
+      max: (<any>$).validator.format("Bitte geben sie einen Wert kleiner als oder gleich {0} ein."),
+      min: (<any>$).validator.format("Bitte geben sie einen Wert größer als oder gleich {0} ein."),
     }
   },
   english: {
@@ -349,30 +353,31 @@ const languages = {
       hostname: "Please enter a valid hostname.",
       number: "Please enter a valid number.",
       digits: "Please enter only digits.",
-      maxlength: jQuery.validator.format("Please enter no more than {0} characters."),
-      minlength: jQuery.validator.format("Please enter at least {0} characters."),
-      rangelength: jQuery.validator.format("Please enter a value between {0} and {1} characters long."),
-      range: jQuery.validator.format("Please enter a value between {0} and {1}."),
-      max: jQuery.validator.format("Please enter a value less than or equal to {0}."),
-      min: jQuery.validator.format("Please enter a value greater than or equal to {0}.")
+      maxlength: (<any>$).validator.format("Please enter no more than {0} characters."),
+      minlength: (<any>$).validator.format("Please enter at least {0} characters."),
+      rangelength: (<any>$).validator.format("Please enter a value between {0} and {1} characters long."),
+      range: (<any>$).validator.format("Please enter a value between {0} and {1}."),
+      max: (<any>$).validator.format("Please enter a value less than or equal to {0}."),
+      min: (<any>$).validator.format("Please enter a value greater than or equal to {0}.")
     }
   }
 };
 var language;
 
+type List = any; //TODO
 
 $(document).ready(function () {
   setLanguage(getCookie("language") ? getCookie("language") : DEFAULTLANGUAGE);
-  /*jQuery.validator.setDefaults({
+  /*(<any>$).validator.setDefaults({
 		errorLabelContainer: "#errorpop_errmsg",
 		wrapper: "p",
 		invalidHandler: function(form, validator) {
 	        showError();
 		}
 	});*/
-  $.validator.methods.ipaddress = matchIp;
-  $.validator.methods.hostname = matchHn;
-  $.validator.methods.unique = checkUnique;
+  (<any>$).validator.methods.ipaddress = matchIp;
+  (<any>$).validator.methods.hostname = matchHn;
+  (<any>$).validator.methods.unique = checkUnique;
   $(function () {
     var keyStop = {
       //  8: ":not(input:text, textarea, input:file, input:password)", // stop backspace = back
@@ -407,7 +412,7 @@ $(document).ready(function () {
   $.ajaxSetup({ /*async: false*/ });
   $(document).ajaxStart(function () {
     $("#waitpop").show();
-    $("#waitpop").center();
+    $("#waitpop")["center"]();
   });
   $(document).ajaxStop(function () {
     $("#waitpop").hide();
@@ -495,7 +500,7 @@ $(document).ready(function () {
   });
   $("#submit_password_dialog").click(function () {
     var formId = "#password_form";
-    $(formId).validate({
+    (<any>$(formId)).validate({
       highlight: function (element, errorClass, validClass) {
         $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
         jQuery(element).addClass("bg-danger field_error");
@@ -512,8 +517,8 @@ $(document).ready(function () {
         }
       }
     });
-    if ($("#passwordfield").valid()) {
-      login($("#passwordfield").val(), function (successful) {
+    if ((<any>$(formId)).valid()) {
+      login($("#passwordfield").val().toString(), function (successful) {
         if (successful) {
           resetforms();
         } else {
@@ -527,16 +532,16 @@ $(document).ready(function () {
   });
   $("#submit_newentry_dialog").click(function () {
     var formId = "#newentry_form";
-    $(formId).validate({
+    (<any>$(formId)).validate({
       highlight: function (element, errorClass, validClass) {
         $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
         jQuery(element).addClass("bg-danger field_error");
-        // $("#newentry_dialog").center();
+        // $("#newentry_dialog")["center"]();
       },
       unhighlight: function (element, errorClass, validClass) {
         $(element).parents(".error").removeClass(errorClass).addClass(validClass);
         jQuery(element).removeClass("bg-danger field_error");
-        // $("#newentry_dialog").center();
+        // $("#newentry_dialog")["center"]();
       },
       errorClass: "validate_error",
       validClass: "validate_valid",
@@ -601,9 +606,9 @@ $(document).ready(function () {
       }
     });
     $("#typ_newentry_dialog").on('change', function () {
-      $("#newentry_form").valid();
+      (<any>$(formId)).valid();
     });
-    if ($("#newentry_form").valid()) {
+    if ((<any>$(formId)).valid()) {
       var editParams = {
         typekey: "new",
         rufnummer: $("#rufnummer_newentry_dialog").val(),
@@ -615,17 +620,17 @@ $(document).ready(function () {
         extension: $("#durchwahl_newentry_dialog").val(),
         moddate: $("#moddate_newentry_dialog").val(),
         pin: $("#pin_newentry_dialog").val(),
+        gesperrt: $("#gesperrt_newentry_dialog").prop('checked') ? 1 : 0
       };
-      editParams.gesperrt = $("#gesperrt_newentry_dialog").prop('checked') ? 1 : 0;
       switch (optionType(formId + " select[name=typ]")) {
         case "ipaddress":
-          editParams.ipaddresse = $("#ipaddresse_newentry_dialog").val();
+          editParams.ipaddresse = $("#ipaddresse_newentry_dialog").val().toString();
           break;
         case "hostname":
-          editParams.hostname = $("#hostname_newentry_dialog").val();
+          editParams.hostname = $("#hostname_newentry_dialog").val().toString();
           break;
         case "email":
-          editParams.hostname = $("#email_newentry_dialog").val();
+          editParams.hostname = $("#email_newentry_dialog").val().toString();
           break;
       }
       edit(editParams, function (res, err) {
@@ -641,7 +646,7 @@ $(document).ready(function () {
   });
   $("#submit_edit_dialog").click(function () {
     var formId = "#edit_form";
-    $(formId).validate({
+    (<any>$(formId)).validate({
       highlight: function (element, errorClass, validClass) {
         $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
         $(element).trigger("checkval");
@@ -718,9 +723,9 @@ $(document).ready(function () {
       }
     });
     $("#typ_edit_dialog").on('change', function () {
-      $("#edit_form").valid();
+      (<any>$(formId)).valid();
     });
-    if ($("#edit_form").valid()) {
+    if ((<any>$(formId)).valid()) {
       console.log("uid: " + $("#edit_dialog").data("uid"));
       var editParams = {
         typekey: "edit",
@@ -734,17 +739,18 @@ $(document).ready(function () {
         extension: $("#durchwahl_edit_dialog").val(),
         moddate: $("#moddate_edit_dialog").val(),
         pin: $("#pin_edit_dialog").val(),
+        gesperrt: $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0
       };
-      editParams.gesperrt = $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0;
+      
       switch (optionType(formId + " select[name=typ]")) {
         case "ipaddress":
-          editParams.ipaddresse = $("#ipaddresse_edit_dialog").val();
+          editParams.ipaddresse = $("#ipaddresse_edit_dialog").val().toString();
           break;
         case "hostname":
-          editParams.hostname = $("#hostname_edit_dialog").val();
+          editParams.hostname = $("#hostname_edit_dialog").val().toString();
           break;
         case "email":
-          editParams.hostname = $("#email_edit_dialog").val();
+          editParams.hostname = $("#email_edit_dialog").val().toString();
           break;
       }
       edit(editParams, function (res, err) {
@@ -778,19 +784,20 @@ $(document).ready(function () {
   });
 });
 
-function checkUnique(value, element) {
-  var uid = $($(element).parents()[2]).data("uid") ? $($(element).parents()[2]).data("uid") : false;
-  var isUnique = true;
+function checkUnique(value:string, element:string|HTMLElement) {
+  var uid:string = $($(<any>element).parents()[2]).data("uid");
+
+  var isUnique:boolean = true;
   for (let k in global_list) {
     if ((global_list[k].rufnummer == value) && ((!uid) || (global_list[k].uid != uid)) && (global_list[k].typ != 0)) {
       isUnique = false;
     }
   }
-  return (isUnique);
+  return isUnique;
 }
 
-function optionType(select) {
-  var val = $(select).val();
+function optionType(select:string|HTMLElement) {
+  var val:number = +$(<any>select).val();
   if (val == 1 || val == 3) {
     return "hostname";
   } else if (val == 2 || val == 4 || val == 5) {
@@ -806,10 +813,10 @@ function clearErrors() {
   $(".gl_fielderror").remove();
 }
 
-function showError(errorMessage) {
+function showError(errorMessage:string) {
   if (errorMessage) $('#errorpop_errmsg').html(errorMessage);
   $('#errorpop').show(1, function () {
-    $('#errorpop').center();
+    $('#errorpop')["center"]();
     $('#errorpop').hide();
     $('#errorpop').fadeIn("slow");
   });
@@ -819,7 +826,7 @@ function closeError() {
   $('#errorpop').fadeOut("slow");
 }
 
-function showpopup(id, callback) {
+function showpopup(id:string, callback?:()=>void) {
   $("#newentry_dialog").hide();
   $("#edit_dialog").hide();
   $("#delete_dialog").hide();
@@ -829,7 +836,7 @@ function showpopup(id, callback) {
     $("#delete_dialog").data("uid", "");
   } else {
     $("#" + id).show(1, function () {
-      $("#" + id).center();
+      $("#" + id)["center"]();
       $("#" + id).hide();
       $("#" + id).fadeIn(350);
       setTimeout(function (id) {
@@ -847,7 +854,7 @@ function resetforms() {
   showpopup("");
 }
 
-function login(pwd, callback) {
+function login(pwd?:string, callback?:(loggedIn:boolean)=>void) {
   if (pwd) {
     setCookie("pwd", btoa(pwd));
   }
@@ -865,15 +872,12 @@ function logout() {
   resetforms();
 }
 
-function twodigit(n) {
-  if (n.toString().length < 2) {
-    return "0" + n.toString();
-  } else {
-    return n.toString();
-  }
+function twodigit(n:number|string) {
+  n = n.toString();
+  return n.length < 2?"0"+n:n;
 }
 
-function UtcToString(Utc) {
+function UtcToString(Utc:string) {
   var d = new Date(parseInt(Utc) * 1000);
   if (SHOWALLDATEINFO) {
     return (d.toString());
@@ -889,7 +893,7 @@ function UtcToString(Utc) {
   }
 }
 
-function getList(callback) {
+function getList(callback?:(list?:List)=>void) {
   $.ajax({
     url: "/list",
     type: "POST",
@@ -897,7 +901,11 @@ function getList(callback) {
     data: {
       "password": getPassword(),
     },
-    success: function (response) {
+    success: function (response:{
+      successful:boolean,
+      result:List,
+      message:string
+    }) {
       console.log(response);
       if (response.successful) {
         global_list = {};
@@ -915,7 +923,7 @@ function getList(callback) {
   });
 }
 
-function updateTable(usli, cb) {
+function updateTable(usli:List, cb?:()=>void) {
   var table = document.getElementById("table");
   while (table.firstChild) {
     table.removeChild(table.firstChild);
@@ -962,14 +970,12 @@ function updateTable(usli, cb) {
   }
   table.appendChild(tr);
   updateContent(usli);
-  if (typeof cb === "function") {
-    cb();
-  }
+  if (typeof cb === "function") cb();
 
 }
 
-function updateContent(usli) {
-  var list = search(sort(usli), $("#search-box").val());
+function updateContent(usli:List) {
+  var list = search(sort(usli), $("#search-box").val().toString());
   var table = document.getElementById("table");
   while (table.children.length > 1) {
     table.removeChild(table.lastChild);
@@ -1073,23 +1079,24 @@ function removeButtonClick() {
   $("#delete_dialog_label_container div").remove();
   var uid = $(this).data("uid");
   $("#delete_dialog").data("uid", uid);
-  var div = {
+  var deleteMessage = {
     id: "message_delete_dialog_label",
     class: "delete_dialog_label",
     text: languages[language].delete_message
   };
-  jQuery('<div/>', div).appendTo("#delete_dialog_label_container");
+  jQuery('<div/>', deleteMessage).appendTo("#delete_dialog_label_container");
   for (let k in global_list[uid]) {
-    var div = {
+    var deleteDialogLabel = {
       id: k + "_delete_dialog_label",
-      class: "delete_dialog_label"
+      class: "delete_dialog_label",
+      text:null
     };
     if (k === "moddate" && (!UTCDATE)) {
-      div.text = k + ": " + UtcToString(global_list[uid][k]);
+      deleteDialogLabel.text = k + ": " + UtcToString(global_list[uid][k]);
     } else if (k !== "uid") {
-      div.text = k + ": " + global_list[uid][k];
+      deleteDialogLabel.text = k + ": " + global_list[uid][k];
     }
-    jQuery('<div/>', div).appendTo("#delete_dialog_label_container");
+    jQuery('<div/>', deleteDialogLabel).appendTo("#delete_dialog_label_container");
   }
   showpopup("delete_dialog");
 }
@@ -1118,7 +1125,7 @@ function edit(vals, cb) {
   });
 }
 
-function search(list, str) {
+function search(list:List, str:string) {
   var returnlist = [];
   for (let row of list) {
     var matches = true;
@@ -1189,7 +1196,7 @@ function initloc() {
   for (let i in languages) {
     var child = document.createElement("div");
     child.id = "loc-dropdown-child-" + i;
-    child.style = "background-image:url(/images/" + i + ".svg);";
+    $(child).css("background-image","url(/images/" + i + ".svg);");
     child.onclick = function () {
       setLanguage(this.id.split("-")[this.id.split("-").length - 1]);
       $("#loc-dropdown-children").fadeOut(300);
@@ -1198,7 +1205,7 @@ function initloc() {
   }
 }
 
-function setLanguage(l) {
+function setLanguage(l:string) {
   if (languages[l]) {
     language = l;
     setCookie("language", l, 365 * 10);
@@ -1222,7 +1229,7 @@ function updateLoc() {
       }
     }
   }
-  jQuery.extend(jQuery.validator.messages, languages[language].verify);
+  jQuery.extend((<any>$).validator.messages, languages[language].verify);
 }
 
 function getPassword() {
@@ -1236,14 +1243,14 @@ function getPassword() {
   return (password);
 }
 
-function setCookie(c_name, value, exdays) {
+function setCookie(c_name:string, value:string, exdays?:number) {
   var exdate = new Date();
   exdate.setDate(exdate.getDate() + exdays);
   var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
   document.cookie = c_name + "=" + c_value;
 }
 
-function getCookie(c_name) {
+function getCookie(c_name:string) {
   var i, x, y, ARRcookies = document.cookie.split(";");
   for (let i = 0; i < ARRcookies.length; i++) {
     x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
@@ -1256,10 +1263,10 @@ function getCookie(c_name) {
   return ("");
 }
 
-function matchHn(str) {
+function matchHn(str:string) {
   return (/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/.test(str));
 }
 
-function matchIp(str) {
+function matchIp(str:string) {
   return (/(^\s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\s*$)|(^\s*( (([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$)/.test(str));
 }

@@ -1,18 +1,16 @@
 #!/usr/bin/env node
 
 "use strict";
-const path = require('path');
-const PWD = path.normalize(path.join(__dirname, '..', '..'));
-const config = require(path.join(PWD, '/COMMONMODULES/config.js'));
-var app = require(path.join(PWD, '/WEBSERVER/app'));
+import config from '../../COMMONMODULES/config.js';
+import app from '../../WEBSERVER/app';
 var debug = require('debug')('i-telex-teilnehmerserver:server');
-var http = require('http');
+import * as http from "http";
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(config.get("webServerPort").toString());
+var port = normalizePort(config.webServerPort.toString());
 app.set('port', port);
 
 /**

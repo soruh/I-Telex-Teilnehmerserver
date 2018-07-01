@@ -1,18 +1,15 @@
 "use strict";
-const path = require('path');
-const PWD = path.normalize(path.join(__dirname, '..', '..'));
 
-const {
-  ll,
-  lle,
-  llo
-} = require(path.join(PWD, "/COMMONMODULES/logWithLineNumber.js"));
-const mysql = require('mysql');
-const config = require(path.join(PWD, '/COMMONMODULES/config.js'));
-const colors = require(path.join(PWD, '/COMMONMODULES/colors.js'));
 
-var mySqlConnectionOptions = config.get('mySqlConnectionOptions');
-mySqlConnectionOptions.multipleStatements = true;
+import * as mysql from "mysql";
+import * as express from "express";
+
+import config from '../../COMMONMODULES/config.js';
+import colors from '../../COMMONMODULES/colors.js';
+import {ll,lle,llo} from "../../COMMONMODULES/logWithLineNumbers.js";
+
+var mySqlConnectionOptions = config['mySqlConnectionOptions'];
+mySqlConnectionOptions["multipleStatements"] = true;
 
 const pool = mysql.createPool(mySqlConnectionOptions);
 pool.getConnection(function (err, connection) {
@@ -25,7 +22,7 @@ pool.getConnection(function (err, connection) {
   }
 });
 
-const router = require('express').Router();
+const router = express.Router();
 router.get('/', function (req, res, next) {
   res.render('index');
 });
@@ -43,15 +40,15 @@ router.post('/list', function (req, res) {
       var resultPublic = [];
       for (let a in result) {
         if (
-          (result[a].gesperrt === 0 || req.body.password == config.get("webInterfacePassword")) &&
-          ((result[a].typ != 0) || req.body.password == config.get("webInterfacePassword"))
+          (result[a].gesperrt === 0 || req.body.password == config.webInterfacePassword) &&
+          ((result[a].typ != 0) || req.body.password == config.webInterfacePassword)
         ) {
           var i = resultPublic.length;
           resultPublic[i] = {};
           for (let b in result[a]) {
             if (
-              ((b != "pin") || (false && req.body.password == config.get("webInterfacePassword"))) &&
-              ((b != "gesperrt") || (req.body.password == config.get("webInterfacePassword"))) &&
+              ((b != "pin") || (false && req.body.password == config.webInterfacePassword)) &&
+              ((b != "gesperrt") || (req.body.password == config.webInterfacePassword)) &&
               (b != "changed")
             ) {
               resultPublic[i][b] = result[a][b];
@@ -71,29 +68,29 @@ router.post('/list', function (req, res) {
 router.post('/edit', function (req, res) {
   // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
-  if (req.body.password == config.get("webInterfacePassword")) {
+  if (req.body.password == config.webInterfacePassword) {
     switch (req.body.typekey) {
       case "edit":
-        pool.query("SELECT * FROM teilnehmer;", function (err, r) {
+        pool.query("SELECT * FROM teilnehmer;", function (err, result) {
           if (err) {
             res.json({
               successful: false,
               message: err
             });
           } else {
-            let existing = false;
-            let toEdit = false;
-            for (let e of r) {
-              if (e.uid == req.body.uid) {
-                toEdit = e;
+            let existing:any = false;
+            let toEdit = null;
+            for (let entry of result) {
+              if (entry.uid == req.body.uid) {
+                toEdit = entry;
               }
             }
-            for (let e of r) {
+            for (let entry of result) {
               if (
-                (e.rufnummer == req.body.rufnummer) &&
-                (e.uid != req.body.uid)
+                (entry.rufnummer == req.body.rufnummer) &&
+                (entry.uid != req.body.uid)
               ) {
-                existing = e;
+                existing = entry;
               }
             }
             // ll(toEdit);
@@ -109,7 +106,7 @@ router.post('/edit', function (req, res) {
                 ",port=" + mysql.escape(req.body.port) +
                 ",extension=" + mysql.escape(req.body.extension) +
                 ",gesperrt=" + mysql.escape(req.body.gesperrt) +
-                ",moddate=" + mysql.escape(Math.floor(new Date().getTime() / 1000)) +
+                ",moddate=" + mysql.escape(Math.floor(Date.now() / 1000)) +
                 ",changed=1 " +
                 "WHERE uid=" + mysql.escape(req.body.uid) + ";";
               if (existing && toEdit.rufnummer != req.body.rufnummer) {
@@ -127,7 +124,7 @@ router.post('/edit', function (req, res) {
                   mysql.escape(toEdit.extension) + "," +
                   mysql.escape(toEdit.pin) + "," +
                   mysql.escape(toEdit.gesperrt) + "," +
-                  mysql.escape(Math.floor(new Date().getTime() / 1000)) + "," +
+                  mysql.escape(Math.floor(Date.now() / 1000)) + "," +
                   "'1'" +
                   ");";
               }
@@ -162,7 +159,7 @@ router.post('/edit', function (req, res) {
               message: err
             });
           } else {
-            let existing = false;
+            let existing:any = false;
             for (let t of teilnehmer) {
               if (t.rufnummer == req.body.rufnummer) existing = t;
             }
@@ -177,7 +174,7 @@ router.post('/edit', function (req, res) {
               mysql.escape(req.body.extension) + "," +
               mysql.escape(req.body.pin) + "," +
               mysql.escape(req.body.gesperrt) + "," +
-              mysql.escape(Math.floor(new Date().getTime() / 1000)) +
+              mysql.escape(Math.floor(Date.now() / 1000)) +
               ");";
             if (existing) {
               if (existing.typ == 0) {
@@ -227,7 +224,7 @@ router.post('/edit', function (req, res) {
             mysql.escape(req.body.extension)+","+
             mysql.escape(req.body.pin)+","+
             mysql.escape(req.body.gesperrt)+","+
-            mysql.escape(Math.floor(new Date().getTime()/1000))+
+            mysql.escape(Math.floor(Date.now()/1000))+
             ")",
             function (err, result) {
               if(err){
@@ -240,7 +237,7 @@ router.post('/edit', function (req, res) {
         });
         break;
       case "delete":
-        pool.query("UPDATE teilnehmer SET typ=0, changed=1, moddate=" + Math.floor(new Date().getTime() / 1000) + " WHERE typ!=0 AND uid=" + mysql.escape(req.body.uid) + ";", function (err, result) {
+        pool.query("UPDATE teilnehmer SET typ=0, changed=1, moddate=" + Math.floor(Date.now() / 1000) + " WHERE typ!=0 AND uid=" + mysql.escape(req.body.uid) + ";", function (err, result) {
           if (err) {
             res.json({
               successful: false,
