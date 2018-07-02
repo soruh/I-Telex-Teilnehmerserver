@@ -4,9 +4,10 @@
 import * as net from 'net';
 import * as util from 'util';
 
-import * as colors from "../COMMONMODULES/colors.js";
+import colors from "../COMMONMODULES/colors.js";
 import {ll,lle,llo} from '../COMMONMODULES/logWithLineNumbers.js';
-import { peer } from './ITelexCom.js';
+import { peer, Package_decoded, cv } from './ITelexCom.js';
+import config from "../COMMONMODULES/config.js";
 
 //#endregion imports
 
@@ -18,11 +19,12 @@ interface client{
   state:number
   readbuffer:number[];
   writebuffer:peer[];
-  packages:any;
+  packages:Package_decoded[];
   handling:boolean;
   timeout?:NodeJS.Timer;
   cb?:()=>void;
   servernum?:number;
+  newEntries?:number;
 }
 interface connection extends net.Socket{
   
@@ -42,17 +44,32 @@ var types = {
 
 var connections: connections = {};
 
-function get(loc: string): client {
-  // llo(1,`${colors.FgYellow}geting: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+function get(loc: string): client;
+function get(loc: (connection:client)=>boolean): client[];
+function get(loc){
+  if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}geting: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
   if (loc) {
-    let locArr: string[] = loc.split("|");
-    let type: string = locArr[0];
-    let number: string = locArr[1];
-    if (connections[type] && connections[type][number] != null) {
-      // llo(1,`${colors.FgYellow}got:\n${util.inspect(connections[type][number],{depth:0})}\nfor ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
-      return connections[type][number];
-    } else {
-      // llo(1,`${colors.FgYellow}got: nothing for ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
+    if(typeof loc === "string"){
+      let locArr: string[] = loc.split("|");
+      let type: string = locArr[0];
+      let number: string = locArr[1];
+      if (connections[type] && connections[type][number] != null) {
+        if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}got:\n${util.inspect(connections[type][number],{depth:0})}\nfor ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
+        return connections[type][number];
+      } else {
+        if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}got: nothing for ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
+        return null;
+      }
+    }else if(typeof loc === "function"){
+      let matches:client[] = [];
+      for(let type in connections){
+        for(let index in connections[type]){
+          let client = connections[type][index];
+          if(loc(client)) matches.push(client);
+        }
+      }
+      return matches;
+    }else{
       return null;
     }
   } else {
@@ -60,27 +77,19 @@ function get(loc: string): client {
   }
 }
 
-function has(loc: string): boolean {
-  // llo(1,`${colors.FgYellow}geting: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
-  if (loc) {
-    let locArr: string[] = loc.split("|");
-    let type: string = locArr[0];
-    let number: string = locArr[1];
-    if (connections[type] && connections[type][number] != null) {
-      // llo(1,`${colors.FgYellow}got:\n${util.inspect(connections[type][number],{depth:0})}\nfor ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
-      return true;
-    } else {
-      // llo(1,`${colors.FgYellow}got: nothing for ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
-      return false;
-    }
-  } else {
+function has(loc: string): boolean;
+function has(loc: (connection:client)=>boolean): boolean;
+function has(loc):boolean{
+  if(get(loc)){
+    return true
+  }else{
     return false;
   }
 }
 
 function add(loc: string, value: client): string {
   if(loc){
-    // llo(1,`${colors.FgYellow}adding: ${colors.FgBlue}${loc}${colors.FgYellow} to connections${colors.Reset}`);
+    if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}adding: ${colors.FgBlue}${loc}${colors.FgYellow} to connections${colors.Reset}`);
     let locArr: string[] = loc.split("|");
     let type: string = locArr[0];
     let number: string = locArr[1];
@@ -106,17 +115,18 @@ function add(loc: string, value: client): string {
 }
 
 function remove(loc: string): boolean {
-  // llo(1,`${colors.FgYellow}removing: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+  if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}removing: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
   if(loc){
     let locArr: string[] = loc.split("|");
     let type: string = locArr[0];
     let number: string = locArr[1];
     if (get(loc)) { //data[type]&&connections[type][number]!=null){
+      connections.cnum = null;
       delete connections[type][number];
-      // llo(1,`${colors.FgYellow}removed: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+      if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}removed: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
       return true;
     } else {
-      // llo(1,`${colors.FgYellow}couldn't remove: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+      if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}couldn't remove: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
       return false;
     }
   }else{
@@ -126,7 +136,7 @@ function remove(loc: string): boolean {
 
 function move(locOld: string, locNew: string): string {
   if(locOld&&locNew){
-    // llo(1,`${colors.FgYellow}moving: ${colors.FgBlue}${locOld}${colors.FgYellow} to ${colors.FgBlue}${locNew}${colors.FgYellow} in connections${colors.Reset}`);
+    if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}moving: ${colors.FgBlue}${locOld}${colors.FgYellow} to ${colors.FgBlue}${locNew}${colors.FgYellow} in connections${colors.Reset}`);
     let locOldArr: string[] = locOld.split("|");
     let typeOld: string = locOldArr[0];
     let numberOld: number = +locOldArr[1];

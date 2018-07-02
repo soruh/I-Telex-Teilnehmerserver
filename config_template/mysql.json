@@ -1,0 +1,13 @@
+{
+    "mySqlConnectionOptions":{
+    "host":"localhost",
+    "user":"telefonbuch",
+    "password":"amesads",
+    "database":"telefonbuch",
+    "insecureAuth":true,
+
+    "connectTimeout"  :2147483647,
+    "aquireTimeout"   :2147483647,
+    "timeout"         :2147483647
+  }
+}

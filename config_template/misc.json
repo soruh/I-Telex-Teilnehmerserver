@@ -1,0 +1,18 @@
+{
+  "DynIpUpdateNameDifference": 20,
+
+  "setChangedOnNewerEntry":true,
+  "allowInvalidPackageSizes":true,
+
+  "serverPin":1234512345,
+  "allowFullQueryInReadonly":true,
+  "allowLoginInReadonly": false,
+  "doDnsLookups":true,
+
+  "fullQueryServer":null,
+  "binaryPort":11811,
+
+  "webServerPort":3030,
+  "webInterfacePassword":"XXX"
+
+}

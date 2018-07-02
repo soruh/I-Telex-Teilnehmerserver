@@ -1,7 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const util = require("util");
+const colors_js_1 = require("../COMMONMODULES/colors.js");
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
+const ITelexCom_js_1 = require("./ITelexCom.js");
+const config_js_1 = require("../COMMONMODULES/config.js");
 var types = {
     "C": "client",
     "S": "server"
@@ -9,17 +12,39 @@ var types = {
 exports.types = types;
 var connections = {};
 function get(loc) {
-    // llo(1,`${colors.FgYellow}geting: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+    if (config_js_1.default.logConnectionChanges)
+        if (ITelexCom_js_1.cv(2))
+            logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}geting: ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow} from connections${colors_js_1.default.Reset}`);
     if (loc) {
-        let locArr = loc.split("|");
-        let type = locArr[0];
-        let number = locArr[1];
-        if (connections[type] && connections[type][number] != null) {
-            // llo(1,`${colors.FgYellow}got:\n${util.inspect(connections[type][number],{depth:0})}\nfor ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
-            return connections[type][number];
+        if (typeof loc === "string") {
+            let locArr = loc.split("|");
+            let type = locArr[0];
+            let number = locArr[1];
+            if (connections[type] && connections[type][number] != null) {
+                if (config_js_1.default.logConnectionChanges)
+                    if (ITelexCom_js_1.cv(2))
+                        logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}got:\n${util.inspect(connections[type][number], { depth: 0 })}\nfor ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow}${colors_js_1.default.Reset}`);
+                return connections[type][number];
+            }
+            else {
+                if (config_js_1.default.logConnectionChanges)
+                    if (ITelexCom_js_1.cv(2))
+                        logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}got: nothing for ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow}${colors_js_1.default.Reset}`);
+                return null;
+            }
+        }
+        else if (typeof loc === "function") {
+            let matches = [];
+            for (let type in connections) {
+                for (let index in connections[type]) {
+                    let client = connections[type][index];
+                    if (loc(client))
+                        matches.push(client);
+                }
+            }
+            return matches;
         }
         else {
-            // llo(1,`${colors.FgYellow}got: nothing for ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
             return null;
         }
     }
@@ -29,19 +54,8 @@ function get(loc) {
 }
 exports.get = get;
 function has(loc) {
-    // llo(1,`${colors.FgYellow}geting: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
-    if (loc) {
-        let locArr = loc.split("|");
-        let type = locArr[0];
-        let number = locArr[1];
-        if (connections[type] && connections[type][number] != null) {
-            // llo(1,`${colors.FgYellow}got:\n${util.inspect(connections[type][number],{depth:0})}\nfor ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
-            return true;
-        }
-        else {
-            // llo(1,`${colors.FgYellow}got: nothing for ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
-            return false;
-        }
+    if (get(loc)) {
+        return true;
     }
     else {
         return false;
@@ -50,7 +64,9 @@ function has(loc) {
 exports.has = has;
 function add(loc, value) {
     if (loc) {
-        // llo(1,`${colors.FgYellow}adding: ${colors.FgBlue}${loc}${colors.FgYellow} to connections${colors.Reset}`);
+        if (config_js_1.default.logConnectionChanges)
+            if (ITelexCom_js_1.cv(2))
+                logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}adding: ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow} to connections${colors_js_1.default.Reset}`);
         let locArr = loc.split("|");
         let type = locArr[0];
         let number = locArr[1];
@@ -76,18 +92,25 @@ function add(loc, value) {
 }
 exports.add = add;
 function remove(loc) {
-    // llo(1,`${colors.FgYellow}removing: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+    if (config_js_1.default.logConnectionChanges)
+        if (ITelexCom_js_1.cv(2))
+            logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}removing: ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow} from connections${colors_js_1.default.Reset}`);
     if (loc) {
         let locArr = loc.split("|");
         let type = locArr[0];
         let number = locArr[1];
         if (get(loc)) { //data[type]&&connections[type][number]!=null){
+            connections.cnum = null;
             delete connections[type][number];
-            // llo(1,`${colors.FgYellow}removed: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+            if (config_js_1.default.logConnectionChanges)
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}removed: ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow} from connections${colors_js_1.default.Reset}`);
             return true;
         }
         else {
-            // llo(1,`${colors.FgYellow}couldn't remove: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
+            if (config_js_1.default.logConnectionChanges)
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}couldn't remove: ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow} from connections${colors_js_1.default.Reset}`);
             return false;
         }
     }
@@ -98,7 +121,9 @@ function remove(loc) {
 exports.remove = remove;
 function move(locOld, locNew) {
     if (locOld && locNew) {
-        // llo(1,`${colors.FgYellow}moving: ${colors.FgBlue}${locOld}${colors.FgYellow} to ${colors.FgBlue}${locNew}${colors.FgYellow} in connections${colors.Reset}`);
+        if (config_js_1.default.logConnectionChanges)
+            if (ITelexCom_js_1.cv(2))
+                logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}moving: ${colors_js_1.default.FgBlue}${locOld}${colors_js_1.default.FgYellow} to ${colors_js_1.default.FgBlue}${locNew}${colors_js_1.default.FgYellow} in connections${colors_js_1.default.Reset}`);
         let locOldArr = locOld.split("|");
         let typeOld = locOldArr[0];
         let numberOld = +locOldArr[1];

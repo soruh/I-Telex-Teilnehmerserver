@@ -1,3 +1,7 @@
+import * as fs from "fs";
+import * as path from "path";
+
+
 interface configFile {
   "mySqlConnectionOptions": {
     "host": string,
@@ -21,6 +25,7 @@ interface configFile {
   "repairPm2Colors": boolean,
   "logITelexCom": boolean,
 
+  "logConnectionChanges": boolean,
   "serverPin": number,
   "allowFullQueryInReadonly": boolean,
   "allowLoginInReadonly": boolean,
@@ -86,5 +91,13 @@ interface configFile {
     }
 }
 
-const config: configFile = require("../config.json");
+var collection:any = {};
+Object.assign(collection,require("../config/mail.json"));
+Object.assign(collection,require("../config/mysql.json"));
+Object.assign(collection,require("../config/logging.json"));
+Object.assign(collection,require("../config/misc.json"));
+Object.assign(collection,require("../config/timings.json"));
+
+const config:configFile = collection;
+
 export default config;

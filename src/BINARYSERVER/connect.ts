@@ -10,17 +10,24 @@ import colors from "../COMMONMODULES/colors.js";
 import * as connections from "../BINARYSERVER/connections.js"
 import * as constants from "../BINARYSERVER/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
+import handles from "../BINARYSERVER/handles.js";
+
 //#endregion
 
 const verbosity = config.loggingVerbosity;
 var cv = level => level <= verbosity; //check verbosity
 
 
-function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, handles, callback) {
+function connect(
+	pool:mysql.Pool|mysql.Connection,
+	after:(client:connections.client)=>void,
+	options,
+	callback:(client:connections.client)=>void
+) {
 	let onEnd = function () {
 		//if (cv(2)) ll(`${colors.FgYellow}calling onEnd handler for server ${util.inspect(options)}${colors.Reset}`);
 		try {
-			after();
+			after(client);
 		} catch (e) {
 			if (cv(0)) lle(colors.FgRed, e, colors.Reset);
 		}
@@ -30,22 +37,24 @@ function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, 
 		let serverkey = options.host + ":" + options.port;
 		var socket = new net.Socket();
 		
-		var cnum = connections.add("S" ,{
-			connection: socket,
-			readbuffer: [],
-			state: constants.states.STANDBY,
-			packages: [],
-			handling: false,
-			writebuffer: [],
-		});
-		var client = connections.get(cnum);
+		var client =
+		connections.get(
+			connections.add("S" ,{
+				connection: socket,
+				readbuffer: [],
+				state: constants.states.STANDBY,
+				packages: [],
+				handling: false,
+				writebuffer: [],
+			})
+		);
 		socket.setTimeout(config.connectionTimeout);
 		socket.on('timeout', function () {
 			try {
 				if (cv(1)) lle(colors.FgRed + "server: " + colors.FgCyan, options, colors.FgRed + " timed out" + colors.Reset);
 				// socket.emit("end");
 				// socket.emit("error",new Error("timeout"));
-				ITelexCom.increaseErrorCounter(transporter, serverkey, new Error("timed out"), "TIMEOUT");
+				ITelexCom.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
 				socket.end();
 			} catch (e) {
 				if (cv(0)) lle(colors.FgRed, e, colors.Reset);
@@ -61,11 +70,11 @@ function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, 
 			}
 			try {
 				//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
-				// if(cv(2)) ll("Buffer for client "+cnum+":"+colors.FgCyan,client.readbuffer,colors.Reset);
-				// if(cv(2)) ll("New Data for client "+cnum+":"+colors.FgCyan,data,colors.Reset);
+				// if(cv(2)) ll("Buffer for client "+client.cnum+":"+colors.FgCyan,client.readbuffer,colors.Reset);
+				// if(cv(2)) ll("New Data for client "+client.cnum+":"+colors.FgCyan,data,colors.Reset);
 				var res = ITelexCom.checkFullPackage(data, client.readbuffer);
-				// if(cv(2)) ll("New Buffer "+cnum+":"+colors.FgCyan,res[1],colors.Reset);
-				// if(cv(2)) ll("Package "+cnum+":"+colors.FgCyan,res[0],colors.Reset);
+				// if(cv(2)) ll("New Buffer "+client.cnum+":"+colors.FgCyan,res[1],colors.Reset);
+				// if(cv(2)) ll("Package "+client.cnum+":"+colors.FgCyan,res[0],colors.Reset);
 				if (res[1]) {
 					client.readbuffer = res[1];
 				}
@@ -82,8 +91,8 @@ function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, 
 							}
 							async.eachOfSeries(client.packages, function (pkg, key, cb) {
 								if ((cv(1) && (Object.keys(client.packages).length > 1)) || cv(2)) ll(colors.FgGreen + "handling package " + colors.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors.Reset);
-								ITelexCom.handlePackage(pkg, cnum, pool, socket, handles, function () {
-									client.packages.splice(key, 1);
+								ITelexCom.handlePackage(pkg, client, pool, function () {
+									client.packages.splice(+key, 1);
 									cb();
 								});
 							}, function () {
@@ -91,14 +100,14 @@ function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, 
 							});
 						} else {
 							if (client.timeout == null) {
-								connections.get(cnum).timeout = setTimeout(timeout, 10);
+								client.timeout = setTimeout(timeout, 10);
 							}
 						}
 					};
 					timeout();
 				}
 				/*if(res[0]){
-					handlePackage(decPackages(res[0]),cnum,pool,socket,handles);
+					handlePackage(decPackages(res[0]),client.cnum,pool,socket,handles);
 				}*/
 			} catch (e) {
 				if (cv(2)) lle(e);
@@ -117,7 +126,7 @@ function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, 
 							break;
 						}
 					}*/
-					ITelexCom.increaseErrorCounter(transporter, serverkey, error, error["code"]);
+					ITelexCom.increaseErrorCounter(serverkey, error, error["code"]);
 					if (cv(0)) lle(colors.FgRed + "server " + colors.FgCyan, options, colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan, ITelexCom.serverErrors[serverkey].errorCounter, colors.Reset);
 				}
 				// } else {
@@ -127,9 +136,8 @@ function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, 
 				if (cv(2)) lle(e);
 			} finally {
 				setTimeout(()=>{
-					if(connections.remove(cnum)){
-						ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+cnum+colors.Reset}`);
-						cnum = null;
+					if(connections.remove(client.cnum)){
+						if(cv(1))  ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.Reset}`);
 						client = null;
 					}
 				}, 1000);
@@ -137,23 +145,23 @@ function connect(pool:mysql.Pool|mysql.Connection, transporter, after, options, 
 			}
 		});
 		socket.on('end', function () {
-			ll(colors.FgYellow + "The connection to server " + colors.FgCyan + cnum + colors.FgYellow + " ended!" + colors.Reset);
+			if(cv(1)) if(client.newEntries != null) ll(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
+			if(cv(1)) ll(colors.FgYellow + "The connection to server " + colors.FgCyan + client.cnum + colors.FgYellow + " ended!" + colors.Reset);
 			setTimeout(()=>{
-				if(connections.remove(cnum)){
-					ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+cnum+colors.Reset}`);
-					cnum = null;
+				if(connections.remove(client.cnum)){
+					if(cv(1)) ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.Reset}`);
 					client = null;
 				}
 			}, 1000);
 			if (typeof onEnd === "function") onEnd();
 		});
 		socket.connect(options, function (connection) {
-			if (cv(1)) ll(colors.FgGreen + "connected to:" + colors.FgCyan, options, colors.FgGreen + "as server " + colors.FgCyan + cnum, colors.Reset);
+			if (cv(1)) ll(colors.FgGreen + "connected to:" + colors.FgCyan, options, colors.FgGreen + "as server " + colors.FgCyan + client.cnum, colors.Reset);
 			if (ITelexCom.serverErrors[serverkey] && (ITelexCom.serverErrors[serverkey].errorCounter > 0)) {
 				ITelexCom.serverErrors[serverkey].errorCounter = 0;
 				if (cv(2)) ll(colors.FgGreen + "reset error counter for: " + colors.FgCyan, options, colors.Reset);
 			}
-			if (typeof callback === "function") callback(socket, cnum);
+			if (typeof callback === "function") callback(client);
 		});
 	} catch (e) {
 		if (cv(2)) lle(e);

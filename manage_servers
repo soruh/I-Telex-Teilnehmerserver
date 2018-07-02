@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 "use strict";
-const options = require(__dirname + "/COMMONMODULES/config.js").get("mySqlConnectionOptions");
+const options = require(__dirname + "/compiled/COMMONMODULES/config.js").default.mySqlConnectionOptions;
 const async = require("async");
 const mysql = require("mysql");
 var args = JSON.parse(JSON.stringify(process.argv));
