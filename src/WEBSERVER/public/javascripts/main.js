@@ -1,12 +1,15 @@
+/* jshint -W097 */
+/* jshint -W083 */
+/* jshint -W040 */
 "use strict";
+
+
 /*1: peer able to support the “texting baudot” protocol, accessible by a host name (known by official DNS servers)
 2: peer able to support the “texting baudot” protocol, accessible by a given IP address (IPv4)
 3: peer only supporting “ascii texting” (or a standard telnet client), accessible by a host name (known by official DNS servers)
 4: peer only supporting “ascii texting” (or a standard telnet client), accessible by a given IP address (IPv4)
 5: same as 2, but IP address may change frequently
 6: not a real peer, but an “official” email address.*/
-
-import "jquery";
 
 
 var UTCDATE = false;
@@ -19,365 +22,23 @@ var sortby = "";
 var revsort = false;
 
 const languages = {
-  german: {
-    "#table_th_label_rufnummer": {
-      text: "telex-nummer"
-    },
-    "#table_th_label_name": {
-      text: "name"
-    },
-    "#table_th_label_typ": {
-      text: "typ"
-    },
-    "#table_th_label_hostname": {
-      text: "hostname"
-    },
-    "#table_th_label_ipaddresse": {
-      text: "ipaddresse"
-    },
-    "#table_th_label_port": {
-      text: "port"
-    },
-    "#table_th_label_extension": {
-      text: "durchwahl"
-    },
-    "#table_th_label_pin": {
-      text: "pin"
-    },
-    "#table_th_label_gesperrt": {
-      title: "gesperrt"
-    },
-    "#table_th_label_moddate": {
-      text: "letzte Änderung"
-    },
-    "#search-box": {
-      placeholder: "suchen"
-    },
-    "#new": {
-      text: "neuer eintrag"
-    },
-    ".edit": {
-      title: "bearbeiten"
-    },
-    ".remove": {
-      title: "entfernen"
-    },
-    "#login": {
-      text: "einloggen"
-    },
-    "#logout": {
-      text: "ausloggen"
-    },
-    ".abort_dialog": {
-      text: "abbrechen"
-    },
-    ".submit_dialog": {
-      text: "absenden"
-    },
-    "#wrongpwd": {
-      text: "Falsches Passwort!"
-    },
-    ".typ_option_0": {
-      text: "gelöscht (0)"
-    },
-    ".typ_option_1": {
-      text: "Hostname Baudot (1)"
-    },
-    ".typ_option_2": {
-      text: "Ip Baudot (2)"
-    },
-    ".typ_option_3": {
-      text: "Hostname Ascii (3)"
-    },
-    ".typ_option_4": {
-      text: "Ip Ascii (4)"
-    },
-    ".typ_option_5": {
-      text: "DynIp Baudot (5)"
-    },
-    ".typ_option_6": {
-      text: "“offizielle” E-mail (6)"
-    },
-    "#passwordfield_label": {
-      text: "passwort"
-    },
-    "#rufnummer_newentry_dialog_label": {
-      text: "telex-nummer"
-    },
-    "#name_newentry_dialog_label": {
-      text: "name"
-    },
-    "#typ_newentry_dialog_label": {
-      text: "typ"
-    },
-    "#hostname_newentry_dialog_label": {
-      text: "hostname"
-    },
-    "#ipaddresse_newentry_dialog_label": {
-      text: "ipaddresse"
-    },
-    "#port_newentry_dialog_label": {
-      text: "port"
-    },
-    "#durchwahl_newentry_dialog_label": {
-      text: "durchwahl"
-    },
-    "#pin_newentry_dialog_label": {
-      text: "pin"
-    },
-    "#gesperrt_newentry_dialog_label": {
-      text: "gesperrt"
-    },
-    "#rufnummer_edit_dialog_label": {
-      text: "telex-nummer"
-    },
-    "#name_edit_dialog_label": {
-      text: "name"
-    },
-    "#typ_edit_dialog_label": {
-      text: "typ"
-    },
-    "#hostname_edit_dialog_label": {
-      text: "hostname"
-    },
-    "#ipaddresse_edit_dialog_label": {
-      text: "ipaddresse"
-    },
-    "#port_edit_dialog_label": {
-      text: "port"
-    },
-    "#durchwahl_edit_dialog_label": {
-      text: "durchwahl"
-    },
-    "#pin_edit_dialog_label": {
-      text: "pin"
-    },
-    "#gesperrt_edit_dialog_label": {
-      text: "gesperrt"
-    },
-    "#email_edit_dialog_label": {
-      text: "E-mail"
-    },
-    "#email_newentry_dialog_label": {
-      text: "E-mail"
-    },
-    "#hl_password": {
-      text: "Einloggen"
-    },
-    "#hl_newentry": {
-      text: "Neuer Eintrag"
-    },
-    "#hl_edit": {
-      text: "Bearbeiten"
-    },
-    "#hl_delete": {
-      text: "Löschen"
-    },
-    "delete_message": "Wollen sie diesen Eintrag wirklich löschen?",
-    "verify": {
-      unique: "Bitte sie eine noch nicht vorhandene Nummer ein.",
-      required: "Dieses Feld ist ein Pflichtfeld.",
-      email: "Bitte geben sie eine gültige E-mail addresse ein.",
-      ipaddress: "Bitte geben sie eine gültige Ip-addresse ein.",
-      hostname: "Bitte geben sie einen gültigen Hostnamen ein.",
-      number: "Bitte geben sie eine gültige Zahl ein.",
-      digits: "Bitte geben sie nur Ziffern ein.",
-      maxlength: (<any>$).validator.format("Bitte geben sie nicht mehr als {0} Zeichen ein."),
-      minlength: (<any>$).validator.format("Bitte geben sie mindestens {0} Zeichen ein."),
-      rangelength: (<any>$).validator.format("Bitte geben sie einen Wert zwischen {0} und {1} Zeichen ein"),
-      range: (<any>$).validator.format("Bitte geben sie einen Wert zwischen {0} und {1} ein."),
-      max: (<any>$).validator.format("Bitte geben sie einen Wert kleiner als oder gleich {0} ein."),
-      min: (<any>$).validator.format("Bitte geben sie einen Wert größer als oder gleich {0} ein."),
-    }
-  },
-  english: {
-    "#table_th_label_rufnummer": {
-      text: "telex-number"
-    },
-    "#table_th_label_name": {
-      text: "name"
-    },
-    "#table_th_label_typ": {
-      text: "type"
-    },
-    "#table_th_label_hostname": {
-      text: "hostname"
-    },
-    "#table_th_label_ipaddresse": {
-      text: "ipaddress"
-    },
-    "#table_th_label_port": {
-      text: "port"
-    },
-    "#table_th_label_extension": {
-      text: "extension"
-    },
-    "#table_th_label_pin": {
-      text: "pin"
-    },
-    "#table_th_label_gesperrt": {
-      title: /*"locked"*/ "disabled"
-    },
-    "#table_th_label_moddate": {
-      text: "last changed"
-    },
-    "#search-box": {
-      placeholder: "search"
-    },
-    "#new": {
-      text: "new entry"
-    },
-    ".edit": {
-      title: "edit"
-    },
-    ".remove": {
-      title: "remove"
-    },
-    "#login": {
-      text: "log in"
-    },
-    "#logout": {
-      text: "log out"
-    },
-    ".abort_dialog": {
-      text: "abort"
-    },
-    ".submit_dialog": {
-      text: "submit"
-    },
-    "#wrongpwd": {
-      text: "Wrong password!"
-    },
-    ".typ_option_0": {
-      text: "deleted (0)"
-    },
-    ".typ_option_1": {
-      text: "hostname baudot (1)"
-    },
-    ".typ_option_2": {
-      text: "ip baudot (2)"
-    },
-    ".typ_option_3": {
-      text: "hostname ascii (3)"
-    },
-    ".typ_option_4": {
-      text: "ip ascii (4)"
-    },
-    ".typ_option_5": {
-      text: "DynIp baudot (5)"
-    },
-    ".typ_option_6": {
-      text: "“official” e-mail (6)"
-    },
-    "#passwordfield_label": {
-      text: "password"
-    },
-    "#rufnummer_newentry_dialog_label": {
-      text: "telex-number"
-    },
-    "#name_newentry_dialog_label": {
-      text: "name"
-    },
-    "#typ_newentry_dialog_label": {
-      text: "type"
-    },
-    "#hostname_newentry_dialog_label": {
-      text: "hostname"
-    },
-    "#ipaddresse_newentry_dialog_label": {
-      text: "ipaddress"
-    },
-    "#port_newentry_dialog_label": {
-      text: "port"
-    },
-    "#durchwahl_newentry_dialog_label": {
-      text: "extension"
-    },
-    "#pin_newentry_dialog_label": {
-      text: "pin"
-    },
-    "#gesperrt_newentry_dialog_label": {
-      text: /*"locked"*/ "disabled"
-    },
-    "#rufnummer_edit_dialog_label": {
-      text: "telex-number"
-    },
-    "#name_edit_dialog_label": {
-      text: "name"
-    },
-    "#typ_edit_dialog_label": {
-      text: "type"
-    },
-    "#hostname_edit_dialog_label": {
-      text: "hostname"
-    },
-    "#ipaddresse_edit_dialog_label": {
-      text: "ipaddress"
-    },
-    "#port_edit_dialog_label": {
-      text: "port"
-    },
-    "#durchwahl_edit_dialog_label": {
-      text: "extension"
-    },
-    "#pin_edit_dialog_label": {
-      text: "pin"
-    },
-    "#gesperrt_edit_dialog_label": {
-      text: /*"locked"*/ "disabled"
-    },
-    "#email_edit_dialog_label": {
-      text: "e-mail"
-    },
-    "#email_newentry_dialog_label": {
-      text: "e-mail"
-    },
-    "#hl_password": {
-      text: "log in"
-    },
-    "#hl_newentry": {
-      text: "new entry"
-    },
-    "#hl_edit": {
-      text: "edit"
-    },
-    "#hl_delete": {
-      text: "delete"
-    },
-    "delete_message": "do you really want to delete this entry?",
-    "verify": {
-      unique: "Please enter a unique telex-number.",
-      required: "This field is required.",
-      email: "Please enter a valid email address.",
-      ipaddress: "Please enter a valid ipaddress.",
-      hostname: "Please enter a valid hostname.",
-      number: "Please enter a valid number.",
-      digits: "Please enter only digits.",
-      maxlength: (<any>$).validator.format("Please enter no more than {0} characters."),
-      minlength: (<any>$).validator.format("Please enter at least {0} characters."),
-      rangelength: (<any>$).validator.format("Please enter a value between {0} and {1} characters long."),
-      range: (<any>$).validator.format("Please enter a value between {0} and {1}."),
-      max: (<any>$).validator.format("Please enter a value less than or equal to {0}."),
-      min: (<any>$).validator.format("Please enter a value greater than or equal to {0}.")
-    }
-  }
+  german,
+  english
 };
 var language;
 
-type List = any; //TODO
-
 $(document).ready(function () {
   setLanguage(getCookie("language") ? getCookie("language") : DEFAULTLANGUAGE);
-  /*(<any>$).validator.setDefaults({
+  /*$.validator.setDefaults({
 		errorLabelContainer: "#errorpop_errmsg",
 		wrapper: "p",
 		invalidHandler: function(form, validator) {
 	        showError();
 		}
 	});*/
-  (<any>$).validator.methods.ipaddress = matchIp;
-  (<any>$).validator.methods.hostname = matchHn;
-  (<any>$).validator.methods.unique = checkUnique;
+  $.validator.methods.ipaddress = matchIp;
+  $.validator.methods.hostname = matchHn;
+  $.validator.methods.unique = checkUnique;
   $(function () {
     var keyStop = {
       //  8: ":not(input:text, textarea, input:file, input:password)", // stop backspace = back
@@ -412,7 +73,7 @@ $(document).ready(function () {
   $.ajaxSetup({ /*async: false*/ });
   $(document).ajaxStart(function () {
     $("#waitpop").show();
-    $("#waitpop")["center"]();
+    $("#waitpop").center();
   });
   $(document).ajaxStop(function () {
     $("#waitpop").hide();
@@ -453,14 +114,14 @@ $(document).ready(function () {
     jQuery(this).trigger("search");
   }).on("focus", function () {
     getList();
-  })
+  });
   $("#search-button").on("click", function () {
     $("#search-box").fadeToggle();
   });
   $("#login").click(function () {
     showpopup("password_dialog", function () {
       $("#passwordfield").focus();
-    })
+    });
   });
   $("#new").click(function () {
     $("#typ_newentry_dialog").trigger('change');
@@ -500,7 +161,7 @@ $(document).ready(function () {
   });
   $("#submit_password_dialog").click(function () {
     var formId = "#password_form";
-    (<any>$(formId)).validate({
+    $(formId).validate({
       highlight: function (element, errorClass, validClass) {
         $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
         jQuery(element).addClass("bg-danger field_error");
@@ -517,7 +178,7 @@ $(document).ready(function () {
         }
       }
     });
-    if ((<any>$(formId)).valid()) {
+    if ($(formId).valid()) {
       login($("#passwordfield").val().toString(), function (successful) {
         if (successful) {
           resetforms();
@@ -532,16 +193,16 @@ $(document).ready(function () {
   });
   $("#submit_newentry_dialog").click(function () {
     var formId = "#newentry_form";
-    (<any>$(formId)).validate({
+    $(formId).validate({
       highlight: function (element, errorClass, validClass) {
         $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
         jQuery(element).addClass("bg-danger field_error");
-        // $("#newentry_dialog")["center"]();
+        // $("#newentry_dialog").center();
       },
       unhighlight: function (element, errorClass, validClass) {
         $(element).parents(".error").removeClass(errorClass).addClass(validClass);
         jQuery(element).removeClass("bg-danger field_error");
-        // $("#newentry_dialog")["center"]();
+        // $("#newentry_dialog").center();
       },
       errorClass: "validate_error",
       validClass: "validate_valid",
@@ -606,9 +267,9 @@ $(document).ready(function () {
       }
     });
     $("#typ_newentry_dialog").on('change', function () {
-      (<any>$(formId)).valid();
+      $(formId).valid();
     });
-    if ((<any>$(formId)).valid()) {
+    if ($(formId).valid()) {
       var editParams = {
         typekey: "new",
         rufnummer: $("#rufnummer_newentry_dialog").val(),
@@ -646,7 +307,7 @@ $(document).ready(function () {
   });
   $("#submit_edit_dialog").click(function () {
     var formId = "#edit_form";
-    (<any>$(formId)).validate({
+    $(formId).validate({
       highlight: function (element, errorClass, validClass) {
         $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
         $(element).trigger("checkval");
@@ -723,9 +384,9 @@ $(document).ready(function () {
       }
     });
     $("#typ_edit_dialog").on('change', function () {
-      (<any>$(formId)).valid();
+      $(formId).valid();
     });
-    if ((<any>$(formId)).valid()) {
+    if ($(formId).valid()) {
       console.log("uid: " + $("#edit_dialog").data("uid"));
       var editParams = {
         typekey: "edit",
@@ -784,10 +445,10 @@ $(document).ready(function () {
   });
 });
 
-function checkUnique(value:string, element:string|HTMLElement) {
-  var uid:string = $($(<any>element).parents()[2]).data("uid");
+function checkUnique(value, element) {
+  var uid = $($(element).parents()[2]).data("uid");
 
-  var isUnique:boolean = true;
+  var isUnique = true;
   for (let k in global_list) {
     if ((global_list[k].rufnummer == value) && ((!uid) || (global_list[k].uid != uid)) && (global_list[k].typ != 0)) {
       isUnique = false;
@@ -796,8 +457,8 @@ function checkUnique(value:string, element:string|HTMLElement) {
   return isUnique;
 }
 
-function optionType(select:string|HTMLElement) {
-  var val:number = +$(<any>select).val();
+function optionType(select) {
+  var val = +$(select).val();
   if (val == 1 || val == 3) {
     return "hostname";
   } else if (val == 2 || val == 4 || val == 5) {
@@ -813,10 +474,10 @@ function clearErrors() {
   $(".gl_fielderror").remove();
 }
 
-function showError(errorMessage:string) {
+function showError(errorMessage) {
   if (errorMessage) $('#errorpop_errmsg').html(errorMessage);
   $('#errorpop').show(1, function () {
-    $('#errorpop')["center"]();
+    $('#errorpop').center();
     $('#errorpop').hide();
     $('#errorpop').fadeIn("slow");
   });
@@ -826,7 +487,7 @@ function closeError() {
   $('#errorpop').fadeOut("slow");
 }
 
-function showpopup(id:string, callback?:()=>void) {
+function showpopup(id, callback){
   $("#newentry_dialog").hide();
   $("#edit_dialog").hide();
   $("#delete_dialog").hide();
@@ -836,7 +497,7 @@ function showpopup(id:string, callback?:()=>void) {
     $("#delete_dialog").data("uid", "");
   } else {
     $("#" + id).show(1, function () {
-      $("#" + id)["center"]();
+      $("#" + id).center();
       $("#" + id).hide();
       $("#" + id).fadeIn(350);
       setTimeout(function (id) {
@@ -854,7 +515,7 @@ function resetforms() {
   showpopup("");
 }
 
-function login(pwd?:string, callback?:(loggedIn:boolean)=>void) {
+function login(pwd, callback) {
   if (pwd) {
     setCookie("pwd", btoa(pwd));
   }
@@ -872,12 +533,12 @@ function logout() {
   resetforms();
 }
 
-function twodigit(n:number|string) {
+function twodigit(n) {
   n = n.toString();
   return n.length < 2?"0"+n:n;
 }
 
-function UtcToString(Utc:string) {
+function UtcToString(Utc) {
   var d = new Date(parseInt(Utc) * 1000);
   if (SHOWALLDATEINFO) {
     return (d.toString());
@@ -893,7 +554,7 @@ function UtcToString(Utc:string) {
   }
 }
 
-function getList(callback?:(list?:List)=>void) {
+function getList(callback) {
   $.ajax({
     url: "/list",
     type: "POST",
@@ -901,11 +562,7 @@ function getList(callback?:(list?:List)=>void) {
     data: {
       "password": getPassword(),
     },
-    success: function (response:{
-      successful:boolean,
-      result:List,
-      message:string
-    }) {
+    success: function (response) {
       console.log(response);
       if (response.successful) {
         global_list = {};
@@ -923,7 +580,7 @@ function getList(callback?:(list?:List)=>void) {
   });
 }
 
-function updateTable(usli:List, cb?:()=>void) {
+function updateTable(usli, cb) {
   var table = document.getElementById("table");
   while (table.firstChild) {
     table.removeChild(table.firstChild);
@@ -938,17 +595,17 @@ function updateTable(usli:List, cb?:()=>void) {
       label.className = "table-th-label locale_" + b;
       label.id = "table_th_label_" + b;
       if (b == "gesperrt") {
-        var div = document.createElement("div");
-        $(div).addClass("glyphicon glyphicon-ban-circle gesperrt");
-        label.appendChild(div);
+        let icon_ban_circle = document.createElement("div");
+        $(icon_ban_circle).addClass("glyphicon glyphicon-ban-circle gesperrt");
+        label.appendChild(icon_ban_circle);
       }
       th.appendChild(label);
-      var div = document.createElement("div");
-      div.className = "table_th_arrow glyphicon glyphicon-chevron-down";
-      div.id = "table_th_arrow_" + b;
-      $(div).click(function () {
+      var icon_chevron_down = document.createElement("div");
+      icon_chevron_down.className = "table_th_arrow glyphicon glyphicon-chevron-down";
+      icon_chevron_down.id = "table_th_arrow_" + b;
+      $(icon_chevron_down).click(function () {
         if (sortby != $(this).attr('id').split('_')[3]) {
-          $(".table_th_arrow").removeClass("selected").removeClass("rotated");
+          $(".table_th_arrow").removeClass("selected rotated");
           $(this).addClass("selected");
           sortby = $(this).attr('id').split('_')[3];
           revsort = false;
@@ -964,7 +621,7 @@ function updateTable(usli:List, cb?:()=>void) {
         // console.log("sortby:",sortby, "revsort:",revsort, "selected:",$(this).hasClass("selected")," rotated:",$(this).hasClass("rotated"));
         updateContent(global_list);
       });
-      th.appendChild(div);
+      th.appendChild(icon_chevron_down);
       tr.appendChild(th);
     }
   }
@@ -974,7 +631,7 @@ function updateTable(usli:List, cb?:()=>void) {
 
 }
 
-function updateContent(usli:List) {
+function updateContent(usli) {
   var list = search(sort(usli), $("#search-box").val().toString());
   var table = document.getElementById("table");
   while (table.children.length > 1) {
@@ -985,7 +642,7 @@ function updateContent(usli:List) {
     $(tr).addClass("tr");
     for (let b in list[a]) {
       if (b != "uid") {
-        var td = document.createElement("div");
+        let td = document.createElement("div");
         $(td).addClass("td cell cell_" + b);
         switch (b) {
           case "moddate":
@@ -1021,9 +678,9 @@ function updateContent(usli:List) {
     var modify_container = document.createElement("div");
     modify_container.className = "td admin_only";
 
-    var td = document.createElement("div");
+    let td = document.createElement("div");
     $(td).addClass("td");
-    var span = document.createElement("span");
+    let span = document.createElement("span");
     $(span).addClass("btn  btn-primary btn-sm glyphicon glyphicon-pencil edit");
     $(span).data("uid", list[a].uid);
     td.appendChild(span);
@@ -1031,9 +688,9 @@ function updateContent(usli:List) {
     td.className = "edit_td";
     modify_container.appendChild(td);
 
-    var td = document.createElement("div");
+    td = document.createElement("div");
     $(td).addClass("td");
-    var span = document.createElement("span");
+    span = document.createElement("span");
     $(span).addClass("btn btn-danger btn-sm glyphicon glyphicon-trash remove");
     $(span).data("uid", list[a].uid);
     td.appendChild(span);
@@ -1125,7 +782,7 @@ function edit(vals, cb) {
   });
 }
 
-function search(list:List, str:string) {
+function search(list, str) {
   var returnlist = [];
   for (let row of list) {
     var matches = true;
@@ -1196,7 +853,7 @@ function initloc() {
   for (let i in languages) {
     var child = document.createElement("div");
     child.id = "loc-dropdown-child-" + i;
-    $(child).css("background-image","url(/images/" + i + ".svg);");
+    child.style = "background-image: url(/images/" + i + ".svg);";
     child.onclick = function () {
       setLanguage(this.id.split("-")[this.id.split("-").length - 1]);
       $("#loc-dropdown-children").fadeOut(300);
@@ -1205,7 +862,7 @@ function initloc() {
   }
 }
 
-function setLanguage(l:string) {
+function setLanguage(l) {
   if (languages[l]) {
     language = l;
     setCookie("language", l, 365 * 10);
@@ -1229,28 +886,29 @@ function updateLoc() {
       }
     }
   }
-  jQuery.extend((<any>$).validator.messages, languages[language].verify);
+  jQuery.extend($.validator.messages, languages[language].verify);
 }
 
 function getPassword() {
+  let password;
   try {
-    var password = atob(getCookie("pwd"));
+    password = atob(getCookie("pwd"));
   } catch (e) {
     console.error(e);
     setCookie("pwd", "");
-    var password = "";
+    password = "";
   }
-  return (password);
+  return password;
 }
 
-function setCookie(c_name:string, value:string, exdays?:number) {
+function setCookie(c_name, value, exdays) {
   var exdate = new Date();
   exdate.setDate(exdate.getDate() + exdays);
   var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
   document.cookie = c_name + "=" + c_value;
 }
 
-function getCookie(c_name:string) {
+function getCookie(c_name) {
   var i, x, y, ARRcookies = document.cookie.split(";");
   for (let i = 0; i < ARRcookies.length; i++) {
     x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
@@ -1263,10 +921,10 @@ function getCookie(c_name:string) {
   return ("");
 }
 
-function matchHn(str:string) {
+function matchHn(str) {
   return (/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/.test(str));
 }
 
-function matchIp(str:string) {
+function matchIp(str) {
   return (/(^\s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\s*$)|(^\s*( (([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$)/.test(str));
 }

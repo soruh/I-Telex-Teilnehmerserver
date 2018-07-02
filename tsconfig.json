@@ -4,8 +4,8 @@
         "module": "commonjs",
         "declaration": false,
         "target": "ES6",
-        "outDir": "compiled/",
-        "allowJs": true,
+        //"OutDir": "compiled/",
+        //"allowJs": true,
         "resolveJsonModule": true
     },
     "include": [
