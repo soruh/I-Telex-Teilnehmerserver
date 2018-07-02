@@ -2,7 +2,7 @@ exports = {
   apps : [
     {
       name: "binaryserver",
-      script: "./compiled/BINARYSERVER/binaryserver.js",
+      script: "./BINARYSERVER/binaryserver.js",
 /*
       interpreter: "0x",
       interpreter_args:" -D flamegraph_binaryserver",
@@ -11,7 +11,7 @@ exports = {
     },
     {
       name: "webserver",
-      script: "./compiled/WEBSERVER/bin/webserver.js",
+      script: "./WEBSERVER/bin/webserver.js",
 /*
       interpreter: "0x",
       interpreter_args:" -D flamegraph_webserver",
