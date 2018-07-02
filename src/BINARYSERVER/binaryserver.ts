@@ -460,25 +460,31 @@ pool.getConnection(function (err, connection) {
 
 if (cv(3)) {
 	let exitHandler = function exitHandler(options, err) {
-		console.error(err);
 		if (options.cleanup){
-			ll(`serverErrors:\n${util.inspect(ITelexCom.serverErrors,{depth:null})}`);
+			console.error("exited with code: "+err);
+			console.error(`serverErrors:\n${util.inspect(ITelexCom.serverErrors,{depth:null})}`);
+		}else{
+			console.error(err);
 		}
-		if (options.exit) process.exit();
+		if(options.exit) process.exit(options.code);
 	};
 	process.on('exit', exitHandler.bind(null, {
 		cleanup: true
 	}));
 	process.on('SIGINT', exitHandler.bind(null, {
-		exit: true
-	}));
-	process.on('SIGUSR1', exitHandler.bind(null, {
-		exit: true
-	}));
-	process.on('SIGUSR2', exitHandler.bind(null, {
-		exit: true
+		exit: true,
+		code: -1
 	}));
 	process.on('uncaughtException', exitHandler.bind(null, {
-		exit: true
+		exit: true,
+		code: -2
+	}));
+	process.on('SIGUSR1', exitHandler.bind(null, {
+		exit: true,
+		code: -3
+	}));
+	process.on('SIGUSR2', exitHandler.bind(null, {
+		exit: true,
+		code: -4
 	}));
 }
