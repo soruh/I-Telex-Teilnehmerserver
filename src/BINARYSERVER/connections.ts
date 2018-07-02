@@ -120,7 +120,7 @@ function remove(loc: string): boolean {
     let locArr: string[] = loc.split("|");
     let type: string = locArr[0];
     let number: string = locArr[1];
-    if (get(loc)) { //data[type]&&connections[type][number]!=null){
+    if (has(loc)) { //data[type]&&connections[type][number]!=null){
       connections.cnum = null;
       delete connections[type][number];
       if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}removed: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);

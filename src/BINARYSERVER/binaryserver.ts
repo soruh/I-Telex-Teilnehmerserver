@@ -36,7 +36,6 @@ const mySqlConnectionOptions = config['mySqlConnectionOptions'];
 
 
 
-
 var server = net.createServer(function (connection) {
 	try {
 		var client = 
@@ -55,116 +54,55 @@ var server = net.createServer(function (connection) {
 		if (connection.remoteAddress == undefined) setTimeout(function () {
 			ll(connection.remoteAddress);
 		}, 1000);
-		var queryresultpos = -1;
-		var queryresult = [];
-		var connectionpin;
 		connection.setTimeout(config.connectionTimeout);
-		connection.on('timeout', function () {
+		connection.on('timeout', function ():void{
 			if (cv(1)) ll(colors.FgYellow + "client " + colors.FgCyan + client.cnum + colors.FgYellow + " timed out" + colors.Reset);
 			connection.end();
 		});
-		connection.on('end', function () {
-			if(cv(1)) if(client.newEntries != null) ll(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
-			if (cv(1)) ll(colors.FgYellow + "client " + colors.FgCyan + client.cnum + colors.FgYellow + " disconnected" + colors.Reset);
-			try {
-				clearTimeout(client.timeout);
-			} catch (e) {
-				if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-			}
-			if (connections.has(client.cnum) && client.connection == connection) {
-				setTimeout(function () {
+		connection.on('end', function ():void {
+			if(client){
+				if(cv(1)) if(client.newEntries != null) ll(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
+				if (cv(1)) ll(colors.FgYellow + "client " + colors.FgCyan + client.cnum + colors.FgYellow + " disconnected" + colors.Reset);
+				try {
+					clearTimeout(client.timeout);
+				} catch (e) {
+					if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+				}
+				if (client&&connections.has(client.cnum) && connections.get(client.cnum) == client) {
 					if(connections.remove(client.cnum)){
 						ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.FgGreen}${colors.Reset}`);
 						client = null;
 					}
-				}, 1000);
+				}
 			}
 		});
-		connection.on('error', function (err) {
-			if (cv(1)) ll(colors.FgRed + "client " + colors.FgCyan + client.cnum + colors.FgRed + " had an error:\n", err, colors.Reset);
-			try {
-				clearTimeout(client.timeout);
-			} catch (e) {
-				if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-			}
-			if (connections.has(client.cnum) && connections.get(client.cnum).connection == connection) {
-				setTimeout(function () {
+		connection.on('error', function (err:Error):void {
+			if(client){
+				if (cv(1)) ll(colors.FgRed + "client " + colors.FgCyan + client.cnum + colors.FgRed + " had an error:\n", err, colors.Reset);
+				try {
+					clearTimeout(client.timeout);
+				} catch (e) {
+					if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+				}
+				if (client&&connections.has(client.cnum) && connections.get(client.cnum) == client) {
 					if(connections.remove(client.cnum)){
 						ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.Reset}`);
 						client = null;
 					}
-				}, 1000,);
+				}
 			}
 		});
-		connection.on('data', function (data) {
+		connection.on('data', function (data:Buffer):void {
 			if (cv(2)) {
 				ll(colors.FgGreen + "recieved data:" + colors.Reset);
 				ll(colors.FgCyan, data, colors.Reset);
 				ll(colors.FgCyan, data.toString().replace(/\u0000/g, "").replace(/[^ -~]/g, " "), colors.Reset);
 			}
-			if (data[0] == 113 && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
+			if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
 				if (cv(2)) ll(colors.FgGreen + "serving ascii request" + colors.Reset);
-				ITelexCom.ascii(data, connection, pool); //TODO: check for fragmentation //probably not needed
-			} else if (data[0] == 99) {
-				if (config.doDnsLookups) {
-					var arg = data.slice(1).toString().replace(/\n/g, "").replace(/\r/g, "");
-					if (cv(1)) ll(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to participant${colors.Reset}`);
-
-					let check = function check(IpAddr) {
-						if (ip.isV4Format(IpAddr) || ip.isV6Format(IpAddr)) {
-							ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", [], function (res:ITelexCom.peerList) {
-								var ips = [];
-								async.eachOf(res, function (r, key, cb) {
-									if ((!r.ipaddresse) && r.hostname) {
-										// ll(`hostname: ${r.hostname}`)
-										lookup(r.hostname, {}, function (err, address, family) {
-											if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
-											if (address) {
-												ips.push(address);
-												// ll(`${r.hostname} resolved to ${address}`);
-											}
-											cb();
-										});
-									} else if (r.ipaddresse && (ip.isV4Format(r.ipaddresse) || ip.isV6Format(r.ipaddresse))) {
-										// ll(`ip: ${r.ipaddresse}`);
-										ips.push(r.ipaddresse);
-										cb();
-									} else {
-										cb();
-									}
-								}, function () {
-									// ips = ips.filter(function(elem, pos){
-									//   return ips.indexOf(elem) == pos;
-									// });
-									// ll(JSON.stringify(ips))
-									let exists = ips.filter(i => ip.isEqual(i, IpAddr)).length > 0;
-									// ll(exists);
-									// var exists = 0;
-									// for(var i in ips){
-									//   if(ip.isEqual(ips[i],IpAddr)){
-									//     exists = 1;
-									//   }
-									// }
-									connection.write(exists + "\r\n");
-								});
-							});
-						} else {
-							// connection.write("-1\r\n");
-							connection.write("ERROR\r\nnot a valid host or ip\r\n");
-						}
-					};
-
-					if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
-						check(arg);
-					} else {
-						lookup(arg, {}, function (err, address, family) {
-							if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
-							check(address);
-						});
-					}
-				} else {
-					connection.write("ERROR\r\nthis server does not support this function\r\n");
-				}
+				ITelexCom.ascii(data, client, pool); //TODO: check for fragmentation //probably not needed
+			} else if (data[0] == 'c'.charCodeAt(0)) {
+				ITelexCom.checkIp(data, client, pool);
 			} else {
 				if (cv(2)) ll(colors.FgGreen + "serving binary request" + colors.Reset);
 
@@ -384,7 +322,7 @@ function sendQueue(callback) {
 						servers[q.server].push(q);
 					}
 					async.eachSeries(servers, function (server, cb) {
-						ITelexCom.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=??;",[server[0].server], function (result2:ITelexCom.serverList) {
+						ITelexCom.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=?;",[server[0].server], function (result2:ITelexCom.serverList) {
 							if (result2.length == 1) {
 								var serverinf = result2[0];
 								if (cv(2)) ll(colors.FgCyan, serverinf, colors.Reset);
@@ -522,7 +460,10 @@ pool.getConnection(function (err, connection) {
 
 if (cv(3)) {
 	let exitHandler = function exitHandler(options, err) {
-		if (options.cleanup) ll(`serverErrors:\n${util.inspect(ITelexCom.serverErrors,{depth:null})}`);
+		console.error(err);
+		if (options.cleanup){
+			ll(`serverErrors:\n${util.inspect(ITelexCom.serverErrors,{depth:null})}`);
+		}
 		if (options.exit) process.exit();
 	};
 	process.on('exit', exitHandler.bind(null, {

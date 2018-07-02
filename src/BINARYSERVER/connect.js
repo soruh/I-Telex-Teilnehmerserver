@@ -140,13 +140,11 @@ function connect(pool, after, options, callback) {
                     logWithLineNumbers_js_1.lle(e);
             }
             finally {
-                setTimeout(() => {
-                    if (connections.remove(client.cnum)) {
-                        if (cv(1))
-                            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.Reset}`);
-                        client = null;
-                    }
-                }, 1000);
+                if (connections.remove(client.cnum)) {
+                    if (cv(1))
+                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.Reset}`);
+                    client = null;
+                }
                 if (typeof onEnd === "function")
                     onEnd();
             }
@@ -157,13 +155,11 @@ function connect(pool, after, options, callback) {
                     logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${client.newEntries}${colors_js_1.default.FgGreen} new entries${colors_js_1.default.Reset}`);
             if (cv(1))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "The connection to server " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgYellow + " ended!" + colors_js_1.default.Reset);
-            setTimeout(() => {
-                if (connections.remove(client.cnum)) {
-                    if (cv(1))
-                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.Reset}`);
-                    client = null;
-                }
-            }, 1000);
+            if (connections.remove(client.cnum)) {
+                if (cv(1))
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.Reset}`);
+                client = null;
+            }
             if (typeof onEnd === "function")
                 onEnd();
         });

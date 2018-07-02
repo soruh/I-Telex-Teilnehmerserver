@@ -99,7 +99,7 @@ function remove(loc) {
         let locArr = loc.split("|");
         let type = locArr[0];
         let number = locArr[1];
-        if (get(loc)) { //data[type]&&connections[type][number]!=null){
+        if (has(loc)) { //data[type]&&connections[type][number]!=null){
             connections.cnum = null;
             delete connections[type][number];
             if (config_js_1.default.logConnectionChanges)

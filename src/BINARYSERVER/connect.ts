@@ -135,24 +135,21 @@ function connect(
 			} catch (e) {
 				if (cv(2)) lle(e);
 			} finally {
-				setTimeout(()=>{
-					if(connections.remove(client.cnum)){
-						if(cv(1))  ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.Reset}`);
-						client = null;
-					}
-				}, 1000);
+				if(connections.remove(client.cnum)){
+					if(cv(1))  ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.Reset}`);
+					client = null;
+				}
 				if (typeof onEnd === "function") onEnd();
 			}
 		});
 		socket.on('end', function () {
 			if(cv(1)) if(client.newEntries != null) ll(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
 			if(cv(1)) ll(colors.FgYellow + "The connection to server " + colors.FgCyan + client.cnum + colors.FgYellow + " ended!" + colors.Reset);
-			setTimeout(()=>{
-				if(connections.remove(client.cnum)){
-					if(cv(1)) ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.Reset}`);
-					client = null;
-				}
-			}, 1000);
+			
+			if(connections.remove(client.cnum)){
+				if(cv(1)) ll(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.cnum+colors.Reset}`);
+				client = null;
+			}
 			if (typeof onEnd === "function") onEnd();
 		});
 		socket.connect(options, function (connection) {

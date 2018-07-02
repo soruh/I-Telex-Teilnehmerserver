@@ -1,5 +1,13 @@
 //TODO: impelement logITelexCom
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
@@ -8,7 +16,9 @@ function getTimezone(date) {
 }
 //#region imports
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
+const util = require("util");
 const mysql = require("mysql");
+const async = require("async");
 const ip = require("ip");
 const config_js_1 = require("../COMMONMODULES/config.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
@@ -16,9 +26,10 @@ const constants = require("../BINARYSERVER/constants.js");
 const nodemailer = require("nodemailer");
 const handles_js_1 = require("../BINARYSERVER/handles.js");
 const transporter_js_1 = require("../BINARYSERVER/transporter.js");
+const dns_1 = require("dns");
 //#endregion
 const verbosity = config_js_1.default.loggingVerbosity;
-var cv = level => level <= verbosity; //check verbosity
+const cv = level => level <= verbosity; //check verbosity
 exports.cv = cv;
 const mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
 mySqlConnectionOptions["multipleStatements"] = true;
@@ -95,7 +106,10 @@ function checkFullPackage(buffer, part) {
     var packagetype = data[0];
     var packagelength = data[1] + 2;
     if (data.length == packagelength) {
-        return [data, []];
+        return [
+            data,
+            []
+        ];
     }
     else if (data.length > packagelength) {
         let res = checkFullPackage(data.slice(packagelength + 1, data.length));
@@ -106,7 +120,8 @@ function checkFullPackage(buffer, part) {
     }
     else if (data.length < packagelength) {
         return [
-            [], data
+            [],
+            data
         ];
     }
     else {
@@ -115,239 +130,8 @@ function checkFullPackage(buffer, part) {
             []
         ]);
     }
-} //return(data, part)
+}
 exports.checkFullPackage = checkFullPackage;
-/*
-function encPackage(obj) {
-    if (cv(2)) if (config.logITelexCom) ll(colors.FgGreen + "encoding:" + colors.FgCyan, obj, colors.Reset);
-    var data = obj.data;
-    var array;
-    switch (obj.packagetype) {
-        case 1:
-            array = ValueToBytearray(data.rufnummer, 4)
-                .concat(ValueToBytearray(data.pin, 2))
-                .concat(ValueToBytearray(data.port, 2));
-            if (obj.datalength == null) obj.datalength = 8;
-            break;
-        case 2:
-            data.ipaddresse = ip.isV4Format(data.ipaddresse) ? data.ipaddresse : (ip.isV6Format(data.ipaddresse) ? (ip.isV4Format(data.ipaddresse.split("::")[1]) ? data.ipaddresse.split("::")[1] : "") : "");
-            var iparr = data.ipaddresse == null ? [] : data.ipaddresse.split(".");
-            var numip = 0;
-            for (let i in iparr) {
-                numip += iparr[i] * Math.pow(2, (i * 8));
-            }
-            array = ValueToBytearray(numip, 4);
-            if (obj.datalength == null) obj.datalength = 4;
-            break;
-        case 3:
-            array = ValueToBytearray(data.rufnummer, 4)
-                .concat(ValueToBytearray(data.version, 1));
-            if (obj.datalength == null) obj.datalength = 5;
-            break;
-        case 4:
-            array = [];
-            if (obj.datalength == null) obj.datalength = 0;
-            break;
-        case 5:
-            let flags = data.gesperrt * 2;
-            var iparr = data.ipaddresse == null ? [] : data.ipaddresse.split(".");
-            var numip = 0;
-            for (let i in iparr) {
-                numip += iparr[i] * Math.pow(2, (i * 8));
-            }
-
-            let ext;
-            if (data.extension == "" || data.extension == null) {
-                ext = 0;
-            } else if (data.extension == "0") {
-                ext = 110;
-            } else if (data.extension == "00") {
-                ext = 100;
-            } else if (data.extension.toString().length == 1) {
-                ext = parseInt(data.extension) + 100;
-            } else {
-                ext = parseInt(data.extension);
-            }
-
-            array = ValueToBytearray(data.rufnummer, 4)
-                .concat(ValueToBytearray(data.name, 40))
-                .concat(ValueToBytearray(flags, 2))
-                .concat(ValueToBytearray(data.typ, 1))
-                .concat(ValueToBytearray(data.hostname, 40))
-                .concat(ValueToBytearray(numip, 4))
-                .concat(ValueToBytearray(parseInt(data.port), 2))
-                .concat(ValueToBytearray(ext, 1))
-                .concat(ValueToBytearray(parseInt(data.pin), 2))
-                .concat(ValueToBytearray(parseInt(data.moddate) + 2208988800, 4));
-            if (obj.datalength == null) obj.datalength = 100;
-            break;
-        case 6:
-            array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(config.serverPin, 4));
-            if (obj.datalength == null) obj.datalength = 5;
-            break;
-        case 7:
-            array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(config.serverPin, 4));
-            if (obj.datalength == null) obj.datalength = 5;
-            break;
-        case 8:
-            array = [];
-            if (obj.datalength == null) obj.datalength = 0;
-            break;
-        case 9:
-            array = [];
-            if (obj.datalength == null) obj.datalength = 0;
-            break;
-        case 10:
-            // array = ValueToBytearray(data.version,1)
-            // .concat(ValueToBytearray(data.pattern,40));
-            array = ValueToBytearray(data.pattern, 40)
-                .concat(ValueToBytearray(data.version, 1));
-            if (obj.datalength == null) obj.datalength = 41;
-            break;
-        default:
-            array = [];
-    }
-    var header = [obj.packagetype, array.length];
-    if (array.length != obj.datalength) {
-        if (cv(0)) lle("Buffer had unexpected size:\n" + array.length + " != " + obj.datalength);
-        return (Buffer.from([]));
-    }
-    if (cv(2)) if (config.logITelexCom) ll(colors.FgGreen + "encoded:" + colors.FgCyan, Buffer.from(header.concat(array)), colors.Reset);
-    return Buffer.from(header.concat(array));
-}
-
-function decPackage(packagetype, buffer) {
-    let data;
-    switch (packagetype) {
-        case 1:
-            data = {
-                rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
-                pin: BytearrayToValue(buffer.slice(4, 6), "number"),
-                port: BytearrayToValue(buffer.slice(6, 8), "number")
-            };
-            break;
-        case 2:
-            data = {
-                ipaddresse: BytearrayToValue(buffer.slice(0, 4), "ip")
-            };
-            break;
-        case 3:
-            data = {
-                rufnummer: BytearrayToValue(buffer.slice(0, 4), "number")
-            };
-            if (buffer.slice(4, 5).length > 0) {
-                data.version = BytearrayToValue(buffer.slice(4, 5), "number");
-            } else {
-                data.version = 1;
-            }
-            break;
-        case 4:
-            data = {};
-            break;
-        case 5:
-
-            var flags = buffer.slice(44, 46);
-
-            data = {
-                rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
-                name: BytearrayToValue(buffer.slice(4, 44), "string"),
-                gesperrt: flags[0] / 2,
-                typ: BytearrayToValue(buffer.slice(46, 47), "number"),
-                addresse: BytearrayToValue(buffer.slice(47, 87), "string"),
-                ipaddresse: BytearrayToValue(buffer.slice(87, 91), "ip"),
-                port: BytearrayToValue(buffer.slice(91, 93), "number"),
-                durchwahl: BytearrayToValue(buffer.slice(93, 94), "number"),
-                pin: BytearrayToValue(buffer.slice(94, 96), "number"),
-                timestamp: BytearrayToValue(buffer.slice(96, 100), "number") - 2208988800
-            };
-            if (data.durchwahl == 0) {
-                data.durchwahl = null;
-            } else if (data.durchwahl == 110) {
-                data.durchwahl = "0";
-            } else if (data.durchwahl == 100) {
-                data.durchwahl = "00";
-            } else if (data.durchwahl > 110) {
-                data.durchwahl = null;
-            } else if (data.durchwahl > 100) {
-                data.durchwahl = (data.durchwahl - 100).toString();
-            } else if (data.durchwahl < 10) {
-                data.durchwahl = "0" + data.durchwahl;
-            } else {
-                data.durchwahl = data.durchwahl.toString();
-            }
-
-            break;
-        case 6:
-            data = {
-                version: BytearrayToValue(buffer.slice(0, 1), "number"),
-                serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
-            };
-            break;
-        case 7:
-            data = {
-                version: BytearrayToValue(buffer.slice(0, 1), "number"),
-                serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
-            };
-            break;
-        case 8:
-            data = {};
-            break;
-        case 9:
-            data = {};
-            break;
-        case 10:
-            data = {
-                version: BytearrayToValue(buffer.slice(0, 1), "number"),
-                pattern: BytearrayToValue(buffer.slice(1, 41), "string")
-                //pattern:BytearrayToValue(buffer.slice(0,40),"string"),
-                //version:BytearrayToValue(buffer.slice(40,41),"number")
-            };
-            break;
-        default:
-            if (cv(1)) lle("invalid/unsupported packagetype: " + packagetype);
-            data = false;
-            break;
-    }
-    return (data);
-}
-
-function decData(buffer) {
-    if (cv(2)) if (config.logITelexCom) ll(colors.FgGreen + "decoding:", colors.FgCyan, Buffer.from(buffer), colors.Reset);
-    var out = [];
-    for (var typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
-        var packagetype = parseInt(buffer[typepos], 10);
-        var datalength = parseInt(buffer[typepos + 1], 10);
-
-        var blockdata = [];
-        for (let i = 0; i < datalength; i++) {
-            blockdata[i] = buffer[typepos + 2 + i];
-        }
-        var data = decPackage(packagetype, blockdata);
-        if (data) {
-            if (PackageSizes[packagetype] != datalength) {
-                if (cv(1)) if (config.logITelexCom) ll(`${colors.FgRed}size missmatch: ${PackageSizes[packagetype]} != ${datalength}${colors.Reset}`);
-                if (config.allowInvalidPackageSizes) {
-                    if (cv(2)) if (config.logITelexCom) ll(`${colors.FgRed}handling package of invalid size!${colors.Reset}`);
-                } else {
-                    if (cv(2)) if (config.logITelexCom) ll(`${colors.FgYellow}not handling package.${colors.Reset}`);
-                    continue;
-                }
-            }
-            out.push({
-                packagetype: packagetype,
-                datalength: datalength,
-                data: data
-            });
-        } else {
-            if (cv(1)) lle("error, no data");
-        }
-    }
-    if (cv(2)) if (config.logITelexCom) ll(colors.FgGreen + "decoded:", colors.FgCyan, out, colors.Reset);
-    return (out);
-}
-*/
 function encPackage(obj) {
     if (config_js_1.default.logITelexCom)
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoding:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.Reset);
@@ -607,63 +391,6 @@ function decPackages(buffer) {
     return out;
 }
 exports.decPackages = decPackages;
-/*
-
-function BytearrayToValue(arr, type) {
-    if (type === "number") {
-        var num = 0;
-        for (let i = arr.length - 1; i >= 0; i--) {
-            num *= 256;
-            num += arr[i];
-        }
-        return (num);
-    } else if (type === "string") {
-        var str = "";
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i] != 0) {
-                str += String.fromCharCode(arr[i]);
-            } else {
-                break;
-            }
-        }
-        return (str.replace(/(\u0000)/g, ""));
-    } else if (type === "ip") {
-        let numip = BytearrayToValue(arr, "number");
-        if (numip == 0) {
-            return (null);
-        } else {
-            let str = "";
-            for (let i = 0; i < 4; i++) {
-                str += ((numip >> (8 * i)) & 255) + (i == 3 ? "" : ".");
-            }
-            return (str);
-        }
-    }
-}
-
-function ValueToBytearray(value, size) {
-    //if(cv(2)) if (config.logITelexCom) ll(value);
-    var array = [];
-    if (typeof value === "string") {
-        for (let i = 0; i < value.length; i++) {
-            array[i] = value.charCodeAt(i);
-        }
-    } else if (typeof value === "number") {
-        while (value > 0) {
-            array[array.length] = value % 256;
-            value = Math.floor(value / 256);
-        }
-    }
-    if (array.length > size || array.length == undefined) {
-        if (cv(0)) lle("Value " + value + " turned into a bigger than expecte Bytearray!\n" + array.length + " > " + size);
-    }
-    while (array.length < size) {
-        array[array.length] = 0;
-    }
-    return (array);
-}
-
-*/
 function BytearrayToValue(arr, type) {
     if (type === "number") {
         var num = 0;
@@ -757,7 +484,7 @@ function increaseErrorCounter(serverkey, error, code) {
     }
 }
 exports.increaseErrorCounter = increaseErrorCounter;
-function ascii(data, connection, pool) {
+function ascii(data, client, pool) {
     var number = "";
     for (let byte of data) {
         //if(cv(2)) if (config.logITelexCom) ll(String.fromCharCode(byte));
@@ -777,7 +504,7 @@ function ascii(data, connection, pool) {
                     send += number + "\r\n";
                     send += "unknown\r\n";
                     send += "+++\r\n";
-                    connection.write(send, function () {
+                    client.connection.end(send, function () {
                         if (cv(1)) {
                             let m = colors_js_1.default.FgRed + "Entry not found/visible";
                             if (cv(2))
@@ -795,21 +522,21 @@ function ascii(data, connection, pool) {
                     send += res.rufnummer + "\r\n";
                     send += res.name + "\r\n";
                     send += res.typ + "\r\n";
-                    if (res.typ in [2, 4, 5]) {
+                    if ([2, 4, 5].indexOf(res.typ) > -1) {
                         send += res.ipaddresse + "\r\n";
                     }
-                    else if (res.typ in [1, 3, 6]) {
+                    else if ([1, 3, 6].indexOf(res.typ) > -1) {
                         send += res.hostname + "\r\n";
                     } /* else if (res.typ == 6) {
                         send += res.hostname + "\r\n";
                     }*/
                     else {
-                        send += "\r\n";
+                        send += "ERROR\r\n";
                     }
                     send += res.port + "\r\n";
                     send += (res.extension || "-") + "\r\n";
                     send += "+++\r\n";
-                    connection.write(send, function () {
+                    client.connection.end(send, function () {
                         if (cv(1)) {
                             let m = colors_js_1.default.FgGreen + "Entry found";
                             if (cv(2))
@@ -887,6 +614,82 @@ function SqlQuery(sqlPool, query, options, callback) {
     }*/
 }
 exports.SqlQuery = SqlQuery;
+function checkIp(data, client, pool) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (config_js_1.default.doDnsLookups) {
+            var arg = data.slice(1).toString().split("\n")[0].split("\r")[0];
+            if (cv(1))
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}checking if ${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} belongs to any participant${colors_js_1.default.Reset}`);
+            let ipAddr = "";
+            if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
+                ipAddr = arg;
+            }
+            else {
+                try {
+                    let { address, family } = yield util.promisify(dns_1.lookup)(arg);
+                    ipAddr = address;
+                    if (cv(2))
+                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} resolved to ${colors_js_1.default.FgCyan + ipAddr + colors_js_1.default.Reset}`);
+                }
+                catch (e) {
+                    client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
+                    return;
+                    if (cv(3))
+                        logWithLineNumbers_js_1.ll(e);
+                }
+            }
+            if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
+                SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", [], function (peers) {
+                    var ipPeers = [];
+                    async.each(peers, function (peer, cb) {
+                        if ((!peer.ipaddresse) && peer.hostname) {
+                            // if(cv(3)) ll(`hostname: ${peer.hostname}`)
+                            dns_1.lookup(peer.hostname, {}, function (err, address, family) {
+                                // if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
+                                if (address) {
+                                    ipPeers.push({
+                                        peer,
+                                        ipaddress: address
+                                    });
+                                    // if(cv(3)) ll(`${peer.hostname} resolved to ${address}`);
+                                }
+                                cb();
+                            });
+                        }
+                        else if (peer.ipaddresse && (ip.isV4Format(peer.ipaddresse) || ip.isV6Format(peer.ipaddresse))) {
+                            // if(cv(3)) ll(`ip: ${peer.ipaddresse}`);
+                            ipPeers.push({
+                                peer,
+                                ipaddress: peer.ipaddresse
+                            });
+                            cb();
+                        }
+                        else {
+                            cb();
+                        }
+                    }, function () {
+                        let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
+                        if (cv(2))
+                            logWithLineNumbers_js_1.ll("matching peers:", matches);
+                        if (matches.length > 0) {
+                            client.connection.end("ok\r\n" + matches.join("\r\n") + "\r\n+++\r\n");
+                        }
+                        else {
+                            client.connection.end("fail\r\n+++\r\n");
+                        }
+                    });
+                });
+            }
+            else {
+                client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
+            }
+        }
+        else {
+            client.connection.end("error\r\nthis server does not support this function\r\n");
+        }
+    });
+}
+exports.checkIp = checkIp;
 function sendEmail(messageName, values, callback) {
     let message = config_js_1.default.eMail.messages[messageName];
     if (!message) {
