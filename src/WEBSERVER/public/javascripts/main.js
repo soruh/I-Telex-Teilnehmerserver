@@ -61,8 +61,8 @@ $(document).ready(function () {
           
           console.log($(window).height(), $(this).outerHeight());
           
-          var top = $(window).scrollTop() + ((window.innerHeight - $(this).outerHeight()) / 2);//(($(window).height() - $(this).outerHeight()) / 2);
-          var left = $(window).scrollLeft() + ((window.innerWidth - $(this).outerWidth()) / 2);
+          var top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2);//(($(window).height() - $(this).outerHeight()) / 2);
+          var left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
           $(this).css({
             position: 'absolute',
             margin: 0,
