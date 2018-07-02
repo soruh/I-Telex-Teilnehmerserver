@@ -58,8 +58,11 @@ $(document).ready(function () {
     $.fn.extend({
       center: function () {
         return this.each(function () {
-          var top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2);
-          var left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
+          
+          console.log($(window).height(), $(this).outerHeight());
+          
+          var top = $(window).scrollTop() + ((window.innerHeight - $(this).outerHeight()) / 2);//(($(window).height() - $(this).outerHeight()) / 2);
+          var left = $(window).scrollLeft() + ((window.innerWidth - $(this).outerWidth()) / 2);
           $(this).css({
             position: 'absolute',
             margin: 0,
