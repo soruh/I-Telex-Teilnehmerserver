@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-const options = require(__dirname + "/compiled/COMMONMODULES/config.js").default.mySqlConnectionOptions;const async = require("async");
+const options = require(__dirname + "/src/COMMONMODULES/config.js").default.mySqlConnectionOptions;const async = require("async");
 const mysql = require("mysql");
 
 var SQL = {
