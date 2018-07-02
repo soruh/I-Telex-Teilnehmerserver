@@ -22,6 +22,19 @@ import {getTransporter, setTransporter} from "../BINARYSERVER/transporter.js";
 
 const readonly = (config.serverPin == null);
 
+/*<PKGTYPES>
+Client_update: 1
+Address_confirm: 2
+Peer_query: 3
+Peer_not_found: 4
+Peer_reply: 5
+Sync_FullQuery: 6
+Sync_Login: 7
+Acknowledge: 8
+End_of_List: 9
+Peer_search: 10
+</PKGTYPES>*/
+
 var handles = {}; //functions for handeling packages
 for (let i = 1; i <= 10; i++) {
 	handles[i] = {};

@@ -2,7 +2,7 @@
     "mySqlConnectionOptions":{
     "host":"localhost",
     "user":"telefonbuch",
-    "password":"amesads",
+    "password":"XXX",
     "database":"telefonbuch",
     "insecureAuth":true,
 

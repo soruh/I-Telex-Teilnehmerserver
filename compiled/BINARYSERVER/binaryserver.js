@@ -25,222 +25,210 @@ if (readonly)
 if (config_js_1.default.disableColors)
     colors_js_1.default.disable();
 const mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
-/*<PKGTYPES>
-Client_update: 1
-Address_confirm: 2
-Peer_query: 3
-Peer_not_found: 4
-Peer_reply: 5
-Sync_FullQuery: 6
-Sync_Login: 7
-Acknowledge: 8
-End_of_List: 9
-Peer_search: 10
-</PKGTYPES>*/
-function init() {
-    if (ITelexCom_js_1.cv(0))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "Initialising!" + colors_js_1.default.Reset);
-    var server = net.createServer(function (connection) {
-        try {
-            var client = connections.get(connections.add("C", {
-                connection: connection,
-                state: constants.states.STANDBY,
-                handling: false,
-                readbuffer: null,
-                writebuffer: null,
-                packages: []
-            }));
-            //TODO: only get cnum from client.cnum!!!
+var server = net.createServer(function (connection) {
+    try {
+        var client = connections.get(connections.add("C", {
+            connection: connection,
+            state: constants.states.STANDBY,
+            handling: false,
+            readbuffer: null,
+            writebuffer: null,
+            packages: []
+        }));
+        //TODO: only get cnum from client.cnum!!!
+        if (ITelexCom_js_1.cv(1))
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgGreen + " connected with ipaddress: " + colors_js_1.default.FgCyan + connection.remoteAddress + colors_js_1.default.Reset); //.replace(/^.*:/,'')
+        if (connection.remoteAddress == undefined)
+            setTimeout(function () {
+                logWithLineNumbers_js_1.ll(connection.remoteAddress);
+            }, 1000);
+        var queryresultpos = -1;
+        var queryresult = [];
+        var connectionpin;
+        connection.setTimeout(config_js_1.default.connectionTimeout);
+        connection.on('timeout', function () {
             if (ITelexCom_js_1.cv(1))
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgGreen + " connected with ipaddress: " + colors_js_1.default.FgCyan + connection.remoteAddress + colors_js_1.default.Reset); //.replace(/^.*:/,'')
-            if (connection.remoteAddress == undefined)
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgYellow + " timed out" + colors_js_1.default.Reset);
+            connection.end();
+        });
+        connection.on('end', function () {
+            if (ITelexCom_js_1.cv(1))
+                if (client.newEntries != null)
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${client.newEntries}${colors_js_1.default.FgGreen} new entries${colors_js_1.default.Reset}`);
+            if (ITelexCom_js_1.cv(1))
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgYellow + " disconnected" + colors_js_1.default.Reset);
+            try {
+                clearTimeout(client.timeout);
+            }
+            catch (e) {
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
+            }
+            if (connections.has(client.cnum) && client.connection == connection) {
                 setTimeout(function () {
-                    logWithLineNumbers_js_1.ll(connection.remoteAddress);
+                    if (connections.remove(client.cnum)) {
+                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgGreen}${colors_js_1.default.Reset}`);
+                        client = null;
+                    }
                 }, 1000);
-            var queryresultpos = -1;
-            var queryresult = [];
-            var connectionpin;
-            connection.setTimeout(config_js_1.default.connectionTimeout);
-            connection.on('timeout', function () {
-                if (ITelexCom_js_1.cv(1))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgYellow + " timed out" + colors_js_1.default.Reset);
-                connection.end();
-            });
-            connection.on('end', function () {
-                if (ITelexCom_js_1.cv(1))
-                    if (client.newEntries != null)
-                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${client.newEntries}${colors_js_1.default.FgGreen} new entries${colors_js_1.default.Reset}`);
-                if (ITelexCom_js_1.cv(1))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgYellow + " disconnected" + colors_js_1.default.Reset);
-                try {
-                    clearTimeout(client.timeout);
-                }
-                catch (e) {
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-                }
-                if (connections.has(client.cnum) && client.connection == connection) {
-                    setTimeout(function () {
-                        if (connections.remove(client.cnum)) {
-                            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgGreen}${colors_js_1.default.Reset}`);
-                            client = null;
-                        }
-                    }, 1000);
-                }
-            });
-            connection.on('error', function (err) {
-                if (ITelexCom_js_1.cv(1))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgRed + " had an error:\n", err, colors_js_1.default.Reset);
-                try {
-                    clearTimeout(client.timeout);
-                }
-                catch (e) {
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-                }
-                if (connections.has(client.cnum) && connections.get(client.cnum).connection == connection) {
-                    setTimeout(function () {
-                        if (connections.remove(client.cnum)) {
-                            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.Reset}`);
-                            client = null;
-                        }
-                    }, 1000);
-                }
-            });
-            connection.on('data', function (data) {
-                if (ITelexCom_js_1.cv(2)) {
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.Reset);
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data, colors_js_1.default.Reset);
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data.toString().replace(/\u0000/g, "").replace(/[^ -~]/g, " "), colors_js_1.default.Reset);
-                }
-                if (data[0] == 113 && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "serving ascii request" + colors_js_1.default.Reset);
-                    ITelexCom.ascii(data, connection, pool); //TODO: check for fragmentation //probably not needed
-                }
-                else if (data[0] == 99) {
-                    if (config_js_1.default.doDnsLookups) {
-                        var arg = data.slice(1).toString().replace(/\n/g, "").replace(/\r/g, "");
-                        if (ITelexCom_js_1.cv(1))
-                            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}checking if ${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} belongs to participant${colors_js_1.default.Reset}`);
-                        let check = function check(IpAddr) {
-                            if (ip.isV4Format(IpAddr) || ip.isV6Format(IpAddr)) {
-                                ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", [], function (res) {
-                                    var ips = [];
-                                    async.eachOf(res, function (r, key, cb) {
-                                        if ((!r.ipaddresse) && r.hostname) {
-                                            // ll(`hostname: ${r.hostname}`)
-                                            dns_1.lookup(r.hostname, {}, function (err, address, family) {
-                                                if (ITelexCom_js_1.cv(3) && err)
-                                                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
-                                                if (address) {
-                                                    ips.push(address);
-                                                    // ll(`${r.hostname} resolved to ${address}`);
-                                                }
-                                                cb();
-                                            });
-                                        }
-                                        else if (r.ipaddresse && (ip.isV4Format(r.ipaddresse) || ip.isV6Format(r.ipaddresse))) {
-                                            // ll(`ip: ${r.ipaddresse}`);
-                                            ips.push(r.ipaddresse);
+            }
+        });
+        connection.on('error', function (err) {
+            if (ITelexCom_js_1.cv(1))
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "client " + colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.FgRed + " had an error:\n", err, colors_js_1.default.Reset);
+            try {
+                clearTimeout(client.timeout);
+            }
+            catch (e) {
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
+            }
+            if (connections.has(client.cnum) && connections.get(client.cnum).connection == connection) {
+                setTimeout(function () {
+                    if (connections.remove(client.cnum)) {
+                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.cnum + colors_js_1.default.Reset}`);
+                        client = null;
+                    }
+                }, 1000);
+            }
+        });
+        connection.on('data', function (data) {
+            if (ITelexCom_js_1.cv(2)) {
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.Reset);
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data, colors_js_1.default.Reset);
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data.toString().replace(/\u0000/g, "").replace(/[^ -~]/g, " "), colors_js_1.default.Reset);
+            }
+            if (data[0] == 113 && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "serving ascii request" + colors_js_1.default.Reset);
+                ITelexCom.ascii(data, connection, pool); //TODO: check for fragmentation //probably not needed
+            }
+            else if (data[0] == 99) {
+                if (config_js_1.default.doDnsLookups) {
+                    var arg = data.slice(1).toString().replace(/\n/g, "").replace(/\r/g, "");
+                    if (ITelexCom_js_1.cv(1))
+                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}checking if ${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} belongs to participant${colors_js_1.default.Reset}`);
+                    let check = function check(IpAddr) {
+                        if (ip.isV4Format(IpAddr) || ip.isV6Format(IpAddr)) {
+                            ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", [], function (res) {
+                                var ips = [];
+                                async.eachOf(res, function (r, key, cb) {
+                                    if ((!r.ipaddresse) && r.hostname) {
+                                        // ll(`hostname: ${r.hostname}`)
+                                        dns_1.lookup(r.hostname, {}, function (err, address, family) {
+                                            if (ITelexCom_js_1.cv(3) && err)
+                                                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
+                                            if (address) {
+                                                ips.push(address);
+                                                // ll(`${r.hostname} resolved to ${address}`);
+                                            }
                                             cb();
-                                        }
-                                        else {
-                                            cb();
-                                        }
-                                    }, function () {
-                                        // ips = ips.filter(function(elem, pos){
-                                        //   return ips.indexOf(elem) == pos;
-                                        // });
-                                        // ll(JSON.stringify(ips))
-                                        let exists = ips.filter(i => ip.isEqual(i, IpAddr)).length > 0;
-                                        // ll(exists);
-                                        // var exists = 0;
-                                        // for(var i in ips){
-                                        //   if(ip.isEqual(ips[i],IpAddr)){
-                                        //     exists = 1;
-                                        //   }
-                                        // }
-                                        connection.write(exists + "\r\n");
-                                    });
+                                        });
+                                    }
+                                    else if (r.ipaddresse && (ip.isV4Format(r.ipaddresse) || ip.isV6Format(r.ipaddresse))) {
+                                        // ll(`ip: ${r.ipaddresse}`);
+                                        ips.push(r.ipaddresse);
+                                        cb();
+                                    }
+                                    else {
+                                        cb();
+                                    }
+                                }, function () {
+                                    // ips = ips.filter(function(elem, pos){
+                                    //   return ips.indexOf(elem) == pos;
+                                    // });
+                                    // ll(JSON.stringify(ips))
+                                    let exists = ips.filter(i => ip.isEqual(i, IpAddr)).length > 0;
+                                    // ll(exists);
+                                    // var exists = 0;
+                                    // for(var i in ips){
+                                    //   if(ip.isEqual(ips[i],IpAddr)){
+                                    //     exists = 1;
+                                    //   }
+                                    // }
+                                    connection.write(exists + "\r\n");
                                 });
-                            }
-                            else {
-                                // connection.write("-1\r\n");
-                                connection.write("ERROR\r\nnot a valid host or ip\r\n");
-                            }
-                        };
-                        if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
-                            check(arg);
-                        }
-                        else {
-                            dns_1.lookup(arg, {}, function (err, address, family) {
-                                if (ITelexCom_js_1.cv(3) && err)
-                                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
-                                check(address);
                             });
                         }
+                        else {
+                            // connection.write("-1\r\n");
+                            connection.write("ERROR\r\nnot a valid host or ip\r\n");
+                        }
+                    };
+                    if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
+                        check(arg);
                     }
                     else {
-                        connection.write("ERROR\r\nthis server does not support this function\r\n");
+                        dns_1.lookup(arg, {}, function (err, address, family) {
+                            if (ITelexCom_js_1.cv(3) && err)
+                                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
+                            check(address);
+                        });
                     }
                 }
                 else {
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "serving binary request" + colors_js_1.default.Reset);
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.ll("Buffer for client " + client.cnum + ":" + colors_js_1.default.FgCyan, client.readbuffer, colors_js_1.default.Reset);
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.ll("New Data for client " + client.cnum + ":" + colors_js_1.default.FgCyan, data, colors_js_1.default.Reset);
-                    var res = ITelexCom.checkFullPackage(data, client.readbuffer);
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.ll("New Buffer:" + colors_js_1.default.FgCyan, res[1], colors_js_1.default.Reset);
-                    if (ITelexCom_js_1.cv(2))
-                        logWithLineNumbers_js_1.ll("Complete Package:" + colors_js_1.default.FgCyan, res[0], colors_js_1.default.Reset);
-                    if (res[1].length > 0) {
-                        client.readbuffer = res[1];
-                    }
-                    if (res[0]) {
-                        if (typeof client.packages != "object")
-                            client.packages = [];
-                        client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
-                        let timeout = function () {
-                            if (ITelexCom_js_1.cv(2))
-                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling: " + colors_js_1.default.FgCyan + client.handling + colors_js_1.default.Reset);
-                            if (client.handling === false) {
-                                client.handling = true;
-                                if (client.timeout != null) {
-                                    clearTimeout(client.timeout);
-                                    client.timeout = null;
-                                }
-                                async.eachOfSeries((client.packages != undefined ? client.packages : []), function (pkg, key, cb) {
-                                    if ((ITelexCom_js_1.cv(1) && (Object.keys(client.packages).length > 1)) || ITelexCom_js_1.cv(2))
-                                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset);
-                                    ITelexCom.handlePackage(pkg, client, pool, function () {
-                                        client.packages.splice(+key, 1);
-                                        cb();
-                                    });
-                                }, function () {
-                                    client.handling = false;
-                                });
-                            }
-                            else {
-                                if (client.timeout == null) {
-                                    client.timeout = setTimeout(timeout, 10);
-                                }
-                            }
-                        };
-                        timeout();
-                    }
+                    connection.write("ERROR\r\nthis server does not support this function\r\n");
                 }
-            });
-        }
-        catch (e) {
-            if (ITelexCom_js_1.cv(0))
-                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        }
-    });
-    server.on("error", err => logWithLineNumbers_js_1.lle("server error:", err));
+            }
+            else {
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "serving binary request" + colors_js_1.default.Reset);
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.ll("Buffer for client " + client.cnum + ":" + colors_js_1.default.FgCyan, client.readbuffer, colors_js_1.default.Reset);
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.ll("New Data for client " + client.cnum + ":" + colors_js_1.default.FgCyan, data, colors_js_1.default.Reset);
+                var res = ITelexCom.checkFullPackage(data, client.readbuffer);
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.ll("New Buffer:" + colors_js_1.default.FgCyan, res[1], colors_js_1.default.Reset);
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.ll("Complete Package:" + colors_js_1.default.FgCyan, res[0], colors_js_1.default.Reset);
+                if (res[1].length > 0) {
+                    client.readbuffer = res[1];
+                }
+                if (res[0]) {
+                    if (typeof client.packages != "object")
+                        client.packages = [];
+                    client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
+                    let timeout = function () {
+                        if (ITelexCom_js_1.cv(2))
+                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling: " + colors_js_1.default.FgCyan + client.handling + colors_js_1.default.Reset);
+                        if (client.handling === false) {
+                            client.handling = true;
+                            if (client.timeout != null) {
+                                clearTimeout(client.timeout);
+                                client.timeout = null;
+                            }
+                            async.eachOfSeries((client.packages != undefined ? client.packages : []), function (pkg, key, cb) {
+                                if ((ITelexCom_js_1.cv(1) && (Object.keys(client.packages).length > 1)) || ITelexCom_js_1.cv(2))
+                                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset);
+                                ITelexCom.handlePackage(pkg, client, pool, function () {
+                                    client.packages.splice(+key, 1);
+                                    cb();
+                                });
+                            }, function () {
+                                client.handling = false;
+                            });
+                        }
+                        else {
+                            if (client.timeout == null) {
+                                client.timeout = setTimeout(timeout, 10);
+                            }
+                        }
+                    };
+                    timeout();
+                }
+            }
+        });
+    }
+    catch (e) {
+        if (ITelexCom_js_1.cv(0))
+            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
+    }
+});
+server.on("error", err => logWithLineNumbers_js_1.lle("server error:", err));
+function init() {
+    if (ITelexCom_js_1.cv(0))
+        logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "Initialising!" + colors_js_1.default.Reset);
     server.listen(config_js_1.default.binaryPort, function () {
         if (ITelexCom_js_1.cv(0))
             logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "server is listening on port " + colors_js_1.default.FgCyan + config_js_1.default.binaryPort, colors_js_1.default.Reset);
