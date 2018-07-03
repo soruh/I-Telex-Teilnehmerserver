@@ -12,7 +12,9 @@ const verbosity = config.loggingVerbosity;
 var cv = level => level <= verbosity; //check verbosity
 
 
-var timeouts = {};
+var timeouts:{
+	[index: string]: Timer;
+} = {};
 class Timer {
 	public duration:number;
 	public fn;
@@ -22,9 +24,11 @@ class Timer {
 	public remaining:number;
 	public total_time_run:number;
 	public paused:boolean;
-	constructor(fn, duration) {
+	public name:string;
+	constructor(fn, duration:number, name?:string) {
 		this.duration = duration;
 		this.fn = fn;
+		this.name = name;
 
 		this.complete = false;
 		this.start_time = Date.now();
@@ -56,7 +60,7 @@ class Timer {
 		this.complete = this.total_time_run >= this.duration;
 		this.remaining = this.duration - this.total_time_run;
 		if (this.complete) {
-			if (cv(3)) ll(colors.FgCyan + "restarted " + colors.FgMagenta + "timeout" + colors.Reset);
+			if (cv(3)) ll(colors.FgMagenta + "restarted timeout"+ (this.name?" "+colors.FgCyan+this.name:"") + colors.Reset);
 			this.start_time = Date.now();
 			this.resume();
 		} else {
@@ -65,23 +69,33 @@ class Timer {
 	}
 }
 
+function pauseAll(){
+	for (let k in timeouts) {
+		timeouts[k].pause();
+		if (cv(3)) ll(colors.FgBlue + "paused " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
+	}
+}
+
+function resumeAll(){
+	for (let k in timeouts) {
+		timeouts[k].resume();
+		if (cv(3)) ll(colors.FgYellow + "resumed " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
+	}
+}
 function TimeoutWrapper(fn, duration, ...args) {
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
 	if (cv(1)) ll(colors.FgMagenta + "set timeout for: " + colors.FgCyan + fnName + colors.FgMagenta + " to " + colors.FgCyan + duration + colors.FgMagenta + "ms" + colors.Reset);
 	timeouts[fnName] = new Timer(function () {
-		for (let k of Object.keys(timeouts)) {
-			timeouts[k].pause();
-			if (cv(3)) ll(colors.FgBlue + "paused " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
-		}
-		if (cv(3)) ll(colors.FgMagenta + "called: " + colors.FgCyan + fnName + colors.FgMagenta + " with: " + colors.FgCyan, args.slice(1), colors.Reset);
-		fn.apply(null, [() => {
-			if (cv(3)) ll(colors.FgMagenta + "callback for timeout: " + colors.FgCyan + fnName + colors.Reset);
-			for (let k of Object.keys(timeouts)) {
-				timeouts[k].resume();
-				if (cv(3)) ll(colors.FgYellow + "resumed " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
-			}
-		}, ...args]);
-	}, duration);
+		pauseAll();
+		if (cv(3)) ll(colors.FgMagenta + "called: " + colors.FgCyan + fnName + colors.FgMagenta + " with: " + colors.FgCyan+"["+args.slice(1)+"]"+colors.Reset);
+		fn.apply(null, args).then(()=>{
+			if (cv(3)) ll(colors.FgGreen +"finished "+ colors.FgMagenta + "callback for timeout: " + colors.FgCyan + fnName + colors.Reset);
+			resumeAll();
+		}).catch(err=>{
+			if (cv(2)) lle(colors.FgRed+"error "+colors.FgMagenta + "in timeout: " + colors.FgCyan + fnName + colors.FgMagenta + " error: " + err + colors.Reset);
+			resumeAll();
+		});
+	}, duration, fn.name);
 }
 
 export{

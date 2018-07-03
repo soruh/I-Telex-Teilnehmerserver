@@ -51,9 +51,6 @@ var server = net.createServer(function (connection) {
 		);
 		//TODO: only get cnum from client.cnum!!!
 		if (cv(1)) ll(colors.FgGreen + "client " + colors.FgCyan + client.cnum + colors.FgGreen + " connected with ipaddress: " + colors.FgCyan + connection.remoteAddress + colors.Reset); //.replace(/^.*:/,'')
-		if (connection.remoteAddress == undefined) setTimeout(function () {
-			ll(connection.remoteAddress);
-		}, 1000);
 		connection.setTimeout(config.connectionTimeout);
 		connection.on('timeout', function ():void{
 			if (cv(1)) ll(colors.FgYellow + "client " + colors.FgCyan + client.cnum + colors.FgYellow + " timed out" + colors.Reset);
@@ -163,247 +160,253 @@ function init() {
 	});
 }
 
-function updateQueue(callback) {
-	if (cv(2)) ll(colors.FgMagenta + "updating " + colors.FgCyan + "Queue" + colors.FgMagenta + "!" + colors.Reset);
-	ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE changed = ?;", [1], function (changed:ITelexCom.peerList) {
-		if (changed.length > 0) {
-			if (cv(2)) {
-				var changed_numbers = [];
-				for (let o of changed) {
-					changed_numbers.push(o.rufnummer);
+function updateQueue() {
+	return new Promise((resolve, reject)=>{
+		if (cv(2)) ll(colors.FgMagenta + "updating " + colors.FgCyan + "Queue" + colors.Reset);
+		ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE changed = ?;", [1], function (changed:ITelexCom.peerList) {
+			if (changed.length > 0) {
+				if (cv(2)) {
+					var changed_numbers = [];
+					for (let o of changed) {
+						changed_numbers.push(o.rufnummer);
+					}
+					ll(colors.FgGreen + "numbers to enqueue:" + colors.FgCyan, changed_numbers, colors.Reset);
 				}
-				ll(colors.FgGreen + "numbers to enqueue:" + colors.FgCyan, changed_numbers, colors.Reset);
-			}
-			if (cv(1) && !cv(2)) ll(colors.FgCyan + changed.length + colors.FgGreen + " numbers to enqueue" + colors.Reset);
+				if (cv(1) && !cv(2)) ll(colors.FgCyan + changed.length + colors.FgGreen + " numbers to enqueue" + colors.Reset);
 
-			ITelexCom.SqlQuery(pool, "SELECT * FROM servers;",[], function (servers:ITelexCom.serverList) {
-				if (servers.length > 0) {
-					async.each(servers, function (server, cb1) {
-						async.each(changed, function (message, cb2) {
-							ITelexCom.SqlQuery(pool, "SELECT * FROM queue WHERE server = ? AND message = ?;" ,[server.uid, message.uid], function (qentry:ITelexCom.queue) {
-								if (qentry.length == 1) {
-									ITelexCom.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;",[Math.floor(Date.now() / 1000),server.uid, message.uid], function () {
-										//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-										if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
-										cb2();
-										//});
-									});
-								} else if (qentry.length == 0) {
-									ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
-										//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-										if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
-										cb2();
-										//});
-									});
-								} else {
-									lle("duplicate queue entry!");
-									ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;",[server.uid, message.uid], function () {
-										ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid,message.uid,Math.floor(Date.now() / 1000)], function () {
+				ITelexCom.SqlQuery(pool, "SELECT * FROM servers;",[], function (servers:ITelexCom.serverList) {
+					if (servers.length > 0) {
+						async.each(servers, function (server, cb1) {
+							async.each(changed, function (message, cb2) {
+								ITelexCom.SqlQuery(pool, "SELECT * FROM queue WHERE server = ? AND message = ?;" ,[server.uid, message.uid], function (qentry:ITelexCom.queue) {
+									if (qentry.length == 1) {
+										ITelexCom.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;",[Math.floor(Date.now() / 1000),server.uid, message.uid], function () {
 											//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
 											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
 											cb2();
 											//});
 										});
-									});
-								}
+									} else if (qentry.length == 0) {
+										ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
+											//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
+											cb2();
+											//});
+										});
+									} else {
+										lle("duplicate queue entry!");
+										ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;",[server.uid, message.uid], function () {
+											ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid,message.uid,Math.floor(Date.now() / 1000)], function () {
+												//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+												if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
+												cb2();
+												//});
+											});
+										});
+									}
+								});
+							}, cb1);
+						}, function () {
+							if (cv(1)) ll(colors.FgGreen + "finished enqueueing" + colors.Reset);
+							if (cv(2)) ll(colors.FgGreen + "reseting changed flags..." + colors.Reset);
+							ITelexCom.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid="+changed.map(entry => entry.uid).join(" or uid=")+";", [0], function (res) {
+								if (cv(2)) ll(colors.FgGreen + "reset " + colors.FgCyan + changed.length + colors.FgGreen + " changed flags." + colors.Reset);
+								resolve();
 							});
-						}, cb1);
-					}, function () {
-						if (cv(1)) ll(colors.FgGreen + "finished enqueueing" + colors.Reset);
-						if (cv(2)) ll(colors.FgGreen + "reseting changed flags..." + colors.Reset);
-						ITelexCom.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid="+changed.map(entry => entry.uid).join(" or uid=")+";", [0], function (res) {
-							if (cv(2)) ll(colors.FgGreen + "reset " + colors.FgCyan + changed.length + colors.FgGreen + " changed flags." + colors.Reset);
-							if (typeof callback === "function") callback();
 						});
-					});
-				} else {
-					ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "updateQueue" + colors.Reset);
-					if (typeof callback === "function") callback();
-				}
-			});
-		} else {
-			if (cv(2)) ll(colors.FgYellow + "no numbers to enqueue" + colors.Reset);
-			/*if(qwdec == null){
-				qwdec = "unknown";
-				//TODO qwd.stdin.write("sendQueue",callback);
-        if(typeof callback === "function") callback();
-			}else{
-        if(typeof callback === "function") callback();
-			}*/
-			if (typeof callback === "function") callback();
-			//setTimeout(updateQueue,config.updateQueueInterval);
-		}
+					} else {
+						ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "updateQueue" + colors.Reset);
+						resolve();
+					}
+				});
+			} else {
+				if (cv(2)) ll(colors.FgYellow + "no numbers to enqueue" + colors.Reset);
+				/*if(qwdec == null){
+					qwdec = "unknown";
+					//TODO qwd.stdin.write("sendQueue",callback);
+			if(typeof callback === "function") callback();
+				}else{
+			if(typeof callback === "function") callback();
+				}*/
+				resolve();
+				//setTimeout(updateQueue,config.updateQueueInterval);
+			}
+		});
 	});
 }
 
-function getFullQuery(callback?:()=>void) {
-	if (cv(2)) ll(colors.FgMagenta + "geting " + colors.FgCyan + "FullQuery" + colors.FgMagenta + "!" + colors.Reset);
-	/*if(readonly){
-    ITelexCom.connect(pool,function(e){
-      if(typeof callback === "function") callback();
-    },{host:config.readonlyHost,port:config.readonlyPort},handles,function(client,client.cnum){
-      client.write(ITelexCom.encPackage({packagetype:10,datalength:41,data:{pattern:'',version:1}}),function(){
-        client.state = constants.states.FULLQUERY;
-      });
-    });
-  }else{*/
-	ITelexCom.SqlQuery(pool, "SELECT  * FROM servers;", [], function (servers:ITelexCom.serverList) {
-		if (servers.length > 0) {
-			for (let i in servers) {
-				if (config.fullQueryServer&&servers[i].addresse == config.fullQueryServer.split(":")[0] && servers[i].port == config.fullQueryServer.split(":")[1]) {
-					servers = [servers[i]];
-				}
-			}
-			async.eachSeries(servers, function (r, cb) {
-				connect(pool, function (e) {
-					try {
-						cb();
-					} catch (e) {
-						if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+function getFullQuery() {
+	return new Promise((resolve, reject)=>{
+		if (cv(2)) ll(colors.FgMagenta + "geting " + colors.FgCyan + "FullQuery" + colors.Reset);
+		/*if(readonly){
+		ITelexCom.connect(pool,function(e){
+		if(typeof callback === "function") callback();
+		},{host:config.readonlyHost,port:config.readonlyPort},handles,function(client,client.cnum){
+		client.write(ITelexCom.encPackage({packagetype:10,datalength:41,data:{pattern:'',version:1}}),function(){
+			client.state = constants.states.FULLQUERY;
+		});
+		});
+	}else{*/
+		ITelexCom.SqlQuery(pool, "SELECT  * FROM servers;", [], function (servers:ITelexCom.serverList) {
+			if (servers.length > 0) {
+				for (let i in servers) {
+					if (config.fullQueryServer&&servers[i].addresse == config.fullQueryServer.split(":")[0] && servers[i].port == config.fullQueryServer.split(":")[1]) {
+						servers = [servers[i]];
 					}
-				}, {
-					host: r.addresse,
-					port: r.port
-				}, function (client) {
-					try {
-						let request = readonly ? {
-							packagetype: 10,
-							datalength: 41,
-							data: {
-								pattern: '',
-								version: 1
-							}
-						} : {
-							packagetype: 6,
-							datalength: 5,
-							data: {
-								serverpin: config.serverPin,
-								version: 1
-							}
-						};
-						client.connection.write(ITelexCom.encPackage(request), function () {
-							client.state = constants.states.FULLQUERY;
-							client.cb = cb;
-						});
-					} catch (e) {
-						if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+				}
+				async.eachSeries(servers, function (r, cb) {
+					connect(pool, function (e) {
 						try {
 							cb();
 						} catch (e) {
 							if (cv(2)) lle(colors.FgRed, e, colors.Reset);
 						}
-					}
+					}, {
+						host: r.addresse,
+						port: r.port
+					}, function (client) {
+						try {
+							let request = readonly ? {
+								packagetype: 10,
+								datalength: 41,
+								data: {
+									pattern: '',
+									version: 1
+								}
+							} : {
+								packagetype: 6,
+								datalength: 5,
+								data: {
+									serverpin: config.serverPin,
+									version: 1
+								}
+							};
+							client.connection.write(ITelexCom.encPackage(request), function () {
+								client.state = constants.states.FULLQUERY;
+								client.cb = cb;
+							});
+						} catch (e) {
+							if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+							try {
+								cb();
+							} catch (e) {
+								if (cv(2)) lle(colors.FgRed, e, colors.Reset);
+							}
+						}
+					});
+				}, function () {
+					resolve();
 				});
-			}, function () {
-				if (typeof callback === "function") callback();
-			});
-		} else {
-			ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "FullQuery" + colors.Reset);
-			if (typeof callback === "function") callback();
-		}
+			} else {
+				ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "FullQuery" + colors.Reset);
+				resolve();
+			}
+		});
+		//}
 	});
-	//}
 }
 
-function sendQueue(callback) {
-	if (cv(2)) ll(colors.FgMagenta + "sending " + colors.FgCyan + "Queue" + colors.FgMagenta + "!" + colors.Reset);
-	if (readonly) {
-		if (cv(2)) ll(colors.FgYellow + "Read-only mode -> aborting " + colors.FgCyan + "sendQueue" + colors.Reset);
-		if (typeof callback === "function") callback();
-	} else {
-		ITelexCom.SqlQuery(pool, "SELECT * FROM teilnehmer;",[], function (teilnehmer:ITelexCom.peerList) {
-			ITelexCom.SqlQuery(pool, "SELECT * FROM queue;",[], function (queue:ITelexCom.queue) {
-				if (queue.length > 0) {
-					var servers:{
-						[index:number]: ITelexCom.queueEntry[]
-					} = {};
-					for (let q of queue) {
-						if (!servers[q.server]) servers[q.server] = [];
-						servers[q.server].push(q);
-					}
-					async.eachSeries(servers, function (server, cb) {
-						ITelexCom.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=?;",[server[0].server], function (result2:ITelexCom.serverList) {
-							if (result2.length == 1) {
-								var serverinf = result2[0];
-								if (cv(2)) ll(colors.FgCyan, serverinf, colors.Reset);
-								try {
-									// var isConnected = false;
-									// for (let key in connections) {
-									// 	if (connections.has(key)) {
-									// 		var c = connections[key];
-									// 	}
-									// 	if (c.servernum == server[0].server) {
-									// 		var isConnected = true;
-									// 	}
-									// }
-									let isConnected = connections.has(connection=>connection.servernum == server[0].server);
-									if (!isConnected) {
-										connect(pool, cb, {
-											host: serverinf.addresse,
-											port: serverinf.port
-										}, function (client) {
-											client.servernum = server[0].server;
-											if (cv(1)) ll(colors.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors.Reset);
-											client.writebuffer = [];
-											async.each(server, function (serverdata, scb) {
-												if (cv(2)) ll(colors.FgCyan, serverdata, colors.Reset);
-												var existing:ITelexCom.peer = null;
-												for (let t of teilnehmer) {
-													if (t.uid == serverdata.message) {
-														existing = t;
-													}
-												}
-												if (existing) {
-													ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE uid=?;", [serverdata.uid], function (res) {
-														if (res.affectedRows > 0) {
-															client.writebuffer.push(existing); //TODO
-															if (cv(1)) ll(colors.FgGreen + "deleted queue entry " + colors.FgCyan + existing.name + colors.FgGreen + " from queue" + colors.Reset);
-															scb();
-														} else {
-															if (cv(1)) ll(colors.FgRed + "could not delete queue entry " + colors.FgCyan + existing.name + colors.FgRed + " from queue" + colors.Reset);
-															scb();
+function sendQueue() {
+	return new Promise((resolve, reject)=>{
+		if (cv(2)) ll(colors.FgMagenta + "sending " + colors.FgCyan + "Queue" + colors.Reset);
+		if (readonly) {
+			if (cv(2)) ll(colors.FgYellow + "Read-only mode -> aborting " + colors.FgCyan + "sendQueue" + colors.Reset);
+			resolve();
+		} else {
+			ITelexCom.SqlQuery(pool, "SELECT * FROM teilnehmer;",[], function (teilnehmer:ITelexCom.peerList) {
+				ITelexCom.SqlQuery(pool, "SELECT * FROM queue;",[], function (queue:ITelexCom.queue) {
+					if (queue.length > 0) {
+						var servers:{
+							[index:number]: ITelexCom.queueEntry[]
+						} = {};
+						for (let q of queue) {
+							if (!servers[q.server]) servers[q.server] = [];
+							servers[q.server].push(q);
+						}
+						async.eachSeries(servers, function (server, cb) {
+							ITelexCom.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=?;",[server[0].server], function (result2:ITelexCom.serverList) {
+								if (result2.length == 1) {
+									var serverinf = result2[0];
+									if (cv(2)) ll(colors.FgCyan, serverinf, colors.Reset);
+									try {
+										// var isConnected = false;
+										// for (let key in connections) {
+										// 	if (connections.has(key)) {
+										// 		var c = connections[key];
+										// 	}
+										// 	if (c.servernum == server[0].server) {
+										// 		var isConnected = true;
+										// 	}
+										// }
+										let isConnected = connections.has(connection=>connection.servernum == server[0].server);
+										if (!isConnected) {
+											connect(pool, cb, {
+												host: serverinf.addresse,
+												port: serverinf.port
+											}, function (client) {
+												client.servernum = server[0].server;
+												if (cv(1)) ll(colors.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors.Reset);
+												client.writebuffer = [];
+												async.each(server, function (serverdata, scb) {
+													if (cv(2)) ll(colors.FgCyan, serverdata, colors.Reset);
+													var existing:ITelexCom.peer = null;
+													for (let t of teilnehmer) {
+														if (t.uid == serverdata.message) {
+															existing = t;
 														}
-													});
-												} else {
-													if (cv(2)) ll(colors.FgRed + "entry does not exist" + colors.FgCyan + colors.Reset);
-													scb();
-												}
-											}, function () {
-												client.connection.write(ITelexCom.encPackage({
-													packagetype: 7,
-													datalength: 5,
-													data: {
-														serverpin: config.serverPin,
-														version: 1
 													}
-												}), function () {
-													client.state = constants.states.RESPONDING;
-													cb();
+													if (existing) {
+														ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE uid=?;", [serverdata.uid], function (res) {
+															if (res.affectedRows > 0) {
+																client.writebuffer.push(existing); //TODO
+																if (cv(1)) ll(colors.FgGreen + "deleted queue entry " + colors.FgCyan + existing.name + colors.FgGreen + " from queue" + colors.Reset);
+																scb();
+															} else {
+																if (cv(1)) ll(colors.FgRed + "could not delete queue entry " + colors.FgCyan + existing.name + colors.FgRed + " from queue" + colors.Reset);
+																scb();
+															}
+														});
+													} else {
+														if (cv(2)) ll(colors.FgRed + "entry does not exist" + colors.FgCyan + colors.Reset);
+														scb();
+													}
+												}, function () {
+													client.connection.write(ITelexCom.encPackage({
+														packagetype: 7,
+														datalength: 5,
+														data: {
+															serverpin: config.serverPin,
+															version: 1
+														}
+													}), function () {
+														client.state = constants.states.RESPONDING;
+														cb();
+													});
 												});
 											});
-										});
-									} else {
-										if (cv(1)) ll(colors.FgYellow + "already connected to server " + server[0].server + colors.Reset);
+										} else {
+											if (cv(1)) ll(colors.FgYellow + "already connected to server " + server[0].server + colors.Reset);
+											cb();
+										}
+									} catch (e) {
+										if (cv(2)) lle(e);
 										cb();
 									}
-								} catch (e) {
-									if (cv(2)) lle(e);
-									cb();
+								} else {
+									ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server], cb);
 								}
-							} else {
-								ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server], cb);
-							}
+							});
+						}, function () {
+							resolve();
 						});
-					}, function () {
-						if (typeof callback === "function") callback();
-					});
-				} else {
-					if (cv(2)) ll(colors.FgYellow + "No queue!", colors.Reset);
-					if (typeof callback === "function") callback();
-				}
+					} else {
+						if (cv(2)) ll(colors.FgYellow + "No queue!", colors.Reset);
+						resolve();
+					}
+				});
 			});
-		});
-	}
+		}
+	});
 }
 
 

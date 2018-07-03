@@ -10,9 +10,10 @@ var cv = level => level <= verbosity; //check verbosity
 var timeouts = {};
 exports.timeouts = timeouts;
 class Timer {
-    constructor(fn, duration) {
+    constructor(fn, duration, name) {
         this.duration = duration;
         this.fn = fn;
+        this.name = name;
         this.complete = false;
         this.start_time = Date.now();
         this.timeout = global.setTimeout(fn, duration);
@@ -43,7 +44,7 @@ class Timer {
         this.remaining = this.duration - this.total_time_run;
         if (this.complete) {
             if (cv(3))
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan + "restarted " + colors_js_1.default.FgMagenta + "timeout" + colors_js_1.default.Reset);
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "restarted timeout" + (this.name ? " " + colors_js_1.default.FgCyan + this.name : "") + colors_js_1.default.Reset);
             this.start_time = Date.now();
             this.resume();
         }
@@ -53,27 +54,37 @@ class Timer {
     }
 }
 exports.Timer = Timer;
+function pauseAll() {
+    for (let k in timeouts) {
+        timeouts[k].pause();
+        if (cv(3))
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgBlue + "paused " + colors_js_1.default.FgMagenta + "timeout: " + colors_js_1.default.FgCyan + k + colors_js_1.default.FgMagenta + " remaining: " + colors_js_1.default.FgCyan + timeouts[k].remaining + colors_js_1.default.Reset);
+    }
+}
+function resumeAll() {
+    for (let k in timeouts) {
+        timeouts[k].resume();
+        if (cv(3))
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "resumed " + colors_js_1.default.FgMagenta + "timeout: " + colors_js_1.default.FgCyan + k + colors_js_1.default.FgMagenta + " remaining: " + colors_js_1.default.FgCyan + timeouts[k].remaining + colors_js_1.default.Reset);
+    }
+}
 function TimeoutWrapper(fn, duration, ...args) {
     var fnName = fn.toString().split("(")[0].split(" ")[1];
     if (cv(1))
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "set timeout for: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.FgMagenta + " to " + colors_js_1.default.FgCyan + duration + colors_js_1.default.FgMagenta + "ms" + colors_js_1.default.Reset);
     timeouts[fnName] = new Timer(function () {
-        for (let k of Object.keys(timeouts)) {
-            timeouts[k].pause();
-            if (cv(3))
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgBlue + "paused " + colors_js_1.default.FgMagenta + "timeout: " + colors_js_1.default.FgCyan + k + colors_js_1.default.FgMagenta + " remaining: " + colors_js_1.default.FgCyan + timeouts[k].remaining + colors_js_1.default.Reset);
-        }
+        pauseAll();
         if (cv(3))
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "called: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.FgMagenta + " with: " + colors_js_1.default.FgCyan, args.slice(1), colors_js_1.default.Reset);
-        fn.apply(null, [() => {
-                if (cv(3))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "callback for timeout: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.Reset);
-                for (let k of Object.keys(timeouts)) {
-                    timeouts[k].resume();
-                    if (cv(3))
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "resumed " + colors_js_1.default.FgMagenta + "timeout: " + colors_js_1.default.FgCyan + k + colors_js_1.default.FgMagenta + " remaining: " + colors_js_1.default.FgCyan + timeouts[k].remaining + colors_js_1.default.Reset);
-                }
-            }, ...args]);
-    }, duration);
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "called: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.FgMagenta + " with: " + colors_js_1.default.FgCyan + "[" + args.slice(1) + "]" + colors_js_1.default.Reset);
+        fn.apply(null, args).then(() => {
+            if (cv(3))
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "finished " + colors_js_1.default.FgMagenta + "callback for timeout: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.Reset);
+            resumeAll();
+        }).catch(err => {
+            if (cv(2))
+                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "error " + colors_js_1.default.FgMagenta + "in timeout: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.FgMagenta + " error: " + err + colors_js_1.default.Reset);
+            resumeAll();
+        });
+    }, duration, fn.name);
 }
 exports.TimeoutWrapper = TimeoutWrapper;
