@@ -46,53 +46,59 @@ interface configFile {
 
   "warnAtErrorCounts": number[],
 
-    "eMail": {
-      "useTestAccount": boolean,
-      "account": {
-        "host": string,
-        "port": number,
-        "secure": boolean,
-        "auth": {
-          "user": string,
-          "pass": string
-        },
-        "tls": {
-          "rejectUnauthorized": boolean
-        }
+  "eMail": {
+    "useTestAccount": boolean,
+    "account": {
+      "host": string,
+      "port": number,
+      "secure": boolean,
+      "auth": {
+        "user": string,
+        "pass": string
       },
-      "to": string,
-      "from": string,
-      "messages": {
-        "new": {
-          "subject": string,
-          "html": string
-        },
-        "invalidNumber": {
-          "subject": string,
-          "html": string
-        },
-        "wrongDynIpPin": {
-          "subject": string,
-          "html": string
-        },
-        "wrongDynIpType": {
-          "subject": string,
-          "html": string
-        },
-        "wrongServerPin": {
-          "subject": string,
-          "html": string
-        },
-        "ServerError": {
-          "subject": string,
-          "html": string
-        }
+      "tls": {
+        "rejectUnauthorized": boolean
+      }
+    },
+    "to": string,
+    "from": string,
+    "messages": {
+      "new": {
+        "subject": string,
+        "html": string
+      },
+      "invalidNumber": {
+        "subject": string,
+        "html": string
+      },
+      "wrongDynIpPin": {
+        "subject": string,
+        "html": string
+      },
+      "wrongDynIpType": {
+        "subject": string,
+        "html": string
+      },
+      "wrongServerPin": {
+        "subject": string,
+        "html": string
+      },
+      "ServerError": {
+        "subject": string,
+        "html": string
       }
     }
+  }
 }
 
 var collection:any = {};
-Object.assign(collection,require("../../config/mail.json"));
+
+var eMail:any = {};
+Object.assign(eMail,require("../../config/mailAccount.json"));
+Object.assign(eMail,require("../../config/mailMessages.json"));
+
+Object.assign(collection,{eMail});
+
 Object.assign(collection,require("../../config/mysql.json"));
 Object.assign(collection,require("../../config/logging.json"));
 Object.assign(collection,require("../../config/misc.json"));

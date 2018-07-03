@@ -4,6 +4,7 @@
   "setChangedOnNewerEntry":true,
   "allowInvalidPackageSizes":true,
 
+  "warnAtErrorCounts":[1,10],
   "serverPin":null,
   "allowFullQueryInReadonly":true,
   "allowLoginInReadonly": false,
