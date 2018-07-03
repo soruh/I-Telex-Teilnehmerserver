@@ -555,7 +555,7 @@ handles[10][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded,
 			let version = obj.data.version;
 			let query = obj.data.pattern;
 			let queryarr = query.split(" ");
-			let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ??".repeat(query.length)};`;
+			let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(query.length)};`;
 			ITelexCom.SqlQuery(pool, searchstring, queryarr.map(q=>`%${q}%`), function (result:ITelexCom.peerList) {
 				if ((result[0] != undefined) && (result != [])) {
 					var towrite = [];

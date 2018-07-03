@@ -4,7 +4,7 @@
   "setChangedOnNewerEntry":true,
   "allowInvalidPackageSizes":true,
 
-  "serverPin":1234512345,
+  "serverPin":null,
   "allowFullQueryInReadonly":true,
   "allowLoginInReadonly": false,
   "doDnsLookups":true,
