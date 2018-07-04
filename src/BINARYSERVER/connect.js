@@ -57,9 +57,8 @@ function connect(pool, after, options, callback) {
         });
         socket.on('data', function (data) {
             if (cv(2)) {
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.Reset);
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data, colors_js_1.default.Reset);
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data.toString().replace(/[^ -~]/g, "·"), colors_js_1.default.Reset);
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.FgCyan + "<Buffer " + Array.from(data).map(x => (x < 16 ? "0" : "") + x.toString(16)).join(" ") + ">" + colors_js_1.default.Reset);
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors_js_1.default.Reset);
             }
             try {
                 //if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);

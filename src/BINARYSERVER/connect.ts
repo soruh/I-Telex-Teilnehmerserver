@@ -62,11 +62,10 @@ function connect(
 				if (typeof onEnd === "function") onEnd();
 			}
 		});
-		socket.on('data', function (data) {
+		socket.on('data', function (data:Buffer) {
 			if (cv(2)) {
-				ll(colors.FgGreen + "recieved data:" + colors.Reset);
-				ll(colors.FgCyan, data, colors.Reset);
-				ll(colors.FgCyan, data.toString().replace(/[^ -~]/g, "·"), colors.Reset);
+				ll(colors.FgGreen+"recieved data:"+colors.FgCyan+"<Buffer "+Array.from(data).map(x=>(x<16?"0":"")+x.toString(16)).join(" ")+">"+colors.Reset);
+				ll(colors.FgCyan+data.toString().replace(/[^ -~]/g, "·")+colors.Reset);
 			}
 			try {
 				//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);

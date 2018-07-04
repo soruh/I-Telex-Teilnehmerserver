@@ -91,9 +91,8 @@ var server = net.createServer(function (connection) {
 		});
 		connection.on('data', function (data:Buffer):void {
 			if (cv(2)) {
-				ll(colors.FgGreen + "recieved data:" + colors.Reset);
-				ll(colors.FgCyan, data, colors.Reset);
-				ll(colors.FgCyan, data.toString().replace(/[^ -~]/g, "·"), colors.Reset);
+				ll(colors.FgGreen+"recieved data:"+colors.FgCyan+"<Buffer "+Array.from(data).map(x=>(x<16?"0":"")+x.toString(16)).join(" ")+">"+colors.Reset);
+				ll(colors.FgCyan+data.toString().replace(/[^ -~]/g, "·")+colors.Reset);
 			}
 			if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
 				if (cv(2)) ll(colors.FgGreen + "serving ascii request" + colors.Reset);
