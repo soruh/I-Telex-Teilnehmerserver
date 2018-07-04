@@ -80,7 +80,7 @@ interface peer{
 	name:string;
 	type:number;
 	hostname:string;
-	ipaddresse:string;
+	ipaddress:string;
 	port:string;
 	extension:string;
 	pin:string;
@@ -532,7 +532,7 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 					send += res.number + "\r\n";
 					send += res.name + "\r\n";
 					send += res.type + "\r\n";
-					if ([2,4,5].indexOf(res.type)>-1) {						send += res.ipaddresse + "\r\n";
+					if ([2,4,5].indexOf(res.type)>-1) {						send += res.ipaddress + "\r\n";
 					} else if ([1,3,6].indexOf(res.type)>-1) {
 						send += res.hostname + "\r\n";
 					}/* else if (res.type == 6) {
@@ -637,7 +637,7 @@ async function checkIp(data:number[]|Buffer, client:connections.client, pool:mys
 					ipaddress:string
 				}[] = [];
 				async.each(peers, function (peer, cb) {
-					if ((!peer.ipaddresse) && peer.hostname) {
+					if ((!peer.ipaddress) && peer.hostname) {
 						// if(cv(3)) ll(`hostname: ${peer.hostname}`)
 						lookup(peer.hostname, {}, function (err, address, family) {
 							// if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
@@ -650,11 +650,11 @@ async function checkIp(data:number[]|Buffer, client:connections.client, pool:mys
 							}
 							cb();
 						});
-					} else if (peer.ipaddresse && (ip.isV4Format(peer.ipaddresse) || ip.isV6Format(peer.ipaddresse))) {
-						// if(cv(3)) ll(`ip: ${peer.ipaddresse}`);
+					} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
+						// if(cv(3)) ll(`ip: ${peer.ipaddress}`);
 						ipPeers.push({
 							peer,
-							ipaddress:peer.ipaddresse
+							ipaddress:peer.ipaddress
 						});
 						cb();
 					} else {
