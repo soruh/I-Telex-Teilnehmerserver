@@ -409,35 +409,41 @@ function decPackages(buffer:number[]|Buffer): Package_decoded[] {
 }
 
 function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
-    if (type === "number") {
-        var num = 0;
-        for (let i = arr.length - 1; i >= 0; i--) {
-            num *= 256;
-            num += arr[i];
-        }
-        return (num);
-    } else if (type === "string") {
-        var str = "";
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i] != 0) {
-                str += String.fromCharCode(arr[i]);
-            } else {
-                break;
-            }
-        }
-        return (str.replace(/(\u0000)/g, ""));
-    } else if (type === "ip") {
-        let numip: number = < number > BytearrayToValue(arr, "number");
-        if (numip == 0) {
-            return (null);
-        } else {
-            let str = "";
-            for (let i = 0; i < 4; i++) {
-                str += ((numip >> (8 * i)) & 255) + (i == 3 ? "" : ".");
-            }
-            return (str);
-        }
-    }
+    switch(type){
+		case "number":
+			var num = 0;
+			for (let i = arr.length - 1; i >= 0; i--) {
+				num *= 256;
+				num += arr[i];
+			}
+			return (num);
+
+    	case "string":
+			var str = "";
+			for (let i = 0; i < arr.length; i++) {
+				if (arr[i] != 0) {
+					str += String.fromCharCode(arr[i]);
+				} else {
+					break;
+				}
+			}
+			return (str);
+
+		case "ip":
+			let numip: number = < number > BytearrayToValue(arr, "number");
+			if (numip == 0) {
+				return (null);
+			} else {
+				let str = "";
+				for (let i = 0; i < 4; i++) {
+					str += ((numip >> (8 * i)) & 255) + (i == 3 ? "" : ".");
+				}
+				return (str);
+			}
+			
+		default:
+			return null;
+	}
 }
 
 function ValueToBytearray(value:string|number, size:number):number[]{

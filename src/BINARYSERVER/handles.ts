@@ -552,7 +552,7 @@ handles[10][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded,
 	try {
 		if (client) {
 			if (cv(2)) ll(obj);
-			let version = obj.data.version;
+//			let version = obj.data.version;
 			let query = obj.data.pattern;
 			let queryarr = query.split(" ");
 			let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
