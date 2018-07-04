@@ -45,7 +45,7 @@ for (let i = 1; i <= 10; i++) {
 handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			var number = obj.data.rufnummer;
+			var number = obj.data.number;
 			var pin = obj.data.pin;
 			var port = obj.data.port;
 			var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
@@ -62,11 +62,11 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 					cb();
 				});
 			} else {
-				ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE rufnummer = ?;`,[number], function (result_a:ITelexCom.peerList) {
+				ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`,[number], function (result_a:ITelexCom.peerList) {
 					let results = [];
 					if (result_a) {
 						for (let r of result_a) {
-							if (r.typ != 0) {
+							if (r.type != 0) {
 								results.push(r);
 							}
 						}
@@ -74,7 +74,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 					if (results.length == 1) {
 						var res = results[0];
 						if (res.pin == pin) {
-							if (res.typ == 5) {
+							if (res.type == 5) {
 								if (ipaddress != res.ipaddresse || port != res.port) {
 									ITelexCom.SqlQuery(pool,
 										`UPDATE teilnehmer
@@ -82,15 +82,15 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 												port = ?,
 												ipaddresse = ?,
 												changed = 1,
-												moddate = ?
+												timestamp = ?
 											WHERE
-												rufnummer = ?
+												number = ?
 												OR
 												(
 													Left(name, ?) = Left(?, ?)
 													AND port = ?
 													AND pin = ?
-													AND typ = 5
+													AND type = 5
 												)`,[
 										port,
 										ipaddress,
@@ -102,7 +102,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 										res.port,
 										res.pin
 									], function (result_b) {
-										ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE rufnummer = ?;`, [number], function (result_c:ITelexCom.peerList) {
+										ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
 											try {
 												client.connection.write(ITelexCom.encPackage({
 													packagetype: 2,
@@ -135,10 +135,10 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 								if (cv(1)) ll(colors.FgRed + "not DynIp type" + colors.Reset);
 								client.connection.end();
 								ITelexCom.sendEmail("wrongDynIpType", {
-									"[typ]": res.typ,
+									"[type]": res.type,
 									"[IpFull]": client.connection.remoteAddress,
 									"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
-									"[number]": res.rufnummer,
+									"[number]": res.number,
 									"[name]": res.name,
 									"[date]": new Date().toLocaleString(),
 									"[timeZone]": getTimezone(new Date())
@@ -149,7 +149,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 							client.connection.end();
 							ITelexCom.sendEmail("wrongDynIpPin", {
 								"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
-								"[number]": res.rufnummer,
+								"[number]": res.number,
 								"[name]": res.name,
 								"[date]": new Date().toLocaleString(),
 								"[timeZone]": getTimezone(new Date())
@@ -160,13 +160,13 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 						INSERT INTO teilnehmer
 							(
 								name,
-								moddate,
-								typ,
-								rufnummer,
+								timestamp,
+								type,
+								number,
 								port,
 								pin,
 								ipaddresse,
-								gesperrt,
+								disabled,
 								changed
 							) VALUES (
 								?,
@@ -190,7 +190,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 							1,
 							1
 						];
-						let deleteQuery = `DELETE FROM teilnehmer WHERE rufnummer=?;`;
+						let deleteQuery = `DELETE FROM teilnehmer WHERE number=?;`;
 						let deleteOptions = [number];
 
 						
@@ -219,7 +219,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 									"[date]": new Date().toLocaleString(),
 									"[timeZone]": getTimezone(new Date())
 								}, cb);
-								ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE rufnummer = ?;`, [number], function (result_c:ITelexCom.peerList) {
+								ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
 									try {
 										client.connection.write(ITelexCom.encPackage({
 											packagetype: 2,
@@ -258,15 +258,15 @@ handles[3][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 	try {
 		if (client) {
 			if (obj.data.version == 1) {
-				var rufnummer = obj.data.rufnummer;
+				var number = obj.data.number;
 				ITelexCom.SqlQuery(pool, `
 					SELECT * FROM teilnehmer WHERE
-						rufnummer = ?
+						number = ?
 						and
-						typ != 0
+						type != 0
 						and
-						gesperrt != 1
-					;`, [rufnummer], function (result:ITelexCom.peerList) {
+						disabled != 1
+					;`, [number], function (result:ITelexCom.peerList) {
 					if (cv(2)) ll(colors.FgCyan, result, colors.Reset);
 					if ((result[0] != undefined) && (result != [])) {
 						let data:any = result[0];
@@ -308,19 +308,19 @@ handles[3][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, obj.data.rufnummer, colors.Reset);
-			ITelexCom.SqlQuery(pool, `SELECT * from teilnehmer WHERE rufnummer = ?;`, [obj.data.rufnummer], function (entries:ITelexCom.peerList) {
+			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, obj.data.number, colors.Reset);
+			ITelexCom.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [obj.data.number], function (entries:ITelexCom.peerList) {
 				var o = { //TODO improve;
-					rufnummer: obj.data.rufnummer,
+					number: obj.data.number,
 					name: obj.data.name,
-					typ: obj.data.type,
+					type: obj.data.type,
 					hostname: obj.data.hostname,
 					ipaddresse: obj.data.ipaddress,
 					port: obj.data.port,
 					extension: obj.data.extension,
 					pin: obj.data.pin,
-					gesperrt: obj.data.disabled,
-					moddate: obj.data.timestamp,
+					disabled: obj.data.disabled,
+					timestamp: obj.data.timestamp,
 					changed: (config.setChangedOnNewerEntry ? 1 : 0)
 				};
 				// var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.doDnsLookups);
@@ -339,14 +339,14 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 				if (entries.length == 1) {
                     var entry:ITelexCom.peer = entries[0];
                     if(typeof client.newEntries != "number") client.newEntries = 0;
-					if (obj.data.timestamp > +entry.moddate) {
+					if (obj.data.timestamp > +entry.timestamp) {
                         client.newEntries++;
-                        if (cv(1) && !cv(2)) ll(colors.FgGreen + "got new dataset for:", colors.FgCyan, obj.data.rufnummer, colors.Reset);
+                        if (cv(1) && !cv(2)) ll(colors.FgGreen + "got new dataset for:", colors.FgCyan, obj.data.number, colors.Reset);
 						// lookup((doLU?o.hostname:false),function(addr,entry,o,client.connection,cb){
 						//   if(doLU&&addr){
 						//     o.ipaddresse = addr;
 						//   }
-						if (cv(2)) ll(colors.FgGreen + "recieved entry is " + colors.FgCyan + (obj.data.timestamp-+entry.moddate)+"seconds newer"+ colors.FgGreen + " > " + colors.FgCyan + entry.moddate + colors.Reset);
+						if (cv(2)) ll(colors.FgGreen + "recieved entry is " + colors.FgCyan + (obj.data.timestamp-+entry.timestamp)+"seconds newer"+ colors.FgGreen + " > " + colors.FgCyan + entry.timestamp + colors.Reset);
 						var sets = "";
 						for (let k in o) {
 							if (o[k] != undefined) {
@@ -355,8 +355,8 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 								sets += k + " = DEFAULT, ";
 							}
 						}
-						var q = `UPDATE teilnehmer SET ${sets.substring(0,sets.length-2)} WHERE rufnummer = ?;`;
-						ITelexCom.SqlQuery(pool, q, [obj.data.rufnummer], function (res2) {
+						var q = `UPDATE teilnehmer SET ${sets.substring(0,sets.length-2)} WHERE number = ?;`;
+						ITelexCom.SqlQuery(pool, q, [obj.data.number], function (res2) {
 							client.connection.write(ITelexCom.encPackage({
 								packagetype: 8,
 								datalength: 0
@@ -366,7 +366,7 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 						});
 						// });
 					} else {
-						if (cv(2)) ll(colors.FgYellow + "recieved entry is " + colors.FgCyan + (+entry.moddate - obj.data.timestamp) + colors.FgYellow + " seconds older and was ignored" + colors.Reset);
+						if (cv(2)) ll(colors.FgYellow + "recieved entry is " + colors.FgCyan + (+entry.timestamp - obj.data.timestamp) + colors.FgYellow + " seconds older and was ignored" + colors.Reset);
 						client.connection.write(ITelexCom.encPackage({
 							packagetype: 8,
 							datalength: 0
@@ -398,7 +398,7 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 					});
 					// });
 				} else {
-					if (cv(0)) ll('The "rufnummer" field should be unique! This error should not occur!');
+					if (cv(0)) ll('The "number" field should be unique! This error should not occur!');
 					if (typeof cb === "function") cb();
 				}
 			});
@@ -498,7 +498,7 @@ handles[8][constants.states.RESPONDING] = function (obj:ITelexCom.Package_decode
 			if (cv(1)) {
 				var toSend = [];
 				for (let o of client.writebuffer) {
-					toSend.push(o.rufnummer);
+					toSend.push(o.number);
 				}
 				ll(colors.FgGreen + "entrys to transmit:" + colors.FgCyan + (cv(2) ? util.inspect(toSend).replace(/\n/g, "") : toSend.length) + colors.Reset);
 			}
@@ -508,7 +508,7 @@ handles[8][constants.states.RESPONDING] = function (obj:ITelexCom.Package_decode
 					datalength: 100,
 					data: client.writebuffer[0]
 				}), function () {
-					if (cv(1)) ll(colors.FgGreen + "sent dataset for:", colors.FgCyan, client.writebuffer[0].rufnummer, colors.Reset);
+					if (cv(1)) ll(colors.FgGreen + "sent dataset for:", colors.FgCyan, client.writebuffer[0].number, colors.Reset);
 					client.writebuffer = client.writebuffer.slice(1);
 					if (typeof cb === "function") cb();
 				});
@@ -560,7 +560,7 @@ handles[10][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded,
 				if ((result[0] != undefined) && (result != [])) {
 					var towrite = [];
 					for (let o of result) {
-						if (o.gesperrt != 1 && o.typ != 0) {
+						if (o.disabled != 1 && o.type != 0) {
 							o.pin = "0";
 							towrite.push(o);
 						}

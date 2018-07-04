@@ -41,7 +41,7 @@ mySqlConnectionOptions["multipleStatements"] = true;
 var serverErrors = {};
 
 interface PackageData_decoded {
-    rufnummer ? : number;
+    number ? : number;
     name ? : string;
     disabled ? : number;
     type ? : number;
@@ -76,16 +76,16 @@ interface rawPackage{
 
 interface peer{
 	uid:number;
-	rufnummer:number;
+	number:number;
 	name:string;
-	typ:number;
+	type:number;
 	hostname:string;
 	ipaddresse:string;
 	port:string;
 	extension:string;
 	pin:string;
-	gesperrt:number;
-	moddate:string;
+	disabled:number;
+	timestamp:number;
 	changed:number;
 }
 type peerList = peer[];
@@ -118,9 +118,9 @@ function handlePackage(obj:Package_decoded, client:connections.client, pool, cb:
 		} else {
 			try {
 				if (cv(2)) {
-					if (config.logITelexCom) ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : client.connection.remoteAddress) + colors.Reset);
+					if (config.logITelexCom) ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
 				} else if (cv(1)) {
-					if (config.logITelexCom) ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : client.connection.remoteAddress) + colors.Reset);
+					if (config.logITelexCom) ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
 				}
 				if (typeof handles[obj.packagetype][client.state] == "function") {
 					if (cv(2)) if (config.logITelexCom) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
@@ -183,7 +183,7 @@ function encPackage(obj:Package_decoded):Buffer{
     var numip: number = 0;
     switch (obj.packagetype) {
         case 1:
-            array = ValueToBytearray(data.rufnummer, 4)
+            array = ValueToBytearray(data.number, 4)
                 .concat(ValueToBytearray(+data.pin, 2))
                 .concat(ValueToBytearray(+data.port, 2));
             if (obj.datalength == null) obj.datalength = 8;
@@ -199,7 +199,7 @@ function encPackage(obj:Package_decoded):Buffer{
             if (obj.datalength == null) obj.datalength = 4;
             break;
         case 3:
-            array = ValueToBytearray(data.rufnummer, 4)
+            array = ValueToBytearray(data.number, 4)
                 .concat(ValueToBytearray(data.version, 1));
             if (obj.datalength == null) obj.datalength = 5;
             break;
@@ -229,7 +229,7 @@ function encPackage(obj:Package_decoded):Buffer{
                 ext = parseInt(data.extension);
             }
 
-            array = ValueToBytearray(data.rufnummer, 4)
+            array = ValueToBytearray(data.number, 4)
                 .concat(ValueToBytearray(data.name, 40))
                 .concat(ValueToBytearray(flags, 2))
                 .concat(ValueToBytearray(data.type, 1))
@@ -281,7 +281,7 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
     switch (packagetype) {
         case 1:
             data = {
-                rufnummer: < number > BytearrayToValue(buffer.slice(0, 4), "number"),
+                number: < number > BytearrayToValue(buffer.slice(0, 4), "number"),
                 pin: < string > BytearrayToValue(buffer.slice(4, 6), "number").toString(),
                 port: < string > BytearrayToValue(buffer.slice(6, 8), "number").toString()
             };
@@ -293,7 +293,7 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
             break;
         case 3:
             data = {
-                rufnummer: < number > BytearrayToValue(buffer.slice(0, 4), "number")
+                number: < number > BytearrayToValue(buffer.slice(0, 4), "number")
             };
             if (buffer.slice(4, 5).length > 0) {
                 data.version = < number > BytearrayToValue(buffer.slice(4, 5), "number");
@@ -309,7 +309,7 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
             let flags = buffer.slice(44, 46);
 
             data = {
-                rufnummer: < number > BytearrayToValue(buffer.slice(0, 4), "number"),
+                number: < number > BytearrayToValue(buffer.slice(0, 4), "number"),
                 name: < string > BytearrayToValue(buffer.slice(4, 44), "string"),
                 disabled: flags[0] & 1,
                 type: < number > BytearrayToValue(buffer.slice(46, 47), "number"),
@@ -510,7 +510,7 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 	if (number != "") {
 		if (!isNaN(parseInt(number))) {
 			if (cv(1)) if (config.logITelexCom) ll(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
-			SqlQuery(pool, `SELECT * FROM teilnehmer WHERE rufnummer=? and gesperrt!=1 and typ!=0;`, [number], function (result:peerList) {
+			SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number], function (result:peerList) {
 				if (!result || result.length == 0) {
 					let send:string = "";
 					send += "fail\r\n";
@@ -529,13 +529,13 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 					let send:string = "";
 					let res = result[0];
 					send += "ok\r\n";
-					send += res.rufnummer + "\r\n";
+					send += res.number + "\r\n";
 					send += res.name + "\r\n";
-					send += res.typ + "\r\n";
-					if ([2,4,5].indexOf(res.typ)>-1) {						send += res.ipaddresse + "\r\n";
-					} else if ([1,3,6].indexOf(res.typ)>-1) {
+					send += res.type + "\r\n";
+					if ([2,4,5].indexOf(res.type)>-1) {						send += res.ipaddresse + "\r\n";
+					} else if ([1,3,6].indexOf(res.type)>-1) {
 						send += res.hostname + "\r\n";
-					}/* else if (res.typ == 6) {
+					}/* else if (res.type == 6) {
 						send += res.hostname + "\r\n";
 					}*/ else{
 						send += "ERROR\r\n";
@@ -631,7 +631,7 @@ async function checkIp(data:number[]|Buffer, client:connections.client, pool:mys
 		}
 
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
-			SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", [], function (peers:peerList) {
+			SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [], function (peers:peerList) {
 				var ipPeers:{
 					peer:peer,
 					ipaddress:string

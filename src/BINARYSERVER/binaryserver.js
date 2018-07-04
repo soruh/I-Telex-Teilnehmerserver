@@ -87,7 +87,7 @@ var server = net.createServer(function (connection) {
             if (ITelexCom_js_1.cv(2)) {
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.Reset);
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data, colors_js_1.default.Reset);
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data.toString().replace(/\u0000/g, "").replace(/[^ -~]/g, " "), colors_js_1.default.Reset);
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, data.toString().replace(/[^ -~]/g, "·"), colors_js_1.default.Reset);
             }
             if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
                 if (ITelexCom_js_1.cv(2))
@@ -175,7 +175,7 @@ function updateQueue() {
                 if (ITelexCom_js_1.cv(2)) {
                     var changed_numbers = [];
                     for (let o of changed) {
-                        changed_numbers.push(o.rufnummer);
+                        changed_numbers.push(o.number);
                     }
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "numbers to enqueue:" + colors_js_1.default.FgCyan, changed_numbers, colors_js_1.default.Reset);
                 }
@@ -190,7 +190,7 @@ function updateQueue() {
                                         ITelexCom.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [Math.floor(Date.now() / 1000), server.uid, message.uid], function () {
                                             //ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
                                             if (ITelexCom_js_1.cv(2))
-                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.rufnummer, colors_js_1.default.Reset);
+                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                             cb2();
                                             //});
                                         });
@@ -199,7 +199,7 @@ function updateQueue() {
                                         ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
                                             //ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
                                             if (ITelexCom_js_1.cv(2))
-                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.rufnummer, colors_js_1.default.Reset);
+                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                             cb2();
                                             //});
                                         });
@@ -210,7 +210,7 @@ function updateQueue() {
                                             ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
                                                 //ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
                                                 if (ITelexCom_js_1.cv(2))
-                                                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.rufnummer, colors_js_1.default.Reset);
+                                                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                                 cb2();
                                                 //});
                                             });

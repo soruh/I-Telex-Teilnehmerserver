@@ -58,11 +58,11 @@ function handlePackage(obj, client, pool, cb) {
             try {
                 if (cv(2)) {
                     if (config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : client.connection.remoteAddress) + colors_js_1.default.Reset);
+                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
                 }
                 else if (cv(1)) {
                     if (config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling packagetype:" + colors_js_1.default.FgCyan, obj.packagetype, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.rufnummer : client.connection.remoteAddress) + colors_js_1.default.Reset);
+                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling packagetype:" + colors_js_1.default.FgCyan, obj.packagetype, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
                 }
                 if (typeof handles_js_1.default[obj.packagetype][client.state] == "function") {
                     if (cv(2))
@@ -141,7 +141,7 @@ function encPackage(obj) {
     var numip = 0;
     switch (obj.packagetype) {
         case 1:
-            array = ValueToBytearray(data.rufnummer, 4)
+            array = ValueToBytearray(data.number, 4)
                 .concat(ValueToBytearray(+data.pin, 2))
                 .concat(ValueToBytearray(+data.port, 2));
             if (obj.datalength == null)
@@ -159,7 +159,7 @@ function encPackage(obj) {
                 obj.datalength = 4;
             break;
         case 3:
-            array = ValueToBytearray(data.rufnummer, 4)
+            array = ValueToBytearray(data.number, 4)
                 .concat(ValueToBytearray(data.version, 1));
             if (obj.datalength == null)
                 obj.datalength = 5;
@@ -192,7 +192,7 @@ function encPackage(obj) {
             else {
                 ext = parseInt(data.extension);
             }
-            array = ValueToBytearray(data.rufnummer, 4)
+            array = ValueToBytearray(data.number, 4)
                 .concat(ValueToBytearray(data.name, 40))
                 .concat(ValueToBytearray(flags, 2))
                 .concat(ValueToBytearray(data.type, 1))
@@ -251,7 +251,7 @@ function decPackageData(packagetype, buffer) {
     switch (packagetype) {
         case 1:
             data = {
-                rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
+                number: BytearrayToValue(buffer.slice(0, 4), "number"),
                 pin: BytearrayToValue(buffer.slice(4, 6), "number").toString(),
                 port: BytearrayToValue(buffer.slice(6, 8), "number").toString()
             };
@@ -263,7 +263,7 @@ function decPackageData(packagetype, buffer) {
             break;
         case 3:
             data = {
-                rufnummer: BytearrayToValue(buffer.slice(0, 4), "number")
+                number: BytearrayToValue(buffer.slice(0, 4), "number")
             };
             if (buffer.slice(4, 5).length > 0) {
                 data.version = BytearrayToValue(buffer.slice(4, 5), "number");
@@ -278,7 +278,7 @@ function decPackageData(packagetype, buffer) {
         case 5:
             let flags = buffer.slice(44, 46);
             data = {
-                rufnummer: BytearrayToValue(buffer.slice(0, 4), "number"),
+                number: BytearrayToValue(buffer.slice(0, 4), "number"),
                 name: BytearrayToValue(buffer.slice(4, 44), "string"),
                 disabled: flags[0] & 1,
                 type: BytearrayToValue(buffer.slice(46, 47), "number"),
@@ -498,7 +498,7 @@ function ascii(data, client, pool) {
             if (cv(1))
                 if (config_js_1.default.logITelexCom)
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
-            SqlQuery(pool, `SELECT * FROM teilnehmer WHERE rufnummer=? and gesperrt!=1 and typ!=0;`, [number], function (result) {
+            SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number], function (result) {
                 if (!result || result.length == 0) {
                     let send = "";
                     send += "fail\r\n";
@@ -520,15 +520,15 @@ function ascii(data, client, pool) {
                     let send = "";
                     let res = result[0];
                     send += "ok\r\n";
-                    send += res.rufnummer + "\r\n";
+                    send += res.number + "\r\n";
                     send += res.name + "\r\n";
-                    send += res.typ + "\r\n";
-                    if ([2, 4, 5].indexOf(res.typ) > -1) {
+                    send += res.type + "\r\n";
+                    if ([2, 4, 5].indexOf(res.type) > -1) {
                         send += res.ipaddresse + "\r\n";
                     }
-                    else if ([1, 3, 6].indexOf(res.typ) > -1) {
+                    else if ([1, 3, 6].indexOf(res.type) > -1) {
                         send += res.hostname + "\r\n";
-                    } /* else if (res.typ == 6) {
+                    } /* else if (res.type == 6) {
                         send += res.hostname + "\r\n";
                     }*/
                     else {
@@ -640,7 +640,7 @@ function checkIp(data, client, pool) {
                 }
             }
             if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
-                SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE gesperrt != 1 AND typ != 0;", [], function (peers) {
+                SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [], function (peers) {
                     var ipPeers = [];
                     async.each(peers, function (peer, cb) {
                         if ((!peer.ipaddresse) && peer.hostname) {

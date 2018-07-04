@@ -93,7 +93,7 @@ var server = net.createServer(function (connection) {
 			if (cv(2)) {
 				ll(colors.FgGreen + "recieved data:" + colors.Reset);
 				ll(colors.FgCyan, data, colors.Reset);
-				ll(colors.FgCyan, data.toString().replace(/\u0000/g, "").replace(/[^ -~]/g, " "), colors.Reset);
+				ll(colors.FgCyan, data.toString().replace(/[^ -~]/g, "·"), colors.Reset);
 			}
 			if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
 				if (cv(2)) ll(colors.FgGreen + "serving ascii request" + colors.Reset);
@@ -168,7 +168,7 @@ function updateQueue() {
 				if (cv(2)) {
 					var changed_numbers = [];
 					for (let o of changed) {
-						changed_numbers.push(o.rufnummer);
+						changed_numbers.push(o.number);
 					}
 					ll(colors.FgGreen + "numbers to enqueue:" + colors.FgCyan, changed_numbers, colors.Reset);
 				}
@@ -182,14 +182,14 @@ function updateQueue() {
 									if (qentry.length == 1) {
 										ITelexCom.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;",[Math.floor(Date.now() / 1000),server.uid, message.uid], function () {
 											//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
+											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 											cb2();
 											//});
 										});
 									} else if (qentry.length == 0) {
 										ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
 											//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
+											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 											cb2();
 											//});
 										});
@@ -198,7 +198,7 @@ function updateQueue() {
 										ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;",[server.uid, message.uid], function () {
 											ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid,message.uid,Math.floor(Date.now() / 1000)], function () {
 												//ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
-												if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.rufnummer, colors.Reset);
+												if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 												cb2();
 												//});
 											});
