@@ -72,11 +72,11 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                         var res = results[0];
                         if (res.pin == pin) {
                             if (res.type == 5) {
-                                if (ipaddress != res.ipaddresse || port != res.port) {
+                                if (ipaddress != res.ipaddress || port != res.port) {
                                     ITelexCom.SqlQuery(pool, `UPDATE teilnehmer
 											SET
 												port = ?,
-												ipaddresse = ?,
+												ipaddress = ?,
 												changed = 1,
 												timestamp = ?
 											WHERE
@@ -104,7 +104,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                                                     packagetype: 2,
                                                     datalength: 4,
                                                     data: {
-                                                        ipaddress: result_c[0].ipaddresse
+                                                        ipaddress: result_c[0].ipaddress
                                                     }
                                                 }), "binary", function () {
                                                     if (typeof cb === "function")
@@ -127,7 +127,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                                         packagetype: 2,
                                         datalength: 4,
                                         data: {
-                                            ipaddress: res.ipaddresse
+                                            ipaddress: res.ipaddress
                                         }
                                     }), "binary", function () {
                                         if (typeof cb === "function")
@@ -173,7 +173,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
 								number,
 								port,
 								pin,
-								ipaddresse,
+								ipaddress,
 								disabled,
 								changed
 							) VALUES (
@@ -226,7 +226,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                                             packagetype: 2,
                                             datalength: 4,
                                             data: {
-                                                ipaddress: result_c[0].ipaddresse
+                                                ipaddress: result_c[0].ipaddress
                                             }
                                         }), "binary", function () {
                                             if (typeof cb === "function")
@@ -342,7 +342,7 @@ handles[5][constants.states.FULLQUERY] = function (obj, client, pool, cb) {
                     name: obj.data.name,
                     type: obj.data.type,
                     hostname: obj.data.hostname,
-                    ipaddresse: obj.data.ipaddress,
+                    ipaddress: obj.data.ipaddress,
                     port: obj.data.port,
                     extension: obj.data.extension,
                     pin: obj.data.pin,
@@ -350,7 +350,7 @@ handles[5][constants.states.FULLQUERY] = function (obj, client, pool, cb) {
                     timestamp: obj.data.timestamp,
                     changed: (config_js_1.default.setChangedOnNewerEntry ? 1 : 0)
                 };
-                // var doLU = ((o.hostname!=""&&o.ipaddresse==null)&&config.doDnsLookups);
+                // var doLU = ((o.hostname!=""&&o.ipaddress==null)&&config.doDnsLookups);
                 // function lookup(host,callback){
                 //   if(host){
                 //     if(cv(2)) ll(colors.FgGreen+"starting nslookup for: "+colors.FgCyan+host+colors.FgGreen+" ..."+colors.Reset);
@@ -373,7 +373,7 @@ handles[5][constants.states.FULLQUERY] = function (obj, client, pool, cb) {
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got new dataset for:", colors_js_1.default.FgCyan, obj.data.number, colors_js_1.default.Reset);
                         // lookup((doLU?o.hostname:false),function(addr,entry,o,client.connection,cb){
                         //   if(doLU&&addr){
-                        //     o.ipaddresse = addr;
+                        //     o.ipaddress = addr;
                         //   }
                         if (ITelexCom_js_1.cv(2))
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved entry is " + colors_js_1.default.FgCyan + (obj.data.timestamp - +entry.timestamp) + "seconds newer" + colors_js_1.default.FgGreen + " > " + colors_js_1.default.FgCyan + entry.timestamp + colors_js_1.default.Reset);
@@ -413,7 +413,7 @@ handles[5][constants.states.FULLQUERY] = function (obj, client, pool, cb) {
                 else if (entries.length == 0) {
                     // lookup((doLU?o.hostname:false),function(addr,entry,o,client.connection,cb){
                     //   if(doLU&&addr){
-                    //     o.ipaddresse = addr;
+                    //     o.ipaddress = addr;
                     //   }
                     var names = "";
                     var values = "";

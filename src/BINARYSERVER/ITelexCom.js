@@ -524,7 +524,7 @@ function ascii(data, client, pool) {
                     send += res.name + "\r\n";
                     send += res.type + "\r\n";
                     if ([2, 4, 5].indexOf(res.type) > -1) {
-                        send += res.ipaddresse + "\r\n";
+                        send += res.ipaddress + "\r\n";
                     }
                     else if ([1, 3, 6].indexOf(res.type) > -1) {
                         send += res.hostname + "\r\n";
@@ -643,7 +643,7 @@ function checkIp(data, client, pool) {
                 SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [], function (peers) {
                     var ipPeers = [];
                     async.each(peers, function (peer, cb) {
-                        if ((!peer.ipaddresse) && peer.hostname) {
+                        if ((!peer.ipaddress) && peer.hostname) {
                             // if(cv(3)) ll(`hostname: ${peer.hostname}`)
                             dns_1.lookup(peer.hostname, {}, function (err, address, family) {
                                 // if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
@@ -657,11 +657,11 @@ function checkIp(data, client, pool) {
                                 cb();
                             });
                         }
-                        else if (peer.ipaddresse && (ip.isV4Format(peer.ipaddresse) || ip.isV6Format(peer.ipaddresse))) {
-                            // if(cv(3)) ll(`ip: ${peer.ipaddresse}`);
+                        else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
+                            // if(cv(3)) ll(`ip: ${peer.ipaddress}`);
                             ipPeers.push({
                                 peer,
-                                ipaddress: peer.ipaddresse
+                                ipaddress: peer.ipaddress
                             });
                             cb();
                         }
