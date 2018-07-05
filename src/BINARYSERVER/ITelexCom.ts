@@ -308,6 +308,16 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
 
             let flags = buffer.slice(44, 46);
 
+			// <Call-number 4b> 0,4
+			// <Name 40b> 		4,44
+			// <Flags 2b>		44,46
+			// <Type 1b>		46,47
+			// <Addr 40b>		47,87
+			// <IPAdr 4b>		87,91
+			// <Port 2b>		91,93
+			// <Extension 1b>	93,94
+			// <DynPin 2b>		94,96
+			// <Date 4b>		96,100
             data = {
                 number: < number > BytearrayToValue(buffer.slice(0, 4), "number"),
                 name: < string > BytearrayToValue(buffer.slice(4, 44), "string"),
@@ -315,8 +325,8 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
                 type: < number > BytearrayToValue(buffer.slice(46, 47), "number"),
                 hostname: < string > BytearrayToValue(buffer.slice(47, 87), "string"),
                 ipaddress: < string > BytearrayToValue(buffer.slice(87, 91), "ip"),
-                port: < string > BytearrayToValue(buffer.slice(6, 8), "number").toString(),
-                pin: < string > BytearrayToValue(buffer.slice(4, 6), "number").toString(),
+                port: < string > BytearrayToValue(buffer.slice(91, 93), "number").toString(),
+                pin: < string > BytearrayToValue(buffer.slice(94, 96), "number").toString(),
                 timestamp: < number > BytearrayToValue(buffer.slice(96, 100), "number") - 2208988800
             };
 
