@@ -20,7 +20,6 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as connections from "../BINARYSERVER/connections.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import connect from "../BINARYSERVER/connect.js";
-import handles from "../BINARYSERVER/handles.js";
 import {getTransporter, setTransporter} from "../BINARYSERVER/transporter.js";
 
 //#endregion
@@ -210,6 +209,7 @@ function updateQueue() {
 							if (cv(2)) ll(colors.FgGreen + "reseting changed flags..." + colors.Reset);
 							ITelexCom.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid="+changed.map(entry => entry.uid).join(" or uid=")+";", [0], function (res) {
 								if (cv(2)) ll(colors.FgGreen + "reset " + colors.FgCyan + changed.length + colors.FgGreen + " changed flags." + colors.Reset);
+								//sendQueue();
 								resolve();
 							});
 						});
