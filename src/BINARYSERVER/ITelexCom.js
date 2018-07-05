@@ -170,7 +170,7 @@ function encPackage(obj) {
                 obj.datalength = 0;
             break;
         case 5:
-            let flags = data.disabled * 2;
+            let flags = data.disabled ? 2 : 0;
             iparr = data.ipaddress == null ? [] : data.ipaddress.split(".").map(x => +x);
             numip = 0;
             for (let i = 0; i < 4; i++) {
