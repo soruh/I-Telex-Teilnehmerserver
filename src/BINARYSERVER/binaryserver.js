@@ -225,6 +225,7 @@ function updateQueue() {
                             ITelexCom.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid=" + changed.map(entry => entry.uid).join(" or uid=") + ";", [0], function (res) {
                                 if (ITelexCom_js_1.cv(2))
                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset " + colors_js_1.default.FgCyan + changed.length + colors_js_1.default.FgGreen + " changed flags." + colors_js_1.default.Reset);
+                                //sendQueue();
                                 resolve();
                             });
                         });

@@ -290,7 +290,7 @@ function decPackageData(packagetype, buffer) {
             data = {
                 number: BytearrayToValue(buffer.slice(0, 4), "number"),
                 name: BytearrayToValue(buffer.slice(4, 44), "string"),
-                disabled: flags[0] & 2,
+                disabled: (flags[0] & 2) == 2 ? 1 : 0,
                 type: BytearrayToValue(buffer.slice(46, 47), "number"),
                 hostname: BytearrayToValue(buffer.slice(47, 87), "string"),
                 ipaddress: BytearrayToValue(buffer.slice(87, 91), "ip"),
