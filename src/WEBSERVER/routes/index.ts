@@ -40,15 +40,15 @@ router.post('/list', function (req, res) {
       var resultPublic = [];
       for (let a in result) {
         if (
-          (result[a].gesperrt === 0 || req.body.password == config.webInterfacePassword) &&
-          ((result[a].typ != 0) || req.body.password == config.webInterfacePassword)
+          (result[a].disabled === 0 || req.body.password == config.webInterfacePassword) &&
+          ((result[a].type != 0) || req.body.password == config.webInterfacePassword)
         ) {
           var i = resultPublic.length;
           resultPublic[i] = {};
           for (let b in result[a]) {
             if (
               ((b != "pin") || (false && req.body.password == config.webInterfacePassword)) &&
-              ((b != "gesperrt") || (req.body.password == config.webInterfacePassword)) &&
+              ((b != "disabled") || (req.body.password == config.webInterfacePassword)) &&
               (b != "changed")
             ) {
               resultPublic[i][b] = result[a][b];
@@ -87,7 +87,7 @@ router.post('/edit', function (req, res) {
             }
             for (let entry of result) {
               if (
-                (entry.rufnummer == req.body.rufnummer) &&
+                (entry.number == req.body.number) &&
                 (entry.uid != req.body.uid)
               ) {
                 existing = entry;
@@ -97,33 +97,33 @@ router.post('/edit', function (req, res) {
             // ll(existing);
             if (toEdit) {
               let qstr = "UPDATE teilnehmer SET " +
-                "rufnummer=" + mysql.escape(req.body.rufnummer) +
+                "number=" + mysql.escape(req.body.number) +
                 ",name=" + mysql.escape(req.body.name) +
-                ",typ=" + mysql.escape(req.body.typ) +
+                ",type=" + mysql.escape(req.body.type) +
                 ",hostname=" + mysql.escape(req.body.hostname) +
-                ",ipaddresse=" + mysql.escape(req.body.ipaddresse) +
+                ",ipaddress=" + mysql.escape(req.body.ipaddress) +
                 //",pin="+mysql.escape(req.body.pin)+
                 ",port=" + mysql.escape(req.body.port) +
                 ",extension=" + mysql.escape(req.body.extension) +
-                ",gesperrt=" + mysql.escape(req.body.gesperrt) +
-                ",moddate=" + mysql.escape(Math.floor(Date.now() / 1000)) +
+                ",disabled=" + mysql.escape(req.body.disabled) +
+                ",timestamp=" + mysql.escape(Math.floor(Date.now() / 1000)) +
                 ",changed=1 " +
                 "WHERE uid=" + mysql.escape(req.body.uid) + ";";
-              if (existing && toEdit.rufnummer != req.body.rufnummer) {
+              if (existing && toEdit.number != req.body.number) {
                 qstr = "DELETE FROM teilnehmer WHERE uid=" + existing.uid + ";" + qstr;
               }
-              if (toEdit.rufnummer != req.body.rufnummer) {
+              if (toEdit.number != req.body.number) {
                 qstr += "INSERT INTO teilnehmer " +
-                  "(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate,changed) VALUES (" +
-                  mysql.escape(toEdit.rufnummer) + "," +
+                  "(number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp,changed) VALUES (" +
+                  mysql.escape(toEdit.number) + "," +
                   mysql.escape(toEdit.name) +
                   ",0," +
                   mysql.escape(toEdit.hostname) + "," +
-                  mysql.escape(toEdit.ipaddresse) + "," +
+                  mysql.escape(toEdit.ipaddress) + "," +
                   mysql.escape(toEdit.port) + "," +
                   mysql.escape(toEdit.extension) + "," +
                   mysql.escape(toEdit.pin) + "," +
-                  mysql.escape(toEdit.gesperrt) + "," +
+                  mysql.escape(toEdit.disabled) + "," +
                   mysql.escape(Math.floor(Date.now() / 1000)) + "," +
                   "'1'" +
                   ");";
@@ -161,23 +161,23 @@ router.post('/edit', function (req, res) {
           } else {
             let existing:any = false;
             for (let t of teilnehmer) {
-              if (t.rufnummer == req.body.rufnummer) existing = t;
+              if (t.number == req.body.number) existing = t;
             }
             let qstr =
-              "INSERT INTO teilnehmer (rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES (" +
-              mysql.escape(req.body.rufnummer) + "," +
+              "INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (" +
+              mysql.escape(req.body.number) + "," +
               mysql.escape(req.body.name) + "," +
-              mysql.escape(req.body.typ) + "," +
+              mysql.escape(req.body.type) + "," +
               mysql.escape(req.body.hostname) + "," +
-              mysql.escape(req.body.ipaddresse) + "," +
+              mysql.escape(req.body.ipaddress) + "," +
               mysql.escape(req.body.port) + "," +
               mysql.escape(req.body.extension) + "," +
               mysql.escape(req.body.pin) + "," +
-              mysql.escape(req.body.gesperrt) + "," +
+              mysql.escape(req.body.disabled) + "," +
               mysql.escape(Math.floor(Date.now() / 1000)) +
               ");";
             if (existing) {
-              if (existing.typ == 0) {
+              if (existing.type == 0) {
                 qstr = "DELETE FROM teilnehmer WHERE uid=" + existing.uid + ";" + qstr;
                 pool.query(qstr, function (err, result) {
                   if (err) {
@@ -214,16 +214,16 @@ router.post('/edit', function (req, res) {
               });
             }
             /*pool.query("INSERT INTO teilnehmer "+
-            "(rufnummer,name,typ,hostname,ipaddresse,port,extension,pin,gesperrt,moddate) VALUES ("+
-            mysql.escape(req.body.rufnummer)+","+
+            "(number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES ("+
+            mysql.escape(req.body.number)+","+
             mysql.escape(req.body.name)+","+
-            mysql.escape(req.body.typ)+","+
+            mysql.escape(req.body.type)+","+
             mysql.escape(req.body.hostname)+","+
-            mysql.escape(req.body.ipaddresse)+","+
+            mysql.escape(req.body.ipaddress)+","+
             mysql.escape(req.body.port)+","+
             mysql.escape(req.body.extension)+","+
             mysql.escape(req.body.pin)+","+
-            mysql.escape(req.body.gesperrt)+","+
+            mysql.escape(req.body.disabled)+","+
             mysql.escape(Math.floor(Date.now()/1000))+
             ")",
             function (err, result) {
@@ -237,7 +237,7 @@ router.post('/edit', function (req, res) {
         });
         break;
       case "delete":
-        pool.query("UPDATE teilnehmer SET typ=0, changed=1, moddate=" + Math.floor(Date.now() / 1000) + " WHERE typ!=0 AND uid=" + mysql.escape(req.body.uid) + ";", function (err, result) {
+        pool.query("UPDATE teilnehmer SET type=0, changed=1, timestamp=" + Math.floor(Date.now() / 1000) + " WHERE type!=0 AND uid=" + mysql.escape(req.body.uid) + ";", function (err, result) {
           if (err) {
             res.json({
               successful: false,

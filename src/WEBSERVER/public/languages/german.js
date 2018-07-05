@@ -1,18 +1,18 @@
 /* jshint -W079 */
 var german = {
-  "#table_th_label_rufnummer": {
+  "#table_th_label_number": {
     text: "telex-nummer"
   },
   "#table_th_label_name": {
     text: "name"
   },
-  "#table_th_label_typ": {
+  "#table_th_label_type": {
     text: "typ"
   },
   "#table_th_label_hostname": {
     text: "hostname"
   },
-  "#table_th_label_ipaddresse": {
+  "#table_th_label_ipaddress": {
     text: "ipaddresse"
   },
   "#table_th_label_port": {
@@ -24,10 +24,10 @@ var german = {
   "#table_th_label_pin": {
     text: "pin"
   },
-  "#table_th_label_gesperrt": {
+  "#table_th_label_disabled": {
     title: "gesperrt"
   },
-  "#table_th_label_moddate": {
+  "#table_th_label_timestamp": {
     text: "letzte Änderung"
   },
   "#search-box": {
@@ -57,82 +57,82 @@ var german = {
   "#wrongpwd": {
     text: "Falsches Passwort!"
   },
-  ".typ_option_0": {
+  ".type_option_0": {
     text: "gelöscht (0)"
   },
-  ".typ_option_1": {
+  ".type_option_1": {
     text: "Hostname Baudot (1)"
   },
-  ".typ_option_2": {
+  ".type_option_2": {
     text: "Ip Baudot (2)"
   },
-  ".typ_option_3": {
+  ".type_option_3": {
     text: "Hostname Ascii (3)"
   },
-  ".typ_option_4": {
+  ".type_option_4": {
     text: "Ip Ascii (4)"
   },
-  ".typ_option_5": {
+  ".type_option_5": {
     text: "DynIp Baudot (5)"
   },
-  ".typ_option_6": {
+  ".type_option_6": {
     text: "offizielle E-mail (6)"
   },
   "#passwordfield_label": {
     text: "passwort"
   },
-  "#rufnummer_newentry_dialog_label": {
+  "#number_newentry_dialog_label": {
     text: "telex-nummer"
   },
   "#name_newentry_dialog_label": {
     text: "name"
   },
-  "#typ_newentry_dialog_label": {
+  "#type_newentry_dialog_label": {
     text: "typ"
   },
   "#hostname_newentry_dialog_label": {
     text: "hostname"
   },
-  "#ipaddresse_newentry_dialog_label": {
+  "#ipaddress_newentry_dialog_label": {
     text: "ipaddresse"
   },
   "#port_newentry_dialog_label": {
     text: "port"
   },
-  "#durchwahl_newentry_dialog_label": {
+  "#extension_newentry_dialog_label": {
     text: "durchwahl"
   },
   "#pin_newentry_dialog_label": {
     text: "pin"
   },
-  "#gesperrt_newentry_dialog_label": {
+  "#disabled_newentry_dialog_label": {
     text: "gesperrt"
   },
-  "#rufnummer_edit_dialog_label": {
+  "#number_edit_dialog_label": {
     text: "telex-nummer"
   },
   "#name_edit_dialog_label": {
     text: "name"
   },
-  "#typ_edit_dialog_label": {
+  "#type_edit_dialog_label": {
     text: "typ"
   },
   "#hostname_edit_dialog_label": {
     text: "hostname"
   },
-  "#ipaddresse_edit_dialog_label": {
+  "#ipaddress_edit_dialog_label": {
     text: "ipaddresse"
   },
   "#port_edit_dialog_label": {
     text: "port"
   },
-  "#durchwahl_edit_dialog_label": {
+  "#extension_edit_dialog_label": {
     text: "durchwahl"
   },
   "#pin_edit_dialog_label": {
     text: "pin"
   },
-  "#gesperrt_edit_dialog_label": {
+  "#disabled_edit_dialog_label": {
     text: "gesperrt"
   },
   "#email_edit_dialog_label": {
@@ -155,10 +155,10 @@ var german = {
   },
   "delete_message": "Wollen sie diesen Eintrag wirklich löschen?",
   "verify": {
-    unique: "Bitte sie eine noch nicht vorhandene Nummer ein.",
+    unique: "Bitte nutzen sie eine noch nicht vorhandene Nummer.",
     required: "Dieses Feld ist ein Pflichtfeld.",
-    email: "Bitte geben sie eine gültige E-mail addresse ein.",
-    ipaddress: "Bitte geben sie eine gültige Ip-addresse ein.",
+    email: "Bitte geben sie eine gültige E-mail Addresse ein.",
+    ipaddress: "Bitte geben sie eine gültige Ip-Addresse ein.",
     hostname: "Bitte geben sie einen gültigen Hostnamen ein.",
     number: "Bitte geben sie eine gültige Zahl ein.",
     digits: "Bitte geben sie nur Ziffern ein.",

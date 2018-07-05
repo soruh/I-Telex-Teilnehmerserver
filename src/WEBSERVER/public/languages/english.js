@@ -1,18 +1,18 @@
 /* jshint -W079 */
 var english = {
-  "#table_th_label_rufnummer": {
+  "#table_th_label_number": {
     text: "telex-number"
   },
   "#table_th_label_name": {
     text: "name"
   },
-  "#table_th_label_typ": {
+  "#table_th_label_type": {
     text: "type"
   },
   "#table_th_label_hostname": {
     text: "hostname"
   },
-  "#table_th_label_ipaddresse": {
+  "#table_th_label_ipaddress": {
     text: "ipaddress"
   },
   "#table_th_label_port": {
@@ -24,10 +24,10 @@ var english = {
   "#table_th_label_pin": {
     text: "pin"
   },
-  "#table_th_label_gesperrt": {
+  "#table_th_label_disabled": {
     title: /*"locked"*/ "disabled"
   },
-  "#table_th_label_moddate": {
+  "#table_th_label_timestamp": {
     text: "last changed"
   },
   "#search-box": {
@@ -57,82 +57,82 @@ var english = {
   "#wrongpwd": {
     text: "Wrong password!"
   },
-  ".typ_option_0": {
+  ".type_option_0": {
     text: "deleted (0)"
   },
-  ".typ_option_1": {
+  ".type_option_1": {
     text: "hostname baudot (1)"
   },
-  ".typ_option_2": {
+  ".type_option_2": {
     text: "ip baudot (2)"
   },
-  ".typ_option_3": {
+  ".type_option_3": {
     text: "hostname ascii (3)"
   },
-  ".typ_option_4": {
+  ".type_option_4": {
     text: "ip ascii (4)"
   },
-  ".typ_option_5": {
+  ".type_option_5": {
     text: "DynIp baudot (5)"
   },
-  ".typ_option_6": {
+  ".type_option_6": {
     text: "official e-mail (6)"
   },
   "#passwordfield_label": {
     text: "password"
   },
-  "#rufnummer_newentry_dialog_label": {
+  "#number_newentry_dialog_label": {
     text: "telex-number"
   },
   "#name_newentry_dialog_label": {
     text: "name"
   },
-  "#typ_newentry_dialog_label": {
+  "#type_newentry_dialog_label": {
     text: "type"
   },
   "#hostname_newentry_dialog_label": {
     text: "hostname"
   },
-  "#ipaddresse_newentry_dialog_label": {
+  "#ipaddress_newentry_dialog_label": {
     text: "ipaddress"
   },
   "#port_newentry_dialog_label": {
     text: "port"
   },
-  "#durchwahl_newentry_dialog_label": {
+  "#extension_newentry_dialog_label": {
     text: "extension"
   },
   "#pin_newentry_dialog_label": {
     text: "pin"
   },
-  "#gesperrt_newentry_dialog_label": {
+  "#disabled_newentry_dialog_label": {
     text: /*"locked"*/ "disabled"
   },
-  "#rufnummer_edit_dialog_label": {
+  "#number_edit_dialog_label": {
     text: "telex-number"
   },
   "#name_edit_dialog_label": {
     text: "name"
   },
-  "#typ_edit_dialog_label": {
+  "#type_edit_dialog_label": {
     text: "type"
   },
   "#hostname_edit_dialog_label": {
     text: "hostname"
   },
-  "#ipaddresse_edit_dialog_label": {
+  "#ipaddress_edit_dialog_label": {
     text: "ipaddress"
   },
   "#port_edit_dialog_label": {
     text: "port"
   },
-  "#durchwahl_edit_dialog_label": {
+  "#extension_edit_dialog_label": {
     text: "extension"
   },
   "#pin_edit_dialog_label": {
     text: "pin"
   },
-  "#gesperrt_edit_dialog_label": {
+  "#disabled_edit_dialog_label": {
     text: /*"locked"*/ "disabled"
   },
   "#email_edit_dialog_label": {

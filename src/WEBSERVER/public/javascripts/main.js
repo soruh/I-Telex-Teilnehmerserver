@@ -127,38 +127,38 @@ $(document).ready(function () {
     });
   });
   $("#new").click(function () {
-    $("#typ_newentry_dialog").trigger('change');
+    $("#type_newentry_dialog").trigger('change');
     showpopup("newentry_dialog");
   });
-  $("#typ_newentry_dialog").on('change', function () {
+  $("#type_newentry_dialog").on('change', function () {
     var type = optionType(this);
     if (type == "hostname") {
       $("#hostname_newentry_dialog").parent().show();
-      $("#ipaddresse_newentry_dialog").parent().hide();
+      $("#ipaddress_newentry_dialog").parent().hide();
       $("#email_newentry_dialog").parent().hide();
     } else if (type == "ipaddress") {
       $("#hostname_newentry_dialog").parent().hide();
-      $("#ipaddresse_newentry_dialog").parent().show();
+      $("#ipaddress_newentry_dialog").parent().show();
       $("#email_newentry_dialog").parent().hide();
     } else if (type == "email") {
       $("#hostname_newentry_dialog").parent().hide();
-      $("#ipaddresse_newentry_dialog").parent().hide();
+      $("#ipaddress_newentry_dialog").parent().hide();
       $("#email_newentry_dialog").parent().show();
     }
   });
-  $("#typ_edit_dialog").on('change', function () {
+  $("#type_edit_dialog").on('change', function () {
     var type = optionType(this);
     if (type == "hostname") {
       $("#hostname_edit_dialog").parent().show();
-      $("#ipaddresse_edit_dialog").parent().hide();
+      $("#ipaddress_edit_dialog").parent().hide();
       $("#email_edit_dialog").parent().hide();
     } else if (type == "ipaddress") {
       $("#hostname_edit_dialog").parent().hide();
-      $("#ipaddresse_edit_dialog").parent().show();
+      $("#ipaddress_edit_dialog").parent().show();
       $("#email_edit_dialog").parent().hide();
     } else if (type == "email") {
       $("#hostname_edit_dialog").parent().hide();
-      $("#ipaddresse_edit_dialog").parent().hide();
+      $("#ipaddress_edit_dialog").parent().hide();
       $("#email_edit_dialog").parent().show();
     }
   });
@@ -214,14 +214,14 @@ $(document).ready(function () {
           required: true,
           max: 65536
         },
-        durchwahl: {
+        extension: {
           digits: true,
           max: 100
         },
         port: {
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]"); //TODO
+              var type = optionType(formId + " select[name=type]"); //TODO
               return (type != "email");
             }
           },
@@ -232,7 +232,7 @@ $(document).ready(function () {
           required: true,
           maxlength: 40
         },
-        rufnummer: {
+        number: {
           unique: true,
           required: true,
           digits: true,
@@ -243,7 +243,7 @@ $(document).ready(function () {
           maxlength: 40,
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]");
+              var type = optionType(formId + " select[name=type]");
               return (type == "email");
             }
           }
@@ -253,42 +253,42 @@ $(document).ready(function () {
           maxlength: 40,
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]");
+              var type = optionType(formId + " select[name=type]");
               return (type == "hostname");
             }
           }
         },
-        ipaddresse: {
+        ipaddress: {
           ipaddress: true,
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]");
+              var type = optionType(formId + " select[name=type]");
               return (type == "ipaddress");
             }
           }
         }
       }
     });
-    $("#typ_newentry_dialog").on('change', function () {
+    $("#type_newentry_dialog").on('change', function () {
       $(formId).valid();
     });
     if ($(formId).valid()) {
       var editParams = {
         typekey: "new",
-        rufnummer: $("#rufnummer_newentry_dialog").val(),
+        number: $("#number_newentry_dialog").val(),
         name: $("#name_newentry_dialog").val(),
-        typ: $("#typ_newentry_dialog").val(),
+        type: $("#type_newentry_dialog").val(),
         hostname: "",
-        ipaddresse: "",
+        ipaddress: "",
         port: $("#port_newentry_dialog").val(),
-        extension: $("#durchwahl_newentry_dialog").val(),
-        moddate: $("#moddate_newentry_dialog").val(),
+        extension: $("#extension_newentry_dialog").val(),
+        timestamp: $("#timestamp_newentry_dialog").val(),
         pin: $("#pin_newentry_dialog").val(),
-        gesperrt: $("#gesperrt_newentry_dialog").prop('checked') ? 1 : 0
+        disabled: $("#disabled_newentry_dialog").prop('checked') ? 1 : 0
       };
-      switch (optionType(formId + " select[name=typ]")) {
+      switch (optionType(formId + " select[name=type]")) {
         case "ipaddress":
-          editParams.ipaddresse = $("#ipaddresse_newentry_dialog").val().toString();
+          editParams.ipaddress = $("#ipaddress_newentry_dialog").val().toString();
           break;
         case "hostname":
           editParams.hostname = $("#hostname_newentry_dialog").val().toString();
@@ -322,7 +322,7 @@ $(document).ready(function () {
       errorClass: "validate_error",
       validClass: "validate_valid",
       rules: {
-        typ: {
+        type: {
           required: true,
           digits: true,
           min: 1
@@ -331,14 +331,14 @@ $(document).ready(function () {
           required: true,
           max: 65536
         },
-        durchwahl: {
+        extension: {
           digits: true,
           max: 100
         },
         port: {
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]"); //TODO
+              var type = optionType(formId + " select[name=type]"); //TODO
               return (type != "email");
             }
           },
@@ -349,7 +349,7 @@ $(document).ready(function () {
           required: true,
           maxlength: 40
         },
-        rufnummer: {
+        number: {
           unique: true,
           required: true,
           digits: true,
@@ -360,7 +360,7 @@ $(document).ready(function () {
           maxlength: 40,
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]");
+              var type = optionType(formId + " select[name=type]");
               return (type == "email");
             }
           }
@@ -370,23 +370,23 @@ $(document).ready(function () {
           maxlength: 40,
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]");
+              var type = optionType(formId + " select[name=type]");
               return (type == "hostname");
             }
           }
         },
-        ipaddresse: {
+        ipaddress: {
           ipaddress: true,
           required: {
             depends: function (element) {
-              var type = optionType(formId + " select[name=typ]");
+              var type = optionType(formId + " select[name=type]");
               return (type == "ipaddress");
             }
           }
         }
       }
     });
-    $("#typ_edit_dialog").on('change', function () {
+    $("#type_edit_dialog").on('change', function () {
       $(formId).valid();
     });
     if ($(formId).valid()) {
@@ -394,21 +394,21 @@ $(document).ready(function () {
       var editParams = {
         typekey: "edit",
         uid: $("#edit_dialog").data("uid"),
-        rufnummer: $("#rufnummer_edit_dialog").val(),
+        number: $("#number_edit_dialog").val(),
         name: $("#name_edit_dialog").val(),
-        typ: $("#typ_edit_dialog").val(),
+        type: $("#type_edit_dialog").val(),
         hostname: "",
-        ipaddresse: "",
+        ipaddress: "",
         port: $("#port_edit_dialog").val(),
-        extension: $("#durchwahl_edit_dialog").val(),
-        moddate: $("#moddate_edit_dialog").val(),
+        extension: $("#extension_edit_dialog").val(),
+        timestamp: $("#timestamp_edit_dialog").val(),
         pin: $("#pin_edit_dialog").val(),
-        gesperrt: $("#gesperrt_edit_dialog").prop('checked') ? 1 : 0
+        disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0
       };
       
-      switch (optionType(formId + " select[name=typ]")) {
+      switch (optionType(formId + " select[name=type]")) {
         case "ipaddress":
-          editParams.ipaddresse = $("#ipaddresse_edit_dialog").val().toString();
+          editParams.ipaddress = $("#ipaddress_edit_dialog").val().toString();
           break;
         case "hostname":
           editParams.hostname = $("#hostname_edit_dialog").val().toString();
@@ -453,7 +453,7 @@ function checkUnique(value, element) {
 
   var isUnique = true;
   for (let k in global_list) {
-    if ((global_list[k].rufnummer == value) && ((!uid) || (global_list[k].uid != uid)) && (global_list[k].typ != 0)) {
+    if ((global_list[k].number == value) && ((!uid) || (global_list[k].uid != uid)) && (global_list[k].type != 0)) {
       isUnique = false;
     }
   }
@@ -597,9 +597,9 @@ function updateTable(usli, cb) {
       var label = document.createElement("div");
       label.className = "table-th-label locale_" + b;
       label.id = "table_th_label_" + b;
-      if (b == "gesperrt") {
+      if (b == "disabled") {
         let icon_ban_circle = document.createElement("div");
-        $(icon_ban_circle).addClass("glyphicon glyphicon-ban-circle gesperrt");
+        $(icon_ban_circle).addClass("glyphicon glyphicon-ban-circle disabled");
         label.appendChild(icon_ban_circle);
       }
       th.appendChild(label);
@@ -648,26 +648,26 @@ function updateContent(usli) {
         let td = document.createElement("div");
         $(td).addClass("td cell cell_" + b);
         switch (b) {
-          case "moddate":
+          case "timestamp":
             if (UTCDATE) {
               $(td).text(list[a][b]);
             } else {
               $(td).text(UtcToString(list[a][b]));
             }
             break;
-          case "gesperrt":
+          case "disabled":
             if ((list[a][b] == 1) || (list[a][b] == "1")) {
               var div = document.createElement("div");
-              $(div).addClass("glyphicon glyphicon-ban-circle gesperrt");
+              $(div).addClass("glyphicon glyphicon-ban-circle disabled");
               td.appendChild(div);
               //$(td).addClass("glyphicon glyphicon-ok-circle");
             } else {
               //$(td).addClass("glyphicon glyphicon-remove-circle");
             }
             break;
-          case "typ":
+          case "type":
             try {
-              $(td).addClass("typ_option_" + list[a][b]);
+              $(td).addClass("type_option_" + list[a][b]);
             } catch (e) {
               $(td).text(list[a][b]);
             }
@@ -716,22 +716,22 @@ function updateContent(usli) {
 }
 
 function editButtonClick() {
-  $("#typ_edit_dialog").trigger('change');
+  $("#type_edit_dialog").trigger('change');
   $("#edit_dialog").data("uid", $(this).data("uid"));
   var uid = $(this).data("uid");
-  $("#rufnummer_edit_dialog").val(global_list[uid].rufnummer).trigger('change');
+  $("#number_edit_dialog").val(global_list[uid].number).trigger('change');
   $("#name_edit_dialog").val(global_list[uid].name).trigger('change');
-  $("#typ_edit_dialog").val(global_list[uid].typ).trigger('change');
-  if (global_list[uid].typ == 6) {
+  $("#type_edit_dialog").val(global_list[uid].type).trigger('change');
+  if (global_list[uid].type == 6) {
     $("#email_edit_dialog").val(global_list[uid].hostname).trigger('change');
   } else {
     $("#hostname_edit_dialog").val(global_list[uid].hostname).trigger('change');
   }
-  $("#ipaddresse_edit_dialog").val(global_list[uid].ipaddresse).trigger('change');
+  $("#ipaddress_edit_dialog").val(global_list[uid].ipaddress).trigger('change');
   $("#port_edit_dialog").val(global_list[uid].port).trigger('change');
-  $("#durchwahl_edit_dialog").val(global_list[uid].extension).trigger('change');
+  $("#extension_edit_dialog").val(global_list[uid].extension).trigger('change');
   $("#pin_edit_dialog").val(global_list[uid].pin).trigger('change');
-  $("#gesperrt_edit_dialog").prop('checked', global_list[uid].gesperrt).trigger('change');
+  $("#disabled_edit_dialog").prop('checked', global_list[uid].disabled).trigger('change');
   showpopup("edit_dialog");
 }
 
@@ -751,7 +751,7 @@ function removeButtonClick() {
       class: "delete_dialog_label",
       text:null
     };
-    if (k === "moddate" && (!UTCDATE)) {
+    if (k === "timestamp" && (!UTCDATE)) {
       deleteDialogLabel.text = k + ": " + UtcToString(global_list[uid][k]);
     } else if (k !== "uid") {
       deleteDialogLabel.text = k + ": " + global_list[uid][k];
@@ -791,7 +791,7 @@ function search(list, str) {
     var matches = true;
     var rowstr = "";
     for (let key in row) {
-      if ((key === "moddate") && (!UTCDATE)) {
+      if ((key === "timestamp") && (!UTCDATE)) {
         rowstr += UtcToString(row[key]) + " ";
       } else {
         rowstr += row[key] + " ";

@@ -170,14 +170,14 @@ h2{
   background-repeat:no-repeat;
 }
 .container{}
-.gesperrt{}
+.disabled{}
 #table{
 	font-family: 'Roboto Condensed', sans-serif;
 	box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.65);
 	background-color: white;
 	display: inline-block;
 	position: relative;
-	top:31;
+	top:31px;
 }
 #table .hr{
 	position: fixed;
@@ -202,19 +202,19 @@ h2{
 .cell{
 	height: 51px;
 }
-.cell.cell_rufnummer{
+.cell.cell_number{
 	width: 83px;
 }
 .cell.cell_name{
 	width: calc(160px + 40px);
 }
-.cell.cell_typ{
+.cell.cell_type{
 	width: 106px;
 }
 .cell.cell_hostname{
 	width: 200px;
 }
-.cell.cell_ipaddresse{
+.cell.cell_ipaddress{
 	width: 131px;
 }
 .cell.cell_port{
@@ -226,10 +226,10 @@ h2{
 .cell.cell_pin{
 	width: 50px;
 }
-.cell.cell_gesperrt{
+.cell.cell_disabled{
 	width: 50px;
 }
-.cell.cell_moddate{
+.cell.cell_timestamp{
 	width: 131px;
 }
 .validate_error{
