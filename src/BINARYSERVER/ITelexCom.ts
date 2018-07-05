@@ -321,7 +321,7 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
             data = {
                 number: < number > BytearrayToValue(buffer.slice(0, 4), "number"),
                 name: < string > BytearrayToValue(buffer.slice(4, 44), "string"),
-                disabled: flags[0] & 1,
+                disabled: flags[0] & 2,
                 type: < number > BytearrayToValue(buffer.slice(46, 47), "number"),
                 hostname: < string > BytearrayToValue(buffer.slice(47, 87), "string"),
                 ipaddress: < string > BytearrayToValue(buffer.slice(87, 91), "ip"),

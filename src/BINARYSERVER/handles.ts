@@ -199,10 +199,10 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 						
 						let exists:boolean = result_a && (result_a.length > 0);
 						if(exists){
-							query = deleteQuery;
+							query = deleteQuery + insertQuery;
 							options = deleteOptions.concat(insertOptions);
 						}else{
-							query = deleteQuery + insertQuery;
+							query = insertQuery;
 							options = insertOptions;
 						}
 						
@@ -220,19 +220,23 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 									"[timeZone]": getTimezone(new Date())
 								}, cb);
 								ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
-									try {
-										client.connection.write(ITelexCom.encPackage({
-											packagetype: 2,
-											datalength: 4,
-											data: {
-												ipaddress: result_c[0].ipaddress
-											}
-										}), "binary", function () {
+									if(result_c.length>0){
+										try {
+											client.connection.write(ITelexCom.encPackage({
+												packagetype: 2,
+												datalength: 4,
+												data: {
+													ipaddress: result_c[0].ipaddress
+												}
+											}), "binary", function () {
+												if (typeof cb === "function") cb();
+											});
+										} catch (e) {
+											if (cv(0)) ll(colors.FgRed, e, colors.Reset);
 											if (typeof cb === "function") cb();
-										});
-									} catch (e) {
-										if (cv(0)) ll(colors.FgRed, e, colors.Reset);
-										if (typeof cb === "function") cb();
+										}
+									}else{
+
 									}
 								});
 							} else {

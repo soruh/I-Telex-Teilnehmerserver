@@ -204,11 +204,11 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                         let options;
                         let exists = result_a && (result_a.length > 0);
                         if (exists) {
-                            query = deleteQuery;
+                            query = deleteQuery + insertQuery;
                             options = deleteOptions.concat(insertOptions);
                         }
                         else {
-                            query = deleteQuery + insertQuery;
+                            query = insertQuery;
                             options = insertOptions;
                         }
                         ITelexCom.SqlQuery(pool, query, options, function (result_b) {
@@ -221,23 +221,27 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                                     "[timeZone]": getTimezone(new Date())
                                 }, cb);
                                 ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c) {
-                                    try {
-                                        client.connection.write(ITelexCom.encPackage({
-                                            packagetype: 2,
-                                            datalength: 4,
-                                            data: {
-                                                ipaddress: result_c[0].ipaddress
-                                            }
-                                        }), "binary", function () {
+                                    if (result_c.length > 0) {
+                                        try {
+                                            client.connection.write(ITelexCom.encPackage({
+                                                packagetype: 2,
+                                                datalength: 4,
+                                                data: {
+                                                    ipaddress: result_c[0].ipaddress
+                                                }
+                                            }), "binary", function () {
+                                                if (typeof cb === "function")
+                                                    cb();
+                                            });
+                                        }
+                                        catch (e) {
+                                            if (ITelexCom_js_1.cv(0))
+                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
                                             if (typeof cb === "function")
                                                 cb();
-                                        });
+                                        }
                                     }
-                                    catch (e) {
-                                        if (ITelexCom_js_1.cv(0))
-                                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-                                        if (typeof cb === "function")
-                                            cb();
+                                    else {
                                     }
                                 });
                             }

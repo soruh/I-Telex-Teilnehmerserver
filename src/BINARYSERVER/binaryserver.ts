@@ -337,7 +337,9 @@ function sendQueue() {
 										// 		var isConnected = true;
 										// 	}
 										// }
-										let isConnected = connections.has(connection=>connection.servernum == server[0].server);
+										let isConnected = connections.get(connection=>connection.servernum == server[0].server);
+										if(cv(3)) ll(isConnected);
+										
 										if (!isConnected) {
 											connect(pool, cb, {
 												host: serverinf.addresse,

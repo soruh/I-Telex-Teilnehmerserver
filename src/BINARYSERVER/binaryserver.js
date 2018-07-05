@@ -364,7 +364,9 @@ function sendQueue() {
                                         // 		var isConnected = true;
                                         // 	}
                                         // }
-                                        let isConnected = connections.has(connection => connection.servernum == server[0].server);
+                                        let isConnected = connections.get(connection => connection.servernum == server[0].server);
+                                        if (ITelexCom_js_1.cv(3))
+                                            logWithLineNumbers_js_1.ll(isConnected);
                                         if (!isConnected) {
                                             connect_js_1.default(pool, cb, {
                                                 host: serverinf.addresse,
