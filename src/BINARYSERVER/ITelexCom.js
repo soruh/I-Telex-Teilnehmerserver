@@ -714,15 +714,15 @@ function sendEmail(messageName, values, callback) {
             html: ""
         };
         let type;
-        if (message.html == "") {
-            type = "text";
-        }
-        else if (message.text == "") {
+        if (message.html) {
             type = "html";
+        }
+        else if (message.text) {
+            type = "text";
         }
         else {
             type = null;
-            mailOptions.text = "configuration error in config.json";
+            mailOptions.text = "configuration error in config/mailMessages.json";
         }
         if (type) {
             mailOptions[type] = message[type];
