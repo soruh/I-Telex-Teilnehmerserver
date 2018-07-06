@@ -17,6 +17,9 @@ function get(loc) {
             logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}geting: ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow} from connections${colors_js_1.default.Reset}`);
     if (loc) {
         if (typeof loc === "string") {
+            if (config_js_1.default.logConnectionChanges)
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.llo(1, "getting connection by string key");
             let locArr = loc.split("|");
             let type = locArr[0];
             let number = locArr[1];
@@ -34,6 +37,9 @@ function get(loc) {
             }
         }
         else if (typeof loc === "function") {
+            if (config_js_1.default.logConnectionChanges)
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.llo(1, "getting connections matching function");
             let matches = [];
             for (let type in connections) {
                 for (let index in connections[type]) {
@@ -42,6 +48,9 @@ function get(loc) {
                         matches.push(client);
                 }
             }
+            if (config_js_1.default.logConnectionChanges)
+                if (ITelexCom_js_1.cv(2))
+                    logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}got:\n${util.inspect(matches, { depth: 1 })}\nfor ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow}${colors_js_1.default.Reset}`);
             return matches;
         }
         else {

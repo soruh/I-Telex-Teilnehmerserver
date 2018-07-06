@@ -46,10 +46,11 @@ var connections: connections = {};
 
 function get(loc: string): client;
 function get(loc: (connection:client)=>boolean): client[];
-function get(loc){
+function get(loc:string|((client:client)=>boolean)){
   if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}geting: ${colors.FgBlue}${loc}${colors.FgYellow} from connections${colors.Reset}`);
   if (loc) {
     if(typeof loc === "string"){
+      if(config.logConnectionChanges) if(cv(2)) llo(1,"getting connection by string key");
       let locArr: string[] = loc.split("|");
       let type: string = locArr[0];
       let number: string = locArr[1];
@@ -61,6 +62,7 @@ function get(loc){
         return null;
       }
     }else if(typeof loc === "function"){
+      if(config.logConnectionChanges) if(cv(2)) llo(1,"getting connections matching function");
       let matches:client[] = [];
       for(let type in connections){
         for(let index in connections[type]){
@@ -68,6 +70,7 @@ function get(loc){
           if(loc(client)) matches.push(client);
         }
       }
+      if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}got:\n${util.inspect(matches,{depth:1})}\nfor ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
       return matches;
     }else{
       return null;
