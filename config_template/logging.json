@@ -3,14 +3,15 @@
 
     "logITelexCom":false,
     "logConnectionChanges":false,
-
-    "logLineNumbers":false,
-    "logDate":true,
     "logFullBuffer": true,
 
+    "logDate":true,
+    "logLineNumbers":false,
     "bufferLogWithWhitespace":true,
+
     "repairPm2Colors":false,
+    "disableColors":false,
+
     "stdoutLog":null,
-    "stderrLog":null,
-    "disableColors":false
+    "stderrLog":null
 }
