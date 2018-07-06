@@ -111,7 +111,7 @@ function handlePackage(obj:Package_decoded, client:connections.client, pool, cb:
 		if (cv(0)) lle(colors.FgRed + "no package to handle" + colors.Reset);
 		if (typeof cb === "function") cb();
 	} else {
-		if (cv(2)) if (config.logITelexCom) ll(colors.FgGreen + "state: " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
+		if(cv(2)&&config.logITelexCom) ll(colors.FgGreen + "state: " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
 		if (obj.packagetype == 0xff) {
 			if (cv(0)) lle(colors.FgRed + "remote client had error:", Buffer.from(<number[]>obj.data).toString());
 			if (typeof cb === "function") cb();
@@ -123,7 +123,7 @@ function handlePackage(obj:Package_decoded, client:connections.client, pool, cb:
 					if (config.logITelexCom) ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
 				}
 				if (typeof handles[obj.packagetype][client.state] == "function") {
-					if (cv(2)) if (config.logITelexCom) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
+					if(cv(2)&&config.logITelexCom) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
 					try {
 						handles[obj.packagetype][client.state](obj, client, pool, cb);
 					} catch (e) {
@@ -399,11 +399,11 @@ function decPackages(buffer:number[]|Buffer): Package_decoded[] {
         var data: PackageData_decoded = decPackageData(packagetype, blockdata);
         if (data) {
 			if (constants.PackageSizes[packagetype] != datalength) {
-				if (cv(1)) if (config.logITelexCom) ll(`${colors.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors.Reset}`);
+				if(cv(1)&&config.logITelexCom) ll(`${colors.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors.Reset}`);
 				if (config.allowInvalidPackageSizes) {
-					if (cv(2)) if (config.logITelexCom) ll(`${colors.FgRed}handling package of invalid size.${colors.Reset}`);
+					if(cv(2)&&config.logITelexCom) ll(`${colors.FgRed}handling package of invalid size.${colors.Reset}`);
 				} else {
-					if (cv(1)) if (config.logITelexCom) ll(`${colors.FgYellow}not handling package, because it is of invalid size!${colors.Reset}`);
+					if(cv(1)&&config.logITelexCom) ll(`${colors.FgYellow}not handling package, because it is of invalid size!${colors.Reset}`);
 					continue;
 				}
 			}
@@ -422,7 +422,7 @@ function decPackages(buffer:number[]|Buffer): Package_decoded[] {
 }
 
 function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
-	if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}decoding Value:${colors.FgCyan}`,Buffer.from(<number[]>arr),`${colors.FgGreen}as ${colors.FgCyan}${type}${colors.Reset}`);
+	if(cv(3)&&config.logITelexCom) ll(`${colors.FgGreen}decoding Value:${colors.FgCyan}`,Buffer.from(<number[]>arr),`${colors.FgGreen}as ${colors.FgCyan}${type}${colors.Reset}`);
     switch(type){
 		case "number":
 			var num = 0;
@@ -430,7 +430,7 @@ function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
 				num *= 256;
 				num += arr[i];
 			}
-			if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}decoded to: ${colors.FgCyan}${num}${colors.Reset}`);
+			if(cv(3)&&config.logITelexCom) ll(`${colors.FgGreen}decoded to: ${colors.FgCyan}${num}${colors.Reset}`);
 			return (num);
     	case "string":
 			var str = "";
@@ -441,16 +441,16 @@ function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
 					break;
 				}
 			}
-			if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}decoded Value: ${colors.FgCyan}${str}${colors.Reset}`);
+			if(cv(3)&&config.logITelexCom) ll(`${colors.FgGreen}decoded Value: ${colors.FgCyan}${str}${colors.Reset}`);
 			return (str);
 		default:
-			if (cv(3)) if (config.logITelexCom) ll(`${colors.FgRed}invalid type: ${type}${colors.Reset}`);
+			if(cv(3)&&config.logITelexCom) ll(`${colors.FgRed}invalid type: ${type}${colors.Reset}`);
 			return null;
 	}
 }
 
 function ValueToBytearray(value:string|number, size:number):number[]{
-	if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}encoding Value:${colors.FgCyan}`,value,`${colors.FgGreen}(${colors.FgCyan}${typeof value}${colors.FgGreen}) to a Buffer of size: ${colors.FgCyan}${size}${colors.Reset}`);
+	if(cv(3)&&config.logITelexCom) ll(`${colors.FgGreen}encoding Value:${colors.FgCyan}`,value,`${colors.FgGreen}(${colors.FgCyan}${typeof value}${colors.FgGreen}) to a Buffer of size: ${colors.FgCyan}${size}${colors.Reset}`);
     //if(cv(2)) if (config.logITelexCom) ll(value);
     let array = [];
     if (typeof value === "string") {
@@ -469,7 +469,7 @@ function ValueToBytearray(value:string|number, size:number):number[]{
     while (array.length < size) {
         array[array.length] = 0;
 	}
-	if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}encoded Value:${colors.FgCyan}`,Buffer.from(<number[]>array),colors.Reset);
+	if(cv(3)&&config.logITelexCom) ll(`${colors.FgGreen}encoded Value:${colors.FgCyan}`,Buffer.from(<number[]>array),colors.Reset);
     return (array);
 }
 
@@ -514,7 +514,7 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 	}
 	if (number != "") {
 		if (!isNaN(parseInt(number))) {
-			if (cv(1)) if (config.logITelexCom) ll(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
+			if(cv(1)&&config.logITelexCom) ll(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
 			SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number], function (result:peerList) {
 				if (!result || result.length == 0) {
 					let send:string = "";
@@ -565,18 +565,16 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 }
 
 function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options:any[], callback:(res:any)=>void):void { //TODO: any-> real type
-	if(cv(3)){
-		if (config.logITelexCom) ll(colors.BgLightCyan+colors.FgBlack+query,options,colors.Reset);
-	}
+	if (cv(3)) ll(colors.BgLightCyan+colors.FgBlack+query,options,colors.Reset);
 
 	query = query.replace(/\n/g,"").replace(/\s+/g," ");
 	query = mysql.format(query, options);
 	if (cv(2) || (cv(1)&&/(update)|(insert)/gi.test(query))) llo(1, colors.BgLightBlue + colors.FgBlack + query + colors.Reset);
 	sqlPool.query(query, function (err, res) {
 		if(sqlPool["_allConnections"]&&sqlPool["_allConnections"].length){
-			if (cv(3)) if (config.logITelexCom) ll("number of open connections: " + sqlPool["_allConnections"].length);
+			if(cv(3)) ll("number of open connections: " + sqlPool["_allConnections"].length);
 		}else{
-			if (cv(2)) if (config.logITelexCom) ll("not a pool");
+			if(cv(2)) ll("not a pool");
 		}
 		if (err) {
 			if (cv(0)) llo(1, colors.FgRed, err, colors.Reset);
@@ -667,7 +665,7 @@ async function checkIp(data:number[]|Buffer, client:connections.client, pool:mys
 					}
 				}, function () {
 					let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x=>x.peer.name);
-					if(cv(2)) ll("matching peers:",matches);
+					if(cv(3)) ll("matching peers:",matches);
 					if(matches.length > 0){
 						client.connection.end("ok\r\n"+matches.join("\r\n")+"\r\n+++\r\n");
 					}else{
@@ -724,10 +722,10 @@ function sendEmail(messageName:string, values:{
 				mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
 			}
 		}
-		if (cv(2)) {
-			if (config.logITelexCom) ll("sending mail:\n", mailOptions, "\nto server", getTransporter().options["host"]);
+		if(cv(2)&&config.logITelexCom) {
+			ll("sending mail:\n", mailOptions, "\nto server", getTransporter().options["host"]);
 		} else if (cv(1)) {
-			if (config.logITelexCom) ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
+			ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
 		}
 		
 		(<(MailOptions: MailOptions,callback:(err: Error,info:any)=>void)=>void>getTransporter().sendMail)(mailOptions, function (error, info) {
@@ -735,7 +733,7 @@ function sendEmail(messageName:string, values:{
 				if (cv(2)) lle(error);
 				if (typeof callback === "function") callback();
 			} else {
-				if (cv(1)) if (config.logITelexCom) ll('Message sent:', info.messageId);
+				if(cv(1)&&config.logITelexCom) ll('Message sent:', info.messageId);
 				if (config.eMail.useTestAccount) if (config.logITelexCom) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
 				if (typeof callback === "function") callback();
 			}

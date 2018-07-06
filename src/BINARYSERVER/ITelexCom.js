@@ -45,9 +45,8 @@ function handlePackage(obj, client, pool, cb) {
             cb();
     }
     else {
-        if (cv(2))
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
+        if (cv(2) && config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
         if (obj.packagetype == 0xff) {
             if (cv(0))
                 logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
@@ -65,9 +64,8 @@ function handlePackage(obj, client, pool, cb) {
                         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling packagetype:" + colors_js_1.default.FgCyan, obj.packagetype, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
                 }
                 if (typeof handles_js_1.default[obj.packagetype][client.state] == "function") {
-                    if (cv(2))
-                        if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
+                    if (cv(2) && config_js_1.default.logITelexCom)
+                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
                     try {
                         handles_js_1.default[obj.packagetype][client.state](obj, client, pool, cb);
                     }
@@ -379,18 +377,15 @@ function decPackages(buffer) {
         var data = decPackageData(packagetype, blockdata);
         if (data) {
             if (constants.PackageSizes[packagetype] != datalength) {
-                if (cv(1))
-                    if (config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors_js_1.default.Reset}`);
+                if (cv(1) && config_js_1.default.logITelexCom)
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors_js_1.default.Reset}`);
                 if (config_js_1.default.allowInvalidPackageSizes) {
-                    if (cv(2))
-                        if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}handling package of invalid size.${colors_js_1.default.Reset}`);
+                    if (cv(2) && config_js_1.default.logITelexCom)
+                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}handling package of invalid size.${colors_js_1.default.Reset}`);
                 }
                 else {
-                    if (cv(1))
-                        if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}not handling package, because it is of invalid size!${colors_js_1.default.Reset}`);
+                    if (cv(1) && config_js_1.default.logITelexCom)
+                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}not handling package, because it is of invalid size!${colors_js_1.default.Reset}`);
                     continue;
                 }
             }
@@ -411,9 +406,8 @@ function decPackages(buffer) {
 }
 exports.decPackages = decPackages;
 function BytearrayToValue(arr, type) {
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoding Value:${colors_js_1.default.FgCyan}`, Buffer.from(arr), `${colors_js_1.default.FgGreen}as ${colors_js_1.default.FgCyan}${type}${colors_js_1.default.Reset}`);
+    if (cv(3) && config_js_1.default.logITelexCom)
+        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoding Value:${colors_js_1.default.FgCyan}`, Buffer.from(arr), `${colors_js_1.default.FgGreen}as ${colors_js_1.default.FgCyan}${type}${colors_js_1.default.Reset}`);
     switch (type) {
         case "number":
             var num = 0;
@@ -421,9 +415,8 @@ function BytearrayToValue(arr, type) {
                 num *= 256;
                 num += arr[i];
             }
-            if (cv(3))
-                if (config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded to: ${colors_js_1.default.FgCyan}${num}${colors_js_1.default.Reset}`);
+            if (cv(3) && config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded to: ${colors_js_1.default.FgCyan}${num}${colors_js_1.default.Reset}`);
             return (num);
         case "string":
             var str = "";
@@ -435,22 +428,19 @@ function BytearrayToValue(arr, type) {
                     break;
                 }
             }
-            if (cv(3))
-                if (config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded Value: ${colors_js_1.default.FgCyan}${str}${colors_js_1.default.Reset}`);
+            if (cv(3) && config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded Value: ${colors_js_1.default.FgCyan}${str}${colors_js_1.default.Reset}`);
             return (str);
         default:
-            if (cv(3))
-                if (config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}invalid type: ${type}${colors_js_1.default.Reset}`);
+            if (cv(3) && config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}invalid type: ${type}${colors_js_1.default.Reset}`);
             return null;
     }
 }
 exports.BytearrayToValue = BytearrayToValue;
 function ValueToBytearray(value, size) {
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoding Value:${colors_js_1.default.FgCyan}`, value, `${colors_js_1.default.FgGreen}(${colors_js_1.default.FgCyan}${typeof value}${colors_js_1.default.FgGreen}) to a Buffer of size: ${colors_js_1.default.FgCyan}${size}${colors_js_1.default.Reset}`);
+    if (cv(3) && config_js_1.default.logITelexCom)
+        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoding Value:${colors_js_1.default.FgCyan}`, value, `${colors_js_1.default.FgGreen}(${colors_js_1.default.FgCyan}${typeof value}${colors_js_1.default.FgGreen}) to a Buffer of size: ${colors_js_1.default.FgCyan}${size}${colors_js_1.default.Reset}`);
     //if(cv(2)) if (config.logITelexCom) ll(value);
     let array = [];
     if (typeof value === "string") {
@@ -470,9 +460,8 @@ function ValueToBytearray(value, size) {
     while (array.length < size) {
         array[array.length] = 0;
     }
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoded Value:${colors_js_1.default.FgCyan}`, Buffer.from(array), colors_js_1.default.Reset);
+    if (cv(3) && config_js_1.default.logITelexCom)
+        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoded Value:${colors_js_1.default.FgCyan}`, Buffer.from(array), colors_js_1.default.Reset);
     return (array);
 }
 exports.ValueToBytearray = ValueToBytearray;
@@ -520,9 +509,8 @@ function ascii(data, client, pool) {
     }
     if (number != "") {
         if (!isNaN(parseInt(number))) {
-            if (cv(1))
-                if (config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
+            if (cv(1) && config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
             SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number], function (result) {
                 if (!result || result.length == 0) {
                     let send = "";
@@ -582,10 +570,8 @@ function ascii(data, client, pool) {
 }
 exports.ascii = ascii;
 function SqlQuery(sqlPool, query, options, callback) {
-    if (cv(3)) {
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll(colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query, options, colors_js_1.default.Reset);
-    }
+    if (cv(3))
+        logWithLineNumbers_js_1.ll(colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query, options, colors_js_1.default.Reset);
     query = query.replace(/\n/g, "").replace(/\s+/g, " ");
     query = mysql.format(query, options);
     if (cv(2) || (cv(1) && /(update)|(insert)/gi.test(query)))
@@ -593,13 +579,11 @@ function SqlQuery(sqlPool, query, options, callback) {
     sqlPool.query(query, function (err, res) {
         if (sqlPool["_allConnections"] && sqlPool["_allConnections"].length) {
             if (cv(3))
-                if (config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll("number of open connections: " + sqlPool["_allConnections"].length);
+                logWithLineNumbers_js_1.ll("number of open connections: " + sqlPool["_allConnections"].length);
         }
         else {
             if (cv(2))
-                if (config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll("not a pool");
+                logWithLineNumbers_js_1.ll("not a pool");
         }
         if (err) {
             if (cv(0))
@@ -695,7 +679,7 @@ function checkIp(data, client, pool) {
                         }
                     }, function () {
                         let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
-                        if (cv(2))
+                        if (cv(3))
                             logWithLineNumbers_js_1.ll("matching peers:", matches);
                         if (matches.length > 0) {
                             client.connection.end("ok\r\n" + matches.join("\r\n") + "\r\n+++\r\n");
@@ -746,13 +730,11 @@ function sendEmail(messageName, values, callback) {
                 mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
             }
         }
-        if (cv(2)) {
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll("sending mail:\n", mailOptions, "\nto server", transporter_js_1.getTransporter().options["host"]);
+        if (cv(2) && config_js_1.default.logITelexCom) {
+            logWithLineNumbers_js_1.ll("sending mail:\n", mailOptions, "\nto server", transporter_js_1.getTransporter().options["host"]);
         }
         else if (cv(1)) {
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
+            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
         }
         transporter_js_1.getTransporter().sendMail(mailOptions, function (error, info) {
             if (error) {
@@ -762,9 +744,8 @@ function sendEmail(messageName, values, callback) {
                     callback();
             }
             else {
-                if (cv(1))
-                    if (config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll('Message sent:', info.messageId);
+                if (cv(1) && config_js_1.default.logITelexCom)
+                    logWithLineNumbers_js_1.ll('Message sent:', info.messageId);
                 if (config_js_1.default.eMail.useTestAccount)
                     if (config_js_1.default.logITelexCom)
                         logWithLineNumbers_js_1.ll('Preview URL:', nodemailer.getTestMessageUrl(info));
