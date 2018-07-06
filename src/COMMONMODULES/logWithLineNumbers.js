@@ -21,7 +21,15 @@ function to2digits(x) {
 }
 function Logger(error, ...args) {
     var strArgs = args.map(function (a) {
-        return typeof a != "string" ? util.inspect(a) : a;
+        if (typeof a == "string") {
+            return a;
+        }
+        else if (a instanceof Buffer && config_js_1.default.logFullBuffer) {
+            return "<Buffer " + (Array.from(a).map(x => (x < 16 ? "0" : "") + x.toString(16)).join(" ")) + ">";
+        }
+        else {
+            return util.inspect(a);
+        }
     });
     let stack = new Error().stack.split('\n');
     var line = stack[(offset || 1) + 1].split((/^win/.test(process.platform)) ? ("\\") : ("/")).slice(-1)[0].replace(")", "");

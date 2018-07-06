@@ -383,7 +383,7 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
 }
 
 function decPackages(buffer:number[]|Buffer): Package_decoded[] {
-    if (config.logITelexCom) ll(colors.FgGreen + "decoding:"+colors.FgCyan+"<Buffer "+Array.from(buffer).map(x=>(x<16?"0":"")+x.toString(16)).join(" ")+">"+colors.Reset);
+    if (config.logITelexCom) ll(colors.FgGreen + "decoding:"+colors.FgCyan,Buffer.from(<number[]>buffer),colors.Reset);
     var typepos: number = 0;
     var out: Package_decoded[] = [];
     while (typepos < buffer.length - 1) {

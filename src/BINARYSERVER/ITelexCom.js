@@ -357,7 +357,7 @@ function decPackageData(packagetype, buffer) {
 exports.decPackageData = decPackageData;
 function decPackages(buffer) {
     if (config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding:" + colors_js_1.default.FgCyan + "<Buffer " + Array.from(buffer).map(x => (x < 16 ? "0" : "") + x.toString(16)).join(" ") + ">" + colors_js_1.default.Reset);
+        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding:" + colors_js_1.default.FgCyan, Buffer.from(buffer), colors_js_1.default.Reset);
     var typepos = 0;
     var out = [];
     while (typepos < buffer.length - 1) {

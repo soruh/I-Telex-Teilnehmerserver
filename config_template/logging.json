@@ -6,6 +6,7 @@
 
     "logLineNumbers":false,
     "logDate":true,
+    "logFullBuffer": true,
 
     "bufferLogWithWhitespace":true,
     "repairPm2Colors":false,

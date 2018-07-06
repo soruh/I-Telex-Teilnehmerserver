@@ -25,7 +25,13 @@ function to2digits(x: string | number): string {
 
 function Logger(error: boolean, ...args) {
   var strArgs: string[] = args.map(function (a) {
-    return typeof a != "string" ? util.inspect(a) : a;
+    if(typeof a == "string"){
+      return a;  
+    }else if(a instanceof Buffer&&config.logFullBuffer){
+      return "<Buffer "+(Array.from(a).map(x=>(x<16?"0":"")+x.toString(16)).join(" "))+">";
+    }else{
+      return util.inspect(a);
+    }
   });
   let stack = new Error().stack.split('\n');
   var line = stack[(offset || 1) + 1].split((/^win/.test(process.platform)) ? ("\\") : ("/")).slice(-1)[0].replace(")", "");
