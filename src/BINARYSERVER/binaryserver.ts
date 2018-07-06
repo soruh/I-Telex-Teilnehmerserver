@@ -90,7 +90,7 @@ var server = net.createServer(function (connection) {
 		});
 		connection.on('data', function (data:Buffer):void {
 			if (cv(2)) {
-				ll(colors.FgGreen+"recieved data:"+colors.FgCyan+data+colors.Reset);
+				ll(colors.FgGreen+"recieved data:"+colors.FgCyan,data,colors.Reset);
 				ll(colors.FgCyan+data.toString().replace(/[^ -~]/g, "·")+colors.Reset);
 			}
 			if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {

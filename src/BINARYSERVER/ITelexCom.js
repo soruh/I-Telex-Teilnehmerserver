@@ -132,13 +132,27 @@ function checkFullPackage(buffer, part) {
     }
 }
 exports.checkFullPackage = checkFullPackage;
+function unmapIpV4fromIpV6(ipaddress) {
+    if (ip.isV4Format(ipaddress)) {
+        return ipaddress;
+    }
+    else if (ip.isV6Format(ipaddress)) {
+        if (ip.isV4Format(ipaddress.toLowerCase().split("::ffff:")[1])) {
+            return ipaddress.toLowerCase().split("::ffff:")[1];
+        }
+        else {
+            return "0.0.0.0";
+        }
+    }
+    else {
+        return "0.0.0.0";
+    }
+}
 function encPackage(obj) {
     if (config_js_1.default.logITelexCom)
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoding:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.Reset);
     var data = obj.data;
     var array = [];
-    var iparr = [];
-    var numip = 0;
     switch (obj.packagetype) {
         case 1:
             array = ValueToBytearray(data.number, 4)
@@ -148,13 +162,7 @@ function encPackage(obj) {
                 obj.datalength = 8;
             break;
         case 2:
-            data.ipaddress = ip.isV4Format(data.ipaddress) ? data.ipaddress : (ip.isV6Format(data.ipaddress) ? (ip.isV4Format(data.ipaddress.split("::")[1]) ? data.ipaddress.split("::")[1] : "") : "");
-            iparr = data.ipaddress == null ? [] : data.ipaddress.split(".").map(byte => +byte);
-            numip = 0;
-            for (let i in iparr) {
-                numip += iparr[i] * Math.pow(2, (+i * 8));
-            }
-            array = ValueToBytearray(numip, 4);
+            array = ValueToBytearray(unmapIpV4fromIpV6(data.ipaddress).split(".").map(x => +x), 4);
             if (obj.datalength == null)
                 obj.datalength = 4;
             break;
@@ -171,11 +179,6 @@ function encPackage(obj) {
             break;
         case 5:
             let flags = data.disabled ? 2 : 0;
-            iparr = data.ipaddress == null ? [] : data.ipaddress.split(".").map(x => +x);
-            numip = 0;
-            for (let i = 0; i < 4; i++) {
-                numip += iparr[i] << i * 8;
-            }
             let ext = 0;
             if (!data.extension) {
                 ext = 0;
@@ -197,7 +200,7 @@ function encPackage(obj) {
                 .concat(ValueToBytearray(flags, 2))
                 .concat(ValueToBytearray(data.type, 1))
                 .concat(ValueToBytearray(data.hostname, 40))
-                .concat(ValueToBytearray(numip, 4))
+                .concat(unmapIpV4fromIpV6(data.ipaddress).split(".").map(x => +x))
                 .concat(ValueToBytearray(+data.port, 2))
                 .concat(ValueToBytearray(ext, 1))
                 .concat(ValueToBytearray(+data.pin, 2))
@@ -258,8 +261,10 @@ function decPackageData(packagetype, buffer) {
             break;
         case 2:
             data = {
-                ipaddress: BytearrayToValue(buffer.slice(0, 4), "ip")
+                ipaddress: buffer.slice(0, 4).join(".")
             };
+            if (data.ipaddress == "0.0.0.0")
+                data.ipaddress = "";
             break;
         case 3:
             data = {
@@ -293,11 +298,15 @@ function decPackageData(packagetype, buffer) {
                 disabled: (flags[0] & 2) == 2 ? 1 : 0,
                 type: BytearrayToValue(buffer.slice(46, 47), "number"),
                 hostname: BytearrayToValue(buffer.slice(47, 87), "string"),
-                ipaddress: BytearrayToValue(buffer.slice(87, 91), "ip"),
+                ipaddress: buffer.slice(87, 91).join("."),
                 port: BytearrayToValue(buffer.slice(91, 93), "number").toString(),
                 pin: BytearrayToValue(buffer.slice(94, 96), "number").toString(),
                 timestamp: BytearrayToValue(buffer.slice(96, 100), "number") - 2208988800
             };
+            if (data.ipaddress == "0.0.0.0")
+                data.ipaddress = "";
+            if (data.hostname == "")
+                data.hostname = "";
             let extension = BytearrayToValue(buffer.slice(93, 94), "number");
             if (extension == 0) {
                 data.extension = null;
@@ -402,6 +411,9 @@ function decPackages(buffer) {
 }
 exports.decPackages = decPackages;
 function BytearrayToValue(arr, type) {
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoding Value:${colors_js_1.default.FgCyan}`, Buffer.from(arr), `${colors_js_1.default.FgGreen}as ${colors_js_1.default.FgCyan}${type}${colors_js_1.default.Reset}`);
     switch (type) {
         case "number":
             var num = 0;
@@ -409,6 +421,9 @@ function BytearrayToValue(arr, type) {
                 num *= 256;
                 num += arr[i];
             }
+            if (cv(3))
+                if (config_js_1.default.logITelexCom)
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded to: ${colors_js_1.default.FgCyan}${num}${colors_js_1.default.Reset}`);
             return (num);
         case "string":
             var str = "";
@@ -420,25 +435,22 @@ function BytearrayToValue(arr, type) {
                     break;
                 }
             }
+            if (cv(3))
+                if (config_js_1.default.logITelexCom)
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded Value: ${colors_js_1.default.FgCyan}${str}${colors_js_1.default.Reset}`);
             return (str);
-        case "ip":
-            let numip = BytearrayToValue(arr, "number");
-            if (numip == 0) {
-                return (null);
-            }
-            else {
-                let str = "";
-                for (let i = 0; i < 4; i++) {
-                    str += ((numip >> (8 * i)) & 255) + (i == 3 ? "" : ".");
-                }
-                return (str);
-            }
         default:
+            if (cv(3))
+                if (config_js_1.default.logITelexCom)
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}invalid type: ${type}${colors_js_1.default.Reset}`);
             return null;
     }
 }
 exports.BytearrayToValue = BytearrayToValue;
 function ValueToBytearray(value, size) {
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoding Value:${colors_js_1.default.FgCyan}`, value, `${colors_js_1.default.FgGreen}(${colors_js_1.default.FgCyan}${typeof value}${colors_js_1.default.FgGreen}) to a Buffer of size: ${colors_js_1.default.FgCyan}${size}${colors_js_1.default.Reset}`);
     //if(cv(2)) if (config.logITelexCom) ll(value);
     let array = [];
     if (typeof value === "string") {
@@ -458,6 +470,9 @@ function ValueToBytearray(value, size) {
     while (array.length < size) {
         array[array.length] = 0;
     }
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoded Value:${colors_js_1.default.FgCyan}`, Buffer.from(array), colors_js_1.default.Reset);
     return (array);
 }
 exports.ValueToBytearray = ValueToBytearray;

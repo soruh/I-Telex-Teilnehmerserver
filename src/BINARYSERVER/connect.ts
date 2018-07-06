@@ -64,7 +64,7 @@ function connect(
 		});
 		socket.on('data', function (data:Buffer) {
 			if (cv(2)) {
-				ll(colors.FgGreen+"recieved data:"+colors.FgCyan+data+colors.Reset);
+				ll(colors.FgGreen+"recieved data:"+colors.FgCyan,data,colors.Reset);
 				ll(colors.FgCyan+data.toString().replace(/[^ -~]/g, "·")+colors.Reset);
 			}
 			try {

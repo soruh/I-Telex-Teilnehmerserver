@@ -174,13 +174,24 @@ function checkFullPackage(buffer:Buffer|number[], part?:Buffer|number[]):[number
 		]);
 	}
 }
+function unmapIpV4fromIpV6(ipaddress){
+	if(ip.isV4Format(ipaddress)){
+		return ipaddress;
+	}else if(ip.isV6Format(ipaddress)){
+		if(ip.isV4Format(ipaddress.toLowerCase().split("::ffff:")[1])){
+			return ipaddress.toLowerCase().split("::ffff:")[1]
+		}else{
+			return "0.0.0.0";
+		}
+	}else{
+		return "0.0.0.0";
+	}
+}
 function encPackage(obj:Package_decoded):Buffer{
     if (config.logITelexCom) ll(colors.FgGreen + "encoding:" + colors.FgCyan, obj, colors.Reset);
     var data:PackageData_decoded = obj.data;
-    var array:PackageData_encoded = [];
-
-    var iparr: number[] = [];
-    var numip: number = 0;
+	var array:PackageData_encoded = [];
+	
     switch (obj.packagetype) {
         case 1:
             array = ValueToBytearray(data.number, 4)
@@ -189,13 +200,8 @@ function encPackage(obj:Package_decoded):Buffer{
             if (obj.datalength == null) obj.datalength = 8;
             break;
         case 2:
-            data.ipaddress = ip.isV4Format(data.ipaddress) ? data.ipaddress : (ip.isV6Format(data.ipaddress) ? (ip.isV4Format(data.ipaddress.split("::")[1]) ? data.ipaddress.split("::")[1] : "") : "");
-            iparr = data.ipaddress == null ? [] : data.ipaddress.split(".").map(byte => +byte);
-            numip = 0;
-            for (let i in iparr) {
-                numip += iparr[i] * Math.pow(2, (+i * 8));
-            }
-            array = ValueToBytearray(numip, 4);
+			
+            array = ValueToBytearray(unmapIpV4fromIpV6(data.ipaddress).split(".").map(x=>+x), 4);
             if (obj.datalength == null) obj.datalength = 4;
             break;
         case 3:
@@ -208,14 +214,8 @@ function encPackage(obj:Package_decoded):Buffer{
             if (obj.datalength == null) obj.datalength = 0;
             break;
         case 5:
-            let flags = data.disabled?2:0;
-
-            iparr = data.ipaddress == null ? [] : data.ipaddress.split(".").map(x=>+x);
-            numip = 0;
-            for (let i=0;i<4;i++) {
-                numip += iparr[i] << i*8;
-            }
-
+			let flags = data.disabled?2:0;
+			
             let ext = 0;
             if (!data.extension) {
                 ext = 0;
@@ -234,7 +234,7 @@ function encPackage(obj:Package_decoded):Buffer{
                 .concat(ValueToBytearray(flags, 2))
                 .concat(ValueToBytearray(data.type, 1))
                 .concat(ValueToBytearray(data.hostname, 40))
-                .concat(ValueToBytearray(numip, 4))
+                .concat(unmapIpV4fromIpV6(data.ipaddress).split(".").map(x=>+x))
                 .concat(ValueToBytearray(+data.port, 2))
                 .concat(ValueToBytearray(ext, 1))
                 .concat(ValueToBytearray(+data.pin, 2))
@@ -288,8 +288,9 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
             break;
         case 2:
             data = {
-                ipaddress: < string > BytearrayToValue(buffer.slice(0, 4), "ip")
-            };
+                ipaddress: buffer.slice(0, 4).join(".")
+			};
+			if(data.ipaddress == "0.0.0.0") data.ipaddress = "";
             break;
         case 3:
             data = {
@@ -324,11 +325,13 @@ function decPackageData(packagetype: number, buffer:Buffer|number[]): PackageDat
                 disabled: (flags[0]&2)==2?1:0,
                 type: < number > BytearrayToValue(buffer.slice(46, 47), "number"),
                 hostname: < string > BytearrayToValue(buffer.slice(47, 87), "string"),
-                ipaddress: < string > BytearrayToValue(buffer.slice(87, 91), "ip"),
+                ipaddress: buffer.slice(87, 91).join("."),
                 port: < string > BytearrayToValue(buffer.slice(91, 93), "number").toString(),
                 pin: < string > BytearrayToValue(buffer.slice(94, 96), "number").toString(),
                 timestamp: < number > BytearrayToValue(buffer.slice(96, 100), "number") - 2208988800
-            };
+			};
+			if(data.ipaddress == "0.0.0.0") data.ipaddress = "";
+			if(data.hostname == "") data.hostname = "";
 
             let extension:number = < number > BytearrayToValue(buffer.slice(93, 94), "number");
             if (extension == 0) {
@@ -419,6 +422,7 @@ function decPackages(buffer:number[]|Buffer): Package_decoded[] {
 }
 
 function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
+	if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}decoding Value:${colors.FgCyan}`,Buffer.from(<number[]>arr),`${colors.FgGreen}as ${colors.FgCyan}${type}${colors.Reset}`);
     switch(type){
 		case "number":
 			var num = 0;
@@ -426,8 +430,8 @@ function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
 				num *= 256;
 				num += arr[i];
 			}
+			if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}decoded to: ${colors.FgCyan}${num}${colors.Reset}`);
 			return (num);
-
     	case "string":
 			var str = "";
 			for (let i = 0; i < arr.length; i++) {
@@ -437,26 +441,16 @@ function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
 					break;
 				}
 			}
+			if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}decoded Value: ${colors.FgCyan}${str}${colors.Reset}`);
 			return (str);
-
-		case "ip":
-			let numip: number = < number > BytearrayToValue(arr, "number");
-			if (numip == 0) {
-				return (null);
-			} else {
-				let str = "";
-				for (let i = 0; i < 4; i++) {
-					str += ((numip >> (8 * i)) & 255) + (i == 3 ? "" : ".");
-				}
-				return (str);
-			}
-			
 		default:
+			if (cv(3)) if (config.logITelexCom) ll(`${colors.FgRed}invalid type: ${type}${colors.Reset}`);
 			return null;
 	}
 }
 
 function ValueToBytearray(value:string|number, size:number):number[]{
+	if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}encoding Value:${colors.FgCyan}`,value,`${colors.FgGreen}(${colors.FgCyan}${typeof value}${colors.FgGreen}) to a Buffer of size: ${colors.FgCyan}${size}${colors.Reset}`);
     //if(cv(2)) if (config.logITelexCom) ll(value);
     let array = [];
     if (typeof value === "string") {
@@ -474,7 +468,8 @@ function ValueToBytearray(value:string|number, size:number):number[]{
     }
     while (array.length < size) {
         array[array.length] = 0;
-    }
+	}
+	if (cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}encoded Value:${colors.FgCyan}`,Buffer.from(<number[]>array),colors.Reset);
     return (array);
 }
 
