@@ -71,7 +71,11 @@ function get(loc:string|((client:client)=>boolean)){
         }
       }
       if(config.logConnectionChanges) if(cv(2)) llo(1,`${colors.FgYellow}got:\n${util.inspect(matches,{depth:1})}\nfor ${colors.FgBlue}${loc}${colors.FgYellow}${colors.Reset}`);
-      return matches;
+      if(matches.length>0){
+         return matches;
+      }else{
+         return null;
+      }
     }else{
       return null;
     }

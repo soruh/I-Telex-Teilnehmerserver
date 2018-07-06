@@ -51,7 +51,12 @@ function get(loc) {
             if (config_js_1.default.logConnectionChanges)
                 if (ITelexCom_js_1.cv(2))
                     logWithLineNumbers_js_1.llo(1, `${colors_js_1.default.FgYellow}got:\n${util.inspect(matches, { depth: 1 })}\nfor ${colors_js_1.default.FgBlue}${loc}${colors_js_1.default.FgYellow}${colors_js_1.default.Reset}`);
-            return matches;
+            if (matches.length > 0) {
+                return matches;
+            }
+            else {
+                return null;
+            }
         }
         else {
             return null;
