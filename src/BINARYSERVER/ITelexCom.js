@@ -1,4 +1,3 @@
-//TODO: impelement logITelexCom
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,11 +8,46 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+//TODO: Object.defineProperty(Date.prototype, 'getTimezone', { value:
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
     let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
     return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
 }
+Object.defineProperty(Buffer.prototype, 'readNullTermString', { value: function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
+        // console.log(highlightBuffer(this));
+        // console.log("start:"+start);
+        // console.log("end:"+end);
+        // console.log(highlightBuffer(this,start,end));
+        let firstZero = this.indexOf(0, start);
+        // console.log("firstZero:"+firstZero);
+        let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+        // console.log("stop:"+firstZero);
+        // console.log(highlightBuffer(this,start,stop));
+        // console.log("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
+        return this.toString(encoding, start, stop);
+    }
+});
+Object.defineProperty(Buffer.prototype, 'writeByteArray', { value: function writeByteArray(array, offset = 0) {
+        if (array.length + offset > this.length) {
+            throw new RangeError("array is too big");
+        }
+        else {
+            for (let i in array) {
+                this[+i + offset] = array[i];
+            }
+            return this;
+        }
+    }
+});
+// function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
+// 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+(<any>x).toString(16));
+// 	if(from in array&&length>0){
+// 		array[from] = "\x1b[046m"+"\x1b[030m"+array[from];
+// 		array[from+length-1] += "\x1b[000m";
+// 	}	
+// 	return "<Buffer "+array.join(" ")+">\x1b[000m"
+// }
 //#region imports
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const util = require("util");
@@ -150,30 +184,23 @@ function encPackage(obj) {
     if (config_js_1.default.logITelexCom)
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoding:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.Reset);
     var data = obj.data;
-    var array = [];
+    var buffer = new Buffer(obj.datalength + 2);
+    buffer[0] = obj.packagetype;
+    buffer[1] = obj.datalength;
     switch (obj.packagetype) {
         case 1:
-            array = ValueToBytearray(data.number, 4)
-                .concat(ValueToBytearray(+data.pin, 2))
-                .concat(ValueToBytearray(+data.port, 2));
-            if (obj.datalength == null)
-                obj.datalength = 8;
+            buffer.writeUIntLE(data.number, 2, 4);
+            buffer.writeUIntLE(+data.pin, 6, 2);
+            buffer.writeUIntLE(+data.port, 8, 2);
             break;
         case 2:
-            array = unmapIpV4fromIpV6(data.ipaddress).split(".").map(x => +x);
-            if (obj.datalength == null)
-                obj.datalength = 4;
+            buffer.writeByteArray(unmapIpV4fromIpV6(data.ipaddress).split("."), 2); // .map(x=>+x)
             break;
         case 3:
-            array = ValueToBytearray(data.number, 4)
-                .concat(ValueToBytearray(data.version, 1));
-            if (obj.datalength == null)
-                obj.datalength = 5;
+            buffer.writeUIntLE(data.number, 2, 4);
+            buffer.writeUIntLE(data.version, 6, 1);
             break;
         case 4:
-            array = [];
-            if (obj.datalength == null)
-                obj.datalength = 0;
             break;
         case 5:
             let flags = data.disabled ? 2 : 0;
@@ -193,83 +220,86 @@ function encPackage(obj) {
             else {
                 ext = parseInt(data.extension);
             }
-            array = ValueToBytearray(data.number, 4)
-                .concat(ValueToBytearray(data.name, 40))
-                .concat(ValueToBytearray(flags, 2))
-                .concat(ValueToBytearray(data.type, 1))
-                .concat(ValueToBytearray(data.hostname, 40))
-                .concat(unmapIpV4fromIpV6(data.ipaddress).split(".").map(x => +x))
-                .concat(ValueToBytearray(+data.port, 2))
-                .concat(ValueToBytearray(ext, 1))
-                .concat(ValueToBytearray(+data.pin, 2))
-                .concat(ValueToBytearray(data.timestamp + 2208988800, 4));
-            if (obj.datalength == null)
-                obj.datalength = 100;
+            // console.log("\n");
+            // ll(buffer);
+            // ll(data.number, 2, 4);
+            buffer.writeUIntLE(data.number, 2, 4);
+            // ll(highlightBuffer(buffer, 2, 4));
+            // ll(data.name, 6, 40);
+            buffer.write(data.name, 6, 40);
+            // ll(highlightBuffer(buffer, 6, 40));
+            // ll(flags, 46, 2);
+            buffer.writeUIntLE(flags, 46, 2);
+            // ll(highlightBuffer(buffer, 46, 2));
+            // ll(data.type, 48, 1);
+            buffer.writeUIntLE(data.type, 48, 1);
+            // ll(highlightBuffer(buffer, 48, 1));
+            // ll(data.hostname, 49, 40);
+            buffer.write(data.hostname, 49, 40);
+            // ll(highlightBuffer(buffer, 49, 40));
+            // ll(unmapIpV4fromIpV6(data.ipaddress).split("."),89);
+            buffer.writeByteArray(unmapIpV4fromIpV6(data.ipaddress).split("."), 89); // .map(x=>+x)
+            // ll(highlightBuffer(buffer, 89, 4));
+            // ll(+data.port, 93, 2);
+            buffer.writeUIntLE(+data.port, 93, 2);
+            // ll(highlightBuffer(buffer, 93, 2));
+            // ll(ext, 95, 1);
+            buffer.writeUIntLE(ext, 95, 1);
+            // ll(highlightBuffer(buffer, 95, 1));
+            // ll(+data.pin, 96, 2);
+            buffer.writeUIntLE(+data.pin, 96, 2);
+            // ll(highlightBuffer(buffer, 96, 2));
+            // ll(data.timestamp + 2208988800, 98, 4);
+            buffer.writeUIntLE(data.timestamp + 2208988800, 98, 4);
+            // ll(highlightBuffer(buffer, 98, 4));
             break;
         case 6:
-            array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(data.serverpin, 4));
-            if (obj.datalength == null)
-                obj.datalength = 5;
+            buffer.writeUIntLE(data.version, 2, 1);
+            buffer.writeUIntLE(data.serverpin, 3, 4);
             break;
         case 7:
-            array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(data.serverpin, 4));
-            if (obj.datalength == null)
-                obj.datalength = 5;
+            buffer.writeUIntLE(data.version, 2, 1);
+            buffer.writeUIntLE(data.serverpin, 3, 4);
             break;
         case 8:
-            array = [];
-            if (obj.datalength == null)
-                obj.datalength = 0;
             break;
         case 9:
-            array = [];
-            if (obj.datalength == null)
-                obj.datalength = 0;
             break;
         case 10:
-            // array = ValueToBytearray(data.version,1)
-            // .concat(ValueToBytearray(data.pattern,40));
-            array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(data.pattern, 40));
-            if (obj.datalength == null)
-                obj.datalength = 41;
+            buffer.writeUIntLE(data.version, 2, 1);
+            buffer.write(data.pattern, 3, 40);
             break;
     }
-    var header = [obj.packagetype, array.length];
-    if (array.length != obj.datalength) {
-        logWithLineNumbers_js_1.lle("Buffer had unexpected size:\n" + array.length + " != " + obj.datalength);
-        return Buffer.from([]);
-    }
-    if (config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoded:" + colors_js_1.default.FgCyan, Buffer.from(header.concat(array)), colors_js_1.default.Reset);
-    return Buffer.from(header.concat(array));
+    if (config_js_1.default.logITelexCom && cv(1))
+        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoded:" + colors_js_1.default.FgCyan, buffer, colors_js_1.default.Reset);
+    return buffer;
 }
 exports.encPackage = encPackage;
-function decPackageData(packagetype, buffer) {
+function decPackage(buffer) {
     var data;
+    let packagetype = buffer[0];
+    let datalength = buffer[1];
     switch (packagetype) {
         case 1:
             data = {
-                number: BytearrayToValue(buffer.slice(0, 4), "number"),
-                pin: BytearrayToValue(buffer.slice(4, 6), "number").toString(),
-                port: BytearrayToValue(buffer.slice(6, 8), "number").toString()
+                number: buffer.readUIntLE(2, 4),
+                pin: buffer.readUIntLE(6, 2).toString(),
+                port: buffer.readUIntLE(8, 2).toString()
             };
             break;
         case 2:
             data = {
-                ipaddress: buffer.slice(0, 4).join(".")
+                ipaddress: buffer.slice(2, 6).join(".")
             };
             if (data.ipaddress == "0.0.0.0")
                 data.ipaddress = "";
             break;
         case 3:
             data = {
-                number: BytearrayToValue(buffer.slice(0, 4), "number")
+                number: buffer.readUIntLE(2, 4),
             };
-            if (buffer.slice(4, 5).length > 0) {
-                data.version = BytearrayToValue(buffer.slice(4, 5), "number");
+            if (buffer.slice(6, 7).length > 0) {
+                data.version = buffer.readUIntLE(6, 1);
             }
             else {
                 data.version = 1;
@@ -279,7 +309,7 @@ function decPackageData(packagetype, buffer) {
             data = {};
             break;
         case 5:
-            let flags = buffer.slice(44, 46);
+            let flags = buffer.readUIntLE(46, 2);
             // <Call-number 4b> 0,4
             // <Name 40b> 		4,44
             // <Flags 2b>		44,46
@@ -291,21 +321,21 @@ function decPackageData(packagetype, buffer) {
             // <DynPin 2b>		94,96
             // <Date 4b>		96,100
             data = {
-                number: BytearrayToValue(buffer.slice(0, 4), "number"),
-                name: BytearrayToValue(buffer.slice(4, 44), "string"),
-                disabled: (flags[0] & 2) == 2 ? 1 : 0,
-                type: BytearrayToValue(buffer.slice(46, 47), "number"),
-                hostname: BytearrayToValue(buffer.slice(47, 87), "string"),
-                ipaddress: buffer.slice(87, 91).join("."),
-                port: BytearrayToValue(buffer.slice(91, 93), "number").toString(),
-                pin: BytearrayToValue(buffer.slice(94, 96), "number").toString(),
-                timestamp: BytearrayToValue(buffer.slice(96, 100), "number") - 2208988800
+                number: buffer.readUIntLE(2, 4),
+                name: buffer.readNullTermString("utf8", 6, 46),
+                disabled: (flags & 2) == 2 ? 1 : 0,
+                type: buffer.readUIntLE(48, 1),
+                hostname: buffer.readNullTermString("utf8", 49, 89),
+                ipaddress: buffer.slice(89, 93).join("."),
+                port: buffer.readUIntLE(93, 2).toString(),
+                pin: buffer.readUIntLE(96, 2).toString(),
+                timestamp: buffer.readUIntLE(98, 4) - 2208988800
             };
             if (data.ipaddress == "0.0.0.0")
                 data.ipaddress = "";
             if (data.hostname == "")
                 data.hostname = "";
-            let extension = BytearrayToValue(buffer.slice(93, 94), "number");
+            let extension = buffer.readUIntLE(95, 1);
             if (extension == 0) {
                 data.extension = null;
             }
@@ -330,14 +360,14 @@ function decPackageData(packagetype, buffer) {
             break;
         case 6:
             data = {
-                version: BytearrayToValue(buffer.slice(0, 1), "number"),
-                serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
+                version: buffer.readUIntLE(2, 1),
+                serverpin: buffer.readUIntLE(3, 4)
             };
             break;
         case 7:
             data = {
-                version: BytearrayToValue(buffer.slice(0, 1), "number"),
-                serverpin: BytearrayToValue(buffer.slice(1, 5), "number")
+                version: buffer.readUIntLE(2, 1),
+                serverpin: buffer.readUIntLE(3, 4)
             };
             break;
         case 8:
@@ -348,10 +378,8 @@ function decPackageData(packagetype, buffer) {
             break;
         case 10:
             data = {
-                version: BytearrayToValue(buffer.slice(0, 1), "number"),
-                pattern: BytearrayToValue(buffer.slice(1, 41), "string")
-                //pattern:BytearrayToValue(buffer.slice(0,40),"string"),
-                //version:BytearrayToValue(buffer.slice(40,41),"number")
+                version: buffer.readUIntLE(2, 1),
+                pattern: buffer.readNullTermString("utf8", 3, 43)
             };
             break;
         default:
@@ -359,113 +387,42 @@ function decPackageData(packagetype, buffer) {
             data = {};
             break;
     }
-    return data;
+    return {
+        packagetype,
+        datalength,
+        data
+    };
 }
-exports.decPackageData = decPackageData;
+exports.decPackage = decPackage;
 function decPackages(buffer) {
+    if (!(buffer instanceof Buffer))
+        buffer = Buffer.from(buffer);
     if (config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding:" + colors_js_1.default.FgCyan, Buffer.from(buffer), colors_js_1.default.Reset);
-    var typepos = 0;
+        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding:" + colors_js_1.default.FgCyan, buffer, colors_js_1.default.Reset);
     var out = [];
-    while (typepos < buffer.length - 1) {
+    for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
         var packagetype = +buffer[typepos];
         var datalength = +buffer[typepos + 1];
-        var blockdata = [];
-        for (let i = 0; i < datalength; i++) {
-            blockdata[i] = buffer[typepos + 2 + i];
-        }
-        var data = decPackageData(packagetype, blockdata);
-        if (data) {
-            if (constants.PackageSizes[packagetype] != datalength) {
+        if (constants.PackageSizes[packagetype] != datalength) {
+            if (cv(1) && config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors_js_1.default.Reset}`);
+            if (config_js_1.default.allowInvalidPackageSizes) {
                 if (cv(1) && config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors_js_1.default.Reset}`);
-                if (config_js_1.default.allowInvalidPackageSizes) {
-                    if (cv(2) && config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}handling package of invalid size.${colors_js_1.default.Reset}`);
-                }
-                else {
-                    if (cv(1) && config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}not handling package, because it is of invalid size!${colors_js_1.default.Reset}`);
-                    continue;
-                }
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}using package of invalid size!${colors_js_1.default.Reset}`);
             }
-            out.push({
-                packagetype: packagetype,
-                datalength: datalength,
-                data: data
-            });
+            else {
+                if (cv(2) && config_js_1.default.logITelexCom)
+                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}ignoring package, because it is of invalid size!${colors_js_1.default.Reset}`);
+                continue;
+            }
         }
-        else {
-            logWithLineNumbers_js_1.lle("error, no data");
-        }
-        typepos += datalength + 2;
+        out.push(decPackage(buffer.slice(typepos, datalength + 2)));
     }
     if (config_js_1.default.logITelexCom)
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoded:", colors_js_1.default.FgCyan, out, colors_js_1.default.Reset);
     return out;
 }
 exports.decPackages = decPackages;
-function BytearrayToValue(arr, type) {
-    if (cv(3) && config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoding Value:${colors_js_1.default.FgCyan}`, Buffer.from(arr), `${colors_js_1.default.FgGreen}as ${colors_js_1.default.FgCyan}${type}${colors_js_1.default.Reset}`);
-    switch (type) {
-        case "number":
-            var num = 0;
-            for (let i = arr.length - 1; i >= 0; i--) {
-                num *= 256;
-                num += arr[i];
-            }
-            if (cv(3) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded to: ${colors_js_1.default.FgCyan}${num}${colors_js_1.default.Reset}`);
-            return (num);
-        case "string":
-            var str = "";
-            for (let i = 0; i < arr.length; i++) {
-                if (arr[i] != 0) {
-                    str += String.fromCharCode(arr[i]);
-                }
-                else {
-                    break;
-                }
-            }
-            if (cv(3) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}decoded Value: ${colors_js_1.default.FgCyan}${str}${colors_js_1.default.Reset}`);
-            return (str);
-        default:
-            if (cv(3) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}invalid type: ${type}${colors_js_1.default.Reset}`);
-            return null;
-    }
-}
-exports.BytearrayToValue = BytearrayToValue;
-function ValueToBytearray(value, size) {
-    if (cv(3) && config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoding Value:${colors_js_1.default.FgCyan}`, value, `${colors_js_1.default.FgGreen}(${colors_js_1.default.FgCyan}${typeof value}${colors_js_1.default.FgGreen}) to a Buffer of size: ${colors_js_1.default.FgCyan}${size}${colors_js_1.default.Reset}`);
-    //if(cv(2)) if (config.logITelexCom) ll(value);
-    let array = [];
-    if (typeof value === "string") {
-        for (let i = 0; i < value.length; i++) {
-            array[i] = value.charCodeAt(i);
-        }
-    }
-    else if (typeof value === "number") {
-        let temp = value;
-        while (temp > 0) {
-            array[array.length] = temp % 256;
-            temp = Math.floor(temp / 256);
-        }
-    }
-    if (array.length > size || array.length == undefined) {
-        logWithLineNumbers_js_1.lle("Value " + value + " turned into a bigger than expecte Bytearray!\n" + array.length + " > " + size);
-    }
-    while (array.length < size) {
-        array[array.length] = 0;
-    }
-    if (cv(3) && config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}encoded Value:${colors_js_1.default.FgCyan}`, Buffer.from(array), colors_js_1.default.Reset);
-    return (array);
-}
-exports.ValueToBytearray = ValueToBytearray;
 function increaseErrorCounter(serverkey, error, code) {
     let exists = Object.keys(serverErrors).findIndex(k => k == serverkey) > -1;
     if (exists) {
