@@ -174,7 +174,7 @@ function checkFullPackage(buffer:Buffer|number[], part?:Buffer|number[]):[number
 		]);
 	}
 }
-function unmapIpV4fromIpV6(ipaddress){
+function unmapIpV4fromIpV6(ipaddress:string):string{
 	if(ip.isV4Format(ipaddress)){
 		return ipaddress;
 	}else if(ip.isV6Format(ipaddress)){
@@ -201,7 +201,7 @@ function encPackage(obj:Package_decoded):Buffer{
             break;
         case 2:
 			
-            array = ValueToBytearray(unmapIpV4fromIpV6(data.ipaddress).split(".").map(x=>+x), 4);
+            array = unmapIpV4fromIpV6(data.ipaddress).split(".").map(x=>+x);
             if (obj.datalength == null) obj.datalength = 4;
             break;
         case 3:
@@ -452,15 +452,16 @@ function BytearrayToValue(arr:number[]|Buffer, type:string):string|number{
 function ValueToBytearray(value:string|number, size:number):number[]{
 	if(cv(3)&&config.logITelexCom) ll(`${colors.FgGreen}encoding Value:${colors.FgCyan}`,value,`${colors.FgGreen}(${colors.FgCyan}${typeof value}${colors.FgGreen}) to a Buffer of size: ${colors.FgCyan}${size}${colors.Reset}`);
     //if(cv(2)) if (config.logITelexCom) ll(value);
-    let array = [];
+	let array = [];
     if (typeof value === "string") {
         for (let i = 0; i < value.length; i++) {
             array[i] = value.charCodeAt(i);
         }
     } else if (typeof value === "number") {
-        while (value > 0) {
-            array[array.length] = value % 256;
-            value = Math.floor(value / 256);
+		let temp = value;
+        while (temp > 0) {
+            array[array.length] = temp % 256;
+            temp = Math.floor(temp / 256);
         }
     }
     if (array.length > size || array.length == undefined) {

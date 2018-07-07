@@ -160,7 +160,7 @@ function encPackage(obj) {
                 obj.datalength = 8;
             break;
         case 2:
-            array = ValueToBytearray(unmapIpV4fromIpV6(data.ipaddress).split(".").map(x => +x), 4);
+            array = unmapIpV4fromIpV6(data.ipaddress).split(".").map(x => +x);
             if (obj.datalength == null)
                 obj.datalength = 4;
             break;
@@ -449,9 +449,10 @@ function ValueToBytearray(value, size) {
         }
     }
     else if (typeof value === "number") {
-        while (value > 0) {
-            array[array.length] = value % 256;
-            value = Math.floor(value / 256);
+        let temp = value;
+        while (temp > 0) {
+            array[array.length] = temp % 256;
+            temp = Math.floor(temp / 256);
         }
     }
     if (array.length > size || array.length == undefined) {
