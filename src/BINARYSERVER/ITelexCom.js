@@ -208,13 +208,13 @@ function encPackage(obj) {
             break;
         case 6:
             array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(config_js_1.default.serverPin, 4));
+                .concat(ValueToBytearray(data.serverpin, 4));
             if (obj.datalength == null)
                 obj.datalength = 5;
             break;
         case 7:
             array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(config_js_1.default.serverPin, 4));
+                .concat(ValueToBytearray(data.serverpin, 4));
             if (obj.datalength == null)
                 obj.datalength = 5;
             break;

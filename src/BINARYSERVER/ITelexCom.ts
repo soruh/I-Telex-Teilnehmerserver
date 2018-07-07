@@ -243,12 +243,12 @@ function encPackage(obj:Package_decoded):Buffer{
             break;
         case 6:
             array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(config.serverPin, 4));
+                .concat(ValueToBytearray(data.serverpin, 4));
             if (obj.datalength == null) obj.datalength = 5;
             break;
         case 7:
             array = ValueToBytearray(data.version, 1)
-                .concat(ValueToBytearray(config.serverPin, 4));
+                .concat(ValueToBytearray(data.serverpin, 4));
             if (obj.datalength == null) obj.datalength = 5;
             break;
         case 8:
