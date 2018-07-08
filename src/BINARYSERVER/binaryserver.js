@@ -103,42 +103,41 @@ var server = net.createServer(function (connection) {
                     logWithLineNumbers_js_1.ll("Buffer for client " + client.cnum + ":" + colors_js_1.default.FgCyan, client.readbuffer, colors_js_1.default.Reset);
                 if (ITelexCom_js_1.cv(2))
                     logWithLineNumbers_js_1.ll("New Data for client " + client.cnum + ":" + colors_js_1.default.FgCyan, data, colors_js_1.default.Reset);
-                var res = ITelexCom.checkFullPackage(data, client.readbuffer);
+                var res = ITelexCom.getCompletePackages(data, client.readbuffer);
                 if (ITelexCom_js_1.cv(2))
                     logWithLineNumbers_js_1.ll("New Buffer:" + colors_js_1.default.FgCyan, res[1], colors_js_1.default.Reset);
                 if (ITelexCom_js_1.cv(2))
-                    logWithLineNumbers_js_1.ll("Complete Package:" + colors_js_1.default.FgCyan, res[0], colors_js_1.default.Reset);
+                    logWithLineNumbers_js_1.ll("complete Package(s):" + colors_js_1.default.FgCyan, res[0], colors_js_1.default.Reset);
                 if (res[1].length > 0) {
                     client.readbuffer = res[1];
                 }
                 if (res[0]) {
-                    if (typeof client.packages != "object")
+                    if (client.packages == null)
                         client.packages = [];
                     client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
                     let timeout = function () {
-                        if (ITelexCom_js_1.cv(2))
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling: " + colors_js_1.default.FgCyan + client.handling + colors_js_1.default.Reset);
                         if (client.handling === false) {
                             client.handling = true;
                             if (client.timeout != null) {
                                 clearTimeout(client.timeout);
                                 client.timeout = null;
                             }
-                            async.eachOfSeries((client.packages != undefined ? client.packages : []), function (pkg, key, cb) {
-                                if ((ITelexCom_js_1.cv(1) && (Object.keys(client.packages).length > 1)) || ITelexCom_js_1.cv(2))
-                                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset);
+                            let nPackages = Object.keys(client.packages).length;
+                            let handled = 0;
+                            async.eachOfSeries(client.packages, function (pkg, key, cb) {
+                                if ((ITelexCom_js_1.cv(1) && (nPackages > 1)) || ITelexCom_js_1.cv(2))
+                                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}handling package ${colors_js_1.default.FgCyan}${+key + 1}/${nPackages}${colors_js_1.default.Reset}`);
                                 ITelexCom.handlePackage(pkg, client, pool, function () {
-                                    client.packages.splice(+key, 1);
+                                    handled++;
                                     cb();
                                 });
                             }, function () {
+                                client.packages.splice(0, handled);
                                 client.handling = false;
                             });
                         }
                         else {
-                            if (client.timeout == null) {
-                                client.timeout = setTimeout(timeout, 10);
-                            }
+                            client.timeout = setTimeout(timeout, 10);
                         }
                     };
                     timeout();

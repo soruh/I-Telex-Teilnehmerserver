@@ -17,7 +17,7 @@ interface client{
   cnum?:string;
   connection:connection;
   state:number
-  readbuffer:number[];
+  readbuffer:Buffer;
   writebuffer:peer[];
   packages:Package_decoded[];
   handling:boolean;

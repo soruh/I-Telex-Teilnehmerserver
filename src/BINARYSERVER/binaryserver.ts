@@ -103,36 +103,36 @@ var server = net.createServer(function (connection) {
 
 				if (cv(2)) ll("Buffer for client " + client.cnum + ":" + colors.FgCyan, client.readbuffer, colors.Reset);
 				if (cv(2)) ll("New Data for client " + client.cnum + ":" + colors.FgCyan, data, colors.Reset);
-				var res = ITelexCom.checkFullPackage(data, client.readbuffer);
+				var res = ITelexCom.getCompletePackages(data, client.readbuffer);
 				if (cv(2)) ll("New Buffer:" + colors.FgCyan, res[1], colors.Reset);
-				if (cv(2)) ll("Complete Package:" + colors.FgCyan, res[0], colors.Reset);
+				if (cv(2)) ll("complete Package(s):" + colors.FgCyan, res[0], colors.Reset);
 				if (res[1].length > 0) {
 					client.readbuffer = res[1];
 				}
 				if (res[0]) {
-					if (typeof client.packages != "object") client.packages = [];
+					if (client.packages == null) client.packages = [];
 					client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
 					let timeout = function () {
-						if (cv(2)) ll(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
 						if (client.handling === false) {
 							client.handling = true;
 							if (client.timeout != null) {
 								clearTimeout(client.timeout);
 								client.timeout = null;
 							}
-							async.eachOfSeries((client.packages != undefined ? client.packages : []), function (pkg, key, cb) {
-								if ((cv(1) && (Object.keys(client.packages).length > 1)) || cv(2)) ll(colors.FgGreen + "handling package " + colors.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors.Reset);
+							let nPackages = Object.keys(client.packages).length;
+							let handled = 0;
+							async.eachOfSeries(client.packages, function (pkg, key, cb) {
+								if ((cv(1) && (nPackages > 1)) || cv(2)) ll(`${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${nPackages}${colors.Reset}`);
 								ITelexCom.handlePackage(pkg, client, pool, function () {
-									client.packages.splice(+key, 1);
+									handled++;
 									cb();
 								});
 							}, function () {
+								client.packages.splice(0, handled);
 								client.handling = false;
 							});
 						} else {
-							if (client.timeout == null) {
-								client.timeout = setTimeout(timeout, 10);
-							}
+							client.timeout = setTimeout(timeout, 10);
 						}
 					};
 					timeout();

@@ -3,7 +3,8 @@
 
     "logITelexCom":false,
     "logConnectionChanges":false,
-    "logFullBuffer": true,
+    "logFullBuffer": false,
+    "explainBuffers":2,
 
     "logDate":true,
     "logLineNumbers":false,

@@ -43,7 +43,106 @@ Object.defineProperty(Buffer.prototype, 'writeByteArray', { value:
 // 	}	
 // 	return "<Buffer "+array.join(" ")+">\x1b[000m"
 // }
+function explainData(data:Buffer):string{
+	let str = "<Buffer";
+	var packagetype:number;
+	var datalength:number;
+	for(let typepos = 0;typepos < data.length - 1;typepos += datalength + 2) {
+		packagetype = +data[typepos];
+		datalength = +data[typepos + 1];
 
+		// console.log(typepos,datalength+2,typepos+datalength+2);
+		
+		// console.log(highlightBuffer(data,typepos,datalength+2));
+		
+		// console.log(data.slice(typepos,typepos+datalength+2));
+		
+		let array = Array.from(data.slice(typepos,typepos+datalength+2)).map(x=>(x<16?"0":"")+x.toString(16));
+		// console.log(array);
+		
+		array = array.map((value, index)=>	
+			index==0?
+			"\x1b[036m"+value+"\x1b[000m":
+			index==1?
+			"\x1b[032m"+value+"\x1b[000m":
+			"\x1b[000m"+value+"\x1b[000m"
+		);
+		str += " "+array.join(" ");
+	}
+	str += ">";
+	return str;
+}
+function inspectBuffer(buffer:Buffer):string{
+	return Array.from(buffer).map((x=>(x<16?"0":"")+x.toString(16))).join(" ");
+}
+function explainPackagePart(buffer:Buffer, name:string, color:string){
+	if(config.explainBuffers > 1){
+		return ` ${color}[${name}: ${inspectBuffer(buffer)}]\x1b[000m`;
+	}else{
+		return ` ${color}${inspectBuffer(buffer)}\x1b[000m`;
+	}
+}
+function explainPackage(pkg:Buffer):string{
+	let res:string = "<Buffer";
+
+	let packagetype = pkg[0];
+	let datalength = pkg[1];
+	res += explainPackagePart(Buffer.from([packagetype]), "packagetype", "\x1b[036m");
+	res += explainPackagePart(Buffer.from([datalength]), "datalength", "\x1b[032m");
+	switch (packagetype) {
+		case 1:
+			res += explainPackagePart(pkg.slice(2,6), "number", "\x1b[034m");
+			res += explainPackagePart(pkg.slice(6,8), "pin", "\x1b[031m");
+			res += explainPackagePart(pkg.slice(8,10), "port", "\x1b[042m");
+			break;
+		case 2:
+			res += explainPackagePart(pkg.slice(2,6), "ipaddress", "\x1b[043m");
+
+			break;
+		case 3:
+			res += explainPackagePart(pkg.slice(2,6), "number", "\x1b[034m");
+			res += explainPackagePart(pkg.slice(6,7), "version", "\x1b[106m");
+			break;
+		case 4:
+			res += " ";
+			break;
+		case 5:
+			res += explainPackagePart(pkg.slice(2,6), "number", "\x1b[034m");
+			res += explainPackagePart(pkg.slice(6,46), "name", "\x1b[000m");
+			res += explainPackagePart(pkg.slice(46,48), "flags", "\x1b[047m");
+			res += explainPackagePart(pkg.slice(48,49), "type", "\x1b[035m");
+			res += explainPackagePart(pkg.slice(49,89), "hostname", "\x1b[033m");
+			res += explainPackagePart(pkg.slice(89,93), "ipaddress", "\x1b[043m");
+			res += explainPackagePart(pkg.slice(93,95), "port", "\x1b[042m");
+			res += explainPackagePart(pkg.slice(95,96), "extension", "\x1b[045m");
+			res += explainPackagePart(pkg.slice(96,98), "pin", "\x1b[031m");
+			res += explainPackagePart(pkg.slice(98,102), "timestamp", "\x1b[047m");
+			break;
+		case 6:
+			res += explainPackagePart(pkg.slice(2,3), "version", "\x1b[106m");
+			res += explainPackagePart(pkg.slice(3,7), "serverpin", "\x1b[041m");
+			break;
+		case 7:
+			res += explainPackagePart(pkg.slice(2,3), "version", "\x1b[106m");
+			res += explainPackagePart(pkg.slice(3,7), "serverpin", "\x1b[041m");
+			break;
+		case 8:
+			res += " ";
+			break;
+		case 9:
+			res += " ";
+			break;
+		case 10:
+			res += explainPackagePart(pkg.slice(2,3), "version", "\x1b[106m");
+			res += explainPackagePart(pkg.slice(3,43), "pattern", "\x1b[000m");
+
+			break;
+		default:
+			res = inspectBuffer(pkg);
+	}
+	res += "]\x1b[000m>";
+	return res;
+}
 
 
 //#region imports
@@ -182,35 +281,39 @@ function handlePackage(obj:Package_decoded, client:connections.client, pool, cb:
 	}
 }
 
-function checkFullPackage(buffer:Buffer|number[], part?:Buffer|number[]):[number[],number[]]{
-	//if(cv(2)) if (config.logITelexCom) ll(part);
-	//if(cv(2)) if (config.logITelexCom) ll(buffer);
-	buffer = Array.prototype.slice.call(buffer, 0); //TODO find out what this does
-	var data = buffer;
-	if (part) data = (<number[]>part).concat(<number[]>buffer);
-	//if(cv(2)) if (config.logITelexCom) ll(data);
-	var packagetype = data[0];
-	var packagelength = data[1] + 2;
-	if (data.length == packagelength) {
+function getCompletePackages(data:Buffer, part?:Buffer):[Buffer,Buffer]{
+	if(cv(3)) if (config.logITelexCom) ll("\nextracting packages from data:");
+	if(cv(3)) if (config.logITelexCom) ll("data: ",data);
+	if(cv(3)) if (config.logITelexCom) ll("part: ",part);
+	var buffer = part?Buffer.concat([part,data]):data;
+	if(cv(3)) if (config.logITelexCom) ll("combined: ",buffer);
+	var packagetype = buffer[0]; //TODO check for valid type
+	var packagelength = buffer[1] + 2;
+	if(cv(3)) if (config.logITelexCom) ll("packagetype: ",packagetype);
+	if(cv(3)) if (config.logITelexCom) ll("packagelength: ",packagelength);
+	if (buffer.length == packagelength) {
+		if(cv(3)) if (config.logITelexCom) ll("buffer.length == packagelength");
 		return [
-			(<number[]>data),
-			[]
+			buffer,
+			new Buffer(0)
 		];
-	} else if (data.length > packagelength) {
-		let res = checkFullPackage(data.slice(packagelength + 1, data.length));
+	} else if (buffer.length > packagelength) {
+		if(cv(3)) if (config.logITelexCom) ll("buffer.length > packagelength");
+		let rest = getCompletePackages(buffer.slice(packagelength, buffer.length), null);
 		return [
-			(<number[]>data.slice(0, packagelength)).concat(res[0]),
-			res[1]
+			Buffer.concat([buffer.slice(0, packagelength),rest[0]]),
+			rest[1]
 		];
-	} else if (data.length < packagelength) {
+	} else if (buffer.length < packagelength) {
+		if(cv(3)) if (config.logITelexCom) ll("buffer.length < packagelength");
 		return [
-			[],
-			(<number[]>data)
+			new Buffer(0),
+			buffer
 		];
 	} else {
 		return ([
-			[],
-			[]
+			new Buffer(0),
+			new Buffer(0)
 		]);
 	}
 }
@@ -316,7 +419,7 @@ function encPackage(obj:Package_decoded):Buffer{
             (<any>buffer).write(data.pattern, 3, 40);
             break;
     }
-    if (config.logITelexCom&&cv(1)) ll(colors.FgGreen + "encoded:" + colors.FgCyan,buffer, colors.Reset);
+    if (config.logITelexCom&&cv(1)) ll(colors.FgGreen + "encoded:" +colors.Reset,(config.explainBuffers>0?explainPackage(buffer):buffer));
     return buffer;
 }
 
@@ -324,6 +427,7 @@ function decPackage(buffer:Buffer): Package_decoded {
 	var data: PackageData_decoded;
 	let packagetype = buffer[0];
 	let datalength = buffer[1];
+	if (config.logITelexCom&&cv(1)) ll(colors.FgGreen + "decoding package:" +colors.Reset,(config.explainBuffers>0?explainPackage(buffer):buffer));
     switch (packagetype) {
         case 1:
             data = {
@@ -422,9 +526,8 @@ function decPackage(buffer:Buffer): Package_decoded {
             };
             break;
         default:
-            lle("invalid/unsupported packagetype: " + packagetype);
-            data = {};
-            break;
+            lle(colors.FgRed+"invalid/unsupported packagetype: " +colors.FgCyan+ packagetype+colors.Reset);
+            return null
 	}
     return {
 		packagetype,
@@ -435,14 +538,14 @@ function decPackage(buffer:Buffer): Package_decoded {
 
 function decPackages(buffer:number[]|Buffer): Package_decoded[] {
 	if(!(buffer instanceof Buffer)) buffer = Buffer.from(buffer);
-    if (config.logITelexCom) ll(colors.FgGreen + "decoding:"+colors.FgCyan,buffer,colors.Reset);
+    if (config.logITelexCom) ll(colors.FgGreen + "decoding data:"+colors.Reset,(config.explainBuffers?explainData(buffer):buffer),colors.Reset);
 	var out: Package_decoded[] = [];
 	
     for(let typepos = 0;typepos < buffer.length - 1;typepos += datalength + 2) {
         var packagetype:number = +buffer[typepos];
 		var datalength:number = +buffer[typepos + 1];
 		
-		if (constants.PackageSizes[packagetype] != datalength) {
+		if (packagetype in constants.PackageSizes&&constants.PackageSizes[packagetype] != datalength) {
 			if(cv(1)&&config.logITelexCom) ll(`${colors.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors.Reset}`);
 			if (config.allowInvalidPackageSizes) {
 				if(cv(1)&&config.logITelexCom) ll(`${colors.FgRed}using package of invalid size!${colors.Reset}`);
@@ -451,7 +554,8 @@ function decPackages(buffer:number[]|Buffer): Package_decoded[] {
 				continue;
 			}
 		}
-		out.push(decPackage(buffer.slice(typepos,datalength+2)));
+		let pkg = decPackage(buffer.slice(typepos,typepos+datalength+2));
+		if(pkg) out.push(pkg);
     }
     if (config.logITelexCom) ll(colors.FgGreen + "decoded:", colors.FgCyan, out, colors.Reset);
     return out;
@@ -728,7 +832,7 @@ function sendEmail(messageName:string, values:{
 //#region exports
 export{
 //#region functions
-	checkFullPackage,
+	getCompletePackages,
 	handlePackage,
 	decPackage,
 	encPackage,

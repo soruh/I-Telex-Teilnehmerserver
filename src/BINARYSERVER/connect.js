@@ -30,7 +30,7 @@ function connect(pool, after, options, callback) {
         var socket = new net.Socket();
         var client = connections.get(connections.add("S", {
             connection: socket,
-            readbuffer: [],
+            readbuffer: new Buffer(0),
             state: constants.states.STANDBY,
             packages: [],
             handling: false,
@@ -64,7 +64,7 @@ function connect(pool, after, options, callback) {
                 //if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
                 // if(cv(2)) ll("Buffer for client "+client.cnum+":"+colors.FgCyan,client.readbuffer,colors.Reset);
                 // if(cv(2)) ll("New Data for client "+client.cnum+":"+colors.FgCyan,data,colors.Reset);
-                var res = ITelexCom.checkFullPackage(data, client.readbuffer);
+                var res = ITelexCom.getCompletePackages(data, client.readbuffer);
                 // if(cv(2)) ll("New Buffer "+client.cnum+":"+colors.FgCyan,res[1],colors.Reset);
                 // if(cv(2)) ll("Package "+client.cnum+":"+colors.FgCyan,res[0],colors.Reset);
                 if (res[1]) {

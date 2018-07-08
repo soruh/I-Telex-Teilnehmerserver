@@ -24,7 +24,8 @@ interface configFile {
   "bufferLogWithWhitespace": boolean,
   "repairPm2Colors": boolean,
   "logITelexCom": boolean,
-  "logFullBuffer":boolean
+  "logFullBuffer":boolean,
+  "explainBuffers":number,
 
   "logConnectionChanges": boolean,
   "serverPin": number,

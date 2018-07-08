@@ -48,6 +48,97 @@ Object.defineProperty(Buffer.prototype, 'writeByteArray', { value: function writ
 // 	}	
 // 	return "<Buffer "+array.join(" ")+">\x1b[000m"
 // }
+function explainData(data) {
+    let str = "<Buffer";
+    var packagetype;
+    var datalength;
+    for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
+        packagetype = +data[typepos];
+        datalength = +data[typepos + 1];
+        // console.log(typepos,datalength+2,typepos+datalength+2);
+        // console.log(highlightBuffer(data,typepos,datalength+2));
+        // console.log(data.slice(typepos,typepos+datalength+2));
+        let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
+        // console.log(array);
+        array = array.map((value, index) => index == 0 ?
+            "\x1b[036m" + value + "\x1b[000m" :
+            index == 1 ?
+                "\x1b[032m" + value + "\x1b[000m" :
+                "\x1b[000m" + value + "\x1b[000m");
+        str += " " + array.join(" ");
+    }
+    str += ">";
+    return str;
+}
+function inspectBuffer(buffer) {
+    return Array.from(buffer).map((x => (x < 16 ? "0" : "") + x.toString(16))).join(" ");
+}
+function explainPackagePart(buffer, name, color) {
+    if (config_js_1.default.explainBuffers > 1) {
+        return ` ${color}[${name}: ${inspectBuffer(buffer)}]\x1b[000m`;
+    }
+    else {
+        return ` ${color}${inspectBuffer(buffer)}\x1b[000m`;
+    }
+}
+function explainPackage(pkg) {
+    let res = "<Buffer";
+    let packagetype = pkg[0];
+    let datalength = pkg[1];
+    res += explainPackagePart(Buffer.from([packagetype]), "packagetype", "\x1b[036m");
+    res += explainPackagePart(Buffer.from([datalength]), "datalength", "\x1b[032m");
+    switch (packagetype) {
+        case 1:
+            res += explainPackagePart(pkg.slice(2, 6), "number", "\x1b[034m");
+            res += explainPackagePart(pkg.slice(6, 8), "pin", "\x1b[031m");
+            res += explainPackagePart(pkg.slice(8, 10), "port", "\x1b[042m");
+            break;
+        case 2:
+            res += explainPackagePart(pkg.slice(2, 6), "ipaddress", "\x1b[043m");
+            break;
+        case 3:
+            res += explainPackagePart(pkg.slice(2, 6), "number", "\x1b[034m");
+            res += explainPackagePart(pkg.slice(6, 7), "version", "\x1b[106m");
+            break;
+        case 4:
+            res += " ";
+            break;
+        case 5:
+            res += explainPackagePart(pkg.slice(2, 6), "number", "\x1b[034m");
+            res += explainPackagePart(pkg.slice(6, 46), "name", "\x1b[000m");
+            res += explainPackagePart(pkg.slice(46, 48), "flags", "\x1b[047m");
+            res += explainPackagePart(pkg.slice(48, 49), "type", "\x1b[035m");
+            res += explainPackagePart(pkg.slice(49, 89), "hostname", "\x1b[033m");
+            res += explainPackagePart(pkg.slice(89, 93), "ipaddress", "\x1b[043m");
+            res += explainPackagePart(pkg.slice(93, 95), "port", "\x1b[042m");
+            res += explainPackagePart(pkg.slice(95, 96), "extension", "\x1b[045m");
+            res += explainPackagePart(pkg.slice(96, 98), "pin", "\x1b[031m");
+            res += explainPackagePart(pkg.slice(98, 102), "timestamp", "\x1b[047m");
+            break;
+        case 6:
+            res += explainPackagePart(pkg.slice(2, 3), "version", "\x1b[106m");
+            res += explainPackagePart(pkg.slice(3, 7), "serverpin", "\x1b[041m");
+            break;
+        case 7:
+            res += explainPackagePart(pkg.slice(2, 3), "version", "\x1b[106m");
+            res += explainPackagePart(pkg.slice(3, 7), "serverpin", "\x1b[041m");
+            break;
+        case 8:
+            res += " ";
+            break;
+        case 9:
+            res += " ";
+            break;
+        case 10:
+            res += explainPackagePart(pkg.slice(2, 3), "version", "\x1b[106m");
+            res += explainPackagePart(pkg.slice(3, 43), "pattern", "\x1b[000m");
+            break;
+        default:
+            res = inspectBuffer(pkg);
+    }
+    res += "]\x1b[000m>";
+    return res;
+}
 //#region imports
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const util = require("util");
@@ -127,43 +218,64 @@ function handlePackage(obj, client, pool, cb) {
     }
 }
 exports.handlePackage = handlePackage;
-function checkFullPackage(buffer, part) {
-    //if(cv(2)) if (config.logITelexCom) ll(part);
-    //if(cv(2)) if (config.logITelexCom) ll(buffer);
-    buffer = Array.prototype.slice.call(buffer, 0); //TODO find out what this does
-    var data = buffer;
-    if (part)
-        data = part.concat(buffer);
-    //if(cv(2)) if (config.logITelexCom) ll(data);
-    var packagetype = data[0];
-    var packagelength = data[1] + 2;
-    if (data.length == packagelength) {
+function getCompletePackages(data, part) {
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll("\nextracting packages from data:");
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll("data: ", data);
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll("part: ", part);
+    var buffer = part ? Buffer.concat([part, data]) : data;
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll("combined: ", buffer);
+    var packagetype = buffer[0]; //TODO check for valid type
+    var packagelength = buffer[1] + 2;
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll("packagetype: ", packagetype);
+    if (cv(3))
+        if (config_js_1.default.logITelexCom)
+            logWithLineNumbers_js_1.ll("packagelength: ", packagelength);
+    if (buffer.length == packagelength) {
+        if (cv(3))
+            if (config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll("buffer.length == packagelength");
         return [
-            data,
-            []
+            buffer,
+            new Buffer(0)
         ];
     }
-    else if (data.length > packagelength) {
-        let res = checkFullPackage(data.slice(packagelength + 1, data.length));
+    else if (buffer.length > packagelength) {
+        if (cv(3))
+            if (config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll("buffer.length > packagelength");
+        let rest = getCompletePackages(buffer.slice(packagelength, buffer.length), null);
         return [
-            data.slice(0, packagelength).concat(res[0]),
-            res[1]
+            Buffer.concat([buffer.slice(0, packagelength), rest[0]]),
+            rest[1]
         ];
     }
-    else if (data.length < packagelength) {
+    else if (buffer.length < packagelength) {
+        if (cv(3))
+            if (config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll("buffer.length < packagelength");
         return [
-            [],
-            data
+            new Buffer(0),
+            buffer
         ];
     }
     else {
         return ([
-            [],
-            []
+            new Buffer(0),
+            new Buffer(0)
         ]);
     }
 }
-exports.checkFullPackage = checkFullPackage;
+exports.getCompletePackages = getCompletePackages;
 function unmapIpV4fromIpV6(ipaddress) {
     if (ip.isV4Format(ipaddress)) {
         return ipaddress;
@@ -271,7 +383,7 @@ function encPackage(obj) {
             break;
     }
     if (config_js_1.default.logITelexCom && cv(1))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoded:" + colors_js_1.default.FgCyan, buffer, colors_js_1.default.Reset);
+        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoded:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer));
     return buffer;
 }
 exports.encPackage = encPackage;
@@ -279,6 +391,8 @@ function decPackage(buffer) {
     var data;
     let packagetype = buffer[0];
     let datalength = buffer[1];
+    if (config_js_1.default.logITelexCom && cv(1))
+        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding package:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer));
     switch (packagetype) {
         case 1:
             data = {
@@ -383,9 +497,8 @@ function decPackage(buffer) {
             };
             break;
         default:
-            logWithLineNumbers_js_1.lle("invalid/unsupported packagetype: " + packagetype);
-            data = {};
-            break;
+            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "invalid/unsupported packagetype: " + colors_js_1.default.FgCyan + packagetype + colors_js_1.default.Reset);
+            return null;
     }
     return {
         packagetype,
@@ -398,12 +511,12 @@ function decPackages(buffer) {
     if (!(buffer instanceof Buffer))
         buffer = Buffer.from(buffer);
     if (config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding:" + colors_js_1.default.FgCyan, buffer, colors_js_1.default.Reset);
+        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding data:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers ? explainData(buffer) : buffer), colors_js_1.default.Reset);
     var out = [];
     for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
         var packagetype = +buffer[typepos];
         var datalength = +buffer[typepos + 1];
-        if (constants.PackageSizes[packagetype] != datalength) {
+        if (packagetype in constants.PackageSizes && constants.PackageSizes[packagetype] != datalength) {
             if (cv(1) && config_js_1.default.logITelexCom)
                 logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors_js_1.default.Reset}`);
             if (config_js_1.default.allowInvalidPackageSizes) {
@@ -416,7 +529,9 @@ function decPackages(buffer) {
                 continue;
             }
         }
-        out.push(decPackage(buffer.slice(typepos, datalength + 2)));
+        let pkg = decPackage(buffer.slice(typepos, typepos + datalength + 2));
+        if (pkg)
+            out.push(pkg);
     }
     if (config_js_1.default.logITelexCom)
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoded:", colors_js_1.default.FgCyan, out, colors_js_1.default.Reset);
