@@ -72,8 +72,8 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 					}
 					if (results.length == 1) {
 						var res = results[0];
-						if (res.pin == pin) {
-							if (res.type == 5) {
+						if (res.type == 5) {
+							if (res.pin == pin) {
 								if (ipaddress != res.ipaddress || port != res.port) {
 									misc.SqlQuery(pool,
 										`UPDATE teilnehmer SET
@@ -122,11 +122,9 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 									});
 								}
 							} else {
-								if (cv(1)) ll(colors.FgRed + "not DynIp type" + colors.Reset);
+								if (cv(1)) ll(colors.FgRed + "wrong DynIp pin" + colors.Reset);
 								client.connection.end();
-								misc.sendEmail("wrongDynIpType", {
-									"[type]": res.type,
-									"[IpFull]": client.connection.remoteAddress,
+								misc.sendEmail("wrongDynIpPin", {
 									"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
 									"[number]": res.number,
 									"[name]": res.name,
@@ -135,9 +133,11 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 								}, cb);
 							}
 						} else {
-							if (cv(1)) ll(colors.FgRed + "wrong DynIp pin" + colors.Reset);
+							if (cv(1)) ll(colors.FgRed + "not DynIp type" + colors.Reset);
 							client.connection.end();
-							misc.sendEmail("wrongDynIpPin", {
+							misc.sendEmail("wrongDynIpType", {
+								"[type]": res.type,
+								"[IpFull]": client.connection.remoteAddress,
 								"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
 								"[number]": res.number,
 								"[name]": res.name,
