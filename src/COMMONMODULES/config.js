@@ -10,4 +10,5 @@ Object.assign(collection, require("../../config/logging.json"));
 Object.assign(collection, require("../../config/misc.json"));
 Object.assign(collection, require("../../config/timings.json"));
 const config = collection;
+config.cv = level => level <= config.loggingVerbosity;
 exports.default = config;

@@ -1,9 +1,9 @@
 //#region imports
-import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
+import * as misc from "../BINARYSERVER/misc.js";
 //#endregion
 
-var transporter:ITelexCom.MailTransporter;
-function setTransporter(value:ITelexCom.MailTransporter){
+var transporter:misc.MailTransporter;
+function setTransporter(value:misc.MailTransporter){
     transporter = value;
 }
 function getTransporter(){

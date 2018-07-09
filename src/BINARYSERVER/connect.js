@@ -9,7 +9,7 @@ const colors_js_1 = require("../COMMONMODULES/colors.js");
 const connections = require("../BINARYSERVER/connections.js");
 const constants = require("../BINARYSERVER/constants.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-//#endregion
+const misc = require("../BINARYSERVER/misc.js");
 const verbosity = config_js_1.default.loggingVerbosity;
 var cv = level => level <= verbosity; //check verbosity
 function connect(pool, after, options, callback) {
@@ -43,7 +43,7 @@ function connect(pool, after, options, callback) {
                     logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server: " + colors_js_1.default.FgCyan, options, colors_js_1.default.FgRed + " timed out" + colors_js_1.default.Reset);
                 // socket.emit("end");
                 // socket.emit("error",new Error("timeout"));
-                ITelexCom.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
+                misc.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
                 socket.end();
             }
             catch (e) {
@@ -126,9 +126,9 @@ function connect(pool, after, options, callback) {
                             break;
                         }
                     }*/
-                    ITelexCom.increaseErrorCounter(serverkey, error, error["code"]);
+                    misc.increaseErrorCounter(serverkey, error, error["code"]);
                     if (cv(0))
-                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan, options, colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan, ITelexCom.serverErrors[serverkey].errorCounter, colors_js_1.default.Reset);
+                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan, options, colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan, misc.serverErrors[serverkey].errorCounter, colors_js_1.default.Reset);
                 }
                 // } else {
                 // 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);
@@ -165,8 +165,8 @@ function connect(pool, after, options, callback) {
         socket.connect(options, function (connection) {
             if (cv(1))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "connected to:" + colors_js_1.default.FgCyan, options, colors_js_1.default.FgGreen + "as server " + colors_js_1.default.FgCyan + client.cnum, colors_js_1.default.Reset);
-            if (ITelexCom.serverErrors[serverkey] && (ITelexCom.serverErrors[serverkey].errorCounter > 0)) {
-                ITelexCom.serverErrors[serverkey].errorCounter = 0;
+            if (misc.serverErrors[serverkey] && (misc.serverErrors[serverkey].errorCounter > 0)) {
+                misc.serverErrors[serverkey].errorCounter = 0;
                 if (cv(2))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset error counter for: " + colors_js_1.default.FgCyan, options, colors_js_1.default.Reset);
             }

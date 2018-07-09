@@ -3,6 +3,7 @@ import * as path from "path";
 
 
 interface configFile {
+  "cv":(level:number)=>boolean,
   "mySqlConnectionOptions": {
     "host": string,
     "user": string,
@@ -107,5 +108,7 @@ Object.assign(collection,require("../../config/misc.json"));
 Object.assign(collection,require("../../config/timings.json"));
 
 const config:configFile = collection;
+
+config.cv = level => level <= config.loggingVerbosity;
 
 export default config;

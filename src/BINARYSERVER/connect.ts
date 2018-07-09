@@ -10,9 +10,8 @@ import colors from "../COMMONMODULES/colors.js";
 import * as connections from "../BINARYSERVER/connections.js"
 import * as constants from "../BINARYSERVER/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import handles from "../BINARYSERVER/handles.js";
+import * as misc from "../BINARYSERVER/misc.js";
 
-//#endregion
 
 const verbosity = config.loggingVerbosity;
 var cv = level => level <= verbosity; //check verbosity
@@ -54,7 +53,7 @@ function connect(
 				if (cv(1)) lle(colors.FgRed + "server: " + colors.FgCyan, options, colors.FgRed + " timed out" + colors.Reset);
 				// socket.emit("end");
 				// socket.emit("error",new Error("timeout"));
-				ITelexCom.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
+				misc.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
 				socket.end();
 			} catch (e) {
 				if (cv(0)) lle(colors.FgRed, e, colors.Reset);
@@ -125,8 +124,8 @@ function connect(
 							break;
 						}
 					}*/
-					ITelexCom.increaseErrorCounter(serverkey, error, error["code"]);
-					if (cv(0)) lle(colors.FgRed + "server " + colors.FgCyan, options, colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan, ITelexCom.serverErrors[serverkey].errorCounter, colors.Reset);
+					misc.increaseErrorCounter(serverkey, error, error["code"]);
+					if (cv(0)) lle(colors.FgRed + "server " + colors.FgCyan, options, colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan, misc.serverErrors[serverkey].errorCounter, colors.Reset);
 				}
 				// } else {
 				// 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);
@@ -153,8 +152,8 @@ function connect(
 		});
 		socket.connect(options, function (connection) {
 			if (cv(1)) ll(colors.FgGreen + "connected to:" + colors.FgCyan, options, colors.FgGreen + "as server " + colors.FgCyan + client.cnum, colors.Reset);
-			if (ITelexCom.serverErrors[serverkey] && (ITelexCom.serverErrors[serverkey].errorCounter > 0)) {
-				ITelexCom.serverErrors[serverkey].errorCounter = 0;
+			if (misc.serverErrors[serverkey] && (misc.serverErrors[serverkey].errorCounter > 0)) {
+				misc.serverErrors[serverkey].errorCounter = 0;
 				if (cv(2)) ll(colors.FgGreen + "reset error counter for: " + colors.FgCyan, options, colors.Reset);
 			}
 			if (typeof callback === "function") callback(client);

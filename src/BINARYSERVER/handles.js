@@ -16,6 +16,7 @@ const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const ITelexCom_js_1 = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const connections = require("../BINARYSERVER/connections.js");
+const misc = require("../BINARYSERVER/misc.js");
 //#endregion
 const readonly = (config_js_1.default.serverPin == null);
 /*<PKGTYPES>
@@ -47,7 +48,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
             if (number < 10000) {
                 if (ITelexCom_js_1.cv(1))
                     logWithLineNumbers_js_1.lle(`${colors_js_1.default.FgRed}client tried to update ${number} which is too small(<10000)${colors_js_1.default.Reset}`);
-                ITelexCom.sendEmail("invalidNumber", {
+                misc.sendEmail("invalidNumber", {
                     "[IpFull]": client.connection.remoteAddress,
                     "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
                     "[number]": number,
@@ -59,7 +60,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                 });
             }
             else {
-                ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_a) {
+                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_a) {
                     let results = [];
                     if (result_a) {
                         for (let r of result_a) {
@@ -73,7 +74,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                         if (res.pin == pin) {
                             if (res.type == 5) {
                                 if (ipaddress != res.ipaddress || port != res.port) {
-                                    ITelexCom.SqlQuery(pool, `UPDATE teilnehmer
+                                    misc.SqlQuery(pool, `UPDATE teilnehmer
 											SET
 												port = ?,
 												ipaddress = ?,
@@ -98,7 +99,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                                         res.port,
                                         res.pin
                                     ], function (result_b) {
-                                        ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c) {
+                                        misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c) {
                                             try {
                                                 client.connection.write(ITelexCom.encPackage({
                                                     packagetype: 2,
@@ -139,7 +140,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                                 if (ITelexCom_js_1.cv(1))
                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "not DynIp type" + colors_js_1.default.Reset);
                                 client.connection.end();
-                                ITelexCom.sendEmail("wrongDynIpType", {
+                                misc.sendEmail("wrongDynIpType", {
                                     "[type]": res.type,
                                     "[IpFull]": client.connection.remoteAddress,
                                     "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
@@ -154,7 +155,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                             if (ITelexCom_js_1.cv(1))
                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "wrong DynIp pin" + colors_js_1.default.Reset);
                             client.connection.end();
-                            ITelexCom.sendEmail("wrongDynIpPin", {
+                            misc.sendEmail("wrongDynIpPin", {
                                 "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
                                 "[number]": res.number,
                                 "[name]": res.name,
@@ -211,16 +212,16 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                             query = insertQuery;
                             options = insertOptions;
                         }
-                        ITelexCom.SqlQuery(pool, query, options, function (result_b) {
+                        misc.SqlQuery(pool, query, options, function (result_b) {
                             if (result_b) {
-                                ITelexCom.sendEmail("new", {
+                                misc.sendEmail("new", {
                                     "[IpFull]": client.connection.remoteAddress,
                                     "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
                                     "[number]": number,
                                     "[date]": new Date().toLocaleString(),
                                     "[timeZone]": getTimezone(new Date())
                                 }, cb);
-                                ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c) {
+                                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c) {
                                     if (result_c.length > 0) {
                                         try {
                                             client.connection.write(ITelexCom.encPackage({
@@ -277,7 +278,7 @@ handles[3][constants.states.STANDBY] = function (obj, client, pool, cb) {
         if (client) {
             if (obj.data.version == 1) {
                 var number = obj.data.number;
-                ITelexCom.SqlQuery(pool, `
+                misc.SqlQuery(pool, `
 					SELECT * FROM teilnehmer WHERE
 						number = ?
 						and
@@ -340,7 +341,7 @@ handles[5][constants.states.FULLQUERY] = function (obj, client, pool, cb) {
         if (client) {
             if (ITelexCom_js_1.cv(2))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got dataset for:", colors_js_1.default.FgCyan, obj.data.number, colors_js_1.default.Reset);
-            ITelexCom.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [obj.data.number], function (entries) {
+            misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [obj.data.number], function (entries) {
                 var o = {
                     number: obj.data.number,
                     name: obj.data.name,
@@ -391,7 +392,7 @@ handles[5][constants.states.FULLQUERY] = function (obj, client, pool, cb) {
                             }
                         }
                         var q = `UPDATE teilnehmer SET ${sets.substring(0, sets.length - 2)} WHERE number = ?;`;
-                        ITelexCom.SqlQuery(pool, q, [obj.data.number], function (res2) {
+                        misc.SqlQuery(pool, q, [obj.data.number], function (res2) {
                             client.connection.write(ITelexCom.encPackage({
                                 packagetype: 8,
                                 datalength: 0
@@ -428,7 +429,7 @@ handles[5][constants.states.FULLQUERY] = function (obj, client, pool, cb) {
                         }
                     }
                     var q = `INSERT INTO teilnehmer(${names.substring(0, names.length - 2)}) VALUES (${values.substring(0, values.length - 2)});`;
-                    ITelexCom.SqlQuery(pool, q, [], function (res2) {
+                    misc.SqlQuery(pool, q, [], function (res2) {
                         client.connection.write(ITelexCom.encPackage({
                             packagetype: 8,
                             datalength: 0
@@ -467,7 +468,7 @@ handles[6][constants.states.STANDBY] = function (obj, client, pool, cb) {
                 if (ITelexCom_js_1.cv(1))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
                 client = connections.get(connections.move(client.cnum, "S"));
-                ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer;", [], function (result) {
+                misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;", [], function (result) {
                     if ((result[0] != undefined) && (result != [])) {
                         client.writebuffer = result;
                         client.state = constants.states.RESPONDING;
@@ -493,7 +494,7 @@ handles[6][constants.states.STANDBY] = function (obj, client, pool, cb) {
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "serverpin is incorrect! " + colors_js_1.default.FgCyan + obj.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + " ending client.connection!" + colors_js_1.default.Reset); //TODO: remove pin logging
                     client.connection.end();
                 }
-                ITelexCom.sendEmail("wrongServerPin", {
+                misc.sendEmail("wrongServerPin", {
                     "[IpFull]": client.connection.remoteAddress,
                     "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
                     "[date]": new Date().toLocaleString(),
@@ -534,7 +535,7 @@ handles[7][constants.states.STANDBY] = function (obj, client, pool, cb) {
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "serverpin is incorrect!" + colors_js_1.default.FgCyan + obj.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + "ending client.connection!" + colors_js_1.default.Reset);
                     client.connection.end();
                 }
-                ITelexCom.sendEmail("wrongServerPin", {
+                misc.sendEmail("wrongServerPin", {
                     "[IpFull]": client.connection.remoteAddress,
                     "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
                     "[date]": new Date().toLocaleString(),
@@ -637,7 +638,7 @@ handles[10][constants.states.STANDBY] = function (obj, client, pool, cb) {
             let query = obj.data.pattern;
             let queryarr = query.split(" ");
             let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
-            ITelexCom.SqlQuery(pool, searchstring, queryarr.map(q => `%${q}%`), function (result) {
+            misc.SqlQuery(pool, searchstring, queryarr.map(q => `%${q}%`), function (result) {
                 if ((result[0] != undefined) && (result != [])) {
                     var towrite = [];
                     for (let o of result) {

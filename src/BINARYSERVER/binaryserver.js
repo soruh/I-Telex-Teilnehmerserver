@@ -15,6 +15,7 @@ const connections = require("../BINARYSERVER/connections.js");
 const constants = require("../BINARYSERVER/constants.js");
 const connect_js_1 = require("../BINARYSERVER/connect.js");
 const transporter_js_1 = require("../BINARYSERVER/transporter.js");
+const misc = require("../BINARYSERVER/misc.js");
 //#endregion
 const ITelexCom_js_1 = require("../BINARYSERVER/ITelexCom.js");
 const readonly = (config_js_1.default.serverPin == null);
@@ -94,7 +95,7 @@ var server = net.createServer(function (connection) {
                 ITelexCom.ascii(data, client, pool); //TODO: check for fragmentation //probably not needed
             }
             else if (data[0] == 'c'.charCodeAt(0)) {
-                ITelexCom.checkIp(data, client, pool);
+                misc.checkIp(data, client, pool);
             }
             else {
                 if (ITelexCom_js_1.cv(2))
@@ -168,7 +169,7 @@ function updateQueue() {
     return new Promise((resolve, reject) => {
         if (ITelexCom_js_1.cv(2))
             logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "updating " + colors_js_1.default.FgCyan + "Queue" + colors_js_1.default.Reset);
-        ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE changed = ?;", [1], function (changed) {
+        misc.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE changed = ?;", [1], function (changed) {
             if (changed.length > 0) {
                 if (ITelexCom_js_1.cv(2)) {
                     var changed_numbers = [];
@@ -179,14 +180,14 @@ function updateQueue() {
                 }
                 if (ITelexCom_js_1.cv(1) && !ITelexCom_js_1.cv(2))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan + changed.length + colors_js_1.default.FgGreen + " numbers to enqueue" + colors_js_1.default.Reset);
-                ITelexCom.SqlQuery(pool, "SELECT * FROM servers;", [], function (servers) {
+                misc.SqlQuery(pool, "SELECT * FROM servers;", [], function (servers) {
                     if (servers.length > 0) {
                         async.each(servers, function (server, cb1) {
                             async.each(changed, function (message, cb2) {
-                                ITelexCom.SqlQuery(pool, "SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid], function (qentry) {
+                                misc.SqlQuery(pool, "SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid], function (qentry) {
                                     if (qentry.length == 1) {
-                                        ITelexCom.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [Math.floor(Date.now() / 1000), server.uid, message.uid], function () {
-                                            //ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+                                        misc.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [Math.floor(Date.now() / 1000), server.uid, message.uid], function () {
+                                            //misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
                                             if (ITelexCom_js_1.cv(2))
                                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                             cb2();
@@ -194,8 +195,8 @@ function updateQueue() {
                                         });
                                     }
                                     else if (qentry.length == 0) {
-                                        ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
-                                            //ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+                                        misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
+                                            //misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
                                             if (ITelexCom_js_1.cv(2))
                                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                             cb2();
@@ -204,9 +205,9 @@ function updateQueue() {
                                     }
                                     else {
                                         logWithLineNumbers_js_1.lle("duplicate queue entry!");
-                                        ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid], function () {
-                                            ITelexCom.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
-                                                //ITelexCom.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+                                        misc.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid], function () {
+                                            misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
+                                                //misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
                                                 if (ITelexCom_js_1.cv(2))
                                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                                 cb2();
@@ -221,7 +222,7 @@ function updateQueue() {
                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "finished enqueueing" + colors_js_1.default.Reset);
                             if (ITelexCom_js_1.cv(2))
                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reseting changed flags..." + colors_js_1.default.Reset);
-                            ITelexCom.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid=" + changed.map(entry => entry.uid).join(" or uid=") + ";", [0], function (res) {
+                            misc.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid=" + changed.map(entry => entry.uid).join(" or uid=") + ";", [0], function (res) {
                                 if (ITelexCom_js_1.cv(2))
                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset " + colors_js_1.default.FgCyan + changed.length + colors_js_1.default.FgGreen + " changed flags." + colors_js_1.default.Reset);
                                 //sendQueue();
@@ -264,7 +265,7 @@ function getFullQuery() {
         });
         });
     }else{*/
-        ITelexCom.SqlQuery(pool, "SELECT  * FROM servers;", [], function (servers) {
+        misc.SqlQuery(pool, "SELECT  * FROM servers;", [], function (servers) {
             if (servers.length > 0) {
                 for (let i in servers) {
                     if (config_js_1.default.fullQueryServer && servers[i].addresse == config_js_1.default.fullQueryServer.split(":")[0] && servers[i].port == config_js_1.default.fullQueryServer.split(":")[1]) {
@@ -339,8 +340,8 @@ function sendQueue() {
             resolve();
         }
         else {
-            ITelexCom.SqlQuery(pool, "SELECT * FROM teilnehmer;", [], function (teilnehmer) {
-                ITelexCom.SqlQuery(pool, "SELECT * FROM queue;", [], function (queue) {
+            misc.SqlQuery(pool, "SELECT * FROM teilnehmer;", [], function (teilnehmer) {
+                misc.SqlQuery(pool, "SELECT * FROM queue;", [], function (queue) {
                     if (queue.length > 0) {
                         var servers = {};
                         for (let q of queue) {
@@ -349,7 +350,7 @@ function sendQueue() {
                             servers[q.server].push(q);
                         }
                         async.eachSeries(servers, function (server, cb) {
-                            ITelexCom.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=?;", [server[0].server], function (result2) {
+                            misc.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=?;", [server[0].server], function (result2) {
                                 if (result2.length == 1) {
                                     var serverinf = result2[0];
                                     if (ITelexCom_js_1.cv(2))
@@ -386,7 +387,7 @@ function sendQueue() {
                                                         }
                                                     }
                                                     if (existing) {
-                                                        ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE uid=?;", [serverdata.uid], function (res) {
+                                                        misc.SqlQuery(pool, "DELETE FROM queue WHERE uid=?;", [serverdata.uid], function (res) {
                                                             if (res.affectedRows > 0) {
                                                                 client.writebuffer.push(existing); //TODO
                                                                 if (ITelexCom_js_1.cv(1))
@@ -433,7 +434,7 @@ function sendQueue() {
                                     }
                                 }
                                 else {
-                                    ITelexCom.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server], cb);
+                                    misc.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server], cb);
                                 }
                             });
                         }, function () {
@@ -511,7 +512,7 @@ if (ITelexCom_js_1.cv(3)) {
     let exitHandler = function exitHandler(options, err) {
         if (options.cleanup) {
             console.error("exited with code: " + err);
-            console.error(`serverErrors:\n${util.inspect(ITelexCom.serverErrors, { depth: null })}`);
+            console.error(`serverErrors:\n${util.inspect(misc.serverErrors, { depth: null })}`);
         }
         else {
             console.error(err);

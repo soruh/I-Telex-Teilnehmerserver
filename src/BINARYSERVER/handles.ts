@@ -16,8 +16,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import {cv} from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import * as connections from "../BINARYSERVER/connections.js"
-
-import {getTransporter, setTransporter} from "../BINARYSERVER/transporter.js";
+import * as misc from "../BINARYSERVER/misc.js";
 //#endregion
 
 const readonly = (config.serverPin == null);
@@ -51,7 +50,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 			var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
 			if (number < 10000) {
 				if (cv(1)) lle(`${colors.FgRed}client tried to update ${number} which is too small(<10000)${colors.Reset}`);
-				ITelexCom.sendEmail("invalidNumber", {
+				misc.sendEmail("invalidNumber", {
 					"[IpFull]": client.connection.remoteAddress,
 					"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
 					"[number]": number,
@@ -62,7 +61,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 					cb();
 				});
 			} else {
-				ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`,[number], function (result_a:ITelexCom.peerList) {
+				misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`,[number], function (result_a:ITelexCom.peerList) {
 					let results = [];
 					if (result_a) {
 						for (let r of result_a) {
@@ -76,7 +75,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 						if (res.pin == pin) {
 							if (res.type == 5) {
 								if (ipaddress != res.ipaddress || port != res.port) {
-									ITelexCom.SqlQuery(pool,
+									misc.SqlQuery(pool,
 										`UPDATE teilnehmer
 											SET
 												port = ?,
@@ -102,7 +101,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 										res.port,
 										res.pin
 									], function (result_b) {
-										ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
+										misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
 											try {
 												client.connection.write(ITelexCom.encPackage({
 													packagetype: 2,
@@ -134,7 +133,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 							} else {
 								if (cv(1)) ll(colors.FgRed + "not DynIp type" + colors.Reset);
 								client.connection.end();
-								ITelexCom.sendEmail("wrongDynIpType", {
+								misc.sendEmail("wrongDynIpType", {
 									"[type]": res.type,
 									"[IpFull]": client.connection.remoteAddress,
 									"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
@@ -147,7 +146,7 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 						} else {
 							if (cv(1)) ll(colors.FgRed + "wrong DynIp pin" + colors.Reset);
 							client.connection.end();
-							ITelexCom.sendEmail("wrongDynIpPin", {
+							misc.sendEmail("wrongDynIpPin", {
 								"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
 								"[number]": res.number,
 								"[name]": res.name,
@@ -206,20 +205,20 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 							options = insertOptions;
 						}
 						
-						ITelexCom.SqlQuery(
+						misc.SqlQuery(
 							pool,
 							query,
 							options,
 						function (result_b) {
 							if (result_b) {
-								ITelexCom.sendEmail("new", {
+								misc.sendEmail("new", {
 									"[IpFull]": client.connection.remoteAddress,
 									"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
 									"[number]": number,
 									"[date]": new Date().toLocaleString(),
 									"[timeZone]": getTimezone(new Date())
 								}, cb);
-								ITelexCom.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
+								misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
 									if(result_c.length>0){
 										try {
 											client.connection.write(ITelexCom.encPackage({
@@ -263,7 +262,7 @@ handles[3][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 		if (client) {
 			if (obj.data.version == 1) {
 				var number = obj.data.number;
-				ITelexCom.SqlQuery(pool, `
+				misc.SqlQuery(pool, `
 					SELECT * FROM teilnehmer WHERE
 						number = ?
 						and
@@ -313,7 +312,7 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 	try {
 		if (client) {
 			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, obj.data.number, colors.Reset);
-			ITelexCom.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [obj.data.number], function (entries:ITelexCom.peerList) {
+			misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [obj.data.number], function (entries:ITelexCom.peerList) {
 				var o = { //TODO improve;
 					number: obj.data.number,
 					name: obj.data.name,
@@ -360,7 +359,7 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 							}
 						}
 						var q = `UPDATE teilnehmer SET ${sets.substring(0,sets.length-2)} WHERE number = ?;`;
-						ITelexCom.SqlQuery(pool, q, [obj.data.number], function (res2) {
+						misc.SqlQuery(pool, q, [obj.data.number], function (res2) {
 							client.connection.write(ITelexCom.encPackage({
 								packagetype: 8,
 								datalength: 0
@@ -392,7 +391,7 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 						}
 					}
 					var q = `INSERT INTO teilnehmer(${names.substring(0, names.length - 2)}) VALUES (${values.substring(0, values.length - 2)});`;
-					ITelexCom.SqlQuery(pool, q, [], function (res2) {
+					misc.SqlQuery(pool, q, [], function (res2) {
 						client.connection.write(ITelexCom.encPackage({
 							packagetype: 8,
 							datalength: 0
@@ -423,7 +422,7 @@ handles[6][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 				client = connections.get(
 					connections.move(client.cnum, "S")
 				);
-				ITelexCom.SqlQuery(pool, "SELECT  * FROM teilnehmer;", [], function (result:ITelexCom.peerList) {
+				misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;", [], function (result:ITelexCom.peerList) {
 					if ((result[0] != undefined) && (result != [])) {
 						client.writebuffer = result;
 						client.state = constants.states.RESPONDING;
@@ -446,7 +445,7 @@ handles[6][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 					ll(colors.FgRed + "serverpin is incorrect! " + colors.FgCyan + obj.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + " ending client.connection!" + colors.Reset); //TODO: remove pin logging
 					client.connection.end();
 				}
-				ITelexCom.sendEmail("wrongServerPin", {
+				misc.sendEmail("wrongServerPin", {
 					"[IpFull]": client.connection.remoteAddress,
 					"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
 					"[date]": new Date().toLocaleString(),
@@ -481,7 +480,7 @@ handles[7][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 					ll(colors.FgRed + "serverpin is incorrect!" + colors.FgCyan + obj.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + "ending client.connection!" + colors.Reset);
 					client.connection.end();
 				}
-				ITelexCom.sendEmail("wrongServerPin", {
+				misc.sendEmail("wrongServerPin", {
 					"[IpFull]": client.connection.remoteAddress,
 					"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
 					"[date]": new Date().toLocaleString(),
@@ -560,7 +559,7 @@ handles[10][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded,
 			let query = obj.data.pattern;
 			let queryarr = query.split(" ");
 			let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
-			ITelexCom.SqlQuery(pool, searchstring, queryarr.map(q=>`%${q}%`), function (result:ITelexCom.peerList) {
+			misc.SqlQuery(pool, searchstring, queryarr.map(q=>`%${q}%`), function (result:ITelexCom.peerList) {
 				if ((result[0] != undefined) && (result != [])) {
 					var towrite = [];
 					for (let o of result) {
