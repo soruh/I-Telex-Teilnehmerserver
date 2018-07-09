@@ -350,7 +350,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                     "disabled",
                     "timestamp",
                 ];
-                names = names.filter(name => pkg.data[name] != undefined);
+                names = names.filter(name => pkg.data[name] !== undefined);
                 let values = names.map(name => pkg.data[name]);
                 if (entries.length == 1) {
                     var entry = entries[0];

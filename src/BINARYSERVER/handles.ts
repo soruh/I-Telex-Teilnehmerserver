@@ -322,7 +322,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 					"disabled",
 					"timestamp",
 				];
-				names = names.filter(name=>pkg.data[name] != undefined);
+				names = names.filter(name=>pkg.data[name] !== undefined);
 				let values = names.map(name=>pkg.data[name]);
 				if (entries.length == 1) {
                     var entry:ITelexCom.peer = entries[0];
