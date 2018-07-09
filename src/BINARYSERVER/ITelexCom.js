@@ -276,16 +276,16 @@ function encPackage(obj) {
     buffer[1] = obj.datalength;
     switch (obj.packagetype) {
         case 1:
-            buffer.writeUIntLE(data.number, 2, 4);
-            buffer.writeUIntLE(+data.pin, 6, 2);
-            buffer.writeUIntLE(+data.port, 8, 2);
+            buffer.writeUIntLE(data.number || 0, 2, 4);
+            buffer.writeUIntLE(+data.pin || 0, 6, 2);
+            buffer.writeUIntLE(+data.port || 0, 8, 2);
             break;
         case 2:
             buffer.writeByteArray(unmapIpV4fromIpV6(data.ipaddress).split("."), 2); // .map(x=>+x)
             break;
         case 3:
-            buffer.writeUIntLE(data.number, 2, 4);
-            buffer.writeUIntLE(data.version, 6, 1);
+            buffer.writeUIntLE(data.number || 0, 2, 4);
+            buffer.writeUIntLE(data.version || 0, 6, 1);
             break;
         case 4:
             break;
@@ -310,51 +310,51 @@ function encPackage(obj) {
             // console.log("\n");
             // ll(buffer);
             // ll(data.number, 2, 4);
-            buffer.writeUIntLE(data.number, 2, 4);
+            buffer.writeUIntLE(data.number || 0, 2, 4);
             // ll(highlightBuffer(buffer, 2, 4));
             // ll(data.name, 6, 40);
-            buffer.write(data.name, 6, 40);
+            buffer.write(data.name || "", 6, 40);
             // ll(highlightBuffer(buffer, 6, 40));
             // ll(flags, 46, 2);
-            buffer.writeUIntLE(flags, 46, 2);
+            buffer.writeUIntLE(flags || 0, 46, 2);
             // ll(highlightBuffer(buffer, 46, 2));
             // ll(data.type, 48, 1);
-            buffer.writeUIntLE(data.type, 48, 1);
+            buffer.writeUIntLE(data.type || 0, 48, 1);
             // ll(highlightBuffer(buffer, 48, 1));
             // ll(data.hostname, 49, 40);
-            buffer.write(data.hostname, 49, 40);
+            buffer.write(data.hostname || "", 49, 40);
             // ll(highlightBuffer(buffer, 49, 40));
             // ll(unmapIpV4fromIpV6(data.ipaddress).split("."),89);
             buffer.writeByteArray(unmapIpV4fromIpV6(data.ipaddress).split("."), 89); // .map(x=>+x)
             // ll(highlightBuffer(buffer, 89, 4));
             // ll(+data.port, 93, 2);
-            buffer.writeUIntLE(+data.port, 93, 2);
+            buffer.writeUIntLE(+data.port || 0, 93, 2);
             // ll(highlightBuffer(buffer, 93, 2));
             // ll(ext, 95, 1);
             buffer.writeUIntLE(ext || 0, 95, 1);
             // ll(highlightBuffer(buffer, 95, 1));
             // ll(+data.pin, 96, 2);
-            buffer.writeUIntLE(+data.pin, 96, 2);
+            buffer.writeUIntLE(+data.pin || 0, 96, 2);
             // ll(highlightBuffer(buffer, 96, 2));
             // ll(data.timestamp + 2208988800, 98, 4);
-            buffer.writeUIntLE(data.timestamp + 2208988800, 98, 4);
+            buffer.writeUIntLE((data.timestamp || 0) + 2208988800, 98, 4);
             // ll(highlightBuffer(buffer, 98, 4));
             break;
         case 6:
-            buffer.writeUIntLE(data.version, 2, 1);
-            buffer.writeUIntLE(data.serverpin, 3, 4);
+            buffer.writeUIntLE(data.version || 0, 2, 1);
+            buffer.writeUIntLE(data.serverpin || 0, 3, 4);
             break;
         case 7:
-            buffer.writeUIntLE(data.version, 2, 1);
-            buffer.writeUIntLE(data.serverpin, 3, 4);
+            buffer.writeUIntLE(data.version || 0, 2, 1);
+            buffer.writeUIntLE(data.serverpin || 0, 3, 4);
             break;
         case 8:
             break;
         case 9:
             break;
         case 10:
-            buffer.writeUIntLE(data.version, 2, 1);
-            buffer.write(data.pattern, 3, 40);
+            buffer.writeUIntLE(data.version || 0, 2, 1);
+            buffer.write(data.pattern || "", 3, 40);
             break;
     }
     if (config_js_1.default.logITelexCom && cv(1))
