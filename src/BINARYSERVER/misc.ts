@@ -62,7 +62,7 @@ function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
 }
 
 function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options:any[], callback:(res:any)=>void):void { //TODO: any-> real type
-	if (cv(3)) ll(colors.BgLightCyan+colors.FgBlack+query,options,colors.Reset);
+	if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query,options,colors.Reset);
 
 	query = query.replace(/\n/g,"").replace(/\s+/g," ");
 	query = mysql.format(query, options);
