@@ -310,6 +310,20 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 		if (client) {
 			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, pkg.data.number, colors.Reset);
 			misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number], function (entries:ITelexCom.peerList) {
+				let names = [
+					"number",
+					"name",
+					"type",
+					"hostname",
+					"ipaddress",
+					"port",
+					"extension",
+					"pin",
+					"disabled",
+					"timestamp",
+				];
+				names = names.filter(name=>pkg.data[name] != undefined);
+				let values = names.map(name=>pkg.data[name]);
 				if (entries.length == 1) {
                     var entry:ITelexCom.peer = entries[0];
                     if(typeof client.newEntries != "number") client.newEntries = 0;
@@ -318,35 +332,14 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
                         if (cv(1) && !cv(2)) ll(colors.FgGreen + "got new dataset for:", colors.FgCyan, pkg.data.number, colors.Reset);
 						if (cv(2)) ll(colors.FgGreen + "recieved entry is " + colors.FgCyan + (pkg.data.timestamp-+entry.timestamp)+"seconds newer"+ colors.FgGreen + " > " + colors.FgCyan + entry.timestamp + colors.Reset);
 						
-						misc.SqlQuery(pool, `
-							UPDATE teilnehmer SET 
-								number = ?,
-								name = ?,
-								type = ?,
-								hostname = ?,
-								ipaddress = ?,
-								port = ?,
-								extension = ?,
-								pin = ?,
-								disabled = ?,
-								timestamp = ?,
-								changed = ?,
-							WHERE number = ?;
-						`, [
-							pkg.data.number   ||"DEFAULT",
-							pkg.data.name     ||"DEFAULT",
-							pkg.data.type     ||"DEFAULT",
-							pkg.data.hostname ||"DEFAULT",
-							pkg.data.ipaddress||"DEFAULT",
-							pkg.data.port     ||"DEFAULT",
-							pkg.data.extension||"DEFAULT",
-							pkg.data.pin      ||"DEFAULT",
-							pkg.data.disabled ||"DEFAULT",
-							pkg.data.timestamp||"DEFAULT",
-							config.setChangedOnNewerEntry ? 1 : 0,
 
-							pkg.data.number
-						], function (res2) {
+						misc.SqlQuery(pool, `UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`,
+						values.concat(
+							[
+								config.setChangedOnNewerEntry ? 1 : 0,
+								pkg.data.number
+							]
+						), function (res2) {
 							client.connection.write(ITelexCom.encPackage({
 								packagetype: 8,
 								datalength: 0
@@ -367,45 +360,17 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 					misc.SqlQuery(pool, `
 						INSERT INTO teilnehmer 
 						(
-							number,
-							name,
-							type,
-							hostname,
-							ipaddress,
-							port,
-							extension,
-							pin,
-							disabled,
-							timestamp,
-							changed,
+							${names.join(",")}		
+							${names.length>0?",":""}changed
 						)
 						VALUES
-						(
-							?
-							?
-							?
-							?
-							?
-							?
-							?
-							?
-							?
-							?
-							?
-						)
-					;`, [
-						pkg.data.number   ||"DEFAULT",
-						pkg.data.name     ||"DEFAULT",
-						pkg.data.type     ||"DEFAULT",
-						pkg.data.hostname ||"DEFAULT",
-						pkg.data.ipaddress||"DEFAULT",
-						pkg.data.port     ||"DEFAULT",
-						pkg.data.extension||"DEFAULT",
-						pkg.data.pin      ||"DEFAULT",
-						pkg.data.disabled ||"DEFAULT",
-						pkg.data.timestamp||"DEFAULT",
-						config.setChangedOnNewerEntry ? 1 : 0,
-					], function (res2) {
+						(${"?,".repeat(names.length).slice(0,-1)})
+					;`, values.concat(
+						[
+							config.setChangedOnNewerEntry ? 1 : 0,
+							pkg.data.number
+						]
+					), function (res2) {
 						client.connection.write(ITelexCom.encPackage({
 							packagetype: 8,
 							datalength: 0
