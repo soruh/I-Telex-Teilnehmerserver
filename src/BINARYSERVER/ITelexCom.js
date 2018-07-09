@@ -331,7 +331,7 @@ function encPackage(obj) {
             buffer.writeUIntLE(+data.port, 93, 2);
             // ll(highlightBuffer(buffer, 93, 2));
             // ll(ext, 95, 1);
-            buffer.writeUIntLE(ext, 95, 1);
+            buffer.writeUIntLE(ext || 0, 95, 1);
             // ll(highlightBuffer(buffer, 95, 1));
             // ll(+data.pin, 96, 2);
             buffer.writeUIntLE(+data.pin, 96, 2);
