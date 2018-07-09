@@ -82,7 +82,7 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
 										WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
                                         port,
                                         ipaddress,
-                                        Math.floor(Date.now() / 1000), ,
+                                        Math.floor(Date.now() / 1000),
                                         number,
                                         config_js_1.default.DynIpUpdateNameDifference,
                                         res.name,
