@@ -39,14 +39,14 @@ for (let i = 1; i <= 10; i++) {
 	handles[i] = {};
 }
 //handes[packagetype][state of this client.connection]
-//handles[2][constants.states.STANDBY] = (obj,cnum,pool,client.connection)=>{}; NOT USED
-//handles[4][WAITING] = (obj,cnum,pool,client.connection)=>{}; NOT USED
-handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+//handles[2][constants.states.STANDBY] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
+//handles[4][WAITING] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
+handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			var number = obj.data.number;
-			var pin = obj.data.pin;
-			var port = obj.data.port;
+			var number = pkg.data.number;
+			var pin = pkg.data.pin;
+			var port = pkg.data.port;
 			var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
 			if (number < 10000) {
 				if (cv(1)) lle(`${colors.FgRed}client tried to update ${number} which is too small(<10000)${colors.Reset}`);
@@ -254,11 +254,11 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[3][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			if (obj.data.version == 1) {
-				var number = obj.data.number;
+			if (pkg.data.version == 1) {
+				var number = pkg.data.number;
 				misc.SqlQuery(pool, `
 					SELECT * FROM teilnehmer WHERE
 						number = ?
@@ -305,58 +305,48 @@ handles[3][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, obj.data.number, colors.Reset);
-			misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [obj.data.number], function (entries:ITelexCom.peerList) {
-				var o = { //TODO improve;
-					number: obj.data.number,
-					name: obj.data.name,
-					type: obj.data.type,
-					hostname: obj.data.hostname,
-					ipaddress: obj.data.ipaddress,
-					port: obj.data.port,
-					extension: obj.data.extension,
-					pin: obj.data.pin,
-					disabled: obj.data.disabled,
-					timestamp: obj.data.timestamp,
-					changed: (config.setChangedOnNewerEntry ? 1 : 0)
-				};
-				// var doLU = ((o.hostname!=""&&o.ipaddress==null)&&config.doDnsLookups);
-				// function lookup(host,callback){
-				//   if(host){
-				//     if(cv(2)) ll(colors.FgGreen+"starting nslookup for: "+colors.FgCyan+host+colors.FgGreen+" ..."+colors.Reset);
-				//    lookup(host,{verbatim:true},function(err, address, family){
-				//       if(cv(3)&&err) lle(colors.FgRed,err,colors.Reset);
-				//       if(cv(2)&&(!(err))) ll(colors.FgGreen+"nslookup got ip: "+colors.FgCyan+address+colors.Reset);
-				//       if(typeof callback === "function") callback(address,entries,o,client.connection,cb);
-				//     });
-				//   }else{
-				//     if(typeof callback === "function") callback(null,entries,o,client.connection,cb);
-				//   }
-				// }
+			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, pkg.data.number, colors.Reset);
+			misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number], function (entries:ITelexCom.peerList) {
 				if (entries.length == 1) {
                     var entry:ITelexCom.peer = entries[0];
                     if(typeof client.newEntries != "number") client.newEntries = 0;
-					if (obj.data.timestamp > +entry.timestamp) {
+					if (pkg.data.timestamp > +entry.timestamp) {
                         client.newEntries++;
-                        if (cv(1) && !cv(2)) ll(colors.FgGreen + "got new dataset for:", colors.FgCyan, obj.data.number, colors.Reset);
-						// lookup((doLU?o.hostname:false),function(addr,entry,o,client.connection,cb){
-						//   if(doLU&&addr){
-						//     o.ipaddress = addr;
-						//   }
-						if (cv(2)) ll(colors.FgGreen + "recieved entry is " + colors.FgCyan + (obj.data.timestamp-+entry.timestamp)+"seconds newer"+ colors.FgGreen + " > " + colors.FgCyan + entry.timestamp + colors.Reset);
-						var sets = "";
-						for (let k in o) {
-							if (o[k] != undefined) {
-								sets += k + " = " + mysql.escape(o[k]) + ", ";
-							} else {
-								sets += k + " = DEFAULT, ";
-							}
-						}
-						var q = `UPDATE teilnehmer SET ${sets.substring(0,sets.length-2)} WHERE number = ?;`;
-						misc.SqlQuery(pool, q, [obj.data.number], function (res2) {
+                        if (cv(1) && !cv(2)) ll(colors.FgGreen + "got new dataset for:", colors.FgCyan, pkg.data.number, colors.Reset);
+						if (cv(2)) ll(colors.FgGreen + "recieved entry is " + colors.FgCyan + (pkg.data.timestamp-+entry.timestamp)+"seconds newer"+ colors.FgGreen + " > " + colors.FgCyan + entry.timestamp + colors.Reset);
+						
+						misc.SqlQuery(pool, `
+							UPDATE teilnehmer SET 
+								number = ?,
+								name = ?,
+								type = ?,
+								hostname = ?,
+								ipaddress = ?,
+								port = ?,
+								extension = ?,
+								pin = ?,
+								disabled = ?,
+								timestamp = ?,
+								changed = ?,
+							WHERE number = ?;
+						`, [
+							pkg.data.number   ||"DEFAULT",
+							pkg.data.name     ||"DEFAULT",
+							pkg.data.type     ||"DEFAULT",
+							pkg.data.hostname ||"DEFAULT",
+							pkg.data.ipaddress||"DEFAULT",
+							pkg.data.port     ||"DEFAULT",
+							pkg.data.extension||"DEFAULT",
+							pkg.data.pin      ||"DEFAULT",
+							pkg.data.disabled ||"DEFAULT",
+							pkg.data.timestamp||"DEFAULT",
+							config.setChangedOnNewerEntry ? 1 : 0,
+
+							pkg.data.number
+						], function (res2) {
 							client.connection.write(ITelexCom.encPackage({
 								packagetype: 8,
 								datalength: 0
@@ -364,9 +354,8 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 								if (typeof cb === "function") cb();
 							});
 						});
-						// });
 					} else {
-						if (cv(2)) ll(colors.FgYellow + "recieved entry is " + colors.FgCyan + (+entry.timestamp - obj.data.timestamp) + colors.FgYellow + " seconds older and was ignored" + colors.Reset);
+						if (cv(2)) ll(colors.FgYellow + "recieved entry is " + colors.FgCyan + (+entry.timestamp - pkg.data.timestamp) + colors.FgYellow + " seconds older and was ignored" + colors.Reset);
 						client.connection.write(ITelexCom.encPackage({
 							packagetype: 8,
 							datalength: 0
@@ -375,20 +364,48 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 						});
 					}
 				} else if (entries.length == 0) {
-					// lookup((doLU?o.hostname:false),function(addr,entry,o,client.connection,cb){
-					//   if(doLU&&addr){
-					//     o.ipaddress = addr;
-					//   }
-					var names = "";
-					var values = "";
-					for (let k in o) {
-						if (o[k] != undefined) {
-							names += k + ", ";
-							values += mysql.escape(o[k]) + ", ";
-						}
-					}
-					var q = `INSERT INTO teilnehmer(${names.substring(0, names.length - 2)}) VALUES (${values.substring(0, values.length - 2)});`;
-					misc.SqlQuery(pool, q, [], function (res2) {
+					misc.SqlQuery(pool, `
+						INSERT INTO teilnehmer 
+						(
+							number,
+							name,
+							type,
+							hostname,
+							ipaddress,
+							port,
+							extension,
+							pin,
+							disabled,
+							timestamp,
+							changed,
+						)
+						VALUES
+						(
+							?
+							?
+							?
+							?
+							?
+							?
+							?
+							?
+							?
+							?
+							?
+						)
+					;`, [
+						pkg.data.number   ||"DEFAULT",
+						pkg.data.name     ||"DEFAULT",
+						pkg.data.type     ||"DEFAULT",
+						pkg.data.hostname ||"DEFAULT",
+						pkg.data.ipaddress||"DEFAULT",
+						pkg.data.port     ||"DEFAULT",
+						pkg.data.extension||"DEFAULT",
+						pkg.data.pin      ||"DEFAULT",
+						pkg.data.disabled ||"DEFAULT",
+						pkg.data.timestamp||"DEFAULT",
+						config.setChangedOnNewerEntry ? 1 : 0,
+					], function (res2) {
 						client.connection.write(ITelexCom.encPackage({
 							packagetype: 8,
 							datalength: 0
@@ -396,7 +413,6 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 							if (typeof cb === "function") cb();
 						});
 					});
-					// });
 				} else {
 					if (cv(0)) ll('The "number" field should be unique! This error should not occur!');
 					if (typeof cb === "function") cb();
@@ -411,10 +427,10 @@ handles[5][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 	}
 };
 handles[5][constants.states.LOGIN] = handles[5][constants.states.FULLQUERY];
-handles[6][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			if (obj.data.serverpin == config.serverPin || (readonly && config.allowFullQueryInReadonly)) {
+			if (pkg.data.serverpin == config.serverPin || (readonly && config.allowFullQueryInReadonly)) {
 				if (cv(1)) ll(colors.FgGreen, "serverpin is correct!", colors.Reset);
 				client = connections.get(
 					connections.move(client.cnum, "S")
@@ -439,7 +455,7 @@ handles[6][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 				});
 			} else {
 				if (cv(1)) {
-					ll(colors.FgRed + "serverpin is incorrect! " + colors.FgCyan + obj.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + " ending client.connection!" + colors.Reset); //TODO: remove pin logging
+					ll(colors.FgRed + "serverpin is incorrect! " + colors.FgCyan + pkg.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + " ending client.connection!" + colors.Reset); //TODO: remove pin logging
 					client.connection.end();
 				}
 				misc.sendEmail("wrongServerPin", {
@@ -457,10 +473,10 @@ handles[6][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[7][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			if ((obj.data.serverpin == config.serverPin) || (readonly && config.allowLoginInReadonly)) {
+			if ((pkg.data.serverpin == config.serverPin) || (readonly && config.allowLoginInReadonly)) {
 				if (cv(1)) ll(colors.FgGreen, "serverpin is correct!", colors.Reset);
 				client = connections.get(
 					connections.move(client.cnum, "S")
@@ -474,7 +490,7 @@ handles[7][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 				});
 			} else {
 				if (cv(1)) {
-					ll(colors.FgRed + "serverpin is incorrect!" + colors.FgCyan + obj.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + "ending client.connection!" + colors.Reset);
+					ll(colors.FgRed + "serverpin is incorrect!" + colors.FgCyan + pkg.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + "ending client.connection!" + colors.Reset);
 					client.connection.end();
 				}
 				misc.sendEmail("wrongServerPin", {
@@ -492,7 +508,7 @@ handles[7][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[8][constants.states.RESPONDING] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			if (cv(1)) {
@@ -532,7 +548,7 @@ handles[8][constants.states.RESPONDING] = function (obj:ITelexCom.Package_decode
 		if (typeof cb === "function") cb();
 	}
 };
-handles[9][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[9][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			client.state = constants.states.STANDBY;
@@ -548,12 +564,12 @@ handles[9][constants.states.FULLQUERY] = function (obj:ITelexCom.Package_decoded
 	}
 };
 handles[9][constants.states.LOGIN] = handles[9][constants.states.FULLQUERY];
-handles[10][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
 	try {
 		if (client) {
-			if (cv(2)) ll(obj);
-//			let version = obj.data.version;
-			let query = obj.data.pattern;
+			if (cv(2)) ll(pkg);
+//			let version = pkg.data.version;
+			let query = pkg.data.pattern;
 			let queryarr = query.split(" ");
 			let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
 			misc.SqlQuery(pool, searchstring, queryarr.map(q=>`%${q}%`), function (result:ITelexCom.peerList) {
