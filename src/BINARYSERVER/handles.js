@@ -395,7 +395,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
 							${names.length > 0 ? "," : ""}changed
 						)
 						VALUES
-						(${"?,".repeat(names.length).slice(0, -1)})
+						(${"?,".repeat(names.length + 1).slice(0, -1)})
 					;`, values.concat([
                         config_js_1.default.setChangedOnNewerEntry ? 1 : 0
                     ]), function (res2) {

@@ -364,7 +364,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 							${names.length>0?",":""}changed
 						)
 						VALUES
-						(${"?,".repeat(names.length).slice(0,-1)})
+						(${"?,".repeat(names.length+1).slice(0,-1)})
 					;`, values.concat(
 						[
 							config.setChangedOnNewerEntry ? 1 : 0
