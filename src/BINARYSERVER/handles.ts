@@ -367,8 +367,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 						(${"?,".repeat(names.length).slice(0,-1)})
 					;`, values.concat(
 						[
-							config.setChangedOnNewerEntry ? 1 : 0,
-							pkg.data.number
+							config.setChangedOnNewerEntry ? 1 : 0
 						]
 					), function (res2) {
 						client.connection.write(ITelexCom.encPackage({
