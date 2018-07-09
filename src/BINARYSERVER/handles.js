@@ -74,12 +74,15 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                         if (res.pin == pin) {
                             if (res.type == 5) {
                                 if (ipaddress != res.ipaddress || port != res.port) {
-                                    misc.SqlQuery(pool, `UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ?, extension = ?, hostname = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+                                    misc.SqlQuery(pool, `UPDATE teilnehmer SET
+										port = ?,
+										ipaddress = ?,
+										changed = 1,
+										timestamp = ?
+										WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
                                         port,
                                         ipaddress,
-                                        Math.floor(Date.now() / 1000),
-                                        "",
-                                        "",
+                                        Math.floor(Date.now() / 1000), ,
                                         number,
                                         config_js_1.default.DynIpUpdateNameDifference,
                                         res.name,
@@ -162,10 +165,14 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
 								number,
 								port,
 								pin,
+								hostname,
+								extension,
 								ipaddress,
 								disabled,
 								changed
 							) VALUES (
+								?,
+								?,
 								?,
 								?,
 								?,
@@ -183,6 +190,8 @@ handles[1][constants.states.STANDBY] = function (obj, client, pool, cb) {
                             number,
                             port,
                             pin,
+                            "",
+                            "",
                             client.connection.remoteAddress.replace(/^.*:/, ''),
                             1,
                             1

@@ -76,12 +76,15 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 							if (res.type == 5) {
 								if (ipaddress != res.ipaddress || port != res.port) {
 									misc.SqlQuery(pool,
-										`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ?, extension = ?, hostname = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`,[
+										`UPDATE teilnehmer SET
+										port = ?,
+										ipaddress = ?,
+										changed = 1,
+										timestamp = ?
+										WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`,[
 										port,
 										ipaddress,
-										Math.floor(Date.now()/1000),
-										"",
-										"",
+										Math.floor(Date.now()/1000),,
 										number,	
 										config.DynIpUpdateNameDifference,
 										res.name,
@@ -152,10 +155,14 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 								number,
 								port,
 								pin,
+								hostname,
+								extension,
 								ipaddress,
 								disabled,
 								changed
 							) VALUES (
+								?,
+								?,
 								?,
 								?,
 								?,
@@ -173,6 +180,8 @@ handles[1][constants.states.STANDBY] = function (obj:ITelexCom.Package_decoded, 
 							number,
 							port,
 							pin,
+							"",
+							"",
 							client.connection.remoteAddress.replace(/^.*:/,''),
 							1,
 							1
