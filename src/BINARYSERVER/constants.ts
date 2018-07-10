@@ -14,7 +14,8 @@ const PackageNames = {
 	7: "Sync_Login",
 	8: "Acknowledge",
 	9: "End_of_List",
-	10: "Peer_search"
+	10: "Peer_search",
+	255: "Error"
 };
 const PackageSizes = {
 	1: 8,

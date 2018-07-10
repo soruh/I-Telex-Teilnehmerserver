@@ -150,32 +150,241 @@ import * as constants from "../BINARYSERVER/constants.js";
 import * as connections from "../BINARYSERVER/connections.js"
 import handles from "../BINARYSERVER/handles.js";
 import * as misc from "../BINARYSERVER/misc.js";
+import { version } from "punycode";
 //#endregion
 
 const cv = config.cv;
 
-interface PackageData_decoded {
-    number ? : number;
-    name ? : string;
-    disabled ? : number;
-    type ? : number;
-    hostname ? : string;
-    ipaddress ? : string;
-    port ? : string;
-    extension ? : string;
-    pin ? : string;
-    timestamp ? : number;
-    version ? : number;
-    serverpin ? : number;
-    pattern ? : string;
+type Package_decoded =
+Package_decoded_1|
+Package_decoded_2|
+Package_decoded_3|
+Package_decoded_4|
+Package_decoded_5|
+Package_decoded_6|
+Package_decoded_7|
+Package_decoded_8|
+Package_decoded_9|
+Package_decoded_10|
+Package_decoded_255;
+
+type PackageData_decoded =
+PackageData_decoded_1|
+PackageData_decoded_2|
+PackageData_decoded_3|
+PackageData_decoded_4|
+PackageData_decoded_5|
+PackageData_decoded_6|
+PackageData_decoded_7|
+PackageData_decoded_8|
+PackageData_decoded_9|
+PackageData_decoded_10|
+PackageData_decoded_255;
+
+
+interface Package_decoded_1{
+	packagetype: 1,
+	datalength?: 8,
+	data: PackageData_decoded_1
 }
-interface Package_decoded {
-    data ? : PackageData_decoded
-    packagetype : number;
-    datalength : number;
+interface Package_decoded_2{
+	packagetype: 2,
+	datalength?: 4,
+	data: PackageData_decoded_2
 }
+interface Package_decoded_3{
+	packagetype: 3,
+	datalength?: 5,
+	data: PackageData_decoded_3
+}
+interface Package_decoded_4{
+	packagetype: 4,
+	datalength?: 0,
+	data?: PackageData_decoded_4
+}
+interface Package_decoded_5{
+	packagetype: 5,
+	datalength?: 100,
+	data: PackageData_decoded_5
+}
+interface Package_decoded_6{
+	packagetype: 6,
+	datalength?: 5,
+	data: PackageData_decoded_6
+}
+interface Package_decoded_7{
+	packagetype: 7,
+	datalength?: 5,
+	data: PackageData_decoded_7
+}
+interface Package_decoded_8{
+	packagetype: 8,
+	datalength?: 0,
+	data?: PackageData_decoded_8
+}
+interface Package_decoded_9{
+	packagetype: 9,
+	datalength?: 0,
+	data?: PackageData_decoded_9
+}
+interface Package_decoded_10{
+	packagetype: 10,
+	datalength?: 41,
+	data: PackageData_decoded_10
+}
+interface Package_decoded_255{
+	packagetype: 255,
+	datalength?: number,
+	data: PackageData_decoded_255
+}
+interface PackageData_decoded_1{
+	number: number,
+	pin: string,
+	port: string
+}
+interface PackageData_decoded_2{
+	ipaddress: string,
+}
+interface PackageData_decoded_3{
+	number: number,
+	version: number,
+}
+interface PackageData_decoded_4{
+
+}
+interface PackageData_decoded_5{
+	number: number,
+	name: string,
+	disabled: number,
+	type: number,
+	hostname: string,
+	ipaddress: string,
+	port: string,
+	extension: string,
+	pin: string,
+	timestamp: number,
+}
+interface PackageData_decoded_6{
+	version: number,
+	serverpin: number,
+}
+interface PackageData_decoded_7{
+	version: number,
+	serverpin: number,
+}
+interface PackageData_decoded_8{
+
+}
+interface PackageData_decoded_9{
+
+}
+interface PackageData_decoded_10{
+	version: number,
+	pattern: string
+}
+type PackageData_decoded_255 = Buffer|number[];
+
+/*
+switch (packagetype) {
+        case 1:
+            data = {
+                number: buffer.readUIntLE(2,4),
+                pin: buffer.readUIntLE(6,2).toString(),
+                port: buffer.readUIntLE(8,2).toString()
+            };
+            break;
+        case 2:
+            data = {
+                ipaddress: buffer.slice(2, 6).join(".")
+			};
+			if(data.ipaddress == "0.0.0.0") data.ipaddress = "";
+            break;
+        case 3:
+            data = {
+                number: buffer.readUIntLE(2,4), 
+            };
+            if (buffer.slice(6, 7).length > 0) {
+                data.version = buffer.readUIntLE(6,1);
+            } else {
+                data.version = 1;
+            }
+            break;
+        case 4:
+            data = {};
+            break;
+        case 5:
+
+            let flags = buffer.readUIntLE(46,2);
+
+			// <Call-number 4b> 0,4
+			// <Name 40b> 		4,44
+			// <Flags 2b>		44,46
+			// <Type 1b>		46,47
+			// <Addr 40b>		47,87
+			// <IPAdr 4b>		87,91
+			// <Port 2b>		91,93
+			// <Extension 1b>	93,94
+			// <DynPin 2b>		94,96
+			// <Date 4b>		96,100
+            data = {
+                number: buffer.readUIntLE(2,4),
+                name: (<any>buffer).readNullTermString("utf8",6,46),
+                disabled: (flags&2)==2?1:0,
+                type: buffer.readUIntLE(48,1),
+                hostname: (<any>buffer).readNullTermString("utf8",49, 89),
+                ipaddress: buffer.slice(89, 93).join("."),
+                port: buffer.readUIntLE(93, 2).toString(),
+                pin: buffer.readUIntLE(96,2).toString(),
+                timestamp: buffer.readUIntLE(98,4) - 2208988800
+			};
+			if(data.ipaddress == "0.0.0.0") data.ipaddress = "";
+			if(data.hostname == "") data.hostname = "";
+
+            let extension:number =  buffer.readUIntLE(95,1);
+            if (extension == 0) {
+                data.extension = null;
+            } else if (extension == 110) {
+                data.extension = "0";
+            } else if (extension == 100) {
+                data.extension = "00";
+            } else if (extension > 110) {
+                data.extension = null;
+            } else if (extension > 100) {
+                data.extension = (extension - 100).toString();
+            } else if (extension < 10) {
+                data.extension = "0" + extension;
+            } else {
+                data.extension = extension.toString();
+            }
+
+            break;
+        case 6:
+            data = {
+                version: buffer.readUIntLE(2,1),
+                serverpin: buffer.readUIntLE(3,4)
+            };
+            break;
+        case 7:
+            data = {
+                version: buffer.readUIntLE(2,1),
+                serverpin: buffer.readUIntLE(3,4)
+            };
+            break;
+        case 8:
+            data = {};
+            break;
+        case 9:
+            data = {};
+            break;
+        case 10:
+            {
+                version: buffer.readUIntLE(2,1),
+                pattern: (<any>buffer).readNullTermString("utf8",3,43)
+            };
+*/
 
 type PackageData_encoded = number[]|Buffer;
+
 interface Package_encoded {
     data ? : PackageData_encoded
     packagetype ? : number;
@@ -304,130 +513,129 @@ function unmapIpV4fromIpV6(ipaddress:string):string{
 		return "0.0.0.0";
 	}
 }
-function encPackage(obj:Package_decoded):Buffer{
-    if (config.logITelexCom) ll(colors.FgGreen + "encoding:" + colors.FgCyan, obj, colors.Reset);
-    var data:PackageData_decoded = obj.data;
-	var buffer:PackageData_encoded = new Buffer(obj.datalength+2);
+function encPackage(pkg:Package_decoded):Buffer{
+	if (config.logITelexCom) ll(colors.FgGreen + "encoding:" + colors.FgCyan, pkg, colors.Reset);
+	if(pkg.datalength == null) pkg.datalength = constants.PackageSizes[pkg.packagetype];
+	var buffer:PackageData_encoded = new Buffer(pkg.datalength+2);
 	
-	buffer[0] = obj.packagetype;
-	buffer[1] = obj.datalength;
+	buffer[0] = pkg.packagetype;
+	buffer[1] = pkg.datalength;
 		
-    switch (obj.packagetype) {
+    switch (pkg.packagetype) {
 		case 1:
-			buffer.writeUIntLE(data.number||0,2,4);
-			buffer.writeUIntLE(+data.pin||0,6,2);
-			buffer.writeUIntLE(+data.port||0,8,2);
+			buffer.writeUIntLE(pkg.data.number||0,2,4);
+			buffer.writeUIntLE(+pkg.data.pin||0,6,2);
+			buffer.writeUIntLE(+pkg.data.port||0,8,2);
             break;
         case 2:
-			(<any>buffer).writeByteArray(unmapIpV4fromIpV6(data.ipaddress).split("."),2) // .map(x=>+x)
+			(<any>buffer).writeByteArray(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."),2) // .map(x=>+x)
             break;
 		case 3:
-			buffer.writeUIntLE(data.number||0,2,4);
-            buffer.writeUIntLE(data.version||0,6,1);
+			buffer.writeUIntLE(pkg.data.number||0,2,4);
+            buffer.writeUIntLE(pkg.data.version||0,6,1);
             break;
         case 4:
             break;
         case 5:
-			let flags = data.disabled?2:0;
+			let flags = pkg.data.disabled?2:0;
 			
             let ext = 0;
-            if (!data.extension) {
+            if (!pkg.data.extension) {
                 ext = 0;
-            } else if (data.extension == "0") {
+            } else if (pkg.data.extension == "0") {
                 ext = 110;
-            } else if (data.extension == "00") {
+            } else if (pkg.data.extension == "00") {
                 ext = 100;
-            } else if (data.extension.toString().length == 1) {
-                ext = parseInt(data.extension) + 100;
+            } else if (pkg.data.extension.toString().length == 1) {
+                ext = parseInt(pkg.data.extension) + 100;
             } else {
-                ext = parseInt(data.extension);
+                ext = parseInt(pkg.data.extension);
             }
 			// console.log("\n");
 			// ll(buffer);
-			// ll(data.number, 2, 4);
-			(<any>buffer).writeUIntLE(data.number||0, 2, 4);
+			// ll(pkg.data.number, 2, 4);
+			buffer.writeUIntLE(pkg.data.number||0, 2, 4);
 			// ll(highlightBuffer(buffer, 2, 4));
-			// ll(data.name, 6, 40);
-			(<any>buffer).write(data.name||"", 6, 40);
+			// ll(pkg.data.name, 6, 40);
+			buffer.write(pkg.data.name||"", 6, 40);
 			// ll(highlightBuffer(buffer, 6, 40));
 			// ll(flags, 46, 2);
-			(<any>buffer).writeUIntLE(flags||0, 46, 2);
+			buffer.writeUIntLE(flags||0, 46, 2);
 			// ll(highlightBuffer(buffer, 46, 2));
-			// ll(data.type, 48, 1);
-			(<any>buffer).writeUIntLE(data.type||0, 48, 1);
+			// ll(pkg.data.type, 48, 1);
+			buffer.writeUIntLE(pkg.data.type||0, 48, 1);
 			// ll(highlightBuffer(buffer, 48, 1));
-			// ll(data.hostname, 49, 40);
-			(<any>buffer).write(data.hostname||"", 49, 40);
+			// ll(pkg.data.hostname, 49, 40);
+			buffer.write(pkg.data.hostname||"", 49, 40);
 			// ll(highlightBuffer(buffer, 49, 40));
-			// ll(unmapIpV4fromIpV6(data.ipaddress).split("."),89);
-			(<any>buffer).writeByteArray(unmapIpV4fromIpV6(data.ipaddress).split("."),89); // .map(x=>+x)
+			// ll(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."),89);
+			(<any>buffer).writeByteArray(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."),89); // .map(x=>+x)
 			// ll(highlightBuffer(buffer, 89, 4));
-			// ll(+data.port, 93, 2);
-			(<any>buffer).writeUIntLE(+data.port||0, 93, 2);
+			// ll(+pkg.data.port, 93, 2);
+			buffer.writeUIntLE(+pkg.data.port||0, 93, 2);
 			// ll(highlightBuffer(buffer, 93, 2));
 			// ll(ext, 95, 1);
-			(<any>buffer).writeUIntLE(ext||0, 95, 1);
+			buffer.writeUIntLE(ext||0, 95, 1);
 			// ll(highlightBuffer(buffer, 95, 1));
-			// ll(+data.pin, 96, 2);
-			(<any>buffer).writeUIntLE(+data.pin||0, 96, 2);
+			// ll(+pkg.data.pin, 96, 2);
+			buffer.writeUIntLE(+pkg.data.pin||0, 96, 2);
 			// ll(highlightBuffer(buffer, 96, 2));
-			// ll(data.timestamp + 2208988800, 98, 4);
-			(<any>buffer).writeUIntLE((data.timestamp||0) + 2208988800, 98, 4);
+			// ll(pkg.data.timestamp + 2208988800, 98, 4);
+			buffer.writeUIntLE((pkg.data.timestamp||0) + 2208988800, 98, 4);
 			// ll(highlightBuffer(buffer, 98, 4));
 				
             break;
         case 6:
-			(<any>buffer).writeUIntLE(data.version||0, 2, 1);
-            (<any>buffer).writeUIntLE(data.serverpin||0, 3, 4);
+			buffer.writeUIntLE(pkg.data.version||0, 2, 1);
+            buffer.writeUIntLE(pkg.data.serverpin||0, 3, 4);
             break;
         case 7:
-			(<any>buffer).writeUIntLE(data.version||0, 2, 1);
-			(<any>buffer).writeUIntLE(data.serverpin||0, 3, 4);
+			buffer.writeUIntLE(pkg.data.version||0, 2, 1);
+			buffer.writeUIntLE(pkg.data.serverpin||0, 3, 4);
             break;
         case 8:
             break;
         case 9:
             break;
         case 10:
-			(<any>buffer).writeUIntLE(data.version||0, 2, 1);
-            (<any>buffer).write(data.pattern||"", 3, 40);
+			buffer.writeUIntLE(pkg.data.version||0, 2, 1);
+            buffer.write(pkg.data.pattern||"", 3, 40);
             break;
     }
     if (config.logITelexCom&&cv(1)) ll(colors.FgGreen + "encoded:" +colors.Reset,(config.explainBuffers>0?explainPackage(buffer):buffer));
     return buffer;
 }
 
+
 function decPackage(buffer:Buffer): Package_decoded {
-	var data: PackageData_decoded;
-	let packagetype = buffer[0];
-	let datalength = buffer[1];
+	let pkg:Package_decoded = {
+		packagetype: <any>buffer[0],
+		datalength: <any>buffer[1],
+		data: null
+	};
 	if (config.logITelexCom&&cv(1)) ll(colors.FgGreen + "decoding package:" +colors.Reset,(config.explainBuffers>0?explainPackage(buffer):buffer));
-    switch (packagetype) {
+    switch (pkg.packagetype) {
         case 1:
-            data = {
+			pkg.data = {
                 number: buffer.readUIntLE(2,4),
                 pin: buffer.readUIntLE(6,2).toString(),
                 port: buffer.readUIntLE(8,2).toString()
             };
             break;
         case 2:
-            data = {
+            pkg.data = {
                 ipaddress: buffer.slice(2, 6).join(".")
 			};
-			if(data.ipaddress == "0.0.0.0") data.ipaddress = "";
+			if(pkg.data.ipaddress == "0.0.0.0") pkg.data.ipaddress = "";
             break;
         case 3:
-            data = {
-                number: buffer.readUIntLE(2,4), 
+            pkg.data = {
+				number: buffer.readUIntLE(2,4),
+				version: buffer.slice(6, 7).length > 0?pkg.data.version = buffer.readUIntLE(6,1):1
             };
-            if (buffer.slice(6, 7).length > 0) {
-                data.version = buffer.readUIntLE(6,1);
-            } else {
-                data.version = 1;
-            }
             break;
         case 4:
-            data = {};
+            pkg.data = {};
             break;
         case 5:
 
@@ -443,7 +651,7 @@ function decPackage(buffer:Buffer): Package_decoded {
 			// <Extension 1b>	93,94
 			// <DynPin 2b>		94,96
 			// <Date 4b>		96,100
-            data = {
+            pkg.data = {
                 number: buffer.readUIntLE(2,4),
                 name: (<any>buffer).readNullTermString("utf8",6,46),
                 disabled: (flags&2)==2?1:0,
@@ -452,62 +660,59 @@ function decPackage(buffer:Buffer): Package_decoded {
                 ipaddress: buffer.slice(89, 93).join("."),
                 port: buffer.readUIntLE(93, 2).toString(),
                 pin: buffer.readUIntLE(96,2).toString(),
-                timestamp: buffer.readUIntLE(98,4) - 2208988800
+				timestamp: buffer.readUIntLE(98,4) - 2208988800,
+				extension: null
 			};
-			if(data.ipaddress == "0.0.0.0") data.ipaddress = "";
-			if(data.hostname == "") data.hostname = "";
+			if(pkg.data.ipaddress == "0.0.0.0") pkg.data.ipaddress = "";
+			if(pkg.data.hostname == "") pkg.data.hostname = "";
 
             let extension:number =  buffer.readUIntLE(95,1);
             if (extension == 0) {
-                data.extension = null;
+                pkg.data.extension = null;
             } else if (extension == 110) {
-                data.extension = "0";
+                pkg.data.extension = "0";
             } else if (extension == 100) {
-                data.extension = "00";
+                pkg.data.extension = "00";
             } else if (extension > 110) {
-                data.extension = null;
+                pkg.data.extension = null;
             } else if (extension > 100) {
-                data.extension = (extension - 100).toString();
+                pkg.data.extension = (extension - 100).toString();
             } else if (extension < 10) {
-                data.extension = "0" + extension;
+                pkg.data.extension = "0" + extension;
             } else {
-                data.extension = extension.toString();
+                pkg.data.extension = extension.toString();
             }
 
             break;
         case 6:
-            data = {
+            pkg.data = {
                 version: buffer.readUIntLE(2,1),
                 serverpin: buffer.readUIntLE(3,4)
             };
             break;
         case 7:
-            data = {
+            pkg.data = {
                 version: buffer.readUIntLE(2,1),
                 serverpin: buffer.readUIntLE(3,4)
             };
             break;
         case 8:
-            data = {};
+            pkg.data = {};
             break;
         case 9:
-            data = {};
+            pkg.data = {};
             break;
         case 10:
-            data = {
+            pkg.data = {
                 version: buffer.readUIntLE(2,1),
                 pattern: (<any>buffer).readNullTermString("utf8",3,43)
             };
             break;
         default:
-            lle(colors.FgRed+"invalid/unsupported packagetype: " +colors.FgCyan+ packagetype+colors.Reset);
+            lle(colors.FgRed+"invalid/unsupported packagetype: " +colors.FgCyan+ pkg.packagetype+colors.Reset);
             return null
 	}
-    return {
-		packagetype,
-		datalength,
-		data	
-	};
+    return pkg;
 }
 
 function decPackages(buffer:number[]|Buffer): Package_decoded[] {
@@ -620,7 +825,29 @@ export{
 	Package_decoded,
 	PackageData_encoded,
 	Package_encoded,
-	rawPackage
+	rawPackage,
+	PackageData_decoded_1,
+	PackageData_decoded_2,
+	PackageData_decoded_3,
+	PackageData_decoded_4,
+	PackageData_decoded_5,
+	PackageData_decoded_6,
+	PackageData_decoded_7,
+	PackageData_decoded_8,
+	PackageData_decoded_9,
+	PackageData_decoded_10,
+	PackageData_decoded_255,
+	Package_decoded_1,
+	Package_decoded_2,
+	Package_decoded_3,
+	Package_decoded_4,
+	Package_decoded_5,
+	Package_decoded_6,
+	Package_decoded_7,
+	Package_decoded_8,
+	Package_decoded_9,
+	Package_decoded_10,
+	Package_decoded_255,
 //#endregion
 }
 //#endregion

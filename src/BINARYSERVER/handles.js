@@ -93,7 +93,6 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                             try {
                                                 client.connection.write(ITelexCom.encPackage({
                                                     packagetype: 2,
-                                                    datalength: 4,
                                                     data: {
                                                         ipaddress: result_c[0].ipaddress
                                                     }
@@ -116,7 +115,6 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                         logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}not UPDATING, nothing to update${colors_js_1.default.Reset}`);
                                     client.connection.write(ITelexCom.encPackage({
                                         packagetype: 2,
-                                        datalength: 4,
                                         data: {
                                             ipaddress: res.ipaddress
                                         }
@@ -222,7 +220,6 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                         try {
                                             client.connection.write(ITelexCom.encPackage({
                                                 packagetype: 2,
-                                                datalength: 4,
                                                 data: {
                                                     ipaddress: result_c[0].ipaddress
                                                 }
@@ -286,22 +283,17 @@ handles[3][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                         logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, result, colors_js_1.default.Reset);
                     if ((result[0] != undefined) && (result != [])) {
                         let data = result[0];
-                        data.pin = 0;
-                        data.port = parseInt(result[0].port);
+                        data.pin = "0";
                         client.connection.write(ITelexCom.encPackage({
                             packagetype: 5,
-                            datalength: 100,
-                            data: data
+                            data
                         }), function () {
                             if (typeof cb === "function")
                                 cb();
                         });
                     }
                     else {
-                        client.connection.write(ITelexCom.encPackage({
-                            packagetype: 4,
-                            datalength: 0
-                        }), function () {
+                        client.connection.write(ITelexCom.encPackage({ packagetype: 4 }), function () {
                             if (typeof cb === "function")
                                 cb();
                         });
@@ -311,10 +303,7 @@ handles[3][constants.states.STANDBY] = function (pkg, client, pool, cb) {
             else {
                 if (ITelexCom_js_1.cv(0))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed, "unsupported package version, sending '0x04' package", colors_js_1.default.Reset);
-                client.connection.write(ITelexCom.encPackage({
-                    packagetype: 4,
-                    datalength: 0
-                }), function () {
+                client.connection.write(ITelexCom.encPackage({ packagetype: 4 }), function () {
                     if (typeof cb === "function")
                         cb();
                 });
@@ -366,10 +355,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                             config_js_1.default.setChangedOnNewerEntry ? 1 : 0,
                             pkg.data.number
                         ]), function (res2) {
-                            client.connection.write(ITelexCom.encPackage({
-                                packagetype: 8,
-                                datalength: 0
-                            }), function () {
+                            client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
                                 if (typeof cb === "function")
                                     cb();
                             });
@@ -378,10 +364,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                     else {
                         if (ITelexCom_js_1.cv(2))
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "recieved entry is " + colors_js_1.default.FgCyan + (+entry.timestamp - pkg.data.timestamp) + colors_js_1.default.FgYellow + " seconds older and was ignored" + colors_js_1.default.Reset);
-                        client.connection.write(ITelexCom.encPackage({
-                            packagetype: 8,
-                            datalength: 0
-                        }), function () {
+                        client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
                             if (typeof cb === "function")
                                 cb();
                         });
@@ -399,10 +382,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
 					;`, values.concat([
                         config_js_1.default.setChangedOnNewerEntry ? 1 : 0
                     ]), function (res2) {
-                        client.connection.write(ITelexCom.encPackage({
-                            packagetype: 8,
-                            datalength: 0
-                        }), function () {
+                        client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
                             if (typeof cb === "function")
                                 cb();
                         });
@@ -440,17 +420,10 @@ handles[6][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                     if ((result[0] != undefined) && (result != [])) {
                         client.writebuffer = result;
                         client.state = constants.states.RESPONDING;
-                        ITelexCom.handlePackage({
-                            packagetype: 8,
-                            datalength: 0,
-                            data: {}
-                        }, client, pool, cb);
+                        ITelexCom.handlePackage({ packagetype: 8 }, client, pool, cb);
                     }
                     else {
-                        client.connection.write(ITelexCom.encPackage({
-                            packagetype: 9,
-                            datalength: 0
-                        }), function () {
+                        client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {
                             if (typeof cb === "function")
                                 cb();
                         });
@@ -489,10 +462,7 @@ handles[7][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                 if (ITelexCom_js_1.cv(1))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
                 client = connections.get(connections.move(client.cnum, "S"));
-                client.connection.write(ITelexCom.encPackage({
-                    packagetype: 8,
-                    datalength: 0
-                }), function () {
+                client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
                     client.state = constants.states.LOGIN;
                     if (typeof cb === "function")
                         cb();
@@ -536,7 +506,6 @@ handles[8][constants.states.RESPONDING] = function (pkg, client, pool, cb) {
             if (client.writebuffer.length > 0) {
                 client.connection.write(ITelexCom.encPackage({
                     packagetype: 5,
-                    datalength: 100,
                     data: client.writebuffer[0]
                 }), function () {
                     if (ITelexCom_js_1.cv(1))
@@ -547,10 +516,7 @@ handles[8][constants.states.RESPONDING] = function (pkg, client, pool, cb) {
                 });
             }
             else if (client.writebuffer.length == 0) {
-                client.connection.write(ITelexCom.encPackage({
-                    packagetype: 9,
-                    datalength: 0
-                }), function () {
+                client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {
                     client.writebuffer = [];
                     client.state = constants.states.STANDBY;
                     if (typeof cb === "function")
@@ -617,17 +583,10 @@ handles[10][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                     }
                     client.writebuffer = towrite;
                     client.state = constants.states.RESPONDING;
-                    ITelexCom.handlePackage({
-                        packagetype: 8,
-                        datalength: 0,
-                        data: {}
-                    }, client, pool, cb);
+                    ITelexCom.handlePackage({ packagetype: 8 }, client, pool, cb);
                 }
                 else {
-                    client.connection.write(ITelexCom.encPackage({
-                        packagetype: 9,
-                        datalength: 0
-                    }), function () {
+                    client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {
                         if (typeof cb === "function")
                             cb();
                     });

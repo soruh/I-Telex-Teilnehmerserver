@@ -242,7 +242,13 @@ function getFullQuery() {
 		ITelexCom.connect(pool,function(e){
 		if(typeof callback === "function") callback();
 		},{host:config.readonlyHost,port:config.readonlyPort},handles,function(client,client.cnum){
-		client.write(ITelexCom.encPackage({packagetype:10,datalength:41,data:{pattern:'',version:1}}),function(){
+		client.write(ITelexCom.encPackage({
+			packagetype:10,
+			data:{
+				pattern:'',
+				version:1
+			}
+		}),function(){
 			client.state = constants.states.FULLQUERY;
 		});
 		});
@@ -266,21 +272,24 @@ function getFullQuery() {
 						port: r.port
 					}, function (client) {
 						try {
-							let request = readonly ? {
-								packagetype: 10,
-								datalength: 41,
-								data: {
-									pattern: '',
-									version: 1
-								}
-							} : {
-								packagetype: 6,
-								datalength: 5,
-								data: {
-									serverpin: config.serverPin,
-									version: 1
-								}
-							};
+							let request:ITelexCom.Package_decoded_10|ITelexCom.Package_decoded_6;
+							if(readonly){
+								request = {
+									packagetype: 10,
+									data: {
+										pattern: '',
+										version: 1
+									}
+								};
+							}else{
+								request = {
+									packagetype: 6,
+									data: {
+										serverpin: config.serverPin,
+										version: 1
+									}
+								};
+							}
 							client.connection.write(ITelexCom.encPackage(request), function () {
 								client.state = constants.states.FULLQUERY;
 								client.cb = cb;
@@ -375,7 +384,6 @@ function sendQueue() {
 												}, function () {
 													client.connection.write(ITelexCom.encPackage({
 														packagetype: 7,
-														datalength: 5,
 														data: {
 															serverpin: config.serverPin,
 															version: 1

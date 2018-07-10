@@ -41,7 +41,7 @@ for (let i = 1; i <= 10; i++) {
 //handes[packagetype][state of this client.connection]
 //handles[2][constants.states.STANDBY] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
 //handles[4][WAITING] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
-handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			var number = pkg.data.number;
@@ -96,7 +96,6 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 											try {
 												client.connection.write(ITelexCom.encPackage({
 													packagetype: 2,
-													datalength: 4,
 													data: {
 														ipaddress: result_c[0].ipaddress
 													}
@@ -113,7 +112,6 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 									if (cv(2)) ll(`${colors.FgYellow}not UPDATING, nothing to update${colors.Reset}`);
 									client.connection.write(ITelexCom.encPackage({
 										packagetype: 2,
-										datalength: 4,
 										data: {
 											ipaddress: res.ipaddress
 										}
@@ -202,10 +200,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 							options = insertOptions;
 						}
 						
-						misc.SqlQuery(
-							pool,
-							query,
-							options,
+						misc.SqlQuery(pool, query, options,
 						function (result_b) {
 							if (result_b) {
 								misc.sendEmail("new", {
@@ -220,7 +215,6 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 										try {
 											client.connection.write(ITelexCom.encPackage({
 												packagetype: 2,
-												datalength: 4,
 												data: {
 													ipaddress: result_c[0].ipaddress
 												}
@@ -254,7 +248,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_3, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			if (pkg.data.version == 1) {
@@ -269,31 +263,23 @@ handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 					;`, [number], function (result:ITelexCom.peerList) {
 					if (cv(2)) ll(colors.FgCyan, result, colors.Reset);
 					if ((result[0] != undefined) && (result != [])) {
-						let data:any = result[0];
-						data.pin = 0;
-						data.port = parseInt(result[0].port);
+						let data = result[0];
+						data.pin = "0";
 						client.connection.write(ITelexCom.encPackage({
 							packagetype: 5,
-							datalength: 100,
-							data:<ITelexCom.PackageData_decoded>data
+							data
 						}), function () {
 							if (typeof cb === "function") cb();
 						});
 					} else {
-						client.connection.write(ITelexCom.encPackage({
-							packagetype: 4,
-							datalength: 0
-						}), function () {
+						client.connection.write(ITelexCom.encPackage({packagetype: 4}), function () {
 							if (typeof cb === "function") cb();
 						});
 					}
 				});
 			} else {
 				if (cv(0)) ll(colors.FgRed, "unsupported package version, sending '0x04' package", colors.Reset);
-				client.connection.write(ITelexCom.encPackage({
-					packagetype: 4,
-					datalength: 0
-				}), function () {
+				client.connection.write(ITelexCom.encPackage({packagetype: 4}), function () {
 					if (typeof cb === "function") cb();
 				});
 			}
@@ -305,7 +291,7 @@ handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded_5, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, pkg.data.number, colors.Reset);
@@ -340,19 +326,13 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 								pkg.data.number
 							]
 						), function (res2) {
-							client.connection.write(ITelexCom.encPackage({
-								packagetype: 8,
-								datalength: 0
-							}), function () {
+							client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 								if (typeof cb === "function") cb();
 							});
 						});
 					} else {
 						if (cv(2)) ll(colors.FgYellow + "recieved entry is " + colors.FgCyan + (+entry.timestamp - pkg.data.timestamp) + colors.FgYellow + " seconds older and was ignored" + colors.Reset);
-						client.connection.write(ITelexCom.encPackage({
-							packagetype: 8,
-							datalength: 0
-						}), function () {
+						client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 							if (typeof cb === "function") cb();
 						});
 					}
@@ -370,10 +350,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 							config.setChangedOnNewerEntry ? 1 : 0
 						]
 					), function (res2) {
-						client.connection.write(ITelexCom.encPackage({
-							packagetype: 8,
-							datalength: 0
-						}), function () {
+						client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 							if (typeof cb === "function") cb();
 						});
 					});
@@ -391,7 +368,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 	}
 };
 handles[5][constants.states.LOGIN] = handles[5][constants.states.FULLQUERY];
-handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_6, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			if (pkg.data.serverpin == config.serverPin || (readonly && config.allowFullQueryInReadonly)) {
@@ -403,16 +380,9 @@ handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 					if ((result[0] != undefined) && (result != [])) {
 						client.writebuffer = result;
 						client.state = constants.states.RESPONDING;
-						ITelexCom.handlePackage({
-							packagetype: 8,
-							datalength: 0,
-							data: {}
-						}, client, pool, cb);
+						ITelexCom.handlePackage({packagetype: 8}, client, pool, cb);
 					} else {
-						client.connection.write(ITelexCom.encPackage({
-							packagetype: 9,
-							datalength: 0
-						}), function () {
+						client.connection.write(ITelexCom.encPackage({packagetype: 9}), function () {
 							if (typeof cb === "function") cb();
 						});
 					}
@@ -437,7 +407,7 @@ handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_7, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			if ((pkg.data.serverpin == config.serverPin) || (readonly && config.allowLoginInReadonly)) {
@@ -445,10 +415,7 @@ handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 				client = connections.get(
 					connections.move(client.cnum, "S")
 				);
-				client.connection.write(ITelexCom.encPackage({
-					packagetype: 8,
-					datalength: 0
-				}), function () {
+				client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 					client.state = constants.states.LOGIN;
 					if (typeof cb === "function") cb();
 				});
@@ -472,7 +439,7 @@ handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, 
 		if (typeof cb === "function") cb();
 	}
 };
-handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decoded_8, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			if (cv(1)) {
@@ -485,7 +452,6 @@ handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decode
 			if (client.writebuffer.length > 0) {
 				client.connection.write(ITelexCom.encPackage({
 					packagetype: 5,
-					datalength: 100,
 					data: client.writebuffer[0]
 				}), function () {
 					if (cv(1)) ll(colors.FgGreen + "sent dataset for:", colors.FgCyan, client.writebuffer[0].number, colors.Reset);
@@ -493,10 +459,7 @@ handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decode
 					if (typeof cb === "function") cb();
 				});
 			} else if (client.writebuffer.length == 0) {
-				client.connection.write(ITelexCom.encPackage({
-					packagetype: 9,
-					datalength: 0
-				}), function () {
+				client.connection.write(ITelexCom.encPackage({packagetype: 9}), function () {
 					client.writebuffer = [];
 					client.state = constants.states.STANDBY;
 					if (typeof cb === "function") cb();
@@ -512,7 +475,7 @@ handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decode
 		if (typeof cb === "function") cb();
 	}
 };
-handles[9][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[9][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded_9, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			client.state = constants.states.STANDBY;
@@ -528,7 +491,7 @@ handles[9][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 	}
 };
 handles[9][constants.states.LOGIN] = handles[9][constants.states.FULLQUERY];
-handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded, client:connections.client, pool, cb) {
+handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_10, client:connections.client, pool, cb) {
 	try {
 		if (client) {
 			if (cv(2)) ll(pkg);
@@ -547,16 +510,9 @@ handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded,
 					}
 					client.writebuffer = towrite;
 					client.state = constants.states.RESPONDING;
-					ITelexCom.handlePackage({
-						packagetype: 8,
-						datalength: 0,
-						data: {}
-					}, client, pool, cb);
+					ITelexCom.handlePackage({packagetype: 8}, client, pool, cb);
 				} else {
-					client.connection.write(ITelexCom.encPackage({
-						packagetype: 9,
-						datalength: 0
-					}), function () {
+					client.connection.write(ITelexCom.encPackage({packagetype: 9}), function () {
 						if (typeof cb === "function") cb();
 					});
 				}
