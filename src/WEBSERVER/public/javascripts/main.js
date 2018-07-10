@@ -12,7 +12,7 @@
 6: not a real peer, but an “official” email address.*/
 
 
-var UTCDATE = false;
+var POSIXDATE = false;
 var SHOWALLDATEINFO = false;
 var DEFAULTLANGUAGE = "german";
 
@@ -117,6 +117,9 @@ $(document).ready(function () {
     jQuery(this).trigger("search");
   }).on("focus", function () {
     getList();
+  });
+  $("#refresh-button").click(function () {
+    refresh();
   });
   $("#search-button").on("click", function () {
     $("#search-box").fadeToggle();
@@ -537,12 +540,13 @@ function logout() {
 }
 
 function twodigit(n) {
-  n = n.toString();
-  return n.length < 2?"0"+n:n;
+  // n = n.toString();
+  // return n.length < 2?"0"+n:n;
+  return n.toString().padStart(2,0);
 }
 
-function UtcToString(Utc) {
-  var d = new Date(parseInt(Utc) * 1000);
+function POSIXToString(POSIX) {
+  var d = new Date(parseInt(POSIX) * 1000);
   if (SHOWALLDATEINFO) {
     return (d.toString());
   } else {
@@ -649,10 +653,10 @@ function updateContent(usli) {
         $(td).addClass("td cell cell_" + b);
         switch (b) {
           case "timestamp":
-            if (UTCDATE) {
+            if (POSIXDATE) {
               $(td).text(list[a][b]);
             } else {
-              $(td).text(UtcToString(list[a][b]));
+              $(td).text(POSIXToString(list[a][b]));
             }
             break;
           case "disabled":
@@ -751,14 +755,18 @@ function removeButtonClick() {
       class: "delete_dialog_label",
       text:null
     };
-    if (k === "timestamp" && (!UTCDATE)) {
-      deleteDialogLabel.text = k + ": " + UtcToString(global_list[uid][k]);
+    if (k === "timestamp" && (!POSIXDATE)) {
+      deleteDialogLabel.text = k + ": " + POSIXToString(global_list[uid][k]);
     } else if (k !== "uid") {
       deleteDialogLabel.text = k + ": " + global_list[uid][k];
     }
     jQuery('<div/>', deleteDialogLabel).appendTo("#delete_dialog_label_container");
   }
   showpopup("delete_dialog");
+}
+
+function refresh(){
+  getList(updateTable);
 }
 
 function edit(vals, cb) {
@@ -770,7 +778,7 @@ function edit(vals, cb) {
     dataType: "json",
     data: vals,
     success: function (response) {
-      getList(updateTable);
+      refresh();
       if (cb) cb(response.message, null);
       if ((response.message.code != 1) && (response.message.code != -1) && ($("#log").length == 1)) $("#log").text(JSON.stringify(response.message));
       if (!response.successful) {
@@ -791,8 +799,8 @@ function search(list, str) {
     var matches = true;
     var rowstr = "";
     for (let key in row) {
-      if ((key === "timestamp") && (!UTCDATE)) {
-        rowstr += UtcToString(row[key]) + " ";
+      if ((key === "timestamp") && (!POSIXDATE)) {
+        rowstr += POSIXToString(row[key]) + " ";
       } else {
         rowstr += row[key] + " ";
       }

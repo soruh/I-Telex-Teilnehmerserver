@@ -1,5 +1,11 @@
 /* jshint -W079 */
 var english = {
+  "#search-button":{
+    title: "search"
+  },
+  "#refresh-button":{
+    title: "refresh"
+  },
   "#table_th_label_number": {
     text: "telex-number"
   },

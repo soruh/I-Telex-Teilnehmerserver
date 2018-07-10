@@ -1,5 +1,11 @@
 /* jshint -W079 */
 var german = {
+  "#search-button":{
+    title: "suchen"
+  },
+  "#refresh-button":{
+    title: "Aktualisieren"
+  },
   "#table_th_label_number": {
     text: "telex-nummer"
   },
