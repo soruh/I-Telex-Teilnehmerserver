@@ -74,7 +74,7 @@ function explainPackagePart(buffer:Buffer, name:string, color:string){
 	if(config.explainBuffers > 1){
 		return ` ${color}[${name}: ${inspectBuffer(buffer)}]\x1b[000m`;
 	}else{
-		return ` ${color}${inspectBuffer(buffer)}\x1b[000m`;
+		return ` [${name}: ${inspectBuffer(buffer)}]`;
 	}
 }
 function explainPackage(pkg:Buffer):string{
@@ -468,30 +468,32 @@ function getCompletePackages(data:Buffer, part?:Buffer):[Buffer,Buffer]{
 	if(cv(3)) if (config.logITelexCom) ll("\nextracting packages from data:");
 	if(cv(3)) if (config.logITelexCom) ll("data: ",data);
 	if(cv(3)) if (config.logITelexCom) ll("part: ",part);
-	var buffer = part?Buffer.concat([part,data]):data;
-	if(cv(3)) if (config.logITelexCom) ll("combined: ",buffer);
-	var packagetype = buffer[0]; //TODO check for valid type
-	var packagelength = buffer[1] + 2;
+	var combined = part?Buffer.concat([part,data]):data;
+	if(cv(3)) if (config.logITelexCom) ll("combined: ",combined);
+	var packagetype = combined[0]; //TODO check for valid type
+	var packagelength = (combined[1] != undefined?combined[1]:Infinity) + 2;
 	if(cv(3)) if (config.logITelexCom) ll("packagetype: ",packagetype);
 	if(cv(3)) if (config.logITelexCom) ll("packagelength: ",packagelength);
-	if (buffer.length == packagelength) {
-		if(cv(3)) if (config.logITelexCom) ll("buffer.length == packagelength");
+	if (combined.length == packagelength) {
+		if(cv(3)) if (config.logITelexCom) ll("combined.length == packagelength");
+		if(cv(3)) if (config.logITelexCom) ll(`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
 		return [
-			buffer,
+			combined,
 			new Buffer(0)
 		];
-	} else if (buffer.length > packagelength) {
-		if(cv(3)) if (config.logITelexCom) ll("buffer.length > packagelength");
-		let rest = getCompletePackages(buffer.slice(packagelength, buffer.length), null);
+	} else if (combined.length > packagelength) {
+		if(cv(3)) if (config.logITelexCom) ll("combined.length > packagelength");
+		let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
 		return [
-			Buffer.concat([buffer.slice(0, packagelength),rest[0]]),
+			Buffer.concat([combined.slice(0, packagelength),rest[0]]),
 			rest[1]
 		];
-	} else if (buffer.length < packagelength) {
-		if(cv(3)) if (config.logITelexCom) ll("buffer.length < packagelength");
+	} else if (combined.length < packagelength) {
+		if(cv(2)) if (config.logITelexCom) ll(`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
+		if(cv(3)) if (config.logITelexCom) ll("combined.length < packagelength");
 		return [
 			new Buffer(0),
-			buffer
+			combined
 		];
 	} else {
 		return ([
@@ -751,7 +753,8 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 	if (number != "") {
 		if (!isNaN(parseInt(number))) {
 			if(cv(1)&&config.logITelexCom) ll(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
-			misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number], function (result:peerList) {
+			misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
+			.then(function (result:peerList) {
 				if (!result || result.length == 0) {
 					let send:string = "";
 					send += "fail\r\n";

@@ -107,11 +107,8 @@ var server = net.createServer(function (connection) {
 				var res = ITelexCom.getCompletePackages(data, client.readbuffer);
 				if (cv(2)) ll("New Buffer:" + colors.FgCyan, res[1], colors.Reset);
 				if (cv(2)) ll("complete Package(s):" + colors.FgCyan, res[0], colors.Reset);
-				if (res[1].length > 0) {
-					client.readbuffer = res[1];
-				}
+				client.readbuffer = res[1];
 				if (res[0]) {
-					if (client.packages == null) client.packages = [];
 					client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
 					let timeout = function () {
 						if (client.handling === false) {
@@ -162,7 +159,8 @@ function init() {
 function updateQueue() {
 	return new Promise((resolve, reject)=>{
 		if (cv(2)) ll(colors.FgMagenta + "updating " + colors.FgCyan + "Queue" + colors.Reset);
-		misc.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE changed = ?;", [1], function (changed:ITelexCom.peerList) {
+		misc.SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE changed = ?;", [1])
+		.then(function (changed:ITelexCom.peerList) {
 			if (changed.length > 0) {
 				if (cv(2)) {
 					var changed_numbers = [];
@@ -173,30 +171,39 @@ function updateQueue() {
 				}
 				if (cv(1) && !cv(2)) ll(colors.FgCyan + changed.length + colors.FgGreen + " numbers to enqueue" + colors.Reset);
 
-				misc.SqlQuery(pool, "SELECT * FROM servers;",[], function (servers:ITelexCom.serverList) {
+				misc.SqlQuery(pool, "SELECT * FROM servers;")
+				.then(function (servers:ITelexCom.serverList) {
 					if (servers.length > 0) {
 						async.each(servers, function (server, cb1) {
 							async.each(changed, function (message, cb2) {
-								misc.SqlQuery(pool, "SELECT * FROM queue WHERE server = ? AND message = ?;" ,[server.uid, message.uid], function (qentry:ITelexCom.queue) {
+								misc.SqlQuery(pool, "SELECT * FROM queue WHERE server = ? AND message = ?;" ,[server.uid, message.uid])
+								.then(function (qentry:ITelexCom.queue) {
 									if (qentry.length == 1) {
-										misc.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;",[Math.floor(Date.now() / 1000),server.uid, message.uid], function () {
-											//misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+										misc.SqlQuery(pool, "UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;",[Math.floor(Date.now() / 1000),server.uid, message.uid])
+										.then(function () {
+											//misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+											//.then(function(){
 											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 											cb2();
 											//});
 										});
 									} else if (qentry.length == 0) {
-										misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid, message.uid, Math.floor(Date.now() / 1000)], function () {
-											//misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+										misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid, message.uid, Math.floor(Date.now() / 1000)])
+										.then(function () {
+											//misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+											//.then(function(){
 											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 											cb2();
 											//});
 										});
 									} else {
 										lle("duplicate queue entry!");
-										misc.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;",[server.uid, message.uid], function () {
-											misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid,message.uid,Math.floor(Date.now() / 1000)], function () {
-												//misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";", function(){
+										misc.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;",[server.uid, message.uid])
+										.then(function () {
+											misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid,message.uid,Math.floor(Date.now() / 1000)])
+											.then(function () {
+												//misc.SqlQuery(pool,"UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+												//.then(function(){
 												if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 												cb2();
 												//});
@@ -208,7 +215,8 @@ function updateQueue() {
 						}, function () {
 							if (cv(1)) ll(colors.FgGreen + "finished enqueueing" + colors.Reset);
 							if (cv(2)) ll(colors.FgGreen + "reseting changed flags..." + colors.Reset);
-							misc.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid="+changed.map(entry => entry.uid).join(" or uid=")+";", [0], function (res) {
+							misc.SqlQuery(pool, "UPDATE teilnehmer SET changed = ? WHERE uid="+changed.map(entry => entry.uid).join(" or uid=")+";", [0])
+							.then(function (res) {
 								if (cv(2)) ll(colors.FgGreen + "reset " + colors.FgCyan + changed.length + colors.FgGreen + " changed flags." + colors.Reset);
 								//sendQueue();
 								resolve();
@@ -253,7 +261,8 @@ function getFullQuery() {
 		});
 		});
 	}else{*/
-		misc.SqlQuery(pool, "SELECT  * FROM servers;", [], function (servers:ITelexCom.serverList) {
+		misc.SqlQuery(pool, "SELECT  * FROM servers;")
+		.then(function (servers:ITelexCom.serverList) {
 			if (servers.length > 0) {
 				for (let i in servers) {
 					if (config.fullQueryServer&&servers[i].addresse == config.fullQueryServer.split(":")[0] && servers[i].port == config.fullQueryServer.split(":")[1]) {
@@ -269,7 +278,7 @@ function getFullQuery() {
 						}
 					}, {
 						host: r.addresse,
-						port: r.port
+						port: +r.port
 					}, function (client) {
 						try {
 							let request:ITelexCom.Package_decoded_10|ITelexCom.Package_decoded_6;
@@ -322,8 +331,10 @@ function sendQueue() {
 			if (cv(2)) ll(colors.FgYellow + "Read-only mode -> aborting " + colors.FgCyan + "sendQueue" + colors.Reset);
 			resolve();
 		} else {
-			misc.SqlQuery(pool, "SELECT * FROM teilnehmer;",[], function (teilnehmer:ITelexCom.peerList) {
-				misc.SqlQuery(pool, "SELECT * FROM queue;",[], function (queue:ITelexCom.queue) {
+			misc.SqlQuery(pool, "SELECT * FROM teilnehmer;")
+			.then(function (teilnehmer:ITelexCom.peerList) {
+				misc.SqlQuery(pool, "SELECT * FROM queue;")
+				.then(function (queue:ITelexCom.queue) {
 					if (queue.length > 0) {
 						var servers:{
 							[index:number]: ITelexCom.queueEntry[]
@@ -333,7 +344,8 @@ function sendQueue() {
 							servers[q.server].push(q);
 						}
 						async.eachSeries(servers, function (server, cb) {
-							misc.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=?;",[server[0].server], function (result2:ITelexCom.serverList) {
+							misc.SqlQuery(pool, "SELECT  * FROM servers WHERE uid=?;",[server[0].server])
+							.then(function (result2:ITelexCom.serverList) {
 								if (result2.length == 1) {
 									var serverinf = result2[0];
 									if (cv(2)) ll(colors.FgCyan, serverinf, colors.Reset);
@@ -353,7 +365,7 @@ function sendQueue() {
 										if (!isConnected) {
 											connect(pool, cb, {
 												host: serverinf.addresse,
-												port: serverinf.port
+												port: +serverinf.port
 											}, function (client) {
 												client.servernum = server[0].server;
 												if (cv(1)) ll(colors.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors.Reset);
@@ -367,7 +379,8 @@ function sendQueue() {
 														}
 													}
 													if (existing) {
-														misc.SqlQuery(pool, "DELETE FROM queue WHERE uid=?;", [serverdata.uid], function (res) {
+														misc.SqlQuery(pool, "DELETE FROM queue WHERE uid=?;", [serverdata.uid])
+														.then(function (res) {
 															if (res.affectedRows > 0) {
 																client.writebuffer.push(existing); //TODO
 																if (cv(1)) ll(colors.FgGreen + "deleted queue entry " + colors.FgCyan + existing.name + colors.FgGreen + " from queue" + colors.Reset);
@@ -403,7 +416,8 @@ function sendQueue() {
 										cb();
 									}
 								} else {
-									misc.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server], cb);
+									misc.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server])
+									.then(cb);
 								}
 							});
 						}, function () {

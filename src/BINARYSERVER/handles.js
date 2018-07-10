@@ -59,7 +59,8 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                 });
             }
             else {
-                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_a) {
+                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+                    .then(function (result_a) {
                     let results = [];
                     if (result_a) {
                         for (let r of result_a) {
@@ -88,8 +89,10 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                         config_js_1.default.DynIpUpdateNameDifference,
                                         res.port,
                                         res.pin,
-                                    ], function (result_b) {
-                                        misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c) {
+                                    ])
+                                        .then(function (result_b) {
+                                        misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+                                            .then(function (result_c) {
                                             try {
                                                 client.connection.write(ITelexCom.encPackage({
                                                     packagetype: 2,
@@ -206,7 +209,8 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                             query = insertQuery;
                             options = insertOptions;
                         }
-                        misc.SqlQuery(pool, query, options, function (result_b) {
+                        misc.SqlQuery(pool, query, options)
+                            .then(function (result_b) {
                             if (result_b) {
                                 misc.sendEmail("new", {
                                     "[IpFull]": client.connection.remoteAddress,
@@ -215,7 +219,8 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                     "[date]": new Date().toLocaleString(),
                                     "[timeZone]": getTimezone(new Date())
                                 }, cb);
-                                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c) {
+                                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+                                    .then(function (result_c) {
                                     if (result_c.length > 0) {
                                         try {
                                             client.connection.write(ITelexCom.encPackage({
@@ -278,7 +283,8 @@ handles[3][constants.states.STANDBY] = function (pkg, client, pool, cb) {
 						type != 0
 						and
 						disabled != 1
-					;`, [number], function (result) {
+					;`, [number])
+                    .then(function (result) {
                     if (ITelexCom_js_1.cv(2))
                         logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, result, colors_js_1.default.Reset);
                     if ((result[0] != undefined) && (result != [])) {
@@ -326,7 +332,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
         if (client) {
             if (ITelexCom_js_1.cv(2))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got dataset for:", colors_js_1.default.FgCyan, pkg.data.number, colors_js_1.default.Reset);
-            misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number], function (entries) {
+            misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
+                .then(function (entries) {
                 let names = [
                     "number",
                     "name",
@@ -354,7 +361,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                         misc.SqlQuery(pool, `UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([
                             config_js_1.default.setChangedOnNewerEntry ? 1 : 0,
                             pkg.data.number
-                        ]), function (res2) {
+                        ]))
+                            .then(function (res2) {
                             client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
                                 if (typeof cb === "function")
                                     cb();
@@ -381,7 +389,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
 						(${"?,".repeat(names.length + 1).slice(0, -1)})
 					;`, values.concat([
                         config_js_1.default.setChangedOnNewerEntry ? 1 : 0
-                    ]), function (res2) {
+                    ]))
+                        .then(function (res2) {
                         client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
                             if (typeof cb === "function")
                                 cb();
@@ -416,7 +425,8 @@ handles[6][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                 if (ITelexCom_js_1.cv(1))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
                 client = connections.get(connections.move(client.cnum, "S"));
-                misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;", [], function (result) {
+                misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;")
+                    .then(function (result) {
                     if ((result[0] != undefined) && (result != [])) {
                         client.writebuffer = result;
                         client.state = constants.states.RESPONDING;
@@ -572,7 +582,8 @@ handles[10][constants.states.STANDBY] = function (pkg, client, pool, cb) {
             let query = pkg.data.pattern;
             let queryarr = query.split(" ");
             let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
-            misc.SqlQuery(pool, searchstring, queryarr.map(q => `%${q}%`), function (result) {
+            misc.SqlQuery(pool, searchstring, queryarr.map(q => `%${q}%`))
+                .then(function (result) {
                 if ((result[0] != undefined) && (result != [])) {
                     var towrite = [];
                     for (let o of result) {

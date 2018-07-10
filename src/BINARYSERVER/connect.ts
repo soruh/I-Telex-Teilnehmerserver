@@ -20,7 +20,10 @@ var cv = level => level <= verbosity; //check verbosity
 function connect(
 	pool:mysql.Pool|mysql.Connection,
 	after:(client:connections.client)=>void,
-	options,
+	options:{
+		host:string,
+		port:number
+	},
 	callback:(client:connections.client)=>void
 ) {
 	let onEnd = function () {
@@ -31,11 +34,12 @@ function connect(
 			if (cv(0)) lle(colors.FgRed, e, colors.Reset);
 		}
 	};
-	if (cv(1)) ll(colors.FgGreen + "trying to connect to:" + colors.FgCyan, options, colors.Reset);
 	try {
 		let serverkey = options.host + ":" + options.port;
-		var socket = new net.Socket();
+		if (cv(1)) ll(colors.FgGreen + "trying to connect to:" + colors.FgCyan+serverkey+colors.Reset);
 		
+		
+		var socket = new net.Socket();
 		var client =
 		connections.get(
 			connections.add("S" ,{
@@ -50,7 +54,7 @@ function connect(
 		socket.setTimeout(config.connectionTimeout);
 		socket.on('timeout', function () {
 			try {
-				if (cv(1)) lle(colors.FgRed + "server: " + colors.FgCyan, options, colors.FgRed + " timed out" + colors.Reset);
+				if (cv(1)) lle(colors.FgRed + "server: " + colors.FgCyan+ serverkey+ colors.FgRed + " timed out" + colors.Reset);
 				// socket.emit("end");
 				// socket.emit("error",new Error("timeout"));
 				misc.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
@@ -73,11 +77,8 @@ function connect(
 				var res = ITelexCom.getCompletePackages(data, client.readbuffer);
 				// if(cv(2)) ll("New Buffer "+client.cnum+":"+colors.FgCyan,res[1],colors.Reset);
 				// if(cv(2)) ll("Package "+client.cnum+":"+colors.FgCyan,res[0],colors.Reset);
-				if (res[1]) {
-					client.readbuffer = res[1];
-				}
+				client.readbuffer = res[1];
 				if (res[0]) {
-					if (typeof client.packages != "object") client.packages = [];
 					client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
 					let timeout = function () {
 						if (cv(2)) ll(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
@@ -125,7 +126,7 @@ function connect(
 						}
 					}*/
 					misc.increaseErrorCounter(serverkey, error, error["code"]);
-					if (cv(0)) lle(colors.FgRed + "server " + colors.FgCyan, options, colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan, misc.serverErrors[serverkey].errorCounter, colors.Reset);
+					if (cv(0)) lle(colors.FgRed + "server " + colors.FgCyan+ serverkey+ colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan, misc.serverErrors[serverkey].errorCounter, colors.Reset);
 				}
 				// } else {
 				// 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);

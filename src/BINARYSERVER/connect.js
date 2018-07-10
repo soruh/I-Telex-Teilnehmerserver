@@ -23,10 +23,10 @@ function connect(pool, after, options, callback) {
                 logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
         }
     };
-    if (cv(1))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "trying to connect to:" + colors_js_1.default.FgCyan, options, colors_js_1.default.Reset);
     try {
         let serverkey = options.host + ":" + options.port;
+        if (cv(1))
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "trying to connect to:" + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.Reset);
         var socket = new net.Socket();
         var client = connections.get(connections.add("S", {
             connection: socket,
@@ -40,7 +40,7 @@ function connect(pool, after, options, callback) {
         socket.on('timeout', function () {
             try {
                 if (cv(1))
-                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server: " + colors_js_1.default.FgCyan, options, colors_js_1.default.FgRed + " timed out" + colors_js_1.default.Reset);
+                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server: " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " timed out" + colors_js_1.default.Reset);
                 // socket.emit("end");
                 // socket.emit("error",new Error("timeout"));
                 misc.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
@@ -67,12 +67,8 @@ function connect(pool, after, options, callback) {
                 var res = ITelexCom.getCompletePackages(data, client.readbuffer);
                 // if(cv(2)) ll("New Buffer "+client.cnum+":"+colors.FgCyan,res[1],colors.Reset);
                 // if(cv(2)) ll("Package "+client.cnum+":"+colors.FgCyan,res[0],colors.Reset);
-                if (res[1]) {
-                    client.readbuffer = res[1];
-                }
+                client.readbuffer = res[1];
                 if (res[0]) {
-                    if (typeof client.packages != "object")
-                        client.packages = [];
                     client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
                     let timeout = function () {
                         if (cv(2))
@@ -128,7 +124,7 @@ function connect(pool, after, options, callback) {
                     }*/
                     misc.increaseErrorCounter(serverkey, error, error["code"]);
                     if (cv(0))
-                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan, options, colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan, misc.serverErrors[serverkey].errorCounter, colors_js_1.default.Reset);
+                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan, misc.serverErrors[serverkey].errorCounter, colors_js_1.default.Reset);
                 }
                 // } else {
                 // 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);

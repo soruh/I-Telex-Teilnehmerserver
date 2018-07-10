@@ -61,24 +61,26 @@ function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
 	}
 }
 
-function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options:any[], callback:(res:any)=>void):void { //TODO: any-> real type
-	if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query,options,colors.Reset);
+function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:any[]):Promise<any> { //TODO: any-> real type
+	return new Promise((resolve, reject)=>{
+		if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query,options,colors.Reset);
 
-	query = query.replace(/\n/g,"").replace(/\s+/g," ");
-	query = mysql.format(query, options);
-	if (cv(2) || (cv(1)&&/(update)|(insert)/gi.test(query))) llo(1, colors.BgLightBlue + colors.FgBlack + query + colors.Reset);
-	sqlPool.query(query, function (err, res) {
-		if(sqlPool["_allConnections"]&&sqlPool["_allConnections"].length){
-			if(cv(3)) ll("number of open connections: " + sqlPool["_allConnections"].length);
-		}else{
-			if(cv(2)) ll("not a pool");
-		}
-		if (err) {
-			if (cv(0)) llo(1, colors.FgRed, err, colors.Reset);
-			callback(null);
-		} else {
-			callback(res);
-		}
+		query = query.replace(/\n/g,"").replace(/\s+/g," ");
+		query = mysql.format(query, options||[]);
+		if (cv(2) || (cv(1)&&/(update)|(insert)/gi.test(query))) llo(1, colors.BgLightBlue + colors.FgBlack + query + colors.Reset);
+		sqlPool.query(query, function (err, res) {
+			if(sqlPool["_allConnections"]&&sqlPool["_allConnections"].length){
+				if(cv(3)) ll("number of open connections: " + sqlPool["_allConnections"].length);
+			}else{
+				if(cv(2)) ll("not a pool");
+			}
+			if (err) {
+				if (cv(0)) llo(1, colors.FgRed, err, colors.Reset);
+				reject(err);
+			} else {
+				resolve(res);
+			}
+		});
 	});
 	/*try{
 		sqlPool.getConnection(function(e,c){
@@ -131,7 +133,8 @@ async function checkIp(data:number[]|Buffer, client:connections.client, pool:mys
 		}
 
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
-			SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [], function (peers:ITelexCom.peerList) {
+			SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
+			.then(function (peers:ITelexCom.peerList) {
 				var ipPeers:{
 					peer:ITelexCom.peer,
 					ipaddress:string

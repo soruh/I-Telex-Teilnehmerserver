@@ -61,7 +61,8 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 					cb();
 				});
 			} else {
-				misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`,[number], function (result_a:ITelexCom.peerList) {
+				misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`,[number])
+				.then(function (result_a:ITelexCom.peerList) {
 					let results = [];
 					if (result_a) {
 						for (let r of result_a) {
@@ -91,8 +92,10 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 										config.DynIpUpdateNameDifference,
 										res.port,
 										res.pin,
-									], function (result_b) {
-										misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
+									])
+									.then(function (result_b) {
+										misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+										.then(function (result_c:ITelexCom.peerList) {
 											try {
 												client.connection.write(ITelexCom.encPackage({
 													packagetype: 2,
@@ -200,8 +203,8 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 							options = insertOptions;
 						}
 						
-						misc.SqlQuery(pool, query, options,
-						function (result_b) {
+						misc.SqlQuery(pool, query, options)
+						.then(function (result_b) {
 							if (result_b) {
 								misc.sendEmail("new", {
 									"[IpFull]": client.connection.remoteAddress,
@@ -210,7 +213,8 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 									"[date]": new Date().toLocaleString(),
 									"[timeZone]": getTimezone(new Date())
 								}, cb);
-								misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number], function (result_c:ITelexCom.peerList) {
+								misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+								.then(function (result_c:ITelexCom.peerList) {
 									if(result_c.length>0){
 										try {
 											client.connection.write(ITelexCom.encPackage({
@@ -260,7 +264,8 @@ handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_3
 						type != 0
 						and
 						disabled != 1
-					;`, [number], function (result:ITelexCom.peerList) {
+					;`, [number])
+					.then(function (result:ITelexCom.peerList) {
 					if (cv(2)) ll(colors.FgCyan, result, colors.Reset);
 					if ((result[0] != undefined) && (result != [])) {
 						let data = result[0];
@@ -295,7 +300,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 	try {
 		if (client) {
 			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, pkg.data.number, colors.Reset);
-			misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number], function (entries:ITelexCom.peerList) {
+			misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
+			.then(function (entries:ITelexCom.peerList) {
 				let names = [
 					"number",
 					"name",
@@ -325,7 +331,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 								config.setChangedOnNewerEntry ? 1 : 0,
 								pkg.data.number
 							]
-						), function (res2) {
+						))
+						.then( function (res2) {
 							client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 								if (typeof cb === "function") cb();
 							});
@@ -349,7 +356,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 						[
 							config.setChangedOnNewerEntry ? 1 : 0
 						]
-					), function (res2) {
+					))
+					.then(function (res2) {
 						client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 							if (typeof cb === "function") cb();
 						});
@@ -376,7 +384,8 @@ handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_6
 				client = connections.get(
 					connections.move(client.cnum, "S")
 				);
-				misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;", [], function (result:ITelexCom.peerList) {
+				misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;")
+				.then(function (result:ITelexCom.peerList) {
 					if ((result[0] != undefined) && (result != [])) {
 						client.writebuffer = result;
 						client.state = constants.states.RESPONDING;
@@ -499,7 +508,8 @@ handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_
 			let query = pkg.data.pattern;
 			let queryarr = query.split(" ");
 			let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
-			misc.SqlQuery(pool, searchstring, queryarr.map(q=>`%${q}%`), function (result:ITelexCom.peerList) {
+			misc.SqlQuery(pool, searchstring, queryarr.map(q=>`%${q}%`))
+			.then(function (result:ITelexCom.peerList) {
 				if ((result[0] != undefined) && (result != [])) {
 					var towrite = [];
 					for (let o of result) {

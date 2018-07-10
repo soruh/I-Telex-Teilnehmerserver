@@ -65,7 +65,7 @@ function explainPackagePart(buffer, name, color) {
         return ` ${color}[${name}: ${inspectBuffer(buffer)}]\x1b[000m`;
     }
     else {
-        return ` ${color}${inspectBuffer(buffer)}\x1b[000m`;
+        return ` [${name}: ${inspectBuffer(buffer)}]`;
     }
 }
 function explainPackage(pkg) {
@@ -203,44 +203,50 @@ function getCompletePackages(data, part) {
     if (cv(3))
         if (config_js_1.default.logITelexCom)
             logWithLineNumbers_js_1.ll("part: ", part);
-    var buffer = part ? Buffer.concat([part, data]) : data;
+    var combined = part ? Buffer.concat([part, data]) : data;
     if (cv(3))
         if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("combined: ", buffer);
-    var packagetype = buffer[0]; //TODO check for valid type
-    var packagelength = buffer[1] + 2;
+            logWithLineNumbers_js_1.ll("combined: ", combined);
+    var packagetype = combined[0]; //TODO check for valid type
+    var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
     if (cv(3))
         if (config_js_1.default.logITelexCom)
             logWithLineNumbers_js_1.ll("packagetype: ", packagetype);
     if (cv(3))
         if (config_js_1.default.logITelexCom)
             logWithLineNumbers_js_1.ll("packagelength: ", packagelength);
-    if (buffer.length == packagelength) {
+    if (combined.length == packagelength) {
         if (cv(3))
             if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll("buffer.length == packagelength");
+                logWithLineNumbers_js_1.ll("combined.length == packagelength");
+        if (cv(3))
+            if (config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${combined.length}${colors_js_1.default.FgGreen}/${colors_js_1.default.FgCyan}${packagelength}${colors_js_1.default.FgGreen} bytes for next package${colors_js_1.default.Reset}`);
         return [
-            buffer,
+            combined,
             new Buffer(0)
         ];
     }
-    else if (buffer.length > packagelength) {
+    else if (combined.length > packagelength) {
         if (cv(3))
             if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll("buffer.length > packagelength");
-        let rest = getCompletePackages(buffer.slice(packagelength, buffer.length), null);
+                logWithLineNumbers_js_1.ll("combined.length > packagelength");
+        let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
         return [
-            Buffer.concat([buffer.slice(0, packagelength), rest[0]]),
+            Buffer.concat([combined.slice(0, packagelength), rest[0]]),
             rest[1]
         ];
     }
-    else if (buffer.length < packagelength) {
+    else if (combined.length < packagelength) {
+        if (cv(2))
+            if (config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${combined.length}${colors_js_1.default.FgGreen}/${colors_js_1.default.FgCyan}${packagelength}${colors_js_1.default.FgGreen} bytes for next package${colors_js_1.default.Reset}`);
         if (cv(3))
             if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll("buffer.length < packagelength");
+                logWithLineNumbers_js_1.ll("combined.length < packagelength");
         return [
             new Buffer(0),
-            buffer
+            combined
         ];
     }
     else {
@@ -520,7 +526,8 @@ function ascii(data, client, pool) {
         if (!isNaN(parseInt(number))) {
             if (cv(1) && config_js_1.default.logITelexCom)
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
-            misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number], function (result) {
+            misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
+                .then(function (result) {
                 if (!result || result.length == 0) {
                     let send = "";
                     send += "fail\r\n";
