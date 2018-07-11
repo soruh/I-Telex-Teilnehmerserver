@@ -63,7 +63,7 @@ function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
 
 function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:any[]):Promise<any> { //TODO: any-> real type
 	return new Promise((resolve, reject)=>{
-		if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query,options,colors.Reset);
+		if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query+" "+(options||"")+colors.Reset);
 
 		query = query.replace(/\n/g,"").replace(/\s+/g," ");
 		query = mysql.format(query, options||[]);

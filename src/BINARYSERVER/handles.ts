@@ -109,8 +109,10 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 												if (cv(0)) ll(colors.FgRed, e, colors.Reset);
 												if (typeof cb === "function") cb();
 											}
-										});
-									});
+										})
+										.catch(err=>lle(err));
+									})
+									.catch(err=>lle(err));
 								} else {
 									if (cv(2)) ll(`${colors.FgYellow}not UPDATING, nothing to update${colors.Reset}`);
 									client.connection.write(ITelexCom.encPackage({
@@ -232,17 +234,20 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 									}else{
 
 									}
-								});
+								})
+								.catch(err=>lle(err));
 							} else {
 								lle(colors.FgRed + "could not create entry", colors.Reset);
 								if (typeof cb === "function") cb();
 							}
-						});
+						})
+						.catch(err=>lle(err));
 					} else {
 						console.error(colors.FgRed, res, colors.Reset);
 						if (typeof cb === "function") cb();
 					}
-				});
+				})
+				.catch(err=>lle(err));
 			}
 		} else {
 			if (typeof cb === "function") cb();
@@ -281,7 +286,8 @@ handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_3
 							if (typeof cb === "function") cb();
 						});
 					}
-				});
+				})
+				.catch(err=>lle(err));
 			} else {
 				if (cv(0)) ll(colors.FgRed, "unsupported package version, sending '0x04' package", colors.Reset);
 				client.connection.write(ITelexCom.encPackage({packagetype: 4}), function () {
@@ -336,7 +342,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 							client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 								if (typeof cb === "function") cb();
 							});
-						});
+						})
+						.catch(err=>lle(err));
 					} else {
 						if (cv(2)) ll(colors.FgYellow + "recieved entry is " + colors.FgCyan + (+entry.timestamp - pkg.data.timestamp) + colors.FgYellow + " seconds older and was ignored" + colors.Reset);
 						client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
@@ -361,12 +368,14 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 						client.connection.write(ITelexCom.encPackage({packagetype: 8}), function () {
 							if (typeof cb === "function") cb();
 						});
-					});
+					})
+					.catch(err=>lle(err));
 				} else {
 					if (cv(0)) ll('The "number" field should be unique! This error should not occur!');
 					if (typeof cb === "function") cb();
 				}
-			});
+			})
+			.catch(err=>lle(err));
 		} else {
 			if (typeof cb === "function") cb();
 		}
@@ -395,7 +404,8 @@ handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_6
 							if (typeof cb === "function") cb();
 						});
 					}
-				});
+				})
+				.catch(err=>lle(err));
 			} else {
 				if (cv(1)) {
 					ll(colors.FgRed + "serverpin is incorrect! " + colors.FgCyan + pkg.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + " ending client.connection!" + colors.Reset); //TODO: remove pin logging
@@ -526,7 +536,8 @@ handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_
 						if (typeof cb === "function") cb();
 					});
 				}
-			});
+			})
+			.catch(err=>lle(err));
 		} else {
 			if (typeof cb === "function") cb();
 		}

@@ -185,8 +185,10 @@ function updateQueue() {
 											//.then(function(){
 											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 											cb2();
-											//});
-										});
+											//})
+											//.catch(err=>lle(err));
+										})
+										.catch(err=>lle(err));
 									} else if (qentry.length == 0) {
 										misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid, message.uid, Math.floor(Date.now() / 1000)])
 										.then(function () {
@@ -194,8 +196,10 @@ function updateQueue() {
 											//.then(function(){
 											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 											cb2();
-											//});
-										});
+											//})
+											//.catch(err=>lle(err));
+										})
+										.catch(err=>lle(err));
 									} else {
 										lle("duplicate queue entry!");
 										misc.SqlQuery(pool, "DELETE FROM queue WHERE server = ? AND message = ?;",[server.uid, message.uid])
@@ -206,11 +210,15 @@ function updateQueue() {
 												//.then(function(){
 												if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
 												cb2();
-												//});
-											});
-										});
+												//})
+												//.catch(err=>lle(err));
+											})
+											.catch(err=>lle(err));
+										})
+										.catch(err=>lle(err));
 									}
-								});
+								})
+								.catch(err=>lle(err));
 							}, cb1);
 						}, function () {
 							if (cv(1)) ll(colors.FgGreen + "finished enqueueing" + colors.Reset);
@@ -220,13 +228,15 @@ function updateQueue() {
 								if (cv(2)) ll(colors.FgGreen + "reset " + colors.FgCyan + changed.length + colors.FgGreen + " changed flags." + colors.Reset);
 								//sendQueue();
 								resolve();
-							});
+							})
+							.catch(err=>lle(err));
 						});
 					} else {
 						ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "updateQueue" + colors.Reset);
 						resolve();
 					}
-				});
+				})
+				.catch(err=>lle(err));
 			} else {
 				if (cv(2)) ll(colors.FgYellow + "no numbers to enqueue" + colors.Reset);
 				/*if(qwdec == null){
@@ -239,7 +249,8 @@ function updateQueue() {
 				resolve();
 				//setTimeout(updateQueue,config.updateQueueInterval);
 			}
-		});
+		})
+		.catch(err=>lle(err));
 	});
 }
 
@@ -319,7 +330,8 @@ function getFullQuery() {
 				ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "FullQuery" + colors.Reset);
 				resolve();
 			}
-		});
+		})
+		.catch(err=>lle(err));
 		//}
 	});
 }
@@ -389,7 +401,8 @@ function sendQueue() {
 																if (cv(1)) ll(colors.FgRed + "could not delete queue entry " + colors.FgCyan + existing.name + colors.FgRed + " from queue" + colors.Reset);
 																scb();
 															}
-														});
+														})
+														.catch(err=>lle(err));
 													} else {
 														if (cv(2)) ll(colors.FgRed + "entry does not exist" + colors.FgCyan + colors.Reset);
 														scb();
@@ -417,9 +430,11 @@ function sendQueue() {
 									}
 								} else {
 									misc.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server])
-									.then(cb);
+									.then(cb)
+									.catch(err=>lle(err));
 								}
-							});
+							})
+							.catch(err=>lle(err));
 						}, function () {
 							resolve();
 						});
@@ -427,8 +442,10 @@ function sendQueue() {
 						if (cv(2)) ll(colors.FgYellow + "No queue!", colors.Reset);
 						resolve();
 					}
-				});
-			});
+				})
+				.catch(err=>lle(err));
+			})
+			.catch(err=>lle(err));
 		}
 	});
 }

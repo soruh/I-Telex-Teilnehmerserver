@@ -796,7 +796,8 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 						}
 					});
 				}
-			});
+			})
+			.catch(err=>lle(err));
 		}
 	}else{
 		//TODO connection.end()?
