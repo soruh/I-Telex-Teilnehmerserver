@@ -68,7 +68,7 @@ exports.increaseErrorCounter = increaseErrorCounter;
 function SqlQuery(sqlPool, query, options) {
     return new Promise((resolve, reject) => {
         if (cv(3))
-            logWithLineNumbers_js_1.llo(1, colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query, options, colors_js_1.default.Reset);
+            logWithLineNumbers_js_1.llo(1, colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query + " " + (options || "") + colors_js_1.default.Reset);
         query = query.replace(/\n/g, "").replace(/\s+/g, " ");
         query = mysql.format(query, options || []);
         if (cv(2) || (cv(1) && /(update)|(insert)/gi.test(query)))

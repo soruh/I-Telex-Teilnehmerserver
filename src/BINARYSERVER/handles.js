@@ -110,8 +110,10 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                                 if (typeof cb === "function")
                                                     cb();
                                             }
-                                        });
-                                    });
+                                        })
+                                            .catch(err => logWithLineNumbers_js_1.lle(err));
+                                    })
+                                        .catch(err => logWithLineNumbers_js_1.lle(err));
                                 }
                                 else {
                                     if (ITelexCom_js_1.cv(2))
@@ -242,21 +244,24 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                     }
                                     else {
                                     }
-                                });
+                                })
+                                    .catch(err => logWithLineNumbers_js_1.lle(err));
                             }
                             else {
                                 logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "could not create entry", colors_js_1.default.Reset);
                                 if (typeof cb === "function")
                                     cb();
                             }
-                        });
+                        })
+                            .catch(err => logWithLineNumbers_js_1.lle(err));
                     }
                     else {
                         console.error(colors_js_1.default.FgRed, res, colors_js_1.default.Reset);
                         if (typeof cb === "function")
                             cb();
                     }
-                });
+                })
+                    .catch(err => logWithLineNumbers_js_1.lle(err));
             }
         }
         else {
@@ -304,7 +309,8 @@ handles[3][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                 cb();
                         });
                     }
-                });
+                })
+                    .catch(err => logWithLineNumbers_js_1.lle(err));
             }
             else {
                 if (ITelexCom_js_1.cv(0))
@@ -367,7 +373,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                                 if (typeof cb === "function")
                                     cb();
                             });
-                        });
+                        })
+                            .catch(err => logWithLineNumbers_js_1.lle(err));
                     }
                     else {
                         if (ITelexCom_js_1.cv(2))
@@ -395,7 +402,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                             if (typeof cb === "function")
                                 cb();
                         });
-                    });
+                    })
+                        .catch(err => logWithLineNumbers_js_1.lle(err));
                 }
                 else {
                     if (ITelexCom_js_1.cv(0))
@@ -403,7 +411,8 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                     if (typeof cb === "function")
                         cb();
                 }
-            });
+            })
+                .catch(err => logWithLineNumbers_js_1.lle(err));
         }
         else {
             if (typeof cb === "function")
@@ -438,7 +447,8 @@ handles[6][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                 cb();
                         });
                     }
-                });
+                })
+                    .catch(err => logWithLineNumbers_js_1.lle(err));
             }
             else {
                 if (ITelexCom_js_1.cv(1)) {
@@ -602,7 +612,8 @@ handles[10][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                             cb();
                     });
                 }
-            });
+            })
+                .catch(err => logWithLineNumbers_js_1.lle(err));
         }
         else {
             if (typeof cb === "function")

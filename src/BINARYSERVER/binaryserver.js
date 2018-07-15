@@ -192,8 +192,10 @@ function updateQueue() {
                                             if (ITelexCom_js_1.cv(2))
                                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                             cb2();
-                                            //});
-                                        });
+                                            //})
+                                            //.catch(err=>lle(err));
+                                        })
+                                            .catch(err => logWithLineNumbers_js_1.lle(err));
                                     }
                                     else if (qentry.length == 0) {
                                         misc.SqlQuery(pool, "INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)])
@@ -203,8 +205,10 @@ function updateQueue() {
                                             if (ITelexCom_js_1.cv(2))
                                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                             cb2();
-                                            //});
-                                        });
+                                            //})
+                                            //.catch(err=>lle(err));
+                                        })
+                                            .catch(err => logWithLineNumbers_js_1.lle(err));
                                     }
                                     else {
                                         logWithLineNumbers_js_1.lle("duplicate queue entry!");
@@ -217,11 +221,15 @@ function updateQueue() {
                                                 if (ITelexCom_js_1.cv(2))
                                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "enqueued:", colors_js_1.default.FgCyan, message.number, colors_js_1.default.Reset);
                                                 cb2();
-                                                //});
-                                            });
-                                        });
+                                                //})
+                                                //.catch(err=>lle(err));
+                                            })
+                                                .catch(err => logWithLineNumbers_js_1.lle(err));
+                                        })
+                                            .catch(err => logWithLineNumbers_js_1.lle(err));
                                     }
-                                });
+                                })
+                                    .catch(err => logWithLineNumbers_js_1.lle(err));
                             }, cb1);
                         }, function () {
                             if (ITelexCom_js_1.cv(1))
@@ -234,14 +242,16 @@ function updateQueue() {
                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset " + colors_js_1.default.FgCyan + changed.length + colors_js_1.default.FgGreen + " changed flags." + colors_js_1.default.Reset);
                                 //sendQueue();
                                 resolve();
-                            });
+                            })
+                                .catch(err => logWithLineNumbers_js_1.lle(err));
                         });
                     }
                     else {
                         logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "No configured servers -> aborting " + colors_js_1.default.FgCyan + "updateQueue" + colors_js_1.default.Reset);
                         resolve();
                     }
-                });
+                })
+                    .catch(err => logWithLineNumbers_js_1.lle(err));
             }
             else {
                 if (ITelexCom_js_1.cv(2))
@@ -256,7 +266,8 @@ function updateQueue() {
                 resolve();
                 //setTimeout(updateQueue,config.updateQueueInterval);
             }
-        });
+        })
+            .catch(err => logWithLineNumbers_js_1.lle(err));
     });
 }
 function getFullQuery() {
@@ -344,7 +355,8 @@ function getFullQuery() {
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "No configured servers -> aborting " + colors_js_1.default.FgCyan + "FullQuery" + colors_js_1.default.Reset);
                 resolve();
             }
-        });
+        })
+            .catch(err => logWithLineNumbers_js_1.lle(err));
         //}
     });
 }
@@ -421,7 +433,8 @@ function sendQueue() {
                                                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "could not delete queue entry " + colors_js_1.default.FgCyan + existing.name + colors_js_1.default.FgRed + " from queue" + colors_js_1.default.Reset);
                                                                 scb();
                                                             }
-                                                        });
+                                                        })
+                                                            .catch(err => logWithLineNumbers_js_1.lle(err));
                                                     }
                                                     else {
                                                         if (ITelexCom_js_1.cv(2))
@@ -456,9 +469,11 @@ function sendQueue() {
                                 }
                                 else {
                                     misc.SqlQuery(pool, "DELETE FROM queue WHERE server=?;", [server[0].server])
-                                        .then(cb);
+                                        .then(cb)
+                                        .catch(err => logWithLineNumbers_js_1.lle(err));
                                 }
-                            });
+                            })
+                                .catch(err => logWithLineNumbers_js_1.lle(err));
                         }, function () {
                             resolve();
                         });
@@ -468,8 +483,10 @@ function sendQueue() {
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "No queue!", colors_js_1.default.Reset);
                         resolve();
                     }
-                });
-            });
+                })
+                    .catch(err => logWithLineNumbers_js_1.lle(err));
+            })
+                .catch(err => logWithLineNumbers_js_1.lle(err));
         }
     });
 }

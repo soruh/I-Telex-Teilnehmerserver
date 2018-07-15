@@ -577,7 +577,8 @@ function ascii(data, client, pool) {
                         }
                     });
                 }
-            });
+            })
+                .catch(err => logWithLineNumbers_js_1.lle(err));
         }
     }
     else {
