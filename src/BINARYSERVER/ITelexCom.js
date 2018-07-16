@@ -126,6 +126,7 @@ function explainPackage(pkg) {
     res += "]\x1b[000m>";
     return res;
 }
+exports.explainPackage = explainPackage;
 //#region imports
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const ip = require("ip");
@@ -395,7 +396,7 @@ function decPackage(buffer) {
         case 3:
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
-                version: buffer.slice(6, 7).length > 0 ? pkg.data.version = buffer.readUIntLE(6, 1) : 1
+                version: buffer.slice(6, 7).length > 0 ? buffer.readUIntLE(6, 1) : 1
             };
             break;
         case 4:

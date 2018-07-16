@@ -633,7 +633,7 @@ function decPackage(buffer:Buffer): Package_decoded {
         case 3:
             pkg.data = {
 				number: buffer.readUIntLE(2,4),
-				version: buffer.slice(6, 7).length > 0?pkg.data.version = buffer.readUIntLE(6,1):1
+				version: buffer.slice(6, 7).length > 0?buffer.readUIntLE(6,1):1
             };
             break;
         case 4:
@@ -817,6 +817,8 @@ export{
 	decPackages,
 	ascii,
 	cv,
+
+	explainPackage,
 //#endregion
 //#region interfaces
 	peer,
