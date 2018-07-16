@@ -505,10 +505,10 @@ pool.getConnection(function (err, connection) {
 if (cv(3)) {
 	let exitHandler = function exitHandler(options, err) {
 		if (options.cleanup){
-			console.error("exited with code: "+err);
-			console.error(`serverErrors:\n${util.inspect(misc.serverErrors,{depth:null})}`);
+			lle("exited with code: "+err);
+			lle(`serverErrors:\n${util.inspect(misc.serverErrors,{depth:null})}`);
 		}else{
-			console.error(err);
+			lle(err);
 		}
 		if(options.exit) process.exit(options.code);
 	};

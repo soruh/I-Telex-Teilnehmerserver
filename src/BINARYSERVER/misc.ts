@@ -90,7 +90,7 @@ function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:an
 			}else{
 				c.query(query,function(err,res){
 					c.release();
-					//console.log(sqlPool);
+					//lle(sqlPool);
 					try{
 						if (config.logITelexCom) ll("number of open connections: "+sqlPool._allConnections.length);
 					}catch(e){
@@ -107,7 +107,7 @@ function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:an
 			}
 		});
 	}catch(e){
-		console.log(sqlPool);
+		lle(sqlPool);
 		throw(e);
 	}*/
 }

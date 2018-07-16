@@ -243,7 +243,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 						})
 						.catch(err=>lle(err));
 					} else {
-						console.error(colors.FgRed, res, colors.Reset);
+						lle(colors.FgRed, res, colors.Reset);
 						if (typeof cb === "function") cb();
 					}
 				})

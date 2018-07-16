@@ -3,16 +3,16 @@
 
 Object.defineProperty(Buffer.prototype, 'readNullTermString', { value:
 	function readNullTermString(encoding:string="utf8",start:number=0,end:number=this.length){
-		// console.log(highlightBuffer(this));
-		// console.log("start:"+start);
-		// console.log("end:"+end);
-		// console.log(highlightBuffer(this,start,end));
+		// lle(highlightBuffer(this));
+		// lle("start:"+start);
+		// lle("end:"+end);
+		// lle(highlightBuffer(this,start,end));
 		let firstZero = this.indexOf(0,start);
-		// console.log("firstZero:"+firstZero);
+		// lle("firstZero:"+firstZero);
 		let stop = firstZero>=start&&firstZero<=end?firstZero:end;
-		// console.log("stop:"+firstZero);
-		// console.log(highlightBuffer(this,start,stop));
-		// console.log("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
+		// lle("stop:"+firstZero);
+		// lle(highlightBuffer(this,start,stop));
+		// lle("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
 		
 		return this.toString(encoding,start,stop);
 	}
@@ -46,14 +46,14 @@ function explainData(data:Buffer):string{
 		packagetype = +data[typepos];
 		datalength = +data[typepos + 1];
 
-		// console.log(typepos,datalength+2,typepos+datalength+2);
+		// lle(typepos,datalength+2,typepos+datalength+2);
 		
-		// console.log(highlightBuffer(data,typepos,datalength+2));
+		// lle(highlightBuffer(data,typepos,datalength+2));
 		
-		// console.log(data.slice(typepos,typepos+datalength+2));
+		// lle(data.slice(typepos,typepos+datalength+2));
 		
 		let array = Array.from(data.slice(typepos,typepos+datalength+2)).map(x=>(x<16?"0":"")+x.toString(16));
-		// console.log(array);
+		// lle(array);
 		
 		array = array.map((value, index)=>	
 			index==0?
@@ -553,7 +553,7 @@ function encPackage(pkg:Package_decoded):Buffer{
             } else {
                 ext = parseInt(pkg.data.extension);
             }
-			// console.log("\n");
+			// lle("\n");
 			// ll(buffer);
 			// ll(pkg.data.number, 2, 4);
 			buffer.writeUIntLE(pkg.data.number||0, 2, 4);
