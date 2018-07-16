@@ -100,7 +100,7 @@ function SqlQuery(sqlPool, query, options) {
             }else{
                 c.query(query,function(err,res){
                     c.release();
-                    //console.log(sqlPool);
+                    //lle(sqlPool);
                     try{
                         if (config.logITelexCom) ll("number of open connections: "+sqlPool._allConnections.length);
                     }catch(e){
@@ -117,7 +117,7 @@ function SqlQuery(sqlPool, query, options) {
             }
         });
     }catch(e){
-        console.log(sqlPool);
+        lle(sqlPool);
         throw(e);
     }*/
 }

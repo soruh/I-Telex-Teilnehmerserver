@@ -550,11 +550,11 @@ pool.getConnection(function (err, connection) {
 if (ITelexCom_js_1.cv(3)) {
     let exitHandler = function exitHandler(options, err) {
         if (options.cleanup) {
-            console.error("exited with code: " + err);
-            console.error(`serverErrors:\n${util.inspect(misc.serverErrors, { depth: null })}`);
+            logWithLineNumbers_js_1.lle("exited with code: " + err);
+            logWithLineNumbers_js_1.lle(`serverErrors:\n${util.inspect(misc.serverErrors, { depth: null })}`);
         }
         else {
-            console.error(err);
+            logWithLineNumbers_js_1.lle(err);
         }
         if (options.exit)
             process.exit(options.code);

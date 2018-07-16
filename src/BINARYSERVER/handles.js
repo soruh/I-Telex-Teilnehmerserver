@@ -256,7 +256,7 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                             .catch(err => logWithLineNumbers_js_1.lle(err));
                     }
                     else {
-                        console.error(colors_js_1.default.FgRed, res, colors_js_1.default.Reset);
+                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, res, colors_js_1.default.Reset);
                         if (typeof cb === "function")
                             cb();
                     }
