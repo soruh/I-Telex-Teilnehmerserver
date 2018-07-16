@@ -239,15 +239,7 @@ function updateQueue() {
 				.catch(err=>lle(err));
 			} else {
 				if (cv(2)) ll(colors.FgYellow + "no numbers to enqueue" + colors.Reset);
-				/*if(qwdec == null){
-					qwdec = "unknown";
-					//TODO qwd.stdin.write("sendQueue",callback);
-			if(typeof callback === "function") callback();
-				}else{
-			if(typeof callback === "function") callback();
-				}*/
 				resolve();
-				//setTimeout(updateQueue,config.updateQueueInterval);
 			}
 		})
 		.catch(err=>lle(err));
@@ -257,21 +249,6 @@ function updateQueue() {
 function getFullQuery() {
 	return new Promise((resolve, reject)=>{
 		if (cv(2)) ll(colors.FgMagenta + "geting " + colors.FgCyan + "FullQuery" + colors.Reset);
-		/*if(readonly){
-		ITelexCom.connect(pool,function(e){
-		if(typeof callback === "function") callback();
-		},{host:config.readonlyHost,port:config.readonlyPort},handles,function(client,client.cnum){
-		client.write(ITelexCom.encPackage({
-			packagetype:10,
-			data:{
-				pattern:'',
-				version:1
-			}
-		}),function(){
-			client.state = constants.states.FULLQUERY;
-		});
-		});
-	}else{*/
 		misc.SqlQuery(pool, "SELECT  * FROM servers;")
 		.then(function (servers:ITelexCom.serverList) {
 			if (servers.length > 0) {

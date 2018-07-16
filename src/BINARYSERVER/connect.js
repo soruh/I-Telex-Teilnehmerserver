@@ -68,7 +68,7 @@ function connect(pool, after, options, callback) {
                 // if(cv(2)) ll("New Buffer "+client.cnum+":"+colors.FgCyan,res[1],colors.Reset);
                 // if(cv(2)) ll("Package "+client.cnum+":"+colors.FgCyan,res[0],colors.Reset);
                 client.readbuffer = res[1];
-                if (res[0]) {
+                if (res[0]) { //TODO: check if this is needed
                     client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
                     let timeout = function () {
                         if (cv(2))
@@ -115,13 +115,6 @@ function connect(pool, after, options, callback) {
                 if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
                     if (cv(1))
                         logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}server ${colors_js_1.default.FgCyan + util.inspect(options) + colors_js_1.default.FgRed} had an error${colors_js_1.default.Reset}`);
-                    /*let exists = false;
-                    for(let k in serverErrors){
-                        if(k == serverkey){
-                            exists = true;
-                            break;
-                        }
-                    }*/
                     misc.increaseErrorCounter(serverkey, error, error["code"]);
                     if (cv(0))
                         logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan, misc.serverErrors[serverkey].errorCounter, colors_js_1.default.Reset);

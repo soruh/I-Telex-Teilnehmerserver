@@ -256,15 +256,7 @@ function updateQueue() {
             else {
                 if (ITelexCom_js_1.cv(2))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "no numbers to enqueue" + colors_js_1.default.Reset);
-                /*if(qwdec == null){
-                    qwdec = "unknown";
-                    //TODO qwd.stdin.write("sendQueue",callback);
-            if(typeof callback === "function") callback();
-                }else{
-            if(typeof callback === "function") callback();
-                }*/
                 resolve();
-                //setTimeout(updateQueue,config.updateQueueInterval);
             }
         })
             .catch(err => logWithLineNumbers_js_1.lle(err));
@@ -274,21 +266,6 @@ function getFullQuery() {
     return new Promise((resolve, reject) => {
         if (ITelexCom_js_1.cv(2))
             logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "geting " + colors_js_1.default.FgCyan + "FullQuery" + colors_js_1.default.Reset);
-        /*if(readonly){
-        ITelexCom.connect(pool,function(e){
-        if(typeof callback === "function") callback();
-        },{host:config.readonlyHost,port:config.readonlyPort},handles,function(client,client.cnum){
-        client.write(ITelexCom.encPackage({
-            packagetype:10,
-            data:{
-                pattern:'',
-                version:1
-            }
-        }),function(){
-            client.state = constants.states.FULLQUERY;
-        });
-        });
-    }else{*/
         misc.SqlQuery(pool, "SELECT  * FROM servers;")
             .then(function (servers) {
             if (servers.length > 0) {
