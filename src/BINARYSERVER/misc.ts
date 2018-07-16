@@ -22,43 +22,46 @@ import {getTransporter, setTransporter} from "../BINARYSERVER/transporter.js";
 //#endregion
 
 
-var serverErrors = {};
+var serverErrors:{
+	[index:string]:{
+		errors:{
+			error: Error,
+			code: string,
+			timeStamp: number,
+		}[],
+		errorCounter: number,
+	}
+} = {};
 const cv = config.cv;
-const verbosity = config.loggingVerbosity;
 
 const mySqlConnectionOptions = config['mySqlConnectionOptions'];
 mySqlConnectionOptions["multipleStatements"] = true;
 
 function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
-	let exists:boolean = Object.keys(serverErrors).findIndex(k => k == serverkey) > -1;
-	if (exists) {
-		serverErrors[serverkey].errors.push({
-			error: error,
-			code: code,
-			timeStamp: Date.now()
-		});
+	let newError = {
+		error: error,
+		code: code,
+		timeStamp: Date.now()
+	};
+	if (serverErrors.hasOwnProperty(serverkey)) {
+		serverErrors[serverkey].errors.push(newError);
 		serverErrors[serverkey].errorCounter++;
 	} else {
 		serverErrors[serverkey] = {
-			errors: [{
-				error: error,
-				code: code,
-				timeStamp: Date.now()
-			}],
+			errors: [newError],
 			errorCounter: 1
 		};
 	}
 	let warn:boolean = config.warnAtErrorCounts.indexOf(serverErrors[serverkey].errorCounter) > -1;
 	if (cv(1)) lle(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${serverErrors[serverkey].errorCounter}${colors.Reset}`);
-	if (warn) {
-		sendEmail("ServerError", {
-			"[server]": serverkey,
-			"[errorCounter]": serverErrors[serverkey].errorCounter,
-			"[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
-			"[date]": new Date().toLocaleString(),
-			"[timeZone]": getTimezone(new Date())
-		}, function () {});
-	}
+	if (warn)
+	sendEmail("ServerError", {
+		"[server]": serverkey,
+		"[errorCounter]": serverErrors[serverkey].errorCounter,
+		"[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
+		"[date]": new Date().toLocaleString(),
+		"[timeZone]": getTimezone(new Date())
+	},()=>{});
 }
 
 function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:any[]):Promise<any> { //TODO: any-> real type

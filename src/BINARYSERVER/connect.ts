@@ -153,8 +153,9 @@ function connect(
 		});
 		socket.connect(options, function (connection) {
 			if (cv(1)) ll(colors.FgGreen + "connected to:" + colors.FgCyan, options, colors.FgGreen + "as server " + colors.FgCyan + client.cnum, colors.Reset);
-			if (misc.serverErrors[serverkey] && (misc.serverErrors[serverkey].errorCounter > 0)) {
+			if (misc.serverErrors.hasOwnProperty(serverkey) && misc.serverErrors[serverkey].errorCounter > 0) {
 				misc.serverErrors[serverkey].errorCounter = 0;
+				if(config.deleteErrorsOnReconnect) misc.serverErrors[serverkey].errors = [];
 				if (cv(2)) ll(colors.FgGreen + "reset error counter for: " + colors.FgCyan, options, colors.Reset);
 			}
 			if (typeof callback === "function") callback(client);

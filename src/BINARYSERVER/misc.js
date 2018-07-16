@@ -28,41 +28,35 @@ const transporter_js_1 = require("../BINARYSERVER/transporter.js");
 var serverErrors = {};
 exports.serverErrors = serverErrors;
 const cv = config_js_1.default.cv;
-const verbosity = config_js_1.default.loggingVerbosity;
 const mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
 mySqlConnectionOptions["multipleStatements"] = true;
 function increaseErrorCounter(serverkey, error, code) {
-    let exists = Object.keys(serverErrors).findIndex(k => k == serverkey) > -1;
-    if (exists) {
-        serverErrors[serverkey].errors.push({
-            error: error,
-            code: code,
-            timeStamp: Date.now()
-        });
+    let newError = {
+        error: error,
+        code: code,
+        timeStamp: Date.now()
+    };
+    if (serverErrors.hasOwnProperty(serverkey)) {
+        serverErrors[serverkey].errors.push(newError);
         serverErrors[serverkey].errorCounter++;
     }
     else {
         serverErrors[serverkey] = {
-            errors: [{
-                    error: error,
-                    code: code,
-                    timeStamp: Date.now()
-                }],
+            errors: [newError],
             errorCounter: 1
         };
     }
     let warn = config_js_1.default.warnAtErrorCounts.indexOf(serverErrors[serverkey].errorCounter) > -1;
     if (cv(1))
         logWithLineNumbers_js_1.lle(`${colors_js_1.default.FgYellow}increased errorCounter for server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgYellow} to ${warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan}${serverErrors[serverkey].errorCounter}${colors_js_1.default.Reset}`);
-    if (warn) {
+    if (warn)
         sendEmail("ServerError", {
             "[server]": serverkey,
             "[errorCounter]": serverErrors[serverkey].errorCounter,
             "[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
             "[date]": new Date().toLocaleString(),
             "[timeZone]": getTimezone(new Date())
-        }, function () { });
-    }
+        }, () => { });
 }
 exports.increaseErrorCounter = increaseErrorCounter;
 function SqlQuery(sqlPool, query, options) {

@@ -161,8 +161,10 @@ function connect(pool, after, options, callback) {
         socket.connect(options, function (connection) {
             if (cv(1))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "connected to:" + colors_js_1.default.FgCyan, options, colors_js_1.default.FgGreen + "as server " + colors_js_1.default.FgCyan + client.cnum, colors_js_1.default.Reset);
-            if (misc.serverErrors[serverkey] && (misc.serverErrors[serverkey].errorCounter > 0)) {
+            if (misc.serverErrors.hasOwnProperty(serverkey) && misc.serverErrors[serverkey].errorCounter > 0) {
                 misc.serverErrors[serverkey].errorCounter = 0;
+                if (config_js_1.default.deleteErrorsOnReconnect)
+                    misc.serverErrors[serverkey].errors = [];
                 if (cv(2))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset error counter for: " + colors_js_1.default.FgCyan, options, colors_js_1.default.Reset);
             }

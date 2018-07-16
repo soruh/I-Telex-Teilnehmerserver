@@ -47,6 +47,7 @@ interface configFile {
   "webServerPort": number,
   "webInterfacePassword": string,
 
+  "deleteErrorsOnReconnect":boolean,
   "warnAtErrorCounts": number[],
 
   "eMail": {

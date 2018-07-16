@@ -14,6 +14,7 @@
   "binaryPort":11811,
 
   "webServerPort":3030,
-  "webInterfacePassword":"XXX"
+  "webInterfacePassword":"XXX",
 
+  "deleteErrorsOnReconnect": true
 }
