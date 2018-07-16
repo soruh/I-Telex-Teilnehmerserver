@@ -59,6 +59,16 @@ function increaseErrorCounter(serverkey, error, code) {
         }, () => { });
 }
 exports.increaseErrorCounter = increaseErrorCounter;
+function resetErrorCounter(serverkey) {
+    if (serverErrors.hasOwnProperty(serverkey) && serverErrors[serverkey].errorCounter > 0) {
+        serverErrors[serverkey].errorCounter = 0;
+        if (config_js_1.default.deleteErrorsOnReconnect)
+            serverErrors[serverkey].errors = [];
+        if (cv(2))
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset error counter for: " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.Reset);
+    }
+}
+exports.resetErrorCounter = resetErrorCounter;
 function SqlQuery(sqlPool, query, options) {
     return new Promise((resolve, reject) => {
         if (cv(3))

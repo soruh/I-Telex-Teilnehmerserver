@@ -64,6 +64,14 @@ function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
 	},()=>{});
 }
 
+function resetErrorCounter(serverkey:string){
+	if (serverErrors.hasOwnProperty(serverkey) && serverErrors[serverkey].errorCounter > 0) {
+		serverErrors[serverkey].errorCounter = 0;
+		if(config.deleteErrorsOnReconnect) serverErrors[serverkey].errors = [];
+		if (cv(2)) ll(colors.FgGreen + "reset error counter for: " + colors.FgCyan+serverkey+colors.Reset);
+	}
+}
+
 function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:any[]):Promise<any> { //TODO: any-> real type
 	return new Promise((resolve, reject)=>{
 		if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query+" "+(options||"")+colors.Reset);
@@ -245,9 +253,10 @@ function sendEmail(messageName:string, values:{
 
 export {
     SqlQuery,
-	increaseErrorCounter,
     checkIp,
     sendEmail,
     MailTransporter,
-    serverErrors
+	increaseErrorCounter,
+	resetErrorCounter,
+	serverErrors,
 }

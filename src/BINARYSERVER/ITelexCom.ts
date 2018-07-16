@@ -633,7 +633,8 @@ function decPackage(buffer:Buffer): Package_decoded {
         case 3:
             pkg.data = {
 				number: buffer.readUIntLE(2,4),
-				version: buffer.slice(6, 7).length > 0?buffer.readUIntLE(6,1):1
+				version: buffer.slice(6, 7).length > 0?buffer.readUIntLE(6,1):1 //some clients don't provide a version
+				//TODO: change package length accordingly
             };
             break;
         case 4:
