@@ -485,7 +485,7 @@ function encPackage(pkg:Package_decoded):Buffer{
 			buffer.writeUIntLE(+pkg.data.pin||0, 96, 2);
 			// ll(highlightBuffer(buffer, 96, 2));
 			// ll(pkg.data.timestamp + 2208988800, 98, 4);
-			buffer.writeUIntLE((pkg.data.timestamp||0) + 2208988800, 98, 4);
+			buffer.writeUIntLE((+pkg.data.timestamp||0) + 2208988800, 98, 4);
 			// ll(highlightBuffer(buffer, 98, 4));
 				
             break;
