@@ -35,9 +35,9 @@ for (let i = 1; i <= 10; i++) {
     handles[i] = {};
 }
 //handes[packagetype][state of this client.connection]
-//handles[2][constants.states.STANDBY] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
-//handles[4][WAITING] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
-handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
+//handles[2][constants.states.STANDBY] = (pkg,cnum,client.connection)=>{}; NOT USED
+//handles[4][WAITING] = (pkg,cnum,client.connection)=>{}; NOT USED
+handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
     try {
         if (client) {
             var number = pkg.data.number;
@@ -59,7 +59,7 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                 });
             }
             else {
-                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+                misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
                     .then(function (result_a) {
                     let results = [];
                     if (result_a) {
@@ -74,7 +74,7 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                         if (res.type == 5) {
                             if (res.pin == pin) {
                                 if (ipaddress != res.ipaddress || port != res.port) {
-                                    misc.SqlQuery(pool, `UPDATE teilnehmer SET
+                                    misc.SqlQuery(`UPDATE teilnehmer SET
 										port = ?,
 										ipaddress = ?,
 										changed = 1,
@@ -91,7 +91,7 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                         res.pin,
                                     ])
                                         .then(function (result_b) {
-                                        misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+                                        misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
                                             .then(function (result_c) {
                                             try {
                                                 client.connection.write(ITelexCom.encPackage({
@@ -211,7 +211,7 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                             query = insertQuery;
                             options = insertOptions;
                         }
-                        misc.SqlQuery(pool, query, options)
+                        misc.SqlQuery(query, options)
                             .then(function (result_b) {
                             if (result_b) {
                                 misc.sendEmail("new", {
@@ -221,7 +221,7 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                                     "[date]": new Date().toLocaleString(),
                                     "[timeZone]": getTimezone(new Date())
                                 }, cb);
-                                misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+                                misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
                                     .then(function (result_c) {
                                     if (result_c.length > 0) {
                                         try {
@@ -276,12 +276,12 @@ handles[1][constants.states.STANDBY] = function (pkg, client, pool, cb) {
             cb();
     }
 };
-handles[3][constants.states.STANDBY] = function (pkg, client, pool, cb) {
+handles[3][constants.states.STANDBY] = function (pkg, client, cb) {
     try {
         if (client) {
             if (pkg.data.version == 1) {
                 var number = pkg.data.number;
-                misc.SqlQuery(pool, `
+                misc.SqlQuery(`
 					SELECT * FROM teilnehmer WHERE
 						number = ?
 						and
@@ -333,12 +333,12 @@ handles[3][constants.states.STANDBY] = function (pkg, client, pool, cb) {
             cb();
     }
 };
-handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
+handles[5][constants.states.FULLQUERY] = function (pkg, client, cb) {
     try {
         if (client) {
             if (ITelexCom_js_1.cv(2))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got dataset for:", colors_js_1.default.FgCyan, pkg.data.number, colors_js_1.default.Reset);
-            misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
+            misc.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
                 .then(function (entries) {
                 let names = [
                     "number",
@@ -364,7 +364,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got new dataset for:", colors_js_1.default.FgCyan, pkg.data.number, colors_js_1.default.Reset);
                         if (ITelexCom_js_1.cv(2))
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved entry is " + colors_js_1.default.FgCyan + (pkg.data.timestamp - +entry.timestamp) + "seconds newer" + colors_js_1.default.FgGreen + " > " + colors_js_1.default.FgCyan + entry.timestamp + colors_js_1.default.Reset);
-                        misc.SqlQuery(pool, `UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([
+                        misc.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([
                             config_js_1.default.setChangedOnNewerEntry ? 1 : 0,
                             pkg.data.number
                         ]))
@@ -386,7 +386,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
                     }
                 }
                 else if (entries.length == 0) {
-                    misc.SqlQuery(pool, `
+                    misc.SqlQuery(`
 						INSERT INTO teilnehmer 
 						(
 							${names.join(",")}		
@@ -427,19 +427,19 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
     }
 };
 handles[5][constants.states.LOGIN] = handles[5][constants.states.FULLQUERY];
-handles[6][constants.states.STANDBY] = function (pkg, client, pool, cb) {
+handles[6][constants.states.STANDBY] = function (pkg, client, cb) {
     try {
         if (client) {
             if (pkg.data.serverpin == config_js_1.default.serverPin || (readonly && config_js_1.default.allowFullQueryInReadonly)) {
                 if (ITelexCom_js_1.cv(1))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
                 client = connections.get(connections.move(client.cnum, "S"));
-                misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;")
+                misc.SqlQuery("SELECT  * FROM teilnehmer;")
                     .then(function (result) {
                     if ((result[0] != undefined) && (result != [])) {
                         client.writebuffer = result;
                         client.state = constants.states.RESPONDING;
-                        ITelexCom.handlePackage({ packagetype: 8 }, client, pool, cb);
+                        ITelexCom.handlePackage({ packagetype: 8 }, client, cb);
                     }
                     else {
                         client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {
@@ -475,7 +475,7 @@ handles[6][constants.states.STANDBY] = function (pkg, client, pool, cb) {
             cb();
     }
 };
-handles[7][constants.states.STANDBY] = function (pkg, client, pool, cb) {
+handles[7][constants.states.STANDBY] = function (pkg, client, cb) {
     try {
         if (client) {
             if ((pkg.data.serverpin == config_js_1.default.serverPin) || (readonly && config_js_1.default.allowLoginInReadonly)) {
@@ -513,7 +513,7 @@ handles[7][constants.states.STANDBY] = function (pkg, client, pool, cb) {
             cb();
     }
 };
-handles[8][constants.states.RESPONDING] = function (pkg, client, pool, cb) {
+handles[8][constants.states.RESPONDING] = function (pkg, client, cb) {
     try {
         if (client) {
             if (ITelexCom_js_1.cv(1)) {
@@ -560,7 +560,7 @@ handles[8][constants.states.RESPONDING] = function (pkg, client, pool, cb) {
             cb();
     }
 };
-handles[9][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
+handles[9][constants.states.FULLQUERY] = function (pkg, client, cb) {
     try {
         if (client) {
             client.state = constants.states.STANDBY;
@@ -583,7 +583,7 @@ handles[9][constants.states.FULLQUERY] = function (pkg, client, pool, cb) {
     }
 };
 handles[9][constants.states.LOGIN] = handles[9][constants.states.FULLQUERY];
-handles[10][constants.states.STANDBY] = function (pkg, client, pool, cb) {
+handles[10][constants.states.STANDBY] = function (pkg, client, cb) {
     try {
         if (client) {
             if (ITelexCom_js_1.cv(2))
@@ -592,7 +592,7 @@ handles[10][constants.states.STANDBY] = function (pkg, client, pool, cb) {
             let query = pkg.data.pattern;
             let queryarr = query.split(" ");
             let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
-            misc.SqlQuery(pool, searchstring, queryarr.map(q => `%${q}%`))
+            misc.SqlQuery(searchstring, queryarr.map(q => `%${q}%`))
                 .then(function (result) {
                 if ((result[0] != undefined) && (result != [])) {
                     var towrite = [];
@@ -604,7 +604,7 @@ handles[10][constants.states.STANDBY] = function (pkg, client, pool, cb) {
                     }
                     client.writebuffer = towrite;
                     client.state = constants.states.RESPONDING;
-                    ITelexCom.handlePackage({ packagetype: 8 }, client, pool, cb);
+                    ITelexCom.handlePackage({ packagetype: 8 }, client, cb);
                 }
                 else {
                     client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {

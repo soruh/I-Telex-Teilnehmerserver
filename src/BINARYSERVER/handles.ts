@@ -39,9 +39,9 @@ for (let i = 1; i <= 10; i++) {
 	handles[i] = {};
 }
 //handes[packagetype][state of this client.connection]
-//handles[2][constants.states.STANDBY] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
-//handles[4][WAITING] = (pkg,cnum,pool,client.connection)=>{}; NOT USED
-handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1, client:connections.client, pool, cb) {
+//handles[2][constants.states.STANDBY] = (pkg,cnum,client.connection)=>{}; NOT USED
+//handles[4][WAITING] = (pkg,cnum,client.connection)=>{}; NOT USED
+handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1, client:connections.client, cb) {
 	try {
 		if (client) {
 			var number = pkg.data.number;
@@ -61,7 +61,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 					cb();
 				});
 			} else {
-				misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`,[number])
+				misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`,[number])
 				.then(function (result_a:ITelexCom.peerList) {
 					let results = [];
 					if (result_a) {
@@ -76,7 +76,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 						if (res.type == 5) {
 							if (res.pin == pin) {
 								if (ipaddress != res.ipaddress || port != res.port) {
-									misc.SqlQuery(pool,
+									misc.SqlQuery(
 										`UPDATE teilnehmer SET
 										port = ?,
 										ipaddress = ?,
@@ -94,7 +94,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 										res.pin,
 									])
 									.then(function (result_b) {
-										misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+										misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
 										.then(function (result_c:ITelexCom.peerList) {
 											try {
 												client.connection.write(ITelexCom.encPackage({
@@ -205,7 +205,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 							options = insertOptions;
 						}
 						
-						misc.SqlQuery(pool, query, options)
+						misc.SqlQuery(query, options)
 						.then(function (result_b) {
 							if (result_b) {
 								misc.sendEmail("new", {
@@ -215,7 +215,7 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 									"[date]": new Date().toLocaleString(),
 									"[timeZone]": getTimezone(new Date())
 								}, cb);
-								misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+								misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
 								.then(function (result_c:ITelexCom.peerList) {
 									if(result_c.length>0){
 										try {
@@ -257,12 +257,12 @@ handles[1][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_1
 		if (typeof cb === "function") cb();
 	}
 };
-handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_3, client:connections.client, pool, cb) {
+handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_3, client:connections.client, cb) {
 	try {
 		if (client) {
 			if (pkg.data.version == 1) {
 				var number = pkg.data.number;
-				misc.SqlQuery(pool, `
+				misc.SqlQuery(`
 					SELECT * FROM teilnehmer WHERE
 						number = ?
 						and
@@ -302,11 +302,11 @@ handles[3][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_3
 		if (typeof cb === "function") cb();
 	}
 };
-handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded_5, client:connections.client, pool, cb) {
+handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded_5, client:connections.client, cb) {
 	try {
 		if (client) {
 			if (cv(2)) ll(colors.FgGreen + "got dataset for:", colors.FgCyan, pkg.data.number, colors.Reset);
-			misc.SqlQuery(pool, `SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
+			misc.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
 			.then(function (entries:ITelexCom.peerList) {
 				let names = [
 					"number",
@@ -331,7 +331,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 						if (cv(2)) ll(colors.FgGreen + "recieved entry is " + colors.FgCyan + (pkg.data.timestamp-+entry.timestamp)+"seconds newer"+ colors.FgGreen + " > " + colors.FgCyan + entry.timestamp + colors.Reset);
 						
 
-						misc.SqlQuery(pool, `UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`,
+						misc.SqlQuery(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`,
 						values.concat(
 							[
 								config.setChangedOnNewerEntry ? 1 : 0,
@@ -351,7 +351,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 						});
 					}
 				} else if (entries.length == 0) {
-					misc.SqlQuery(pool, `
+					misc.SqlQuery(`
 						INSERT INTO teilnehmer 
 						(
 							${names.join(",")}		
@@ -385,7 +385,7 @@ handles[5][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 	}
 };
 handles[5][constants.states.LOGIN] = handles[5][constants.states.FULLQUERY];
-handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_6, client:connections.client, pool, cb) {
+handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_6, client:connections.client, cb) {
 	try {
 		if (client) {
 			if (pkg.data.serverpin == config.serverPin || (readonly && config.allowFullQueryInReadonly)) {
@@ -393,12 +393,12 @@ handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_6
 				client = connections.get(
 					connections.move(client.cnum, "S")
 				);
-				misc.SqlQuery(pool, "SELECT  * FROM teilnehmer;")
+				misc.SqlQuery("SELECT  * FROM teilnehmer;")
 				.then(function (result:ITelexCom.peerList) {
 					if ((result[0] != undefined) && (result != [])) {
 						client.writebuffer = result;
 						client.state = constants.states.RESPONDING;
-						ITelexCom.handlePackage({packagetype: 8}, client, pool, cb);
+						ITelexCom.handlePackage({packagetype: 8}, client, cb);
 					} else {
 						client.connection.write(ITelexCom.encPackage({packagetype: 9}), function () {
 							if (typeof cb === "function") cb();
@@ -426,7 +426,7 @@ handles[6][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_6
 		if (typeof cb === "function") cb();
 	}
 };
-handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_7, client:connections.client, pool, cb) {
+handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_7, client:connections.client, cb) {
 	try {
 		if (client) {
 			if ((pkg.data.serverpin == config.serverPin) || (readonly && config.allowLoginInReadonly)) {
@@ -458,7 +458,7 @@ handles[7][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_7
 		if (typeof cb === "function") cb();
 	}
 };
-handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decoded_8, client:connections.client, pool, cb) {
+handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decoded_8, client:connections.client, cb) {
 	try {
 		if (client) {
 			if (cv(1)) {
@@ -494,7 +494,7 @@ handles[8][constants.states.RESPONDING] = function (pkg:ITelexCom.Package_decode
 		if (typeof cb === "function") cb();
 	}
 };
-handles[9][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded_9, client:connections.client, pool, cb) {
+handles[9][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded_9, client:connections.client, cb) {
 	try {
 		if (client) {
 			client.state = constants.states.STANDBY;
@@ -510,7 +510,7 @@ handles[9][constants.states.FULLQUERY] = function (pkg:ITelexCom.Package_decoded
 	}
 };
 handles[9][constants.states.LOGIN] = handles[9][constants.states.FULLQUERY];
-handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_10, client:connections.client, pool, cb) {
+handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_10, client:connections.client, cb) {
 	try {
 		if (client) {
 			if (cv(2)) ll(pkg);
@@ -518,7 +518,7 @@ handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_
 			let query = pkg.data.pattern;
 			let queryarr = query.split(" ");
 			let searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(queryarr.length)};`;
-			misc.SqlQuery(pool, searchstring, queryarr.map(q=>`%${q}%`))
+			misc.SqlQuery(searchstring, queryarr.map(q=>`%${q}%`))
 			.then(function (result:ITelexCom.peerList) {
 				if ((result[0] != undefined) && (result != [])) {
 					var towrite = [];
@@ -530,7 +530,7 @@ handles[10][constants.states.STANDBY] = function (pkg:ITelexCom.Package_decoded_
 					}
 					client.writebuffer = towrite;
 					client.state = constants.states.RESPONDING;
-					ITelexCom.handlePackage({packagetype: 8}, client, pool, cb);
+					ITelexCom.handlePackage({packagetype: 8}, client, cb);
 				} else {
 					client.connection.write(ITelexCom.encPackage({packagetype: 9}), function () {
 						if (typeof cb === "function") cb();

@@ -24,6 +24,7 @@ const config_js_1 = require("../COMMONMODULES/config.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const dns_1 = require("dns");
 const transporter_js_1 = require("../BINARYSERVER/transporter.js");
+const sqlPool_js_1 = require("./sqlPool.js");
 //#endregion
 var serverErrors = {};
 exports.serverErrors = serverErrors;
@@ -69,7 +70,7 @@ function resetErrorCounter(serverkey) {
     }
 }
 exports.resetErrorCounter = resetErrorCounter;
-function SqlQuery(sqlPool, query, options) {
+function SqlQuery(query, options) {
     return new Promise((resolve, reject) => {
         if (cv(3))
             logWithLineNumbers_js_1.llo(1, colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query + " " + (options || "") + colors_js_1.default.Reset);
@@ -77,24 +78,30 @@ function SqlQuery(sqlPool, query, options) {
         query = mysql.format(query, options || []);
         if (cv(2) || (cv(1) && /(update)|(insert)/gi.test(query)))
             logWithLineNumbers_js_1.llo(1, colors_js_1.default.BgLightBlue + colors_js_1.default.FgBlack + query + colors_js_1.default.Reset);
-        sqlPool.query(query, function (err, res) {
-            if (sqlPool["_allConnections"] && sqlPool["_allConnections"].length) {
-                if (cv(3))
-                    logWithLineNumbers_js_1.ll("number of open connections: " + sqlPool["_allConnections"].length);
-            }
-            else {
-                if (cv(2))
-                    logWithLineNumbers_js_1.ll("not a pool");
-            }
-            if (err) {
-                if (cv(0))
-                    logWithLineNumbers_js_1.llo(1, colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
-                reject(err);
-            }
-            else {
-                resolve(res);
-            }
-        });
+        let sqlPool = sqlPool_js_1.getPool();
+        if (sqlPool) {
+            sqlPool.query(query, function (err, res) {
+                if (sqlPool["_allConnections"] && sqlPool["_allConnections"].length) {
+                    if (cv(3))
+                        logWithLineNumbers_js_1.ll("number of open connections: " + sqlPool["_allConnections"].length);
+                }
+                else {
+                    if (cv(2))
+                        logWithLineNumbers_js_1.ll("not a pool");
+                }
+                if (err) {
+                    if (cv(0))
+                        logWithLineNumbers_js_1.llo(1, colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
+                    reject(err);
+                }
+                else {
+                    resolve(res);
+                }
+            });
+        }
+        else {
+            logWithLineNumbers_js_1.lle(`sql pool is not set!`);
+        }
     });
     /*try{
         sqlPool.getConnection(function(e,c){
@@ -126,7 +133,7 @@ function SqlQuery(sqlPool, query, options) {
     }*/
 }
 exports.SqlQuery = SqlQuery;
-function checkIp(data, client, pool) {
+function checkIp(data, client) {
     return __awaiter(this, void 0, void 0, function* () {
         if (config_js_1.default.doDnsLookups) {
             var arg = data.slice(1).toString().split("\n")[0].split("\r")[0];
@@ -151,7 +158,7 @@ function checkIp(data, client, pool) {
                 }
             }
             if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
-                SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
+                SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
                     .then(function (peers) {
                     var ipPeers = [];
                     async.each(peers, function (peer, cb) {

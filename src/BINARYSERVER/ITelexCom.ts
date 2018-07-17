@@ -330,7 +330,7 @@ interface queueEntry{
 type queue = queueEntry[];
 
       
-function handlePackage(obj:Package_decoded, client:connections.client, pool, cb:()=>void) {
+function handlePackage(obj:Package_decoded, client:connections.client, cb:()=>void) {
 	if (!obj) {
 		if (cv(0)) lle(colors.FgRed + "no package to handle" + colors.Reset);
 		if (typeof cb === "function") cb();
@@ -349,7 +349,7 @@ function handlePackage(obj:Package_decoded, client:connections.client, pool, cb:
 				if (typeof handles[obj.packagetype][client.state] == "function") {
 					if(cv(2)&&config.logITelexCom) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
 					try {
-						handles[obj.packagetype][client.state](obj, client, pool, cb);
+						handles[obj.packagetype][client.state](obj, client, cb);
 					} catch (e) {
 						if (cv(0)) lle(colors.FgRed, e, colors.Reset);
 						if (typeof cb === "function") cb();
@@ -645,7 +645,7 @@ function decPackages(buffer:number[]|Buffer): Package_decoded[] {
 }
 
 
-function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|mysql.Connection):void {
+function ascii(data:number[]|Buffer, client:connections.client):void {
 	var number:string = "";
 	for (let byte of data) {
 		//if(cv(2)) if (config.logITelexCom) ll(String.fromCharCode(byte));
@@ -655,7 +655,7 @@ function ascii(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|
 	if (number != "") {
 		if (!isNaN(parseInt(number))) {
 			if(cv(1)&&config.logITelexCom) ll(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
-			misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
+			misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
 			.then(function (result:peerList) {
 				if (!result || result.length == 0) {
 					let send:string = "";

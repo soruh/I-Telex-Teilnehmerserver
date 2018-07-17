@@ -18,7 +18,6 @@ var cv = level => level <= verbosity; //check verbosity
 
 
 function connect(
-	pool:mysql.Pool|mysql.Connection,
 	after:(client:connections.client)=>void,
 	options:{
 		host:string,
@@ -90,7 +89,7 @@ function connect(
 							}
 							async.eachOfSeries(client.packages, function (pkg, key, cb) {
 								if ((cv(1) && (Object.keys(client.packages).length > 1)) || cv(2)) ll(colors.FgGreen + "handling package " + colors.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors.Reset);
-								ITelexCom.handlePackage(pkg, client, pool, function () {
+								ITelexCom.handlePackage(pkg, client, function () {
 									client.packages.splice(+key, 1);
 									cb();
 								});
@@ -106,7 +105,7 @@ function connect(
 					timeout();
 				}
 				/*if(res[0]){
-					handlePackage(decPackages(res[0]),client.cnum,pool,socket,handles);
+					handlePackage(decPackages(res[0]),client.cnum,socket,handles);
 				}*/
 			} catch (e) {
 				if (cv(2)) lle(e);

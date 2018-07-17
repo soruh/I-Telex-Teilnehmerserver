@@ -138,7 +138,7 @@ const misc = require("../BINARYSERVER/misc.js");
 //#endregion
 const cv = config_js_1.default.cv;
 exports.cv = cv;
-function handlePackage(obj, client, pool, cb) {
+function handlePackage(obj, client, cb) {
     if (!obj) {
         if (cv(0))
             logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "no package to handle" + colors_js_1.default.Reset);
@@ -168,7 +168,7 @@ function handlePackage(obj, client, pool, cb) {
                     if (cv(2) && config_js_1.default.logITelexCom)
                         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
                     try {
-                        handles_js_1.default[obj.packagetype][client.state](obj, client, pool, cb);
+                        handles_js_1.default[obj.packagetype][client.state](obj, client, cb);
                     }
                     catch (e) {
                         if (cv(0))
@@ -516,7 +516,7 @@ function decPackages(buffer) {
     return out;
 }
 exports.decPackages = decPackages;
-function ascii(data, client, pool) {
+function ascii(data, client) {
     var number = "";
     for (let byte of data) {
         //if(cv(2)) if (config.logITelexCom) ll(String.fromCharCode(byte));
@@ -528,7 +528,7 @@ function ascii(data, client, pool) {
         if (!isNaN(parseInt(number))) {
             if (cv(1) && config_js_1.default.logITelexCom)
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
-            misc.SqlQuery(pool, `SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
+            misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
                 .then(function (result) {
                 if (!result || result.length == 0) {
                     let send = "";

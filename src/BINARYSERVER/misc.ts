@@ -19,6 +19,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import { lookup } from "dns";
 import {MailOptions} from "nodemailer/lib/json-transport.js";
 import {getTransporter, setTransporter} from "../BINARYSERVER/transporter.js";
+import { getPool } from "./sqlPool.js";
 //#endregion
 
 
@@ -72,26 +73,31 @@ function resetErrorCounter(serverkey:string){
 	}
 }
 
-function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:any[]):Promise<any> { //TODO: any-> real type
+function SqlQuery(query:string, options?:any[]):Promise<any> { //TODO: Promise<any>-> real type
 	return new Promise((resolve, reject)=>{
 		if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query+" "+(options||"")+colors.Reset);
 
 		query = query.replace(/\n/g,"").replace(/\s+/g," ");
 		query = mysql.format(query, options||[]);
 		if (cv(2) || (cv(1)&&/(update)|(insert)/gi.test(query))) llo(1, colors.BgLightBlue + colors.FgBlack + query + colors.Reset);
-		sqlPool.query(query, function (err, res) {
-			if(sqlPool["_allConnections"]&&sqlPool["_allConnections"].length){
-				if(cv(3)) ll("number of open connections: " + sqlPool["_allConnections"].length);
-			}else{
-				if(cv(2)) ll("not a pool");
-			}
-			if (err) {
-				if (cv(0)) llo(1, colors.FgRed, err, colors.Reset);
-				reject(err);
-			} else {
-				resolve(res);
-			}
-		});
+		let sqlPool = getPool();
+		if(sqlPool){
+			sqlPool.query(query, function (err, res) {
+				if(sqlPool["_allConnections"]&&sqlPool["_allConnections"].length){
+					if(cv(3)) ll("number of open connections: " + sqlPool["_allConnections"].length);
+				}else{
+					if(cv(2)) ll("not a pool");
+				}
+				if (err) {
+					if (cv(0)) llo(1, colors.FgRed, err, colors.Reset);
+					reject(err);
+				} else {
+					resolve(res);
+				}
+			});
+		}else{
+			lle(`sql pool is not set!`);
+		}
 	});
 	/*try{
 		sqlPool.getConnection(function(e,c){
@@ -123,7 +129,7 @@ function SqlQuery(sqlPool:mysql.Pool|mysql.Connection, query:string, options?:an
 	}*/
 }
 
-async function checkIp(data:number[]|Buffer, client:connections.client, pool:mysql.Pool|mysql.Connection){
+async function checkIp(data:number[]|Buffer, client:connections.client){
 	if (config.doDnsLookups) {
 		var arg:string = data.slice(1).toString().split("\n")[0].split("\r")[0];
 		if (cv(1)) ll(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to any participant${colors.Reset}`);
@@ -138,13 +144,13 @@ async function checkIp(data:number[]|Buffer, client:connections.client, pool:mys
 				if (cv(2)) ll(`${colors.FgCyan+arg+colors.FgGreen} resolved to ${colors.FgCyan+ipAddr+colors.Reset}`);
 			}catch(e){
 				client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-				return;
 				if(cv(3)) ll(e)
+				return;
 			}
 		}
 
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
-			SqlQuery(pool, "SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
+			SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
 			.then(function (peers:ITelexCom.peerList) {
 				var ipPeers:{
 					peer:ITelexCom.peer,

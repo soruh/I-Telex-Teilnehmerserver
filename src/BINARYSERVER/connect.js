@@ -12,7 +12,7 @@ const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const misc = require("../BINARYSERVER/misc.js");
 const verbosity = config_js_1.default.loggingVerbosity;
 var cv = level => level <= verbosity; //check verbosity
-function connect(pool, after, options, callback) {
+function connect(after, options, callback) {
     let onEnd = function () {
         //if (cv(2)) ll(`${colors.FgYellow}calling onEnd handler for server ${util.inspect(options)}${colors.Reset}`);
         try {
@@ -82,7 +82,7 @@ function connect(pool, after, options, callback) {
                             async.eachOfSeries(client.packages, function (pkg, key, cb) {
                                 if ((cv(1) && (Object.keys(client.packages).length > 1)) || cv(2))
                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset);
-                                ITelexCom.handlePackage(pkg, client, pool, function () {
+                                ITelexCom.handlePackage(pkg, client, function () {
                                     client.packages.splice(+key, 1);
                                     cb();
                                 });
@@ -99,7 +99,7 @@ function connect(pool, after, options, callback) {
                     timeout();
                 }
                 /*if(res[0]){
-                    handlePackage(decPackages(res[0]),client.cnum,pool,socket,handles);
+                    handlePackage(decPackages(res[0]),client.cnum,socket,handles);
                 }*/
             }
             catch (e) {
