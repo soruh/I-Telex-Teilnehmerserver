@@ -135,7 +135,7 @@ function explainPackage(pkg:Buffer):string{
 		default:
 			res = inspectBuffer(pkg);
 	}
-	res += "\x1b[000m>";
+	res += (config.explainBuffers > 1?"\x1b[000m":"")+">";
 	return res;
 }
 
@@ -150,7 +150,6 @@ import * as constants from "../BINARYSERVER/constants.js";
 import * as connections from "../BINARYSERVER/connections.js"
 import handles from "../BINARYSERVER/handles.js";
 import * as misc from "../BINARYSERVER/misc.js";
-import { version } from "punycode";
 //#endregion
 
 const cv = config.cv;

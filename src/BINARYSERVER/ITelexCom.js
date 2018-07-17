@@ -123,7 +123,7 @@ function explainPackage(pkg) {
         default:
             res = inspectBuffer(pkg);
     }
-    res += "\x1b[000m>";
+    res += (config_js_1.default.explainBuffers > 1 ? "\x1b[000m" : "") + ">";
     return res;
 }
 exports.explainPackage = explainPackage;
