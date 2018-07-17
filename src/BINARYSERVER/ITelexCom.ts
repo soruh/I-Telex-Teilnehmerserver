@@ -135,7 +135,7 @@ function explainPackage(pkg:Buffer):string{
 		default:
 			res = inspectBuffer(pkg);
 	}
-	res += "]\x1b[000m>";
+	res += "\x1b[000m>";
 	return res;
 }
 
