@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const util = require("util");
 const mysql = require("mysql");
-const async = require("async");
 const ip = require("ip");
 const nodemailer = require("nodemailer");
 const config_js_1 = require("../COMMONMODULES/config.js");
@@ -20,6 +19,7 @@ const colors_js_1 = require("../COMMONMODULES/colors.js");
 const dns_1 = require("dns");
 const transporter_js_1 = require("../BINARYSERVER/transporter.js");
 const sqlPool_js_1 = require("./sqlPool.js");
+const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
 //#endregion
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
@@ -57,7 +57,7 @@ function increaseErrorCounter(serverkey, error, code) {
             "[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
             "[date]": new Date().toLocaleString(),
             "[timeZone]": getTimezone(new Date())
-        }, () => { });
+        });
 }
 exports.increaseErrorCounter = increaseErrorCounter;
 function resetErrorCounter(serverkey) {
@@ -159,9 +159,9 @@ function checkIp(data, client) {
             }
             if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
                 SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
-                    .then(function (peers) {
+                    .then((peers) => {
                     var ipPeers = [];
-                    async.each(peers, function (peer, cb) {
+                    serialEachPromise_js_1.default(peers, peer => new Promise((resolve, reject) => {
                         if ((!peer.ipaddress) && peer.hostname) {
                             // if(cv(3)) ll(`hostname: ${peer.hostname}`)
                             dns_1.lookup(peer.hostname, {}, function (err, address, family) {
@@ -173,7 +173,7 @@ function checkIp(data, client) {
                                     });
                                     // if(cv(3)) ll(`${peer.hostname} resolved to ${address}`);
                                 }
-                                cb();
+                                resolve();
                             });
                         }
                         else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
@@ -182,12 +182,13 @@ function checkIp(data, client) {
                                 peer,
                                 ipaddress: peer.ipaddress
                             });
-                            cb();
+                            resolve();
                         }
                         else {
-                            cb();
+                            resolve();
                         }
-                    }, function () {
+                    }))
+                        .then(() => {
                         let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
                         if (cv(3))
                             logWithLineNumbers_js_1.ll("matching peers:", matches);
@@ -197,11 +198,12 @@ function checkIp(data, client) {
                         else {
                             client.connection.end("fail\r\n+++\r\n");
                         }
-                    });
+                    })
+                        .catch(logWithLineNumbers_js_1.lle);
                 });
             }
             else {
-                client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
+                client.connection.end("error\r\nnot a valid host or ip\r\n");
             }
         }
         else {
@@ -210,59 +212,58 @@ function checkIp(data, client) {
     });
 }
 exports.checkIp = checkIp;
-function sendEmail(messageName, values, callback) {
-    let message = config_js_1.default.eMail.messages[messageName];
-    if (!message) {
-        callback();
-    }
-    else {
-        let mailOptions = {
-            from: config_js_1.default.eMail.from,
-            to: config_js_1.default.eMail.to,
-            subject: message.subject,
-            text: "",
-            html: ""
-        };
-        let type;
-        if (message.html) {
-            type = "html";
-        }
-        else if (message.text) {
-            type = "text";
+function sendEmail(messageName, values) {
+    return new Promise((resolve, reject) => {
+        let message = config_js_1.default.eMail.messages[messageName];
+        if (!message) {
+            resolve();
         }
         else {
-            type = null;
-            mailOptions.text = "configuration error in config/mailMessages.json";
-        }
-        if (type) {
-            mailOptions[type] = message[type];
-            for (let k in values) {
-                mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
+            let mailOptions = {
+                from: config_js_1.default.eMail.from,
+                to: config_js_1.default.eMail.to,
+                subject: message.subject,
+                text: "",
+                html: ""
+            };
+            let type;
+            if (message.html) {
+                type = "html";
             }
-        }
-        if (cv(2) && config_js_1.default.logITelexCom) {
-            logWithLineNumbers_js_1.ll("sending mail:\n", mailOptions, "\nto server", transporter_js_1.getTransporter().options["host"]);
-        }
-        else if (cv(1)) {
-            logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
-        }
-        transporter_js_1.getTransporter().sendMail(mailOptions, function (error, info) {
-            if (error) {
-                if (cv(2))
-                    logWithLineNumbers_js_1.lle(error);
-                if (typeof callback === "function")
-                    callback();
+            else if (message.text) {
+                type = "text";
             }
             else {
-                if (cv(1) && config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll('Message sent:', info.messageId);
-                if (config_js_1.default.eMail.useTestAccount)
-                    if (config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-                if (typeof callback === "function")
-                    callback();
+                type = null;
+                mailOptions.text = "configuration error in config/mailMessages.json";
             }
-        });
-    }
+            if (type) {
+                mailOptions[type] = message[type];
+                for (let k in values) {
+                    mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
+                }
+            }
+            if (cv(2) && config_js_1.default.logITelexCom) {
+                logWithLineNumbers_js_1.ll("sending mail:\n", mailOptions, "\nto server", transporter_js_1.getTransporter().options["host"]);
+            }
+            else if (cv(1)) {
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
+            }
+            transporter_js_1.getTransporter().sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    // if (cv(2)) lle(error);
+                    reject(error);
+                }
+                else {
+                    if (cv(1) && config_js_1.default.logITelexCom)
+                        logWithLineNumbers_js_1.ll('Message sent:', info.messageId);
+                    if (config_js_1.default.eMail.useTestAccount)
+                        if (config_js_1.default.logITelexCom)
+                            logWithLineNumbers_js_1.ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+                    resolve();
+                }
+            });
+        }
+    });
 }
 exports.sendEmail = sendEmail;

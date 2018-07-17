@@ -3,7 +3,6 @@
 import * as util from 'util';
 import * as net from 'net';
 
-import * as async from "async";
 import * as mysql from "mysql";
 
 import * as timers from "../BINARYSERVER/timers.js";
@@ -18,10 +17,12 @@ import connect from "../BINARYSERVER/connect.js";
 import {setTransporter} from "../BINARYSERVER/transporter.js";
 import {getPool, setPool} from "../BINARYSERVER/sqlPool";
 import * as misc from "../BINARYSERVER/misc.js";
+import serialEachPromise from '../COMMONMODULES/serialEachPromise.js';
+import { resolve } from 'url';
 
 //#endregion
 
-import {cv} from "../BINARYSERVER/ITelexCom.js";
+const cv = config.cv;
 const readonly = (config.serverPin == null);
 
 if (readonly) ll(`${colors.FgMagenta}Starting in read-only mode!${colors.Reset}`);
@@ -32,7 +33,7 @@ const mySqlConnectionOptions = config['mySqlConnectionOptions'];
 
 
 
-var server = net.createServer(function (connection) {
+var server = net.createServer(function (connection:net.Socket) {
 	try {
 		var client = 
 		connections.get(
@@ -114,17 +115,29 @@ var server = net.createServer(function (connection) {
 								client.timeout = null;
 							}
 							let nPackages = Object.keys(client.packages).length;
-							let handled = 0;
-							async.eachOfSeries(client.packages, function (pkg, key, cb) {
-								if ((cv(1) && (nPackages > 1)) || cv(2)) ll(`${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${nPackages}${colors.Reset}`);
-								ITelexCom.handlePackage(pkg, client, function () {
-									handled++;
-									cb();
-								});
-							}, function () {
-								client.packages.splice(0, handled);
+							// let handled = 0;
+							
+							serialEachPromise(
+								client.packages,
+								async function(pkg, key){
+									if ((cv(1) && (nPackages > 1)) || cv(2)) ll(`${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${nPackages}${colors.Reset}`);
+									return await ITelexCom.handlePackage(pkg, client);
+								}
+								// (pkg, key)=>new Promise((resolve, reject)=>{
+								// 	if ((cv(1) && (nPackages > 1)) || cv(2)) ll(`${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${nPackages}${colors.Reset}`);
+								// 	ITelexCom.handlePackage(pkg, client)
+								// 	.then(()=>{
+								// 		// handled++;
+								// 		resolve();
+								// 	})
+								// 	.catch(lle);
+								// })
+							)
+							.then((res)=>{
+								client.packages.splice(0, res.length);//handled);
 								client.handling = false;
-							});
+							})
+							.catch(lle);
 						} else {
 							client.timeout = setTimeout(timeout, 10);
 						}
@@ -152,7 +165,7 @@ function init() {
 	});
 }
 
-function updateQueue() {
+async function updateQueue() {
 	return new Promise((resolve, reject)=>{
 		if (cv(2)) ll(colors.FgMagenta + "updating " + colors.FgCyan + "Queue" + colors.Reset);
 		misc.SqlQuery("SELECT  * FROM teilnehmer WHERE changed = ?;", [1])
@@ -170,8 +183,8 @@ function updateQueue() {
 				misc.SqlQuery("SELECT * FROM servers;")
 				.then(function (servers:ITelexCom.serverList) {
 					if (servers.length > 0) {
-						async.each(servers, function (server, cb1) {
-							async.each(changed, function (message, cb2) {
+						serialEachPromise(servers, server => 
+							serialEachPromise(changed, (message) =>
 								misc.SqlQuery("SELECT * FROM queue WHERE server = ? AND message = ?;" ,[server.uid, message.uid])
 								.then(function (qentry:ITelexCom.queue) {
 									if (qentry.length == 1) {
@@ -180,22 +193,20 @@ function updateQueue() {
 											//misc.SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 											//.then(function(){
 											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
-											cb2();
 											//})
-											//.catch(err=>lle(err));
+											//.catch(lle);
 										})
-										.catch(err=>lle(err));
+										.catch(lle);
 									} else if (qentry.length == 0) {
 										misc.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)",[server.uid, message.uid, Math.floor(Date.now() / 1000)])
 										.then(function () {
 											//misc.SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 											//.then(function(){
 											if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
-											cb2();
 											//})
-											//.catch(err=>lle(err));
+											//.catch(lle);
 										})
-										.catch(err=>lle(err));
+										.catch(lle);
 									} else {
 										lle("duplicate queue entry!");
 										misc.SqlQuery("DELETE FROM queue WHERE server = ? AND message = ?;",[server.uid, message.uid])
@@ -205,18 +216,18 @@ function updateQueue() {
 												//misc.SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 												//.then(function(){
 												if (cv(2)) ll(colors.FgGreen, "enqueued:", colors.FgCyan, message.number, colors.Reset);
-												cb2();
 												//})
-												//.catch(err=>lle(err));
+												//.catch(lle);
 											})
-											.catch(err=>lle(err));
+											.catch(lle);
 										})
-										.catch(err=>lle(err));
+										.catch(lle);
 									}
 								})
-								.catch(err=>lle(err));
-							}, cb1);
-						}, function () {
+								.catch(lle)
+							)
+						)
+						.then(()=>{
 							if (cv(1)) ll(colors.FgGreen + "finished enqueueing" + colors.Reset);
 							if (cv(2)) ll(colors.FgGreen + "reseting changed flags..." + colors.Reset);
 							misc.SqlQuery("UPDATE teilnehmer SET changed = ? WHERE uid="+changed.map(entry => entry.uid).join(" or uid=")+";", [0])
@@ -225,20 +236,21 @@ function updateQueue() {
 								//sendQueue();
 								resolve();
 							})
-							.catch(err=>lle(err));
-						});
+							.catch(lle);
+						})
+						.catch(lle);
 					} else {
 						ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "updateQueue" + colors.Reset);
 						resolve();
 					}
 				})
-				.catch(err=>lle(err));
+				.catch(lle);
 			} else {
 				if (cv(2)) ll(colors.FgYellow + "no numbers to enqueue" + colors.Reset);
 				resolve();
 			}
 		})
-		.catch(err=>lle(err));
+		.catch(lle);
 	});
 }
 
@@ -253,18 +265,13 @@ function getFullQuery() {
 						servers = [servers[i]];
 					}
 				}
-				async.eachSeries(servers, function (r, cb) {
-					connect(function (e) {
-						try {
-							cb();
-						} catch (e) {
-							if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-						}
-					}, {
-						host: r.addresse,
-						port: +r.port
-					}, function (client) {
-						try {
+				serialEachPromise(servers, server=>
+					new Promise((resolve, reject)=>{
+						connect(resolve, {
+							host: server.addresse,
+							port: +server.port
+						})
+						.then(client=>{
 							let request:ITelexCom.Package_decoded_10|ITelexCom.Package_decoded_6;
 							if(readonly){
 								request = {
@@ -285,26 +292,20 @@ function getFullQuery() {
 							}
 							client.connection.write(ITelexCom.encPackage(request), function () {
 								client.state = constants.states.FULLQUERY;
-								client.cb = cb;
+								client.cb = resolve;
 							});
-						} catch (e) {
-							if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-							try {
-								cb();
-							} catch (e) {
-								if (cv(2)) lle(colors.FgRed, e, colors.Reset);
-							}
-						}
-					});
-				}, function () {
-					resolve();
-				});
+						})
+						.catch(lle);
+					})
+				)
+				.then(resolve)
+				.catch(lle);
 			} else {
 				ll(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "FullQuery" + colors.Reset);
 				resolve();
 			}
 		})
-		.catch(err=>lle(err));
+		.catch(lle);
 		//}
 	});
 }
@@ -328,97 +329,106 @@ function sendQueue() {
 							if (!servers[q.server]) servers[q.server] = [];
 							servers[q.server].push(q);
 						}
-						async.eachSeries(servers, function (server, cb) {
-							misc.SqlQuery("SELECT  * FROM servers WHERE uid=?;",[server[0].server])
-							.then(function (result2:ITelexCom.serverList) {
-								if (result2.length == 1) {
-									var serverinf = result2[0];
-									if (cv(2)) ll(colors.FgCyan, serverinf, colors.Reset);
-									try {
-										// var isConnected = false;
-										// for (let key in connections) {
-										// 	if (connections.has(key)) {
-										// 		var c = connections[key];
-										// 	}
-										// 	if (c.servernum == server[0].server) {
-										// 		var isConnected = true;
-										// 	}
-										// }
-										let isConnected = connections.get(connection=>connection.servernum == server[0].server);
-										if(cv(3)) ll(isConnected);
-										
-										if (!isConnected) {
-											connect(cb, {
-												host: serverinf.addresse,
-												port: +serverinf.port
-											}, function (client) {
-												client.servernum = server[0].server;
-												if (cv(1)) ll(colors.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors.Reset);
-												client.writebuffer = [];
-												async.each(server, function (serverdata, scb) {
-													if (cv(2)) ll(colors.FgCyan, serverdata, colors.Reset);
-													var existing:ITelexCom.peer = null;
-													for (let t of teilnehmer) {
-														if (t.uid == serverdata.message) {
-															existing = t;
-														}
-													}
-													if (existing) {
-														misc.SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
-														.then(function (res) {
-															if (res.affectedRows > 0) {
-																client.writebuffer.push(existing); //TODO
-																if (cv(1)) ll(colors.FgGreen + "deleted queue entry " + colors.FgCyan + existing.name + colors.FgGreen + " from queue" + colors.Reset);
-																scb();
+						serialEachPromise((<any>Object).values(servers), (server:ITelexCom.queueEntry[])=>
+							new Promise((resolve, reject)=>{
+								misc.SqlQuery("SELECT  * FROM servers WHERE uid=?;",[server[0].server])
+								.then(function (result2:ITelexCom.serverList) {
+									if (result2.length == 1) {
+										var serverinf = result2[0];
+										if (cv(2)) ll(colors.FgCyan, serverinf, colors.Reset);
+										try {
+											// var isConnected = false;
+											// for (let key in connections) {
+											// 	if (connections.has(key)) {
+											// 		var c = connections[key];
+											// 	}
+											// 	if (c.servernum == server[0].server) {
+											// 		var isConnected = true;
+											// 	}
+											// }
+											let isConnected = connections.has(connection=>connection.servernum == server[0].server);
+											
+											if (!isConnected) {
+												connect(resolve, {
+													host: serverinf.addresse,
+													port: +serverinf.port
+												})
+												.then(client=>{
+													client.servernum = server[0].server;
+													if (cv(1)) ll(colors.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors.Reset);
+													client.writebuffer = [];
+													serialEachPromise(server, serverdata=>
+														new Promise((resolve, reject)=>{
+															if (cv(2)) ll(colors.FgCyan, serverdata, colors.Reset);
+															var existing:ITelexCom.peer = null;
+															for (let t of teilnehmer) {
+																if (t.uid == serverdata.message) {
+																	existing = t;
+																}
+															}
+															if (existing) {
+																misc.SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
+																.then(function (res) {
+																	if (res.affectedRows > 0) {
+																		client.writebuffer.push(existing); //TODO
+																		if (cv(1)) ll(colors.FgGreen + "deleted queue entry " + colors.FgCyan + existing.name + colors.FgGreen + " from queue" + colors.Reset);
+																		resolve();
+																	} else {
+																		if (cv(1)) ll(colors.FgRed + "could not delete queue entry " + colors.FgCyan + existing.name + colors.FgRed + " from queue" + colors.Reset);
+																		resolve();
+																	}
+																})
+																.catch(lle);
 															} else {
-																if (cv(1)) ll(colors.FgRed + "could not delete queue entry " + colors.FgCyan + existing.name + colors.FgRed + " from queue" + colors.Reset);
-																scb();
+																if (cv(2)) ll(colors.FgRed + "entry does not exist" + colors.FgCyan + colors.Reset);
+																resolve();
 															}
 														})
-														.catch(err=>lle(err));
-													} else {
-														if (cv(2)) ll(colors.FgRed + "entry does not exist" + colors.FgCyan + colors.Reset);
-														scb();
-													}
-												}, function () {
-													client.connection.write(ITelexCom.encPackage({
-														packagetype: 7,
-														data: {
-															serverpin: config.serverPin,
-															version: 1
-														}
-													}), function () {
-														client.state = constants.states.RESPONDING;
-														cb();
-													});
-												});
-											});
-										} else {
-											if (cv(1)) ll(colors.FgYellow + "already connected to server " + server[0].server + colors.Reset);
-											cb();
+													)
+													.then(()=>{
+														client.connection.write(ITelexCom.encPackage({
+															packagetype: 7,
+															data: {
+																serverpin: config.serverPin,
+																version: 1
+															}
+														}), ()=>{
+															client.state = constants.states.RESPONDING;
+															resolve();
+														});
+													})
+													.catch(lle);
+												})
+												.catch(lle);
+											} else {
+												if (cv(1)) ll(colors.FgYellow + "already connected to server " + server[0].server + colors.Reset);
+												resolve();
+											}
+										} catch (e) {
+											if (cv(2)) lle(e);
+											resolve();
 										}
-									} catch (e) {
-										if (cv(2)) lle(e);
-										cb();
+									} else {
+										misc.SqlQuery("DELETE FROM queue WHERE server=?;", [server[0].server])
+										.then(resolve)
+										.catch(lle);
 									}
-								} else {
-									misc.SqlQuery("DELETE FROM queue WHERE server=?;", [server[0].server])
-									.then(cb)
-									.catch(err=>lle(err));
-								}
+								})
+								.catch(lle);
 							})
-							.catch(err=>lle(err));
-						}, function () {
+						)
+						.then(()=>{
 							resolve();
-						});
+						})
+						.catch(lle);
 					} else {
 						if (cv(2)) ll(colors.FgYellow + "No queue!", colors.Reset);
 						resolve();
 					}
 				})
-				.catch(err=>lle(err));
+				.catch(lle);
 			})
-			.catch(err=>lle(err));
+			.catch(lle);
 		}
 	});
 }

@@ -2,7 +2,6 @@
 import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
 import * as util from "util";
 import * as mysql from "mysql";
-import * as async from "async";
 import * as ip from "ip";
 import * as nodemailer from "nodemailer";
 import config from '../COMMONMODULES/config.js';
@@ -14,6 +13,8 @@ import { lookup } from "dns";
 import {MailOptions} from "nodemailer/lib/json-transport.js";
 import {getTransporter} from "../BINARYSERVER/transporter.js";
 import { getPool } from "./sqlPool.js";
+import { resolve } from "url";
+import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
 //#endregion
 
 
@@ -62,7 +63,7 @@ function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
 		"[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
 		"[date]": new Date().toLocaleString(),
 		"[timeZone]": getTimezone(new Date())
-	},()=>{});
+	});
 }
 
 function resetErrorCounter(serverkey:string){
@@ -151,36 +152,39 @@ async function checkIp(data:number[]|Buffer, client:connections.client){
 
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
 			SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
-			.then(function (peers:ITelexCom.peerList) {
+			.then((peers:ITelexCom.peerList)=>{
 				var ipPeers:{
 					peer:ITelexCom.peer,
 					ipaddress:string
 				}[] = [];
-				async.each(peers, function (peer, cb) {
-					if ((!peer.ipaddress) && peer.hostname) {
-						// if(cv(3)) ll(`hostname: ${peer.hostname}`)
-						lookup(peer.hostname, {}, function (err, address, family) {
-							// if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
-							if (address) {
-								ipPeers.push({
-									peer,
-									ipaddress:address
-								});
-								// if(cv(3)) ll(`${peer.hostname} resolved to ${address}`);
-							}
-							cb();
-						});
-					} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
-						// if(cv(3)) ll(`ip: ${peer.ipaddress}`);
-						ipPeers.push({
-							peer,
-							ipaddress:peer.ipaddress
-						});
-						cb();
-					} else {
-						cb();
-					}
-				}, function () {
+				serialEachPromise(peers, peer=>
+					new Promise((resolve, reject)=>{
+						if ((!peer.ipaddress) && peer.hostname) {
+							// if(cv(3)) ll(`hostname: ${peer.hostname}`)
+							lookup(peer.hostname, {}, function (err, address, family) {
+								// if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
+								if (address) {
+									ipPeers.push({
+										peer,
+										ipaddress:address
+									});
+									// if(cv(3)) ll(`${peer.hostname} resolved to ${address}`);
+								}
+								resolve();
+							});
+						} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
+							// if(cv(3)) ll(`ip: ${peer.ipaddress}`);
+							ipPeers.push({
+								peer,
+								ipaddress:peer.ipaddress
+							});
+							resolve();
+						} else {
+							resolve();
+						}	
+					})
+				)
+				.then(()=>{
 					let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x=>x.peer.name);
 					if(cv(3)) ll("matching peers:",matches);
 					if(matches.length > 0){
@@ -188,10 +192,11 @@ async function checkIp(data:number[]|Buffer, client:connections.client){
 					}else{
 						client.connection.end("fail\r\n+++\r\n");
 					}
-				});
+				})
+				.catch(lle);
 			});
 		} else {
-			client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
+			client.connection.end("error\r\nnot a valid host or ip\r\n");
 		}
 	} else {
 		client.connection.end("error\r\nthis server does not support this function\r\n");
@@ -206,55 +211,57 @@ type MailTransporter = nodemailer.Transporter|{
 
 function sendEmail(messageName:string, values:{
 	[index:string]:string|number;
-}, callback:()=>void):void {
-	let message:{
-		"subject":string,
-		"html"?:string,
-		"text"?:string
-	} = config.eMail.messages[messageName];
-	if (!message) {
-		callback();
-	} else {
-		let mailOptions = {
-			from: config.eMail.from,
-			to: config.eMail.to,
-			subject: message.subject,
-			text:"",
-			html:""
-		};
-	
-		let type:string;
-		if(message.html){
-			type = "html";
-		}else if(message.text){
-			type = "text";
-		}else{
-			type = null;
-			mailOptions.text = "configuration error in config/mailMessages.json";
-		}
-		if(type){
-			mailOptions[type] = message[type];
-			for (let k in values) {
-				mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
-			}
-		}
-		if(cv(2)&&config.logITelexCom) {
-			ll("sending mail:\n", mailOptions, "\nto server", getTransporter().options["host"]);
-		} else if (cv(1)) {
-			ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
-		}
+}):Promise<any> {
+	return new Promise((resolve, reject)=>{
+		let message:{
+			"subject":string,
+			"html"?:string,
+			"text"?:string
+		} = config.eMail.messages[messageName];
+		if (!message) {
+			resolve();
+		} else {
+			let mailOptions = {
+				from: config.eMail.from,
+				to: config.eMail.to,
+				subject: message.subject,
+				text:"",
+				html:""
+			};
 		
-		(<(MailOptions: MailOptions,callback:(err: Error,info:any)=>void)=>void>getTransporter().sendMail)(mailOptions, function (error, info) {
-			if (error) {
-				if (cv(2)) lle(error);
-				if (typeof callback === "function") callback();
-			} else {
-				if(cv(1)&&config.logITelexCom) ll('Message sent:', info.messageId);
-				if (config.eMail.useTestAccount) if (config.logITelexCom) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
-				if (typeof callback === "function") callback();
+			let type:string;
+			if(message.html){
+				type = "html";
+			}else if(message.text){
+				type = "text";
+			}else{
+				type = null;
+				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
-		});
-	}
+			if(type){
+				mailOptions[type] = message[type];
+				for (let k in values) {
+					mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
+				}
+			}
+			if(cv(2)&&config.logITelexCom) {
+				ll("sending mail:\n", mailOptions, "\nto server", getTransporter().options["host"]);
+			} else if (cv(1)) {
+				ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
+			}
+			
+			(<(MailOptions: MailOptions,callback:(err: Error,info:any)=>void)=>void>getTransporter().sendMail)(mailOptions, function (error, info) {
+				if (error) {
+					// if (cv(2)) lle(error);
+					reject(error);
+				} else {
+					if(cv(1)&&config.logITelexCom) ll('Message sent:', info.messageId);
+					if (config.eMail.useTestAccount) if (config.logITelexCom) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+					resolve();
+				}
+			});
+		}
+	});
 }
 
 export {

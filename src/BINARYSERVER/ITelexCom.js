@@ -11,7 +11,6 @@ const handles_js_1 = require("../BINARYSERVER/handles.js");
 const misc = require("../BINARYSERVER/misc.js");
 //#endregion
 const cv = config_js_1.default.cv;
-exports.cv = cv;
 Object.defineProperty(Buffer.prototype, 'readNullTermString', { value: function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
         // lle(highlightBuffer(this));
         // lle("start:"+start);
@@ -138,60 +137,60 @@ function explainPackage(pkg) {
     return res;
 }
 exports.explainPackage = explainPackage;
-function handlePackage(obj, client, cb) {
-    if (!obj) {
-        if (cv(0))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "no package to handle" + colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
-    else {
-        if (cv(2) && config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
-        if (obj.packagetype == 0xff) {
+//#endregion
+function handlePackage(obj, client) {
+    return new Promise((resolve, reject) => {
+        if (!obj) {
             if (cv(0))
-                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
-            if (typeof cb === "function")
-                cb();
+                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "no package to handle" + colors_js_1.default.Reset);
+            resolve();
         }
         else {
-            try {
-                if (cv(2)) {
-                    if (config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
-                }
-                else if (cv(1)) {
-                    if (config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling packagetype:" + colors_js_1.default.FgCyan, obj.packagetype, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
-                }
-                if (typeof handles_js_1.default[obj.packagetype][client.state] == "function") {
-                    if (cv(2) && config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
-                    try {
-                        handles_js_1.default[obj.packagetype][client.state](obj, client, cb);
-                    }
-                    catch (e) {
-                        if (cv(0))
-                            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-                        if (typeof cb === "function")
-                            cb();
-                    }
-                }
-                else {
-                    if (cv(0))
-                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgRed + " not supported in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
-                    if (typeof cb === "function")
-                        cb();
-                }
-            }
-            catch (e) {
+            if (cv(2) && config_js_1.default.logITelexCom)
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
+            if (obj.packagetype == 0xff) {
                 if (cv(0))
-                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-                if (typeof cb === "function")
-                    cb();
+                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
+                resolve();
+            }
+            else {
+                try {
+                    if (cv(2)) {
+                        if (config_js_1.default.logITelexCom)
+                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
+                    }
+                    else if (cv(1)) {
+                        if (config_js_1.default.logITelexCom)
+                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling packagetype:" + colors_js_1.default.FgCyan, obj.packagetype, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
+                    }
+                    if (typeof handles_js_1.default[obj.packagetype][client.state] == "function") {
+                        if (cv(2) && config_js_1.default.logITelexCom)
+                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
+                        try {
+                            handles_js_1.default[obj.packagetype][client.state](obj, client)
+                                .then(resolve)
+                                .catch(reject);
+                        }
+                        catch (e) {
+                            if (cv(0))
+                                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
+                            resolve();
+                        }
+                    }
+                    else {
+                        if (cv(0))
+                            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgRed + " not supported in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
+                        resolve();
+                    }
+                }
+                catch (e) {
+                    if (cv(0))
+                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
+                    resolve();
+                }
             }
         }
-    }
+    });
 }
 exports.handlePackage = handlePackage;
 function getCompletePackages(data, part) {
@@ -580,7 +579,7 @@ function ascii(data, client) {
                     });
                 }
             })
-                .catch(err => logWithLineNumbers_js_1.lle(err));
+                .catch(logWithLineNumbers_js_1.lle);
         }
     }
     else {

@@ -155,7 +155,7 @@ function explainPackage(pkg:Buffer):string{
 	return res;
 }
 
-
+//#region types
 type Package_decoded =
 Package_decoded_1|
 Package_decoded_2|
@@ -331,41 +331,46 @@ interface queueEntry{
 }
 type queue = queueEntry[];
 
-      
-function handlePackage(obj:Package_decoded, client:connections.client, cb:()=>void) {
-	if (!obj) {
-		if (cv(0)) lle(colors.FgRed + "no package to handle" + colors.Reset);
-		if (typeof cb === "function") cb();
-	} else {
-		if(cv(2)&&config.logITelexCom) ll(colors.FgGreen + "state: " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
-		if (obj.packagetype == 0xff) {
-			if (cv(0)) lle(colors.FgRed + "remote client had error:", Buffer.from(<number[]>obj.data).toString());
-			if (typeof cb === "function") cb();
+//#endregion
+
+function handlePackage(obj:Package_decoded, client:connections.client) {
+	return new Promise((resolve, reject)=>{
+		if (!obj) {
+			if (cv(0)) lle(colors.FgRed + "no package to handle" + colors.Reset);
+			resolve();
 		} else {
-			try {
-				if (cv(2)) {
-					if (config.logITelexCom) ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
-				} else if (cv(1)) {
-					if (config.logITelexCom) ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
-				}
-				if (typeof handles[obj.packagetype][client.state] == "function") {
-					if(cv(2)&&config.logITelexCom) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
-					try {
-						handles[obj.packagetype][client.state](obj, client, cb);
-					} catch (e) {
-						if (cv(0)) lle(colors.FgRed, e, colors.Reset);
-						if (typeof cb === "function") cb();
+			if(cv(2)&&config.logITelexCom) ll(colors.FgGreen + "state: " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
+			if (obj.packagetype == 0xff) {
+				if (cv(0)) lle(colors.FgRed + "remote client had error:", Buffer.from(<number[]>obj.data).toString());
+				resolve();
+			} else {
+				try {
+					if (cv(2)) {
+						if (config.logITelexCom) ll(colors.FgGreen + "handling package:" + colors.FgCyan, obj, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
+					} else if (cv(1)) {
+						if (config.logITelexCom) ll(colors.FgGreen + "handling packagetype:" + colors.FgCyan, obj.packagetype, colors.FgGreen + "for: " + colors.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
 					}
-				} else {
-					if (cv(0)) lle(colors.FgRed + "packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgRed + " not supported in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
-					if (typeof cb === "function") cb();
+					if (typeof handles[obj.packagetype][client.state] == "function") {
+						if(cv(2)&&config.logITelexCom) ll(colors.FgGreen + "calling handler for packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgGreen + " in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
+						try {
+							handles[obj.packagetype][client.state](obj, client)
+							.then(resolve)
+							.catch(reject);
+						} catch (e) {
+							if (cv(0)) lle(colors.FgRed, e, colors.Reset);
+							resolve();
+						}
+					} else {
+						if (cv(0)) lle(colors.FgRed + "packagetype " + colors.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors.FgRed + " not supported in state " + colors.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors.Reset);
+						resolve();
+					}
+				} catch (e) {
+					if (cv(0)) lle(colors.FgRed, e, colors.Reset);
+					resolve();
 				}
-			} catch (e) {
-				if (cv(0)) lle(colors.FgRed, e, colors.Reset);
-				if (typeof cb === "function") cb();
 			}
 		}
-	}
+	});
 }
 function getCompletePackages(data:Buffer, part?:Buffer):[Buffer,Buffer]{
 	if(cv(3)) if (config.logITelexCom) ll("\nextracting packages from data:");
@@ -701,7 +706,7 @@ function ascii(data:number[]|Buffer, client:connections.client):void {
 					});
 				}
 			})
-			.catch(err=>lle(err));
+			.catch(lle);
 		}
 	}else{
 		//TODO connection.end()?
@@ -720,7 +725,6 @@ export{
 	encPackage,
 	decPackages,
 	ascii,
-	cv,
 
 	explainPackage,
 //#endregion

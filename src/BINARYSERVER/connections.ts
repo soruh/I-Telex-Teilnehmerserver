@@ -6,8 +6,10 @@ import * as util from 'util';
 
 import colors from "../COMMONMODULES/colors.js";
 import {ll,lle,llo} from '../COMMONMODULES/logWithLineNumbers.js';
-import { peer, Package_decoded, cv } from './ITelexCom.js';
+import { peer, Package_decoded} from './ITelexCom.js';
 import config from "../COMMONMODULES/config.js";
+
+const cv = config.cv;
 
 //#endregion imports
 

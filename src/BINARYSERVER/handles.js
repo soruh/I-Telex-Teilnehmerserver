@@ -12,12 +12,12 @@ const config_js_1 = require("../COMMONMODULES/config.js");
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-const ITelexCom_js_1 = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const connections = require("../BINARYSERVER/connections.js");
 const misc = require("../BINARYSERVER/misc.js");
 //#endregion
 const readonly = (config_js_1.default.serverPin == null);
+const cv = config_js_1.default.cv;
 /*<PKGTYPES>
 Client_update: 1
 Address_confirm: 2
@@ -37,15 +37,15 @@ for (let i = 1; i <= 10; i++) {
 //handes[packagetype][state of this client.connection]
 //handles[2][constants.states.STANDBY] = (pkg,cnum,client.connection)=>{}; NOT USED
 //handles[4][WAITING] = (pkg,cnum,client.connection)=>{}; NOT USED
-handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
-    try {
+handles[1][constants.states.STANDBY] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
             var number = pkg.data.number;
             var pin = pkg.data.pin;
             var port = pkg.data.port;
             var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
             if (number < 10000) {
-                if (ITelexCom_js_1.cv(1))
+                if (cv(1))
                     logWithLineNumbers_js_1.lle(`${colors_js_1.default.FgRed}client tried to update ${number} which is too small(<10000)${colors_js_1.default.Reset}`);
                 misc.sendEmail("invalidNumber", {
                     "[IpFull]": client.connection.remoteAddress,
@@ -53,10 +53,12 @@ handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
                     "[number]": number,
                     "[date]": new Date().toLocaleString(),
                     "[timeZone]": getTimezone(new Date())
-                }, function () {
+                })
+                    .then(() => {
                     client.connection.end();
-                    cb();
-                });
+                    resolve();
+                })
+                    .catch(logWithLineNumbers_js_1.lle);
             }
             else {
                 misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
@@ -100,37 +102,34 @@ handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
                                                         ipaddress: result_c[0].ipaddress
                                                     }
                                                 }), "binary", function () {
-                                                    if (typeof cb === "function")
-                                                        cb();
+                                                    resolve();
                                                 });
                                             }
                                             catch (e) {
-                                                if (ITelexCom_js_1.cv(0))
+                                                if (cv(0))
                                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-                                                if (typeof cb === "function")
-                                                    cb();
+                                                resolve();
                                             }
                                         })
-                                            .catch(err => logWithLineNumbers_js_1.lle(err));
+                                            .catch(logWithLineNumbers_js_1.lle);
                                     })
-                                        .catch(err => logWithLineNumbers_js_1.lle(err));
+                                        .catch(logWithLineNumbers_js_1.lle);
                                 }
                                 else {
-                                    if (ITelexCom_js_1.cv(2))
+                                    if (cv(2))
                                         logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}not UPDATING, nothing to update${colors_js_1.default.Reset}`);
                                     client.connection.write(ITelexCom.encPackage({
                                         packagetype: 2,
                                         data: {
                                             ipaddress: res.ipaddress
                                         }
-                                    }), "binary", function () {
-                                        if (typeof cb === "function")
-                                            cb();
+                                    }), function () {
+                                        resolve();
                                     });
                                 }
                             }
                             else {
-                                if (ITelexCom_js_1.cv(1))
+                                if (cv(1))
                                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "wrong DynIp pin" + colors_js_1.default.Reset);
                                 client.connection.end();
                                 misc.sendEmail("wrongDynIpPin", {
@@ -139,11 +138,13 @@ handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
                                     "[name]": res.name,
                                     "[date]": new Date().toLocaleString(),
                                     "[timeZone]": getTimezone(new Date())
-                                }, cb);
+                                })
+                                    .then(resolve)
+                                    .catch(logWithLineNumbers_js_1.lle);
                             }
                         }
                         else {
-                            if (ITelexCom_js_1.cv(1))
+                            if (cv(1))
                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "not DynIp type" + colors_js_1.default.Reset);
                             client.connection.end();
                             misc.sendEmail("wrongDynIpType", {
@@ -154,7 +155,9 @@ handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
                                 "[name]": res.name,
                                 "[date]": new Date().toLocaleString(),
                                 "[timeZone]": getTimezone(new Date())
-                            }, cb);
+                            })
+                                .then(resolve)
+                                .catch(logWithLineNumbers_js_1.lle);
                         }
                     }
                     else if (results.length == 0) {
@@ -220,7 +223,9 @@ handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
                                     "[number]": number,
                                     "[date]": new Date().toLocaleString(),
                                     "[timeZone]": getTimezone(new Date())
-                                }, cb);
+                                })
+                                    .then(resolve)
+                                    .catch(logWithLineNumbers_js_1.lle);
                                 misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
                                     .then(function (result_c) {
                                     if (result_c.length > 0) {
@@ -230,54 +235,42 @@ handles[1][constants.states.STANDBY] = function (pkg, client, cb) {
                                                 data: {
                                                     ipaddress: result_c[0].ipaddress
                                                 }
-                                            }), "binary", function () {
-                                                if (typeof cb === "function")
-                                                    cb();
-                                            });
+                                            }), resolve);
                                         }
                                         catch (e) {
-                                            if (ITelexCom_js_1.cv(0))
+                                            if (cv(0))
                                                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-                                            if (typeof cb === "function")
-                                                cb();
+                                            resolve();
                                         }
                                     }
                                     else {
+                                        resolve();
                                     }
                                 })
-                                    .catch(err => logWithLineNumbers_js_1.lle(err));
+                                    .catch(logWithLineNumbers_js_1.lle);
                             }
                             else {
                                 logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "could not create entry", colors_js_1.default.Reset);
-                                if (typeof cb === "function")
-                                    cb();
+                                resolve();
                             }
                         })
-                            .catch(err => logWithLineNumbers_js_1.lle(err));
+                            .catch(logWithLineNumbers_js_1.lle);
                     }
                     else {
                         logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, res, colors_js_1.default.Reset);
-                        if (typeof cb === "function")
-                            cb();
+                        resolve();
                     }
                 })
-                    .catch(err => logWithLineNumbers_js_1.lle(err));
+                    .catch(logWithLineNumbers_js_1.lle);
             }
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
-handles[3][constants.states.STANDBY] = function (pkg, client, cb) {
-    try {
+handles[3][constants.states.STANDBY] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
             if (pkg.data.version == 1) {
                 var number = pkg.data.number;
@@ -290,7 +283,7 @@ handles[3][constants.states.STANDBY] = function (pkg, client, cb) {
 						disabled != 1
 					;`, [number])
                     .then(function (result) {
-                    if (ITelexCom_js_1.cv(2))
+                    if (cv(2))
                         logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, result, colors_js_1.default.Reset);
                     if ((result[0] != undefined) && (result != [])) {
                         let data = result[0];
@@ -299,44 +292,34 @@ handles[3][constants.states.STANDBY] = function (pkg, client, cb) {
                             packagetype: 5,
                             data
                         }), function () {
-                            if (typeof cb === "function")
-                                cb();
+                            resolve();
                         });
                     }
                     else {
                         client.connection.write(ITelexCom.encPackage({ packagetype: 4 }), function () {
-                            if (typeof cb === "function")
-                                cb();
+                            resolve();
                         });
                     }
                 })
-                    .catch(err => logWithLineNumbers_js_1.lle(err));
+                    .catch(logWithLineNumbers_js_1.lle);
             }
             else {
-                if (ITelexCom_js_1.cv(0))
+                if (cv(0))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed, "unsupported package version, sending '0x04' package", colors_js_1.default.Reset);
                 client.connection.write(ITelexCom.encPackage({ packagetype: 4 }), function () {
-                    if (typeof cb === "function")
-                        cb();
+                    resolve();
                 });
             }
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
-handles[5][constants.states.FULLQUERY] = function (pkg, client, cb) {
-    try {
+handles[5][constants.states.FULLQUERY] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
-            if (ITelexCom_js_1.cv(2))
+            if (cv(2))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got dataset for:", colors_js_1.default.FgCyan, pkg.data.number, colors_js_1.default.Reset);
             misc.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
                 .then(function (entries) {
@@ -360,9 +343,9 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, cb) {
                         client.newEntries = 0;
                     if (pkg.data.timestamp > +entry.timestamp) {
                         client.newEntries++;
-                        if (ITelexCom_js_1.cv(1) && !ITelexCom_js_1.cv(2))
+                        if (cv(1) && !cv(2))
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got new dataset for:", colors_js_1.default.FgCyan, pkg.data.number, colors_js_1.default.Reset);
-                        if (ITelexCom_js_1.cv(2))
+                        if (cv(2))
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved entry is " + colors_js_1.default.FgCyan + (pkg.data.timestamp - +entry.timestamp) + "seconds newer" + colors_js_1.default.FgGreen + " > " + colors_js_1.default.FgCyan + entry.timestamp + colors_js_1.default.Reset);
                         misc.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([
                             config_js_1.default.setChangedOnNewerEntry ? 1 : 0,
@@ -370,18 +353,16 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, cb) {
                         ]))
                             .then(function (res2) {
                             client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
-                                if (typeof cb === "function")
-                                    cb();
+                                resolve();
                             });
                         })
-                            .catch(err => logWithLineNumbers_js_1.lle(err));
+                            .catch(logWithLineNumbers_js_1.lle);
                     }
                     else {
-                        if (ITelexCom_js_1.cv(2))
+                        if (cv(2))
                             logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "recieved entry is " + colors_js_1.default.FgCyan + (+entry.timestamp - pkg.data.timestamp) + colors_js_1.default.FgYellow + " seconds older and was ignored" + colors_js_1.default.Reset);
                         client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
-                            if (typeof cb === "function")
-                                cb();
+                            resolve();
                         });
                     }
                 }
@@ -399,39 +380,30 @@ handles[5][constants.states.FULLQUERY] = function (pkg, client, cb) {
                     ]))
                         .then(function (res2) {
                         client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
-                            if (typeof cb === "function")
-                                cb();
+                            resolve();
                         });
                     })
-                        .catch(err => logWithLineNumbers_js_1.lle(err));
+                        .catch(logWithLineNumbers_js_1.lle);
                 }
                 else {
-                    if (ITelexCom_js_1.cv(0))
+                    if (cv(0))
                         logWithLineNumbers_js_1.ll('The "number" field should be unique! This error should not occur!');
-                    if (typeof cb === "function")
-                        cb();
+                    resolve();
                 }
             })
-                .catch(err => logWithLineNumbers_js_1.lle(err));
+                .catch(logWithLineNumbers_js_1.lle);
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
 handles[5][constants.states.LOGIN] = handles[5][constants.states.FULLQUERY];
-handles[6][constants.states.STANDBY] = function (pkg, client, cb) {
-    try {
+handles[6][constants.states.STANDBY] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
             if (pkg.data.serverpin == config_js_1.default.serverPin || (readonly && config_js_1.default.allowFullQueryInReadonly)) {
-                if (ITelexCom_js_1.cv(1))
+                if (cv(1))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
                 client = connections.get(connections.move(client.cnum, "S"));
                 misc.SqlQuery("SELECT  * FROM teilnehmer;")
@@ -439,19 +411,20 @@ handles[6][constants.states.STANDBY] = function (pkg, client, cb) {
                     if ((result[0] != undefined) && (result != [])) {
                         client.writebuffer = result;
                         client.state = constants.states.RESPONDING;
-                        ITelexCom.handlePackage({ packagetype: 8 }, client, cb);
+                        ITelexCom.handlePackage({ packagetype: 8 }, client)
+                            .then(resolve)
+                            .catch(logWithLineNumbers_js_1.lle);
                     }
                     else {
                         client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {
-                            if (typeof cb === "function")
-                                cb();
+                            resolve();
                         });
                     }
                 })
-                    .catch(err => logWithLineNumbers_js_1.lle(err));
+                    .catch(logWithLineNumbers_js_1.lle);
             }
             else {
-                if (ITelexCom_js_1.cv(1)) {
+                if (cv(1)) {
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "serverpin is incorrect! " + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + " ending client.connection!" + colors_js_1.default.Reset); //TODO: remove pin logging
                     client.connection.end();
                 }
@@ -460,36 +433,30 @@ handles[6][constants.states.STANDBY] = function (pkg, client, cb) {
                     "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
                     "[date]": new Date().toLocaleString(),
                     "[timeZone]": getTimezone(new Date())
-                }, cb);
+                })
+                    .then(resolve)
+                    .catch(logWithLineNumbers_js_1.lle);
             }
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
-handles[7][constants.states.STANDBY] = function (pkg, client, cb) {
-    try {
+handles[7][constants.states.STANDBY] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
             if ((pkg.data.serverpin == config_js_1.default.serverPin) || (readonly && config_js_1.default.allowLoginInReadonly)) {
-                if (ITelexCom_js_1.cv(1))
+                if (cv(1))
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
                 client = connections.get(connections.move(client.cnum, "S"));
                 client.connection.write(ITelexCom.encPackage({ packagetype: 8 }), function () {
                     client.state = constants.states.LOGIN;
-                    if (typeof cb === "function")
-                        cb();
+                    resolve();
                 });
             }
             else {
-                if (ITelexCom_js_1.cv(1)) {
+                if (cv(1)) {
                     logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "serverpin is incorrect!" + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + "ending client.connection!" + colors_js_1.default.Reset);
                     client.connection.end();
                 }
@@ -498,95 +465,72 @@ handles[7][constants.states.STANDBY] = function (pkg, client, cb) {
                     "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
                     "[date]": new Date().toLocaleString(),
                     "[timeZone]": getTimezone(new Date())
-                }, cb);
+                })
+                    .then(resolve)
+                    .catch(logWithLineNumbers_js_1.lle);
             }
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
-handles[8][constants.states.RESPONDING] = function (pkg, client, cb) {
-    try {
+handles[8][constants.states.RESPONDING] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
-            if (ITelexCom_js_1.cv(1)) {
+            if (cv(1)) {
                 var toSend = [];
                 for (let o of client.writebuffer) {
                     toSend.push(o.number);
                 }
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "entrys to transmit:" + colors_js_1.default.FgCyan + (ITelexCom_js_1.cv(2) ? util.inspect(toSend).replace(/\n/g, "") : toSend.length) + colors_js_1.default.Reset);
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "entrys to transmit:" + colors_js_1.default.FgCyan + (cv(2) ? util.inspect(toSend).replace(/\n/g, "") : toSend.length) + colors_js_1.default.Reset);
             }
             if (client.writebuffer.length > 0) {
                 client.connection.write(ITelexCom.encPackage({
                     packagetype: 5,
                     data: client.writebuffer[0]
                 }), function () {
-                    if (ITelexCom_js_1.cv(1))
+                    if (cv(1))
                         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "sent dataset for:", colors_js_1.default.FgCyan, client.writebuffer[0].number, colors_js_1.default.Reset);
                     client.writebuffer = client.writebuffer.slice(1);
-                    if (typeof cb === "function")
-                        cb();
+                    resolve();
                 });
             }
             else if (client.writebuffer.length == 0) {
                 client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {
                     client.writebuffer = [];
                     client.state = constants.states.STANDBY;
-                    if (typeof cb === "function")
-                        cb();
+                    resolve();
                 });
             }
             else {
-                if (typeof cb === "function")
-                    cb();
+                resolve();
             }
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
-handles[9][constants.states.FULLQUERY] = function (pkg, client, cb) {
-    try {
+handles[9][constants.states.FULLQUERY] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
             client.state = constants.states.STANDBY;
             if (typeof client.cb === "function")
                 client.cb();
-            if (typeof cb === "function")
-                cb();
+            resolve();
             client.connection.end();
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
 handles[9][constants.states.LOGIN] = handles[9][constants.states.FULLQUERY];
-handles[10][constants.states.STANDBY] = function (pkg, client, cb) {
-    try {
+handles[10][constants.states.STANDBY] = function (pkg, client) {
+    return new Promise((resolve, reject) => {
         if (client) {
-            if (ITelexCom_js_1.cv(2))
+            if (cv(2))
                 logWithLineNumbers_js_1.ll(pkg);
             //			let version = pkg.data.version;
             let query = pkg.data.pattern;
@@ -604,27 +548,21 @@ handles[10][constants.states.STANDBY] = function (pkg, client, cb) {
                     }
                     client.writebuffer = towrite;
                     client.state = constants.states.RESPONDING;
-                    ITelexCom.handlePackage({ packagetype: 8 }, client, cb);
+                    ITelexCom.handlePackage({ packagetype: 8 }, client)
+                        .then(resolve)
+                        .catch(logWithLineNumbers_js_1.lle);
                 }
                 else {
                     client.connection.write(ITelexCom.encPackage({ packagetype: 9 }), function () {
-                        if (typeof cb === "function")
-                            cb();
+                        resolve();
                     });
                 }
             })
-                .catch(err => logWithLineNumbers_js_1.lle(err));
+                .catch(logWithLineNumbers_js_1.lle);
         }
         else {
-            if (typeof cb === "function")
-                cb();
+            resolve();
         }
-    }
-    catch (e) {
-        if (ITelexCom_js_1.cv(2))
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
-        if (typeof cb === "function")
-            cb();
-    }
+    });
 };
 exports.default = handles;

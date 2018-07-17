@@ -8,7 +8,6 @@
     "stop": "pm2 delete ecosystem.config.js"
   },
   "dependencies": {
-    "@types/async": "^2.0.49",
     "@types/cookie-parser": "^1.4.1",
     "@types/express": "^4.16.0",
     "@types/ip": "0.0.31",
@@ -16,7 +15,6 @@
     "@types/mysql": "^2.15.5",
     "@types/nodemailer": "^4.6.2",
     "@types/serve-favicon": "^2.2.30",
-    "async": "^2.5.0",
     "body-parser": "^1.18.3",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",

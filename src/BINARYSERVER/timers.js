@@ -76,7 +76,8 @@ function TimeoutWrapper(fn, duration, ...args) {
         pauseAll();
         if (cv(3))
             logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "called: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.FgMagenta + " with: " + colors_js_1.default.FgCyan + "[" + args.slice(1) + "]" + colors_js_1.default.Reset);
-        fn.apply(null, args).then(() => {
+        fn.apply(null, args)
+            .then(() => {
             if (cv(3))
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "finished " + colors_js_1.default.FgMagenta + "callback for timeout: " + colors_js_1.default.FgCyan + fnName + colors_js_1.default.Reset);
             resumeAll();

@@ -88,7 +88,8 @@ function TimeoutWrapper(fn, duration, ...args) {
 	timeouts[fnName] = new Timer(function () {
 		pauseAll();
 		if (cv(3)) ll(colors.FgMagenta + "called: " + colors.FgCyan + fnName + colors.FgMagenta + " with: " + colors.FgCyan+"["+args.slice(1)+"]"+colors.Reset);
-		fn.apply(null, args).then(()=>{
+		fn.apply(null, args)
+		.then(()=>{
 			if (cv(3)) ll(colors.FgGreen +"finished "+ colors.FgMagenta + "callback for timeout: " + colors.FgCyan + fnName + colors.Reset);
 			resumeAll();
 		}).catch(err=>{
