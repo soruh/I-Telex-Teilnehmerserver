@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //TODO: Object.defineProperty(Date.prototype, 'getTimezone', { value:
+//#region imports
+const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
+const ip = require("ip");
+const config_js_1 = require("../COMMONMODULES/config.js");
+const colors_js_1 = require("../COMMONMODULES/colors.js");
+const constants = require("../BINARYSERVER/constants.js");
+const handles_js_1 = require("../BINARYSERVER/handles.js");
+const misc = require("../BINARYSERVER/misc.js");
+//#endregion
+const cv = config_js_1.default.cv;
+exports.cv = cv;
 Object.defineProperty(Buffer.prototype, 'readNullTermString', { value: function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
         // lle(highlightBuffer(this));
         // lle("start:"+start);
@@ -127,17 +138,6 @@ function explainPackage(pkg) {
     return res;
 }
 exports.explainPackage = explainPackage;
-//#region imports
-const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
-const ip = require("ip");
-const config_js_1 = require("../COMMONMODULES/config.js");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
-const constants = require("../BINARYSERVER/constants.js");
-const handles_js_1 = require("../BINARYSERVER/handles.js");
-const misc = require("../BINARYSERVER/misc.js");
-//#endregion
-const cv = config_js_1.default.cv;
-exports.cv = cv;
 function handlePackage(obj, client, cb) {
     if (!obj) {
         if (cv(0))

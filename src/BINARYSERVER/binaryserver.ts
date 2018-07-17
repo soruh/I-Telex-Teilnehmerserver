@@ -3,13 +3,8 @@
 import * as util from 'util';
 import * as net from 'net';
 
-import * as fs from "fs";
-import * as path from "path";
-import {lookup} from 'dns';
-
 import * as async from "async";
 import * as mysql from "mysql";
-import * as ip from "ip";
 
 import * as timers from "../BINARYSERVER/timers.js";
 import config from '../COMMONMODULES/config.js';
@@ -20,7 +15,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as connections from "../BINARYSERVER/connections.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import connect from "../BINARYSERVER/connect.js";
-import {getTransporter, setTransporter} from "../BINARYSERVER/transporter.js";
+import {setTransporter} from "../BINARYSERVER/transporter.js";
 import {getPool, setPool} from "../BINARYSERVER/sqlPool";
 import * as misc from "../BINARYSERVER/misc.js";
 

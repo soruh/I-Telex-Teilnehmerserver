@@ -3,7 +3,6 @@
 import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
 import * as util from "util";
 import * as net from "net";
-import * as mysql from "mysql";
 import * as async from "async";
 import config from '../COMMONMODULES/config.js';
 import colors from "../COMMONMODULES/colors.js";

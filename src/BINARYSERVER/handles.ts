@@ -7,7 +7,6 @@ function getTimezone(date) { //TODO: figure out way to not hav this in all files
 
 //#region imports
 import * as util from 'util';
-import * as mysql from "mysql";
 import * as ip from "ip";
 import config from '../COMMONMODULES/config.js';
 import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";

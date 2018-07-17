@@ -1,9 +1,3 @@
-function getTimezone(date) { //TODO: figure out way to not have this in all files where it is used
-	let offset = -1 * date.getTimezoneOffset();
-	let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
-	return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
-}
-
 //#region imports
 import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
 import * as util from "util";
@@ -18,10 +12,16 @@ import * as connections from "../BINARYSERVER/connections.js"
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import { lookup } from "dns";
 import {MailOptions} from "nodemailer/lib/json-transport.js";
-import {getTransporter, setTransporter} from "../BINARYSERVER/transporter.js";
+import {getTransporter} from "../BINARYSERVER/transporter.js";
 import { getPool } from "./sqlPool.js";
 //#endregion
 
+
+function getTimezone(date) { //TODO: figure out way to not have this in all files where it is used
+	let offset = -1 * date.getTimezoneOffset();
+	let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
+	return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
+}
 
 var serverErrors:{
 	[index:string]:{

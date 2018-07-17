@@ -1,6 +1,22 @@
 "use strict";
 //TODO: Object.defineProperty(Date.prototype, 'getTimezone', { value:
 
+
+//#region imports
+import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
+import * as ip from "ip";
+import config from '../COMMONMODULES/config.js';
+import colors from "../COMMONMODULES/colors.js";
+import * as constants from "../BINARYSERVER/constants.js";
+import * as connections from "../BINARYSERVER/connections.js"
+import handles from "../BINARYSERVER/handles.js";
+import * as misc from "../BINARYSERVER/misc.js";
+//#endregion
+
+const cv = config.cv;
+
+
+
 Object.defineProperty(Buffer.prototype, 'readNullTermString', { value:
 	function readNullTermString(encoding:string="utf8",start:number=0,end:number=this.length){
 		// lle(highlightBuffer(this));
@@ -139,20 +155,6 @@ function explainPackage(pkg:Buffer):string{
 	return res;
 }
 
-
-//#region imports
-import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
-import * as mysql from "mysql";
-import * as ip from "ip";
-import config from '../COMMONMODULES/config.js';
-import colors from "../COMMONMODULES/colors.js";
-import * as constants from "../BINARYSERVER/constants.js";
-import * as connections from "../BINARYSERVER/connections.js"
-import handles from "../BINARYSERVER/handles.js";
-import * as misc from "../BINARYSERVER/misc.js";
-//#endregion
-
-const cv = config.cv;
 
 type Package_decoded =
 Package_decoded_1|

@@ -8,11 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-function getTimezone(date) {
-    let offset = -1 * date.getTimezoneOffset();
-    let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
-    return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
-}
 //#region imports
 const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const util = require("util");
@@ -26,6 +21,11 @@ const dns_1 = require("dns");
 const transporter_js_1 = require("../BINARYSERVER/transporter.js");
 const sqlPool_js_1 = require("./sqlPool.js");
 //#endregion
+function getTimezone(date) {
+    let offset = -1 * date.getTimezoneOffset();
+    let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
+    return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
+}
 var serverErrors = {};
 exports.serverErrors = serverErrors;
 const cv = config_js_1.default.cv;
@@ -152,9 +152,9 @@ function checkIp(data, client) {
                 }
                 catch (e) {
                     client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-                    return;
                     if (cv(3))
                         logWithLineNumbers_js_1.ll(e);
+                    return;
                 }
             }
             if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
