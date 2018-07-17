@@ -1,0 +1,18 @@
+{
+    "loggingVerbosity":1,
+
+    "logITelexCom":false,
+    "logConnectionChanges":false,
+    "logFullBuffer": false,
+    "explainBuffers":2,
+
+    "logDate":true,
+    "logLineNumbers":false,
+    "bufferLogWithWhitespace":true,
+
+    "repairPm2Colors":false,
+    "disableColors":false,
+
+    "stdoutLog":null,
+    "stderrLog":null
+}

@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "module": "commonjs",
+        "declaration": false,
+        "target": "ES6",
+        //"OutDir": "compiled/",
+        //"allowJs": true,
+        "resolveJsonModule": true
+    },
+    "include": [
+        "src/",
+        "tests/"
+    ],
+    "exclude": [
+        "node_modules/"
+    ]
+}

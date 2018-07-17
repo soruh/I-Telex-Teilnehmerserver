@@ -2,7 +2,7 @@ module.exports = {
   apps : [
     {
       name: "binaryserver",
-      script: "./BINARYSERVER/binaryserver.js",
+      script: "src/BINARYSERVER/binaryserver.js",
 /*
       interpreter: "0x",
       interpreter_args:" -D flamegraph_binaryserver",
@@ -11,7 +11,7 @@ module.exports = {
     },
     {
       name: "webserver",
-      script: "./WEBSERVER/bin/webserver.js",
+      script: "src/WEBSERVER/bin/webserver.js",
 /*
       interpreter: "0x",
       interpreter_args:" -D flamegraph_webserver",

@@ -1,84 +1,85 @@
 #!/usr/bin/env node
-const options = require(__dirname+"/COMMONMODULES/config.js").get("mySqlConnectionOptions");
+"use strict";
+const options = require(__dirname + "/src/COMMONMODULES/config.js").default.mySqlConnectionOptions;
 const async = require("async");
 const mysql = require("mysql");
 var args = JSON.parse(JSON.stringify(process.argv));
 
-if(process.argv[2]=="--help"){
+if (process.argv[2] == "--help") {
   printUsage();
-}else{
+} else {
   var dbcon = mysql.createConnection(options);
-  dbcon.query("",function(err,res){
-    if(err){
-      if(err.code=="ER_ACCESS_DENIED_ERROR"){
+  dbcon.query("", function (err, res) {
+    if (err) {
+      if (err.code == "ER_ACCESS_DENIED_ERROR") {
         console.log("wrong credentials");
         dbcon.end(process.exit);
-      }else if(err.code=="ER_EMPTY_QUERY"){
-        switch(process.argv[2]){
+      } else if (err.code == "ER_EMPTY_QUERY") {
+        switch (process.argv[2]) {
           case "add":
-            if(process.argv.length == 5){
-              dbcon.query("INSERT INTO servers (addresse, port) VALUES ("+mysql.escape(process.argv[3])+", "+mysql.escape(process.argv[4])+");",function(err, res){
-                if(err){
+            if (process.argv.length == 5) {
+              dbcon.query("INSERT INTO servers (addresse, port) VALUES (" + mysql.escape(process.argv[3]) + ", " + mysql.escape(process.argv[4]) + ");", function (err, res) {
+                if (err) {
                   console.error(err);
-                }else{
+                } else {
                   console.log("done!");
-                  console.log("Added entry:\n"+process.argv[3]+" "+process.argv[4]);
+                  console.log("Added entry:\n" + process.argv[3] + " " + process.argv[4]);
                 }
                 process.exit();
               });
-            }else{
+            } else {
               printUsage();
             }
             break;
           case "remove":
-            if(process.argv.length == 5){
-              dbcon.query("DELETE FROM servers WHERE addresse="+mysql.escape(process.argv[3])+" AND  port="+mysql.escape(process.argv[4])+";",function(err, res){
-                if(err){
+            if (process.argv.length == 5) {
+              dbcon.query("DELETE FROM servers WHERE addresse=" + mysql.escape(process.argv[3]) + " AND  port=" + mysql.escape(process.argv[4]) + ";", function (err, res) {
+                if (err) {
                   console.error(err);
-                }else if(res.affectedRows>0){
-                  console.log("done!\ndeleted entrys: "+res.affectedRows);
-                }else{
-                  console.log("the entry:\n"+process.argv[3]+" "+process.argv[4]+"\ndoes not exist!");
+                } else if (res.affectedRows > 0) {
+                  console.log("done!\ndeleted entrys: " + res.affectedRows);
+                } else {
+                  console.log("the entry:\n" + process.argv[3] + " " + process.argv[4] + "\ndoes not exist!");
                 }
                 process.exit();
               });
-            }else{
+            } else {
               printUsage();
             }
             break;
           case "list":
-            if(process.argv.length == 3){
-              dbcon.query("SELECT * FROM servers;",function(err, res){
-                if(err){
+            if (process.argv.length == 3) {
+              dbcon.query("SELECT * FROM servers;", function (err, res) {
+                if (err) {
                   console.error(err);
-                }else{
-
-                }
-                for(o of res){
-                  console.log(o.addresse+" "+o.port);
+                } else {
+                  for (let o of res) {
+                    console.log(o.addresse + " " + o.port);
+                  }
                 }
                 process.exit();
               });
-            }else{
+            } else {
               printUsage();
             }
             break;
           default:
-          printUsage();
+            printUsage();
         }
-      }else{
+      } else {
         console.error(err);
         process.exit();
       }
     }
   });
 }
-function printUsage(){
-  console.log("USAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" [OPTION] (parameter1) (parameter2)\n\nSYNOPSIS:\n\Manage servers\n\nOPTIONS:\n\nlist:\n\tList all servers\n\tUSAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" list\n\nadd:\n\tAdd a server\n\tUSAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" add [server address] [server port]\n\nremove:\n\tRemove a server\n\tUSAGE: "+process.argv[0].split("/").slice(-1)[0]+" "+process.argv[1].split("/").slice(-1)[0]+" remove [server address] [server port]\n");
-  try{
+
+function printUsage() {
+  console.log("USAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " [OPTION] (parameter1) (parameter2)\n\nSYNOPSIS:\n\Manage servers\n\nOPTIONS:\n\nlist:\n\tList all servers\n\tUSAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " list\n\nadd:\n\tAdd a server\n\tUSAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " add [server address] [server port]\n\nremove:\n\tRemove a server\n\tUSAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " remove [server address] [server port]\n");
+  try {
     dbcon.end();
     process.exit();
-  }catch(e){
+  } catch (e) {
     process.exit();
   }
 }
