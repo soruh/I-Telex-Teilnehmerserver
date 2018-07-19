@@ -1,11 +1,11 @@
-function serialEachPromise<T>(iterable:Iterable<T>, promiseFunction:(value:T, key:number)=>Promise<any>){
+function serialEachPromise<T,U>(iterable:Iterable<T>, promiseFunction:(value:T, key:number)=>Promise<U>){
   let promiseGenerator = function*(/*iterable:Iterable<T>, promiseFunction:(value:T, key:number)=>any*/){
     for(let i in iterable) yield(promiseFunction(iterable[i],+i));
   };
-  let consumePromiseGenerator = (generator:Generator):Promise<any[]>=>new Promise((resolve,reject)=>{
-    let results:any[] = [];
+  let consumePromiseGenerator = (generator:Generator):Promise<U[]>=>new Promise((resolve,reject)=>{
+    let results:U[] = [];
     let consumeNextPromise = (/*generator:Generator*/):void=>{
-      let next:IteratorResult<Promise<any>> = generator.next();
+      let next:IteratorResult<Promise<U>> = generator.next();
       if(next.done){
         resolve(results);
       }else{
