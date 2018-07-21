@@ -1,6 +1,3 @@
-import * as fs from "fs";
-import * as path from "path";
-
 
 interface configFile {
   "cv":(level:number)=>boolean,
@@ -33,7 +30,7 @@ interface configFile {
   "allowFullQueryInReadonly": boolean,
   "allowLoginInReadonly": boolean,
   "doDnsLookups": boolean,
-  "updateQueueInterval": number,
+  // "updateQueueInterval": number,
   "queueSendInterval": number,
   "fullQueryInterval": number,
   "fullQueryServer": string,

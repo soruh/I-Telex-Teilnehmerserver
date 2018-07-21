@@ -8,7 +8,7 @@ const config_js_1 = require("../COMMONMODULES/config.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
 const handles_js_1 = require("../BINARYSERVER/handles.js");
-const misc = require("../BINARYSERVER/misc.js");
+const misc_js_1 = require("./misc.js");
 //#endregion
 const cv = config_js_1.default.cv;
 Object.defineProperty(Buffer.prototype, 'readNullTermString', { value: function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
@@ -47,16 +47,12 @@ Object.defineProperty(Buffer.prototype, 'writeByteArray', { value: function writ
 // }
 function explainData(data) {
     let str = "<Buffer";
-    var packagetype;
+    var type;
     var datalength;
     for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
-        packagetype = +data[typepos];
+        type = +data[typepos];
         datalength = +data[typepos + 1];
-        // lle(typepos,datalength+2,typepos+datalength+2);
-        // lle(highlightBuffer(data,typepos,datalength+2));
-        // lle(data.slice(typepos,typepos+datalength+2));
         let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
-        // lle(array);
         array = array.map((value, index) => index == 0 ?
             "\x1b[036m" + value + "\x1b[000m" :
             index == 1 ?
@@ -80,11 +76,11 @@ function explainPackagePart(buffer, name, color) {
 }
 function explainPackage(pkg) {
     let res = "<Buffer";
-    let packagetype = pkg[0];
+    let type = pkg[0];
     let datalength = pkg[1];
-    res += explainPackagePart(Buffer.from([packagetype]), "packagetype", "\x1b[036m");
+    res += explainPackagePart(Buffer.from([type]), "type", "\x1b[036m");
     res += explainPackagePart(Buffer.from([datalength]), "datalength", "\x1b[032m");
-    switch (packagetype) {
+    switch (type) {
         case 1:
             res += explainPackagePart(pkg.slice(2, 6), "number", "\x1b[034m");
             res += explainPackagePart(pkg.slice(6, 8), "pin", "\x1b[031m");
@@ -147,8 +143,8 @@ function handlePackage(obj, client) {
         }
         else {
             if (cv(2) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
-            if (obj.packagetype == 0xff) {
+                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
+            if (obj.type == 0xff) {
                 if (cv(0))
                     logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
                 resolve();
@@ -157,17 +153,17 @@ function handlePackage(obj, client) {
                 try {
                     if (cv(2)) {
                         if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
+                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
                     }
                     else if (cv(1)) {
                         if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling packagetype:" + colors_js_1.default.FgCyan, obj.packagetype, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.packagetype == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
+                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling type:" + colors_js_1.default.FgCyan, obj.type, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
                     }
-                    if (typeof handles_js_1.default[obj.packagetype][client.state] == "function") {
+                    if (typeof handles_js_1.default[obj.type][client.state] == "function") {
                         if (cv(2) && config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
+                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for type " + colors_js_1.default.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
                         try {
-                            handles_js_1.default[obj.packagetype][client.state](obj, client)
+                            handles_js_1.default[obj.type][client.state](obj, client)
                                 .then(resolve)
                                 .catch(reject);
                         }
@@ -179,7 +175,7 @@ function handlePackage(obj, client) {
                     }
                     else {
                         if (cv(0))
-                            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "packagetype " + colors_js_1.default.FgCyan + constants.PackageNames[obj.packagetype] + "(" + obj.packagetype + ")" + colors_js_1.default.FgRed + " not supported in state " + colors_js_1.default.FgCyan + constants.stateNames[client.state] + "(" + client.state + ")" + colors_js_1.default.Reset);
+                            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "type " + colors_js_1.default.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors_js_1.default.FgRed + " not supported in state " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
                         resolve();
                     }
                 }
@@ -207,11 +203,11 @@ function getCompletePackages(data, part) {
     if (cv(3))
         if (config_js_1.default.logITelexCom)
             logWithLineNumbers_js_1.ll("combined: ", combined);
-    var packagetype = combined[0]; //TODO check for valid type
+    var type = combined[0]; //TODO check for valid type
     var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
     if (cv(3))
         if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("packagetype: ", packagetype);
+            logWithLineNumbers_js_1.ll("type: ", type);
     if (cv(3))
         if (config_js_1.default.logITelexCom)
             logWithLineNumbers_js_1.ll("packagelength: ", packagelength);
@@ -277,11 +273,11 @@ function encPackage(pkg) {
     if (config_js_1.default.logITelexCom)
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoding:" + colors_js_1.default.FgCyan, pkg, colors_js_1.default.Reset);
     if (pkg.datalength == null)
-        pkg.datalength = constants.PackageSizes[pkg.packagetype];
+        pkg.datalength = constants.PackageSizes[pkg.type];
     var buffer = new Buffer(pkg.datalength + 2);
-    buffer[0] = pkg.packagetype;
+    buffer[0] = pkg.type;
     buffer[1] = pkg.datalength;
-    switch (pkg.packagetype) {
+    switch (pkg.type) {
         case 1:
             buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
             buffer.writeUIntLE(+pkg.data.pin || 0, 6, 2);
@@ -371,13 +367,13 @@ function encPackage(pkg) {
 exports.encPackage = encPackage;
 function decPackage(buffer) {
     let pkg = {
-        packagetype: buffer[0],
+        type: buffer[0],
         datalength: buffer[1],
         data: null
     };
     if (config_js_1.default.logITelexCom && cv(1))
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding package:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer));
-    switch (pkg.packagetype) {
+    switch (pkg.type) {
         case 1:
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
@@ -478,7 +474,7 @@ function decPackage(buffer) {
             };
             break;
         default:
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "invalid/unsupported packagetype: " + colors_js_1.default.FgCyan + pkg.packagetype + colors_js_1.default.Reset);
+            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "invalid/unsupported type: " + colors_js_1.default.FgCyan + pkg.type + colors_js_1.default.Reset);
             return null;
     }
     return pkg;
@@ -491,11 +487,11 @@ function decPackages(buffer) {
         logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding data:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers ? explainData(buffer) : buffer), colors_js_1.default.Reset);
     var out = [];
     for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
-        var packagetype = +buffer[typepos];
+        var type = +buffer[typepos];
         var datalength = +buffer[typepos + 1];
-        if (packagetype in constants.PackageSizes && constants.PackageSizes[packagetype] != datalength) {
+        if (type in constants.PackageSizes && constants.PackageSizes[type] != datalength) {
             if (cv(1) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[packagetype]} != ${datalength}${colors_js_1.default.Reset}`);
+                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[type]} != ${datalength}${colors_js_1.default.Reset}`);
             if (config_js_1.default.allowInvalidPackageSizes) {
                 if (cv(1) && config_js_1.default.logITelexCom)
                     logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}using package of invalid size!${colors_js_1.default.Reset}`);
@@ -527,7 +523,7 @@ function ascii(data, client) {
         if (!isNaN(parseInt(number))) {
             if (cv(1) && config_js_1.default.logITelexCom)
                 logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
-            misc.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
+            misc_js_1.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
                 .then(function (result) {
                 if (!result || result.length == 0) {
                     let send = "";

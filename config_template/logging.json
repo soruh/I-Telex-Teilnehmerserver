@@ -2,7 +2,6 @@
     "loggingVerbosity":1,
 
     "logITelexCom":false,
-    "logConnectionChanges":false,
     "logFullBuffer": false,
     "explainBuffers":2,
 

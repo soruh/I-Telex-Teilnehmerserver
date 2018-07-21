@@ -17,19 +17,17 @@ const nodemailer = require("nodemailer");
 const config_js_1 = require("../COMMONMODULES/config.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const dns_1 = require("dns");
-const transporter_js_1 = require("../BINARYSERVER/transporter.js");
-const sqlPool_js_1 = require("./sqlPool.js");
 const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
 //#endregion
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
-    let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
-    return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
+    let offsetStr = (Math.floor(offset / 60)).padStart(2, "0") + ":" + (offset % 60).padStart(2, "0");
+    return "UTC" + (offset < 0 ? "" : "+") + offsetStr;
 }
 var serverErrors = {};
 exports.serverErrors = serverErrors;
 const cv = config_js_1.default.cv;
-const mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
+const { mySqlConnectionOptions } = config_js_1.default;
 mySqlConnectionOptions["multipleStatements"] = true;
 function increaseErrorCounter(serverkey, error, code) {
     let newError = {
@@ -72,23 +70,16 @@ function resetErrorCounter(serverkey) {
 exports.resetErrorCounter = resetErrorCounter;
 function SqlQuery(query, options) {
     return new Promise((resolve, reject) => {
-        if (cv(3))
-            logWithLineNumbers_js_1.llo(1, colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query + " " + (options || "") + colors_js_1.default.Reset);
         query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-        query = mysql.format(query, options || []);
+        if (cv(3))
+            logWithLineNumbers_js_1.llo(3, colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query + " " + (options || "") + colors_js_1.default.Reset);
         if (cv(2) || (cv(1) && /(update)|(insert)/gi.test(query)))
-            logWithLineNumbers_js_1.llo(1, colors_js_1.default.BgLightBlue + colors_js_1.default.FgBlack + query + colors_js_1.default.Reset);
-        let sqlPool = sqlPool_js_1.getPool();
-        if (sqlPool) {
-            sqlPool.query(query, function (err, res) {
-                if (sqlPool["_allConnections"] && sqlPool["_allConnections"].length) {
+            logWithLineNumbers_js_1.llo(3, colors_js_1.default.BgLightBlue + colors_js_1.default.FgBlack + mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim() + colors_js_1.default.Reset);
+        if (global.sqlPool) {
+            global.sqlPool.query(query, options, function (err, res) {
+                if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
                     if (cv(3))
-                        logWithLineNumbers_js_1.ll("number of open connections: " + sqlPool["_allConnections"].length);
-                }
-                else {
-                    if (cv(2))
-                        logWithLineNumbers_js_1.ll("not a pool");
-                }
+                        logWithLineNumbers_js_1.ll("number of open connections: " + global.sqlPool["_allConnections"].length);
                 if (err) {
                     if (cv(0))
                         logWithLineNumbers_js_1.llo(1, colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
@@ -103,34 +94,6 @@ function SqlQuery(query, options) {
             logWithLineNumbers_js_1.lle(`sql pool is not set!`);
         }
     });
-    /*try{
-        sqlPool.getConnection(function(e,c){
-            if(e){
-                if(cv(0)) lle(colors.FgRed,e,colors.Reset);
-                c.release();
-            }else{
-                c.query(query,function(err,res){
-                    c.release();
-                    //lle(sqlPool);
-                    try{
-                        if (config.logITelexCom) ll("number of open connections: "+sqlPool._allConnections.length);
-                    }catch(e){
-                        //if (config.logITelexCom) ll("sqlPool threadId: "+sqlPool.threadId);
-                        console.trace(sqlPool.threadId);
-                    }
-                    if(err){
-                        if(cv(0)) lle(colors.FgRed,err,colors.Reset);
-                        if(typeof callback === "function") callback([]);
-                    }else{
-                        if(typeof callback === "function") callback(res);
-                    }
-                });
-            }
-        });
-    }catch(e){
-        lle(sqlPool);
-        throw(e);
-    }*/
 }
 exports.SqlQuery = SqlQuery;
 function checkIp(data, client) {
@@ -226,30 +189,24 @@ function sendEmail(messageName, values) {
                 text: "",
                 html: ""
             };
-            let type;
-            if (message.html) {
-                type = "html";
-            }
-            else if (message.text) {
-                type = "text";
+            let type = message.html ? "html" : message.text ? "text" : null;
+            // if(type){
+            //	 mailOptions[type] = message[type];
+            //	 for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
+            // }
+            if (type) {
+                mailOptions[type] = message[type].replace(/\[([^\]]*)\]/g, (match, key) => values[key] || "NULL");
             }
             else {
-                type = null;
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            if (type) {
-                mailOptions[type] = message[type];
-                for (let k in values) {
-                    mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
-                }
-            }
             if (cv(2) && config_js_1.default.logITelexCom) {
-                logWithLineNumbers_js_1.ll("sending mail:\n", mailOptions, "\nto server", transporter_js_1.getTransporter().options["host"]);
+                logWithLineNumbers_js_1.ll("sending mail:\n", mailOptions, "\nto server", global.transporter.options["host"]);
             }
             else if (cv(1)) {
                 logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
             }
-            transporter_js_1.getTransporter().sendMail(mailOptions, function (error, info) {
+            global.transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     // if (cv(2)) lle(error);
                     reject(error);
@@ -267,3 +224,222 @@ function sendEmail(messageName, values) {
     });
 }
 exports.sendEmail = sendEmail;
+const symbolName = (s) => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
+exports.symbolName = symbolName;
+//#region cool names
+/**/
+const names = [
+    //mathematicians
+    "Isaac Newton",
+    "Archimedes",
+    "Carl F. Gauss",
+    "Leonhard Euler",
+    "Bernhard Riemann",
+    "Henri Poincaré",
+    "Joseph-Louis Lagrange",
+    "Euclid",
+    "David Hilbert",
+    "Gottfried W. Leibniz",
+    "Alexandre Grothendieck",
+    "Pierre de Fermat",
+    "Évariste Galois",
+    "John von Neumann",
+    "René Descartes",
+    "Karl W. T. Weierstrass",
+    "Srinivasa Ramanujan",
+    "Hermann K. H. Weyl",
+    "Peter G. L. Dirichlet",
+    "Niels Abel",
+    "Georg Cantor",
+    "Carl G. J. Jacobi",
+    "Brahmagupta",
+    "Augustin Cauchy",
+    "Arthur Cayley",
+    "Emmy Noether",
+    "Pythagoras",
+    "Aryabhata",
+    "Leonardo \"Fibonacci\"",
+    "William R. Hamilton",
+    "Apollonius",
+    "Charles Hermite",
+    "Pierre-Simon Laplace",
+    "Carl Ludwig Siegel",
+    "Diophantus",
+    "Richard Dedekind",
+    "Kurt Gödel",
+    "Bháscara (II) Áchárya",
+    "Felix Christian Klein",
+    "Blaise Pascal",
+    "Élie Cartan",
+    "Archytas",
+    "Godfrey H. Hardy",
+    "Alhazen ibn al-Haytham",
+    "Jean le Rond d'Alembert",
+    "F.E.J. Émile Borel",
+    "Julius Plücker",
+    "Hipparchus",
+    "Andrey N. Kolmogorov",
+    "Joseph Liouville",
+    "Eudoxus",
+    "F. Gotthold Eisenstein",
+    "Jacob Bernoulli",
+    "Johannes Kepler",
+    "Stefan Banach",
+    "Jacques Hadamard",
+    "Giuseppe Peano",
+    "Panini",
+    "André Weil",
+    "Jakob Steiner",
+    "Liu Hui",
+    "Gaspard Monge",
+    "Hermann G. Grassmann",
+    "François Viète",
+    "M. E. Camille Jordan",
+    "Joseph Fourier",
+    "Bonaventura Cavalieri",
+    "Jean-Pierre Serre",
+    "Marius Sophus Lie",
+    "Albert Einstein",
+    "Galileo Galilei",
+    "James C. Maxwell",
+    "Aristotle",
+    "Girolamo Cardano",
+    "Michael F. Atiyah",
+    "Atle Selberg",
+    "L.E.J. Brouwer",
+    "Christiaan Huygens",
+    "Alan M. Turing",
+    "Jean-Victor Poncelet",
+    "Pafnuti Chebyshev",
+    "Henri Léon Lebesgue",
+    "John E. Littlewood",
+    "F. L. Gottlob Frege",
+    "Alfred Tarski",
+    "Shiing-Shen Chern",
+    "James J. Sylvester",
+    "Johann Bernoulli",
+    "Ernst E. Kummer",
+    "Johann H. Lambert",
+    "George Pólya",
+    "Felix Hausdorff",
+    "Siméon-Denis Poisson",
+    "Hermann Minkowski",
+    "George D. Birkhoff",
+    "Omar al-Khayyám",
+    "Adrien M. Legendre",
+    "Pappus",
+    "Thales",
+    //pyhsicists
+    "Stephen Hawking",
+    "Albert Einstein",
+    "Nikola Tesla",
+    "Isaac Newton",
+    "Galileo Galilei",
+    "Marie Curie",
+    "Richard Feynman",
+    "Archimedes",
+    "Carl Sagan",
+    "J. Robert Oppenheimer",
+    "Michael Faraday",
+    "Blaise Pascal",
+    "Sally Ride",
+    "Leonhard Euler",
+    "Werner Heisenberg",
+    "Vikram Sarabhai",
+    "Niels Bohr",
+    "Avicenna",
+    "Ernest Rutherford",
+    "Robert Hooke",
+    "Erwin Schrödinger",
+    "Jagadish Chandra Bose",
+    "Max Planck",
+    "Satyendra Nath Bose",
+    "Enrico Fermi",
+    "J J Thompson",
+    "Paul Dirac",
+    "Subrahmanyan Chandrasekhar",
+    "C.V. Raman",
+    "Pierre Curie",
+    "Robert Boyle",
+    "Kip Thorne",
+    "Edward Teller",
+    "Max Born",
+    "Georges Lemaître",
+    "William Thomson, 1st Baron Kelvin",
+    "Abdus Salam",
+    "Klaus Fuchs",
+    "Thomas Kuhn",
+    "Joseph Fourier",
+    "Andrei Sakharov",
+    "Heinrich Hertz",
+    "William Shockley",
+    "Lise Meitner",
+    "Daniel Bernoulli",
+    "Ludwig Boltzmann",
+    "James Chadwick",
+    "James Prescott Joule",
+    "Wolfgang Pauli",
+    "Amedeo Avogadro",
+    "Henry Cavendish",
+    "Louis de Broglie",
+    "John Bardeen",
+    "Georg Ohm",
+    "Steven Chu",
+    "Hermann von Helmholtz",
+    "John Archibald Wheeler",
+    "David Bohm",
+    "Hendrik Lorentz",
+    "Henry Moseley",
+    "Steven Weinberg",
+    "Meghnad Saha",
+    "Lev Landau ",
+    "Henri Becquerel",
+    "Hans Bethe",
+    "Philipp Lenard",
+    "Murray Gell-Mann",
+    "Luis Walter Alvarez",
+    "Gustav Kirchhoff",
+    "Arthur Eddington",
+    "Eugene Paul ",
+    "Evangelista Torricelli",
+    "Anders Celsius",
+    "Ernst Mach",
+    "Julian Schwinger",
+    "Robert Andrews Millikan",
+    "Joseph Louis Gay-Lussac",
+    "George Gamow",
+    "Annie Jump Cannon",
+    "Homi Bhabha",
+    "Arnold Sommerfeld",
+    "John Tyndall",
+    "Albert Abraham Michelson",
+    "Ernest Lawrence",
+    "Lord Kelvin",
+    "John Stewart Bell",
+    "Frédéric Joliot-Curie",
+    "Augustin-Jean Fresnel",
+    "Isidor Isaac Rabi ",
+    "Maria Goeppert Mayer",
+    "Arthur Compton",
+    "Sir George Stokes, 1st Baronet",
+    "Dennis Gabor",
+    "Heike Kamerlingh Onnes",
+    "Philip Warren Anderson",
+    "Tsung-Dao Lee",
+    "Max von Laue or Max b",
+    "Franklin Diaz",
+    "Hideki Yukawa",
+];
+function randomName() {
+    return names[Math.floor(Math.random() * names.length)];
+}
+var lastnames = [];
+function clientName() {
+    let name = randomName();
+    while (lastnames.indexOf(name) > -1)
+        name = randomName();
+    lastnames.unshift(name);
+    lastnames = lastnames.slice(0, 8);
+    return name;
+}
+exports.clientName = clientName;

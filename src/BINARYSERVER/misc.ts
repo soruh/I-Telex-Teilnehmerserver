@@ -3,25 +3,22 @@ import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
 import * as util from "util";
 import * as mysql from "mysql";
 import * as ip from "ip";
+import * as net from "net";
 import * as nodemailer from "nodemailer";
 import config from '../COMMONMODULES/config.js';
 import colors from "../COMMONMODULES/colors.js";
-import * as connections from "../BINARYSERVER/connections.js"
+
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import { lookup } from "dns";
-import {MailOptions} from "nodemailer/lib/json-transport.js";
-import {getTransporter} from "../BINARYSERVER/transporter.js";
-import { getPool } from "./sqlPool.js";
-import { resolve } from "url";
 import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
 //#endregion
 
 
-function getTimezone(date) { //TODO: figure out way to not have this in all files where it is used
+function getTimezone(date:Date) {
 	let offset = -1 * date.getTimezoneOffset();
-	let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
-	return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
+	let offsetStr = (<any>(Math.floor(offset / 60))).padStart(2,"0") + ":" + (<any>(offset % 60)).padStart(2,"0");
+	return "UTC" + (offset < 0 ? "" : "+") + offsetStr;
 }
 
 var serverErrors:{
@@ -36,7 +33,7 @@ var serverErrors:{
 } = {};
 const cv = config.cv;
 
-const mySqlConnectionOptions = config['mySqlConnectionOptions'];
+const {mySqlConnectionOptions} = config;
 mySqlConnectionOptions["multipleStatements"] = true;
 
 function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
@@ -76,19 +73,16 @@ function resetErrorCounter(serverkey:string){
 
 function SqlQuery(query:string, options?:any[]):Promise<any> { //TODO: Promise<any>-> real type
 	return new Promise((resolve, reject)=>{
-		if (cv(3)) llo(1, colors.BgLightCyan+colors.FgBlack+query+" "+(options||"")+colors.Reset);
-
 		query = query.replace(/\n/g,"").replace(/\s+/g," ");
-		query = mysql.format(query, options||[]);
-		if (cv(2) || (cv(1)&&/(update)|(insert)/gi.test(query))) llo(1, colors.BgLightBlue + colors.FgBlack + query + colors.Reset);
-		let sqlPool = getPool();
-		if(sqlPool){
-			sqlPool.query(query, function (err, res) {
-				if(sqlPool["_allConnections"]&&sqlPool["_allConnections"].length){
-					if(cv(3)) ll("number of open connections: " + sqlPool["_allConnections"].length);
-				}else{
-					if(cv(2)) ll("not a pool");
-				}
+
+		if (cv(3)) llo(3, colors.BgLightCyan+colors.FgBlack+query+" "+(options||"")+colors.Reset);
+
+		if (cv(2) || (cv(1)&&/(update)|(insert)/gi.test(query))) llo(3, colors.BgLightBlue + colors.FgBlack + mysql.format(query, options||[]).replace(/\S*\s*/g, x=>x.trim()+" ").trim() + colors.Reset);
+		if(global.sqlPool){
+			global.sqlPool.query(query, options, function (err, res) {
+				if(global.sqlPool["_allConnections"]&&global.sqlPool["_allConnections"].length)
+					if(cv(3)) ll("number of open connections: " + global.sqlPool["_allConnections"].length);
+
 				if (err) {
 					if (cv(0)) llo(1, colors.FgRed, err, colors.Reset);
 					reject(err);
@@ -100,37 +94,9 @@ function SqlQuery(query:string, options?:any[]):Promise<any> { //TODO: Promise<a
 			lle(`sql pool is not set!`);
 		}
 	});
-	/*try{
-		sqlPool.getConnection(function(e,c){
-			if(e){
-				if(cv(0)) lle(colors.FgRed,e,colors.Reset);
-				c.release();
-			}else{
-				c.query(query,function(err,res){
-					c.release();
-					//lle(sqlPool);
-					try{
-						if (config.logITelexCom) ll("number of open connections: "+sqlPool._allConnections.length);
-					}catch(e){
-						//if (config.logITelexCom) ll("sqlPool threadId: "+sqlPool.threadId);
-						console.trace(sqlPool.threadId);
-					}
-					if(err){
-						if(cv(0)) lle(colors.FgRed,err,colors.Reset);
-						if(typeof callback === "function") callback([]);
-					}else{
-						if(typeof callback === "function") callback(res);
-					}
-				});
-			}
-		});
-	}catch(e){
-		lle(sqlPool);
-		throw(e);
-	}*/
 }
 
-async function checkIp(data:number[]|Buffer, client:connections.client){
+async function checkIp(data:number[]|Buffer, client:client){
 	if (config.doDnsLookups) {
 		var arg:string = data.slice(1).toString().split("\n")[0].split("\r")[0];
 		if (cv(1)) ll(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to any participant${colors.Reset}`);
@@ -202,12 +168,6 @@ async function checkIp(data:number[]|Buffer, client:connections.client){
 		client.connection.end("error\r\nthis server does not support this function\r\n");
 	}
 }
-type MailTransporter = nodemailer.Transporter|{
-	sendMail: (...rest:any[])=>void,
-	options: {
-		host: string
-	}
-}
 
 function sendEmail(messageName:string, values:{
 	[index:string]:string|number;
@@ -229,28 +189,24 @@ function sendEmail(messageName:string, values:{
 				html:""
 			};
 		
-			let type:string;
-			if(message.html){
-				type = "html";
-			}else if(message.text){
-				type = "text";
-			}else{
-				type = null;
-				mailOptions.text = "configuration error in config/mailMessages.json";
-			}
+			let type = message.html?"html":message.text?"text":null;
+			// if(type){
+			//	 mailOptions[type] = message[type];
+			//	 for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
+			// }
 			if(type){
-				mailOptions[type] = message[type];
-				for (let k in values) {
-					mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
-				}
+				mailOptions[type] = message[type].replace(/\[([^\]]*)\]/g,(match, key)=>values[key]||"NULL");
+			}else{
+				mailOptions.text = "configuration error in config/mailMessages.json";	
 			}
+
 			if(cv(2)&&config.logITelexCom) {
-				ll("sending mail:\n", mailOptions, "\nto server", getTransporter().options["host"]);
+				ll("sending mail:\n", mailOptions, "\nto server", global.transporter.options["host"]);
 			} else if (cv(1)) {
 				ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
 			}
 			
-			(<(MailOptions: MailOptions,callback:(err: Error,info:any)=>void)=>void>getTransporter().sendMail)(mailOptions, function (error, info) {
+			(<nodemailer.Transporter>global.transporter).sendMail(mailOptions, function (error, info) {
 				if (error) {
 					// if (cv(2)) lle(error);
 					reject(error);
@@ -264,12 +220,268 @@ function sendEmail(messageName:string, values:{
 	});
 }
 
+const symbolName = (s:symbol):string=>(s&&typeof s.toString === "function")?/Symbol\((.*)\)/.exec(s.toString())[1]:"NULL";
+
+interface connection extends net.Socket{
+	//TODO
+}
+interface client{
+	// cnum?:symbol;
+	name:string;
+	connection:connection;
+	state:symbol,
+	readbuffer:Buffer;
+	writebuffer:ITelexCom.peer[];
+	packages:ITelexCom.Package_decoded[];
+	handling:boolean;
+	timeout?:NodeJS.Timer;
+	handleTimeout?:NodeJS.Timer;
+	cb?:()=>void;
+	servernum?:number;
+	newEntries?:number;
+}
+
+//#region cool names
+/**/
+const names = [
+	//mathematicians
+	"Isaac Newton",
+	"Archimedes",
+	"Carl F. Gauss",
+	"Leonhard Euler",
+	"Bernhard Riemann",
+	"Henri Poincaré",
+	"Joseph-Louis Lagrange",
+	"Euclid",
+	"David Hilbert",
+	"Gottfried W. Leibniz",
+	"Alexandre Grothendieck",
+	"Pierre de Fermat",
+	"Évariste Galois",
+	"John von Neumann",
+	"René Descartes",
+	"Karl W. T. Weierstrass",
+	"Srinivasa Ramanujan",
+	"Hermann K. H. Weyl",
+	"Peter G. L. Dirichlet",
+	"Niels Abel",
+	"Georg Cantor",
+	"Carl G. J. Jacobi",
+	"Brahmagupta",
+	"Augustin Cauchy",
+	"Arthur Cayley",
+	"Emmy Noether",
+	"Pythagoras",
+	"Aryabhata",
+	"Leonardo \"Fibonacci\"",
+	"William R. Hamilton",
+	"Apollonius",
+	"Charles Hermite",
+	"Pierre-Simon Laplace",
+	"Carl Ludwig Siegel",
+	"Diophantus",
+	"Richard Dedekind",
+	"Kurt Gödel",
+	"Bháscara (II) Áchárya",
+	"Felix Christian Klein",
+	"Blaise Pascal",
+	"Élie Cartan",
+	"Archytas",
+	"Godfrey H. Hardy",
+	"Alhazen ibn al-Haytham",
+	"Jean le Rond d'Alembert",
+	"F.E.J. Émile Borel",
+	"Julius Plücker",
+	"Hipparchus",
+	"Andrey N. Kolmogorov",
+	"Joseph Liouville",
+	"Eudoxus",
+	"F. Gotthold Eisenstein",
+	"Jacob Bernoulli",
+	"Johannes Kepler",
+	"Stefan Banach",
+	"Jacques Hadamard",
+	"Giuseppe Peano",
+	"Panini",
+	"André Weil",
+	"Jakob Steiner",
+	"Liu Hui",
+	"Gaspard Monge",
+	"Hermann G. Grassmann",
+	"François Viète",
+	"M. E. Camille Jordan",
+	"Joseph Fourier",
+	"Bonaventura Cavalieri",
+	"Jean-Pierre Serre",
+	"Marius Sophus Lie",
+	"Albert Einstein",
+	"Galileo Galilei",
+	"James C. Maxwell",
+	"Aristotle",
+	"Girolamo Cardano",
+	"Michael F. Atiyah",
+	"Atle Selberg",
+	"L.E.J. Brouwer",
+	"Christiaan Huygens",
+	"Alan M. Turing",
+	"Jean-Victor Poncelet",
+	"Pafnuti Chebyshev",
+	"Henri Léon Lebesgue",
+	"John E. Littlewood",
+	"F. L. Gottlob Frege",
+	"Alfred Tarski",
+	"Shiing-Shen Chern",
+	"James J. Sylvester",
+	"Johann Bernoulli",
+	"Ernst E. Kummer",
+	"Johann H. Lambert",
+	"George Pólya",
+	"Felix Hausdorff",
+	"Siméon-Denis Poisson",
+	"Hermann Minkowski",
+	"George D. Birkhoff",
+	"Omar al-Khayyám",
+	"Adrien M. Legendre",
+	"Pappus",
+	"Thales",
+  
+	//pyhsicists
+	"Stephen Hawking",
+	"Albert Einstein",
+	"Nikola Tesla",
+	"Isaac Newton",
+	"Galileo Galilei",
+	"Marie Curie",
+	"Richard Feynman",
+	"Archimedes",
+	"Carl Sagan",
+	"J. Robert Oppenheimer",
+	"Michael Faraday",
+	"Blaise Pascal",
+	"Sally Ride",
+	"Leonhard Euler",
+	"Werner Heisenberg",
+	"Vikram Sarabhai",
+	"Niels Bohr",
+	"Avicenna",
+	"Ernest Rutherford",
+	"Robert Hooke",
+	"Erwin Schrödinger",
+	"Jagadish Chandra Bose",
+	"Max Planck",
+	"Satyendra Nath Bose",
+	"Enrico Fermi",
+	"J J Thompson",
+	"Paul Dirac",
+	"Subrahmanyan Chandrasekhar",
+	"C.V. Raman",
+	"Pierre Curie",
+	"Robert Boyle",
+	"Kip Thorne",
+	"Edward Teller",
+	"Max Born",
+	"Georges Lemaître",
+	"William Thomson, 1st Baron Kelvin",
+	"Abdus Salam",
+	"Klaus Fuchs",
+	"Thomas Kuhn",
+	"Joseph Fourier",
+	"Andrei Sakharov",
+	"Heinrich Hertz",
+	"William Shockley",
+	"Lise Meitner",
+	"Daniel Bernoulli",
+	"Ludwig Boltzmann",
+	"James Chadwick",
+	"James Prescott Joule",
+	"Wolfgang Pauli",
+	"Amedeo Avogadro",
+	"Henry Cavendish",
+	"Louis de Broglie",
+	"John Bardeen",
+	"Georg Ohm",
+	"Steven Chu",
+	"Hermann von Helmholtz",
+	"John Archibald Wheeler",
+	"David Bohm",
+	"Hendrik Lorentz",
+	"Henry Moseley",
+	"Steven Weinberg",
+	"Meghnad Saha",
+	"Lev Landau ",
+	"Henri Becquerel",
+	"Hans Bethe",
+	"Philipp Lenard",
+	"Murray Gell-Mann",
+	"Luis Walter Alvarez",
+	"Gustav Kirchhoff",
+	"Arthur Eddington",
+	"Eugene Paul ",
+	"Evangelista Torricelli",
+	"Anders Celsius",
+	"Ernst Mach",
+	"Julian Schwinger",
+	"Robert Andrews Millikan",
+	"Joseph Louis Gay-Lussac",
+	"George Gamow",
+	"Annie Jump Cannon",
+	"Homi Bhabha",
+	"Arnold Sommerfeld",
+	"John Tyndall",
+	"Albert Abraham Michelson",
+	"Ernest Lawrence",
+	"Lord Kelvin",
+	"John Stewart Bell",
+	"Frédéric Joliot-Curie",
+	"Augustin-Jean Fresnel",
+	"Isidor Isaac Rabi ",
+	"Maria Goeppert Mayer",
+	"Arthur Compton",
+	"Sir George Stokes, 1st Baronet",
+	"Dennis Gabor",
+	"Heike Kamerlingh Onnes",
+	"Philip Warren Anderson",
+	"Tsung-Dao Lee",
+	"Max von Laue or Max b",
+	"Franklin Diaz",
+	"Hideki Yukawa",
+  ];
+  
+  function randomName(){
+	return names[Math.floor(Math.random()*names.length)];
+  }
+  
+  var lastnames = [];
+  function clientName(){
+	let name = randomName();
+	while(lastnames.indexOf(name)>-1) name = randomName();
+	lastnames.unshift(name);
+	lastnames = lastnames.slice(0,8);
+	
+	return name;
+  }
+  /**/
+  //#endregion
+  
+  //#region boring names
+  /*
+  function clientName(){
+	let date = new Date()
+	let d = date.getTime()+date.getTimezoneOffset()*-60000;
+	return `${(<any>((Math.floor(d/3600000)%24)+"")).padStart(2,"0")}:${(<any>((Math.floor(d/60000)%60)+"")).padStart(2,"0")}:${(<any>((Math.floor(d/1000)%60)+"")).padStart(2,"0")},${(<any>((d%1000)+"")).padStart(3,"0")}`;
+  }
+  */
+  //#endregion
+
+
 export {
     SqlQuery,
     checkIp,
     sendEmail,
-    MailTransporter,
 	increaseErrorCounter,
 	resetErrorCounter,
 	serverErrors,
+	symbolName,
+	client,
+	clientName
 }

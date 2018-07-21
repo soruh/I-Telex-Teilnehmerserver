@@ -5,32 +5,30 @@ import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
 
 import config from '../COMMONMODULES/config.js';
 import colors from "../COMMONMODULES/colors.js";
+import { symbolName } from "./misc.js";
 
+const cv = config.cv;
 //#endregion
 
-const verbosity = config.loggingVerbosity;
-var cv = level => level <= verbosity; //check verbosity
 
-
-var timeouts:{
-	[index: string]: Timer;
-} = {};
+var timeouts:Map<symbol, Timer> = new Map();
 class Timer {
+	public name:string;
+	public paused:boolean;
 	public duration:number;
-	public fn;
-	public complete:boolean;
+	public remaining:number;
 	public start_time: number;
 	public timeout:NodeJS.Timer;
-	public remaining:number;
 	public total_time_run:number;
-	public paused:boolean;
-	public name:string;
-	constructor(fn, duration:number, name?:string) {
-		this.duration = duration;
+	public fn:(...args:any[])=>any;
+
+	public complete:boolean = false;
+	
+	constructor(fn:(...args:any[])=>any, duration:number, name?:string) {
 		this.fn = fn;
 		this.name = name;
+		this.duration = duration;
 
-		this.complete = false;
 		this.start_time = Date.now();
 		this.timeout = global.setTimeout(fn, duration);
 	}
@@ -70,22 +68,22 @@ class Timer {
 }
 
 function pauseAll(){
-	for (let k in timeouts) {
-		timeouts[k].pause();
-		if (cv(3)) ll(colors.FgBlue + "paused " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
+	for (var [name, timeout] of timeouts) {
+		timeout.pause();
+		if (cv(3)) ll(colors.FgBlue + "paused " + colors.FgMagenta + "timeout: " + colors.FgCyan + symbolName(name) + colors.FgMagenta + " remaining: " + colors.FgCyan + timeout.remaining + colors.Reset);
 	}
 }
 
 function resumeAll(){
-	for (let k in timeouts) {
-		timeouts[k].resume();
-		if (cv(3)) ll(colors.FgYellow + "resumed " + colors.FgMagenta + "timeout: " + colors.FgCyan + k + colors.FgMagenta + " remaining: " + colors.FgCyan + timeouts[k].remaining + colors.Reset);
+	for (var [name, timeout] of timeouts) {
+		timeout.resume();
+		if (cv(3)) ll(colors.FgYellow + "resumed " + colors.FgMagenta + "timeout: " + colors.FgCyan + symbolName(name) + colors.FgMagenta + " remaining: " + colors.FgCyan + timeout.remaining + colors.Reset);
 	}
 }
-function TimeoutWrapper(fn, duration, ...args) {
+function TimeoutWrapper<T>(fn:(...args:any[])=>any, duration:number, ...args) {
 	var fnName = fn.toString().split("(")[0].split(" ")[1];
 	if (cv(1)) ll(colors.FgMagenta + "set timeout for: " + colors.FgCyan + fnName + colors.FgMagenta + " to " + colors.FgCyan + duration + colors.FgMagenta + "ms" + colors.Reset);
-	timeouts[fnName] = new Timer(function () {
+	timeouts.set(Symbol(fnName), new Timer(function () {
 		pauseAll();
 		if (cv(3)) ll(colors.FgMagenta + "called: " + colors.FgCyan + fnName + colors.FgMagenta + " with: " + colors.FgCyan+"["+args.slice(1)+"]"+colors.Reset);
 		fn.apply(null, args)
@@ -96,7 +94,7 @@ function TimeoutWrapper(fn, duration, ...args) {
 			if (cv(2)) lle(colors.FgRed+"error "+colors.FgMagenta + "in timeout: " + colors.FgCyan + fnName + colors.FgMagenta + " error: " + err + colors.Reset);
 			resumeAll();
 		});
-	}, duration, fn.name);
+	}, duration, fn.name));
 }
 
 export{

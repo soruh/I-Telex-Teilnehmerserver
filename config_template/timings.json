@@ -1,5 +1,4 @@
 {
-    "updateQueueInterval":1800000,
     "queueSendInterval":3600000,
     "fullQueryInterval":86400000,
     "connectionTimeout":30000
