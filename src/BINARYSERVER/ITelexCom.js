@@ -2,41 +2,34 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //TODO: Object.defineProperty(Date.prototype, 'getTimezone', { value:
 //#region imports
-const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const ip = require("ip");
 const config_js_1 = require("../COMMONMODULES/config.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
 const handles_js_1 = require("../BINARYSERVER/handles.js");
 const misc_js_1 = require("./misc.js");
+const util_1 = require("util");
 //#endregion
-const cv = config_js_1.default.cv;
-Object.defineProperty(Buffer.prototype, 'readNullTermString', { value: function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
-        // lle(highlightBuffer(this));
-        // lle("start:"+start);
-        // lle("end:"+end);
-        // lle(highlightBuffer(this,start,end));
-        let firstZero = this.indexOf(0, start);
-        // lle("firstZero:"+firstZero);
-        let stop = firstZero >= start && firstZero <= end ? firstZero : end;
-        // lle("stop:"+firstZero);
-        // lle(highlightBuffer(this,start,stop));
-        // lle("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
-        return this.toString(encoding, start, stop);
-    }
-});
-Object.defineProperty(Buffer.prototype, 'writeByteArray', { value: function writeByteArray(array, offset = 0) {
-        if (array.length + offset > this.length) {
-            throw new RangeError("array is too big");
+const logger = global.logger;
+try {
+    Object.defineProperty(Buffer.prototype, 'readNullTermString', {
+        value: function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
+            // logger.error(highlightBuffer(this));
+            // logger.error("start:"+start);
+            // logger.error("end:"+end);
+            // logger.error(highlightBuffer(this,start,end));
+            let firstZero = this.indexOf(0, start);
+            // logger.error("firstZero:"+firstZero);
+            let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+            // logger.error("stop:"+firstZero);
+            // logger.error(highlightBuffer(this,start,stop));
+            // logger.error("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
+            return this.toString(encoding, start, stop);
         }
-        else {
-            for (let i in array) {
-                this[+i + offset] = array[i];
-            }
-            return this;
-        }
-    }
-});
+    });
+}
+catch (e) {
+}
 // function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
 // 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+(<any>x).toString(16));
 // 	if(from in array&&length>0){
@@ -137,51 +130,42 @@ exports.explainPackage = explainPackage;
 function handlePackage(obj, client) {
     return new Promise((resolve, reject) => {
         if (!obj) {
-            if (cv(0))
-                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "no package to handle" + colors_js_1.default.Reset);
+            logger.warn(colors_js_1.default.FgRed + "no package to handle" + colors_js_1.default.Reset);
             resolve();
         }
         else {
-            if (cv(2) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
+            if (config_js_1.default.logITelexCom)
+                logger.verbose(colors_js_1.default.FgGreen + "state: " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
             if (obj.type == 0xff) {
-                if (cv(0))
-                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
+                logger.warn(colors_js_1.default.FgRed + "remote client had error:", Buffer.from(obj.data).toString());
                 resolve();
             }
             else {
                 try {
-                    if (cv(2)) {
-                        if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan, obj, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
-                    }
-                    else if (cv(1)) {
-                        if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "handling type:" + colors_js_1.default.FgCyan, obj.type, colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
-                    }
+                    if (config_js_1.default.logITelexCom)
+                        logger.verbose(colors_js_1.default.FgGreen + "handling package:" + colors_js_1.default.FgCyan + util_1.inspect(obj) + colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
+                    if (config_js_1.default.logITelexCom)
+                        logger.info(colors_js_1.default.FgGreen + "handling type:" + colors_js_1.default.FgCyan + obj.type + colors_js_1.default.FgGreen + "for: " + colors_js_1.default.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors_js_1.default.Reset);
                     if (typeof handles_js_1.default[obj.type][client.state] == "function") {
-                        if (cv(2) && config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "calling handler for type " + colors_js_1.default.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
+                        if (config_js_1.default.logITelexCom)
+                            logger.verbose(colors_js_1.default.FgGreen + "calling handler for type " + colors_js_1.default.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors_js_1.default.FgGreen + " in state " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
                         try {
                             handles_js_1.default[obj.type][client.state](obj, client)
                                 .then(resolve)
                                 .catch(reject);
                         }
                         catch (e) {
-                            if (cv(0))
-                                logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
+                            logger.error(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
                             resolve();
                         }
                     }
                     else {
-                        if (cv(0))
-                            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "type " + colors_js_1.default.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors_js_1.default.FgRed + " not supported in state " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
+                        logger.warn(colors_js_1.default.FgRed + "type " + colors_js_1.default.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors_js_1.default.FgRed + " not supported in state " + colors_js_1.default.FgCyan + misc_js_1.symbolName(client.state) + colors_js_1.default.Reset);
                         resolve();
                     }
                 }
                 catch (e) {
-                    if (cv(0))
-                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed, e, colors_js_1.default.Reset);
+                    logger.error(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
                     resolve();
                 }
             }
@@ -190,43 +174,34 @@ function handlePackage(obj, client) {
 }
 exports.handlePackage = handlePackage;
 function getCompletePackages(data, part) {
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("\nextracting packages from data:");
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("data: ", data);
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("part: ", part);
+    if (config_js_1.default.logITelexCom)
+        logger.debug("extracting packages from data:");
+    if (config_js_1.default.logITelexCom)
+        logger.debug("data: " + util_1.inspect(data));
+    if (config_js_1.default.logITelexCom)
+        logger.debug("part: " + util_1.inspect(part));
     var combined = part ? Buffer.concat([part, data]) : data;
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("combined: ", combined);
+    if (config_js_1.default.logITelexCom)
+        logger.debug("combined: " + util_1.inspect(combined));
     var type = combined[0]; //TODO check for valid type
     var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("type: ", type);
-    if (cv(3))
-        if (config_js_1.default.logITelexCom)
-            logWithLineNumbers_js_1.ll("packagelength: ", packagelength);
+    if (config_js_1.default.logITelexCom)
+        logger.debug("type: " + util_1.inspect(type));
+    if (config_js_1.default.logITelexCom)
+        logger.debug("packagelength: " + packagelength);
     if (combined.length == packagelength) {
-        if (cv(3))
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll("combined.length == packagelength");
-        if (cv(3))
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${combined.length}${colors_js_1.default.FgGreen}/${colors_js_1.default.FgCyan}${packagelength}${colors_js_1.default.FgGreen} bytes for next package${colors_js_1.default.Reset}`);
+        if (config_js_1.default.logITelexCom)
+            logger.debug("combined.length == packagelength");
+        if (config_js_1.default.logITelexCom)
+            logger.debug(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${combined.length}${colors_js_1.default.FgGreen}/${colors_js_1.default.FgCyan}${packagelength}${colors_js_1.default.FgGreen} bytes for next package${colors_js_1.default.Reset}`);
         return [
             combined,
             new Buffer(0)
         ];
     }
     else if (combined.length > packagelength) {
-        if (cv(3))
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll("combined.length > packagelength");
+        if (config_js_1.default.logITelexCom)
+            logger.debug("combined.length > packagelength");
         let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
         return [
             Buffer.concat([combined.slice(0, packagelength), rest[0]]),
@@ -234,12 +209,10 @@ function getCompletePackages(data, part) {
         ];
     }
     else if (combined.length < packagelength) {
-        if (cv(2))
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${combined.length}${colors_js_1.default.FgGreen}/${colors_js_1.default.FgCyan}${packagelength}${colors_js_1.default.FgGreen} bytes for next package${colors_js_1.default.Reset}`);
-        if (cv(3))
-            if (config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll("combined.length < packagelength");
+        if (config_js_1.default.logITelexCom)
+            logger.verbose(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${combined.length}${colors_js_1.default.FgGreen}/${colors_js_1.default.FgCyan}${packagelength}${colors_js_1.default.FgGreen} bytes for next package${colors_js_1.default.Reset}`);
+        if (config_js_1.default.logITelexCom)
+            logger.debug("combined.length < packagelength");
         return [
             new Buffer(0),
             combined
@@ -271,7 +244,7 @@ function unmapIpV4fromIpV6(ipaddress) {
 }
 function encPackage(pkg) {
     if (config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoding:" + colors_js_1.default.FgCyan, pkg, colors_js_1.default.Reset);
+        logger.info(colors_js_1.default.FgGreen + "encoding:" + colors_js_1.default.FgCyan + util_1.inspect(pkg) + colors_js_1.default.Reset);
     if (pkg.datalength == null)
         pkg.datalength = constants.PackageSizes[pkg.type];
     var buffer = new Buffer(pkg.datalength + 2);
@@ -284,7 +257,7 @@ function encPackage(pkg) {
             buffer.writeUIntLE(+pkg.data.port || 0, 8, 2);
             break;
         case 2:
-            buffer.writeByteArray(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."), 2); // .map(x=>+x)
+            ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), buffer, 2);
             break;
         case 3:
             buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
@@ -310,7 +283,7 @@ function encPackage(pkg) {
             else {
                 ext = parseInt(pkg.data.extension);
             }
-            // lle("\n");
+            // logger.error("\n");
             // ll(buffer);
             // ll(pkg.data.number, 2, 4);
             buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
@@ -328,7 +301,7 @@ function encPackage(pkg) {
             buffer.write(pkg.data.hostname || "", 49, 40);
             // ll(highlightBuffer(buffer, 49, 40));
             // ll(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."),89);
-            buffer.writeByteArray(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."), 89); // .map(x=>+x)
+            ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), buffer, 89);
             // ll(highlightBuffer(buffer, 89, 4));
             // ll(+pkg.data.port, 93, 2);
             buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
@@ -360,8 +333,8 @@ function encPackage(pkg) {
             buffer.write(pkg.data.pattern || "", 3, 40);
             break;
     }
-    if (config_js_1.default.logITelexCom && cv(1))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "encoded:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer));
+    if (config_js_1.default.logITelexCom)
+        logger.info(colors_js_1.default.FgGreen + "encoded:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer));
     return buffer;
 }
 exports.encPackage = encPackage;
@@ -371,8 +344,8 @@ function decPackage(buffer) {
         datalength: buffer[1],
         data: null
     };
-    if (config_js_1.default.logITelexCom && cv(1))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding package:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer));
+    if (config_js_1.default.logITelexCom)
+        logger.info(colors_js_1.default.FgGreen + "decoding package:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer));
     switch (pkg.type) {
         case 1:
             pkg.data = {
@@ -383,7 +356,7 @@ function decPackage(buffer) {
             break;
         case 2:
             pkg.data = {
-                ipaddress: buffer.slice(2, 6).join(".")
+                ipaddress: ip.toString(buffer, 2, 4)
             };
             if (pkg.data.ipaddress == "0.0.0.0")
                 pkg.data.ipaddress = "";
@@ -416,7 +389,7 @@ function decPackage(buffer) {
                 disabled: (flags & 2) == 2 ? 1 : 0,
                 type: buffer.readUIntLE(48, 1),
                 hostname: buffer.readNullTermString("utf8", 49, 89),
-                ipaddress: buffer.slice(89, 93).join("."),
+                ipaddress: ip.toString(buffer, 89, 4),
                 port: buffer.readUIntLE(93, 2).toString(),
                 pin: buffer.readUIntLE(96, 2).toString(),
                 timestamp: buffer.readUIntLE(98, 4) - 2208988800,
@@ -474,7 +447,7 @@ function decPackage(buffer) {
             };
             break;
         default:
-            logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "invalid/unsupported type: " + colors_js_1.default.FgCyan + pkg.type + colors_js_1.default.Reset);
+            logger.error(colors_js_1.default.FgRed + "invalid/unsupported type: " + colors_js_1.default.FgCyan + pkg.type + colors_js_1.default.Reset);
             return null;
     }
     return pkg;
@@ -484,21 +457,21 @@ function decPackages(buffer) {
     if (!(buffer instanceof Buffer))
         buffer = Buffer.from(buffer);
     if (config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoding data:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers ? explainData(buffer) : buffer), colors_js_1.default.Reset);
+        logger.info(colors_js_1.default.FgGreen + "decoding data:" + colors_js_1.default.Reset, (config_js_1.default.explainBuffers ? explainData(buffer) : buffer), colors_js_1.default.Reset);
     var out = [];
     for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
         var type = +buffer[typepos];
         var datalength = +buffer[typepos + 1];
         if (type in constants.PackageSizes && constants.PackageSizes[type] != datalength) {
-            if (cv(1) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[type]} != ${datalength}${colors_js_1.default.Reset}`);
+            if (config_js_1.default.logITelexCom)
+                logger.info(`${colors_js_1.default.FgRed}size missmatch: ${constants.PackageSizes[type]} != ${datalength}${colors_js_1.default.Reset}`);
             if (config_js_1.default.allowInvalidPackageSizes) {
-                if (cv(1) && config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}using package of invalid size!${colors_js_1.default.Reset}`);
+                if (config_js_1.default.logITelexCom)
+                    logger.info(`${colors_js_1.default.FgRed}using package of invalid size!${colors_js_1.default.Reset}`);
             }
             else {
-                if (cv(2) && config_js_1.default.logITelexCom)
-                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}ignoring package, because it is of invalid size!${colors_js_1.default.Reset}`);
+                if (config_js_1.default.logITelexCom)
+                    logger.verbose(`${colors_js_1.default.FgYellow}ignoring package, because it is of invalid size!${colors_js_1.default.Reset}`);
                 continue;
             }
         }
@@ -507,7 +480,7 @@ function decPackages(buffer) {
             out.push(pkg);
     }
     if (config_js_1.default.logITelexCom)
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "decoded:", colors_js_1.default.FgCyan, out, colors_js_1.default.Reset);
+        logger.info(colors_js_1.default.FgGreen + "decoded:" + colors_js_1.default.FgCyan + util_1.inspect(out) + colors_js_1.default.Reset);
     return out;
 }
 exports.decPackages = decPackages;
@@ -521,8 +494,8 @@ function ascii(data, client) {
     }
     if (number != "") {
         if (!isNaN(parseInt(number))) {
-            if (cv(1) && config_js_1.default.logITelexCom)
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
+            if (config_js_1.default.logITelexCom)
+                logger.info(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
             misc_js_1.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
                 .then(function (result) {
                 if (!result || result.length == 0) {
@@ -532,14 +505,10 @@ function ascii(data, client) {
                     send += "unknown\r\n";
                     send += "+++\r\n";
                     client.connection.end(send, function () {
-                        if (cv(1)) {
-                            let m = colors_js_1.default.FgRed + "Entry not found/visible";
-                            if (cv(2))
-                                m += ",\nsent:\n" + colors_js_1.default.FgCyan + send;
-                            m += colors_js_1.default.Reset;
-                            if (config_js_1.default.logITelexCom)
-                                logWithLineNumbers_js_1.ll(m);
-                        }
+                        if (config_js_1.default.logITelexCom)
+                            logger.info(colors_js_1.default.FgRed + "Entry not found/visible" + colors_js_1.default.Reset);
+                        if (config_js_1.default.logITelexCom)
+                            logger.verbose(colors_js_1.default.FgRed + "sent:\n" + colors_js_1.default.FgCyan + send + colors_js_1.default.Reset);
                     });
                 }
                 else {
@@ -554,9 +523,10 @@ function ascii(data, client) {
                     }
                     else if ([1, 3, 6].indexOf(res.type) > -1) {
                         send += res.hostname + "\r\n";
-                    } /* else if (res.type == 6) {
-                        send += res.hostname + "\r\n";
-                    }*/
+                    }
+                    /* else if (res.type == 6) {
+                                            send += res.hostname + "\r\n";
+                                        }*/
                     else {
                         send += "ERROR\r\n";
                     }
@@ -564,18 +534,14 @@ function ascii(data, client) {
                     send += (res.extension || "-") + "\r\n";
                     send += "+++\r\n";
                     client.connection.end(send, function () {
-                        if (cv(1)) {
-                            let m = colors_js_1.default.FgGreen + "Entry found";
-                            if (cv(2))
-                                m += ",\nsent:\n" + colors_js_1.default.FgCyan + send;
-                            m += colors_js_1.default.Reset;
-                            if (config_js_1.default.logITelexCom)
-                                logWithLineNumbers_js_1.ll(m);
-                        }
+                        if (config_js_1.default.logITelexCom)
+                            logger.info(colors_js_1.default.FgRed + "Entry found" + colors_js_1.default.Reset);
+                        if (config_js_1.default.logITelexCom)
+                            logger.verbose(colors_js_1.default.FgRed + "sent:\n" + colors_js_1.default.FgCyan + send + colors_js_1.default.Reset);
                     });
                 }
             })
-                .catch(logWithLineNumbers_js_1.lle);
+                .catch(logger.error);
         }
     }
     else {

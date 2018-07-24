@@ -6,17 +6,48 @@ const UNIXTIMEDATE = false;
 const SHOWALLDATEINFO = false;
 const DEFAULTLANGUAGE = "german";
 const SORTNUMERIC = false;
-var english;
-var german;
-var global_list = [];
-var pwdcorrect = false;
-var sortby = "";
-var reverseSort = false;
-var language;
-const languages = {
+
+interface language {
+    [index:string]: {
+        html?:string
+        text?:string
+        [index:string]:string
+    }
+}
+
+var english:language;
+var german:language;
+var global_list:list = [];
+var pwdcorrect:boolean = false;
+var sortby:string = "";
+var reverseSort:boolean = false;
+
+var language:string;
+
+const languages:{
+    [index:string]:language
+} = {
     german,
     english
 };
+interface listItem {
+    extension: string
+    hostname: string
+    ipaddress: string
+    name: string
+    number: number
+    port: string
+    timestamp: number
+    type: number
+    uid: number
+    changed: 0
+
+    disabled?: number
+    // pin?: number
+}
+type list = listItem[];
+
+
 $(document).ready(function () {
     setLanguage(getCookie("language") || DEFAULTLANGUAGE);
     /*$.validator.setDefaults({
@@ -61,7 +92,7 @@ $(document).ready(function () {
     $.ajaxSetup({ /*async: false*/});
     $(document).ajaxStart(() => {
         $("#waitpop").show();
-        $("#waitpop").center();
+        (<any>$("#waitpop")).center();
     });
     $(document).ajaxStop(() => {
         $("#waitpop").hide();
@@ -300,7 +331,7 @@ $(document).ready(function () {
                     console.error(err);
                 }
                 else {
-                    console.log("edit res:", res);
+                    console.log("edit res:",res);
                     resetforms();
                 }
             });
@@ -419,7 +450,7 @@ $(document).ready(function () {
                     console.error(err);
                 }
                 else {
-                    console.log("edit res:", res);
+                    console.log("edit res:",res);
                     resetforms();
                 }
             });
@@ -435,7 +466,7 @@ $(document).ready(function () {
                 console.error(err);
             }
             else {
-                console.log("edit res:", res);
+                console.log("edit res:",res);
                 resetforms();
             }
         });
@@ -446,26 +477,26 @@ $(document).ready(function () {
         //getList(updateTable);
     });
 });
-function checkUnique(number, element /*|HTMLElement*/) {
+function checkUnique(number:number, element:JQuery<HTMLElement>/*|HTMLElement*/) {
     var uid = $($(element).parents()[2]).data("uid");
-    if (!uid)
-        return false;
+    if(!uid) return false;
     for (let k in global_list) {
-        if (global_list[k].type != 0 &&
+        if (
+            global_list[k].type != 0 &&
             global_list[k].number == number &&
-            global_list[k].uid != uid)
-            return false;
+            global_list[k].uid != uid
+        )
+        return false;
     }
     return true;
 }
+function optionType(select:JQuery<HTMLElement>|HTMLElement)
+function optionType(select:string)
 function optionType(select) {
     var val = +$(select).val();
-    if (val == 1 || val == 3)
-        return "hostname";
-    if (val == 2 || val == 4 || val == 5)
-        return "ipaddress";
-    if (val == 6)
-        return "email";
+    if (val == 1 || val == 3) return "hostname";
+    if (val == 2 || val == 4 || val == 5) return "ipaddress";
+    if (val == 6) return "email";
 }
 /*
 function clearErrors() {
@@ -487,7 +518,7 @@ function closeError() {
   $('#errorpop').fadeOut("slow");
 }
 */
-function showpopup(id, callback) {
+function showpopup(id:string, callback?:()=>void) {
     $("#newentry_dialog").hide();
     $("#edit_dialog").hide();
     $("#delete_dialog").hide();
@@ -498,7 +529,7 @@ function showpopup(id, callback) {
     }
     else {
         $("#" + id).show(1, function () {
-            $("#" + id).center();
+            (<any>$("#" + id)).center();
             $("#" + id).hide();
             $("#" + id).fadeIn(350);
             setTimeout(function (id) {
@@ -515,7 +546,7 @@ function resetforms() {
     $("#delete_dialog_label_container div").remove();
     showpopup("");
 }
-function login(pwd, callback) {
+function login(pwd?:string, callback?:(success:boolean)=>void) {
     if (pwd)
         setCookie("pwd", btoa(pwd));
     edit({
@@ -550,7 +581,7 @@ function UNIXTIMEToString(UNIXTIME) {
         return (twodigit(d.getDate()) + "." + twodigit(d.getMonth() + 1) + "." + d.getFullYear() + " " + twodigit(d.getHours()) + ":" + twodigit(d.getMinutes()));
     }
 }
-function getList(callback) {
+function getList(callback?:(list:list)=>void) {
     $.ajax({
         url: "/list",
         type: "POST",
@@ -562,8 +593,7 @@ function getList(callback) {
             console.log(response);
             if (response.successful) {
                 global_list = response.result;
-            }
-            else {
+            } else {
                 console.error(response.message);
             }
             if (typeof callback === "function")
@@ -574,15 +604,17 @@ function getList(callback) {
         }
     });
 }
-function findByUid(uid, list = global_list) {
-    return list.find((value) => value.uid == uid);
+function findByUid(uid:number,list:list=global_list){
+    return list.find((value)=>value.uid == uid);
 }
-function updateTable(list) {
+function updateTable(list:list) {
     var table = $("#table");
+    
     table.children().filter(".tr.hr").remove();
+
     var headerRow = $("<div></div>");
     $(headerRow).addClass("tr hr");
-    for (let key in list[0] || {}) {
+    for (let key in list[0]||{}) {
         if (key != "uid") {
             let headerCell = $("<div></div>");
             headerCell.addClass("th cell cell_" + key);
@@ -600,19 +632,17 @@ function updateTable(list) {
             arrow.attr("id", "table_th_arrow_" + key);
             arrow.click(function () {
                 let clicked = $(this);
-                let [, , , name] = clicked.attr('id').split('_');
+                let [ , , ,name] = clicked.attr('id').split('_');
                 if (sortby != name) {
                     $(".table_th_arrow").removeClass("selected rotated");
                     clicked.addClass("selected");
                     sortby = name;
                     reverseSort = false;
-                }
-                else {
+                } else {
                     if (reverseSort) {
                         clicked.removeClass("rotated");
                         reverseSort = false;
-                    }
-                    else {
+                    }else {
                         clicked.addClass("rotated");
                         reverseSort = true;
                     }
@@ -625,12 +655,14 @@ function updateTable(list) {
         }
     }
     table.append(headerRow);
+
     updateContent(list);
 }
-function updateContent(unSortedList) {
+function updateContent(unSortedList:list) {
     var list = search(sort(unSortedList), $("#search-box").val().toString());
     var table = $("#table");
     table.children().filter(".tr").not(".hr").remove();
+
     for (let entry of list) {
         var row = $("<div></div>");
         row.addClass("tr");
@@ -672,27 +704,30 @@ function updateContent(unSortedList) {
                 row.append(cell);
             }
         }
+
         let modify_container = $("<div></div>");
         modify_container.addClass("td admin_only");
-        let edit = $("<div></div>");
-        edit.addClass("td");
-        let span = $("<span></span>");
-        span.addClass("btn  btn-primary btn-sm glyphicon glyphicon-pencil edit");
-        span.data("uid", entry.uid);
-        edit.append(span);
-        edit.attr("title", "edit");
-        edit.addClass("edit_td");
-        modify_container.append(edit);
-        let remove = $("<div></div>");
-        remove.addClass("td");
-        span = $("<span></span>");
-        span.addClass("btn btn-danger btn-sm glyphicon glyphicon-trash remove");
-        span.data("uid", entry.uid);
-        remove.append(span);
-        remove.attr("title", "remove");
-        remove.addClass("remove_td");
-        modify_container.append(remove);
+            let edit = $("<div></div>");
+            edit.addClass("td");
+            let span = $("<span></span>");
+                span.addClass("btn  btn-primary btn-sm glyphicon glyphicon-pencil edit");
+                span.data("uid", entry.uid);
+            edit.append(span);
+            edit.attr("title","edit");
+            edit.addClass("edit_td");
+            modify_container.append(edit);
+            
+            let remove = $("<div></div>");
+            remove.addClass("td");
+            span = $("<span></span>");
+                span.addClass("btn btn-danger btn-sm glyphicon glyphicon-trash remove");
+                span.data("uid", entry.uid);
+            remove.append(span);
+            remove.attr("title", "remove");
+            remove.addClass("remove_td");
+            modify_container.append(remove);
         row.append(modify_container);
+
         table.append(row);
     }
     $(".edit").click(editButtonClick);
@@ -711,7 +746,7 @@ function editButtonClick() {
     $("#type_edit_dialog").trigger('change');
     $("#edit_dialog").data("uid", $(this).data("uid"));
     var uid = $(this).data("uid");
-    let entry = findByUid(uid);
+    let entry = findByUid(uid)
     $("#number_edit_dialog").val(entry.number).trigger('change');
     $("#name_edit_dialog").val(entry.name).trigger('change');
     $("#type_edit_dialog").val(entry.type).trigger('change');
@@ -785,46 +820,54 @@ function edit(vals, callback) {
         }
     });
 }
-function search(list, pattern) {
+function search(list:list, pattern:string) {
     console.log(`searching for: '${pattern}'`);
     let result = list
-        .filter(row => {
+    .filter(row =>{
         return pattern.split(" ")
-            .map(word => {
-            for (let [key, value] of Object.entries(row)) {
-                if (new RegExp(word, "gi").test((key === "timestamp") && (!UNIXTIMEDATE) ?
-                    UNIXTIMEToString(row[key]) :
-                    value))
-                    return true;
+        .map(word=>{
+            for(let [key, value] of (<any>Object).entries(row)){
+                if(new RegExp(word, "gi").test(
+                    (key === "timestamp") && (!UNIXTIMEDATE)?
+                    UNIXTIMEToString(row[key]):
+                    value)
+                ) return true;
             }
             return false;
         })
-            .reduce((accumulator, value) => accumulator && value);
-    });
+        .reduce((accumulator, value)=>accumulator&&value)
+    })
     console.log(`pattern matches ${result.length}/${list.length} entries`);
     return result;
 }
 function sortFunction(x, y) {
-    return;
-    (x[sortby] || "").toString()
-        .localeCompare((y[sortby] || "").toString(), 'de', { numeric: SORTNUMERIC });
+    return
+    (x[sortby]||"").toString()
+    .localeCompare(
+        (y[sortby]||"").toString(),
+        'de',
+        {numeric: SORTNUMERIC}
+    );
 }
 function sort(unSortedList) {
     console.log("sorting");
-    if (sortby == "")
-        return unSortedList;
-    var isKey = Object.keys(unSortedList[0])
-        .reduce((accumulator, value, index) => accumulator || value === sortby, false);
+    
+    if (sortby == "") return unSortedList;
+
+    var isKey = 
+    Object.keys(unSortedList[0])
+    .reduce((accumulator, value, index) => accumulator || value === sortby, false);
+
     if (isKey) {
         let sortedList = unSortedList.sort(sortFunction);
+        
         if (reverseSort) {
             return sortedList.reverse();
         }
         else {
             return sortedList;
         }
-    }
-    else {
+    }else {
         console.error(sortby + " is not a collumn name!");
         sortby = "";
         return unSortedList;
@@ -906,13 +949,13 @@ function getCookie(c_name:string):string {
   return ("");
 }
 */
-function setCookie(c_name, value, exdays) {
+function setCookie(c_name:string, value:string, exdays?:number) {
     var exdate = new Date();
     exdate.setDate(exdate.getDate() + exdays);
     var c_value = escape(value) + (exdays == null ? "" : "; expires=" + exdate.toUTCString());
     document.cookie = c_name + "=" + c_value;
 }
-function getCookie(c_name) {
+function getCookie(c_name:string):string {
     var cookies = document.cookie.split(";");
     for (let cookie of cookies) {
         let [name, value] = cookie.split("=");
@@ -922,12 +965,12 @@ function getCookie(c_name) {
     return "";
 }
 function matchHn(str) {
-    return;
+    return
     /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
-        .test(str);
+    .test(str);
 }
 function matchIp(str) {
-    return;
+    return
     /(^\s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\s*$)|(^\s*( (([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$)/
-        .test(str);
+    .test(str);
 }

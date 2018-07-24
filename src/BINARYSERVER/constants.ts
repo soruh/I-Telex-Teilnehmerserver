@@ -30,7 +30,7 @@ const states = {
 	LOGIN: Symbol("LOGIN")
 };
 export {
-    PackageNames,
-    PackageSizes,
-    states
+	PackageNames,
+	PackageSizes,
+	states
 }

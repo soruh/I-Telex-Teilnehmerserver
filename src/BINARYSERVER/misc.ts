@@ -1,6 +1,8 @@
 //#region imports
-import {ll, lle, llo} from "../COMMONMODULES/logWithLineNumbers.js";
-import * as util from "util";
+import {
+	inspect,
+	promisify
+} from "util";
 import * as mysql from "mysql";
 import * as ip from "ip";
 import * as net from "net";
@@ -10,20 +12,23 @@ import colors from "../COMMONMODULES/colors.js";
 
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import { lookup } from "dns";
+import {
+	lookup
+} from "dns";
 import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
+import * as winston from "winston";
 //#endregion
+const logger = global.logger;
 
-
-function getTimezone(date:Date) {
+function getTimezone(date: Date) {
 	let offset = -1 * date.getTimezoneOffset();
-	let offsetStr = (<any>(Math.floor(offset / 60))).padStart(2,"0") + ":" + (<any>(offset % 60)).padStart(2,"0");
+	let offsetStr = ( < any > (Math.floor(offset / 60))).padStart(2, "0") + ":" + ( < any > (offset % 60)).padStart(2, "0");
 	return "UTC" + (offset < 0 ? "" : "+") + offsetStr;
 }
 
-var serverErrors:{
-	[index:string]:{
-		errors:{
+var serverErrors: {
+	[index: string]: {
+		errors: {
 			error: Error,
 			code: string,
 			timeStamp: number,
@@ -31,12 +36,14 @@ var serverErrors:{
 		errorCounter: number,
 	}
 } = {};
-const cv = config.cv;
 
-const {mySqlConnectionOptions} = config;
+
+const {
+	mySqlConnectionOptions
+} = config;
 mySqlConnectionOptions["multipleStatements"] = true;
 
-function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
+function increaseErrorCounter(serverkey: string, error: Error, code: string): void {
 	let newError = {
 		error: error,
 		code: code,
@@ -51,116 +58,124 @@ function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
 			errorCounter: 1
 		};
 	}
-	let warn:boolean = config.warnAtErrorCounts.indexOf(serverErrors[serverkey].errorCounter) > -1;
-	if (cv(1)) lle(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${serverErrors[serverkey].errorCounter}${colors.Reset}`);
+	let warn: boolean = config.warnAtErrorCounts.indexOf(serverErrors[serverkey].errorCounter) > -1;
+	logger.warn(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${serverErrors[serverkey].errorCounter}${colors.Reset}`);
 	if (warn)
-	sendEmail("ServerError", {
-		"[server]": serverkey,
-		"[errorCounter]": serverErrors[serverkey].errorCounter,
-		"[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
-		"[date]": new Date().toLocaleString(),
-		"[timeZone]": getTimezone(new Date())
-	});
+		sendEmail("ServerError", {
+			"[server]": serverkey,
+			"[errorCounter]": serverErrors[serverkey].errorCounter,
+			"[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
+			"[date]": new Date().toLocaleString(),
+			"[timeZone]": getTimezone(new Date())
+		});
 }
 
-function resetErrorCounter(serverkey:string){
+function resetErrorCounter(serverkey: string) {
 	if (serverErrors.hasOwnProperty(serverkey) && serverErrors[serverkey].errorCounter > 0) {
 		serverErrors[serverkey].errorCounter = 0;
-		if(config.deleteErrorsOnReconnect) serverErrors[serverkey].errors = [];
-		if (cv(2)) ll(colors.FgGreen + "reset error counter for: " + colors.FgCyan+serverkey+colors.Reset);
+		if (config.deleteErrorsOnReconnect) serverErrors[serverkey].errors = [];
+		logger.verbose(colors.FgGreen + "reset error counter for: " + colors.FgCyan + serverkey + colors.Reset);
 	}
 }
 
-function SqlQuery(query:string, options?:any[]):Promise<any> { //TODO: Promise<any>-> real type
-	return new Promise((resolve, reject)=>{
-		query = query.replace(/\n/g,"").replace(/\s+/g," ");
+function SqlQuery(query: string, options ? : any[]): Promise < any > { //TODO: Promise<any>-> real type
+	return new Promise((resolve, reject) => {
+		query = query.replace(/\n/g, "").replace(/\s+/g, " ");
 
-		if (cv(3)) llo(3, colors.BgLightCyan+colors.FgBlack+query+" "+(options||"")+colors.Reset);
+		logger.debug(colors.BgLightCyan + colors.FgBlack + query + " " + (options || "") + colors.Reset);
 
-		if (cv(2) || (cv(1)&&/(update)|(insert)/gi.test(query))) llo(3, colors.BgLightBlue + colors.FgBlack + mysql.format(query, options||[]).replace(/\S*\s*/g, x=>x.trim()+" ").trim() + colors.Reset);
-		if(global.sqlPool){
+		let msg = colors.BgLightBlue + colors.FgBlack + mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim() + colors.Reset;
+		if (/(update)|(insert)/gi.test(query)) {
+			logger.info(msg);
+		} else {
+			logger.verbose(msg);
+		}
+		if (global.sqlPool) {
 			global.sqlPool.query(query, options, function (err, res) {
-				if(global.sqlPool["_allConnections"]&&global.sqlPool["_allConnections"].length)
-					if(cv(3)) ll("number of open connections: " + global.sqlPool["_allConnections"].length);
+				if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
+					logger.debug("number of open connections: " + global.sqlPool["_allConnections"].length);
 
 				if (err) {
-					if (cv(0)) llo(1, colors.FgRed, err, colors.Reset);
+					logger.error(colors.FgRed + inspect(err) + colors.Reset);
 					reject(err);
 				} else {
 					resolve(res);
 				}
 			});
-		}else{
-			lle(`sql pool is not set!`);
+		} else {
+			logger.error(`sql pool is not set!`);
 		}
 	});
 }
 
-async function checkIp(data:number[]|Buffer, client:client){
+async function checkIp(data: number[] | Buffer, client: client) {
 	if (config.doDnsLookups) {
-		var arg:string = data.slice(1).toString().split("\n")[0].split("\r")[0];
-		if (cv(1)) ll(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to any participant${colors.Reset}`);
+		var arg: string = data.slice(1).toString().split("\n")[0].split("\r")[0];
+		logger.info(`${colors.FgGreen}checking if ${colors.FgCyan+arg+colors.FgGreen} belongs to any participant${colors.Reset}`);
 
 		let ipAddr = "";
 		if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
 			ipAddr = arg;
-		}else{
-			try{
-				let {address, family} = await util.promisify(lookup)(arg);
+		} else {
+			try {
+				let {
+					address,
+					family
+				} = await promisify(lookup)(arg);
 				ipAddr = address;
-				if (cv(2)) ll(`${colors.FgCyan+arg+colors.FgGreen} resolved to ${colors.FgCyan+ipAddr+colors.Reset}`);
-			}catch(e){
+				logger.verbose(`${colors.FgCyan+arg+colors.FgGreen} resolved to ${colors.FgCyan+ipAddr+colors.Reset}`);
+			} catch (e) {
 				client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-				if(cv(3)) ll(e)
+				logger.debug(e)
 				return;
 			}
 		}
 
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
 			SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
-			.then((peers:ITelexCom.peerList)=>{
-				var ipPeers:{
-					peer:ITelexCom.peer,
-					ipaddress:string
-				}[] = [];
-				serialEachPromise(peers, peer=>
-					new Promise((resolve, reject)=>{
-						if ((!peer.ipaddress) && peer.hostname) {
-							// if(cv(3)) ll(`hostname: ${peer.hostname}`)
-							lookup(peer.hostname, {}, function (err, address, family) {
-								// if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
-								if (address) {
+				.then((peers: ITelexCom.peerList) => {
+					var ipPeers: {
+						peer: ITelexCom.peer,
+						ipaddress: string
+					}[] = [];
+					serialEachPromise(peers, peer =>
+							new Promise((resolve, reject) => {
+								if ((!peer.ipaddress) && peer.hostname) {
+									// if(cv(3)) ll(`hostname: ${peer.hostname}`)
+									lookup(peer.hostname, {}, function (err, address, family) {
+										// if (cv(3) && err) logger.error(colors.FgRed + util.inspect(err), colors.Reset);
+										if (address) {
+											ipPeers.push({
+												peer,
+												ipaddress: address
+											});
+											// if(cv(3)) ll(`${peer.hostname} resolved to ${address}`);
+										}
+										resolve();
+									});
+								} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
+									// if(cv(3)) ll(`ip: ${peer.ipaddress}`);
 									ipPeers.push({
 										peer,
-										ipaddress:address
+										ipaddress: peer.ipaddress
 									});
-									// if(cv(3)) ll(`${peer.hostname} resolved to ${address}`);
+									resolve();
+								} else {
+									resolve();
 								}
-								resolve();
-							});
-						} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
-							// if(cv(3)) ll(`ip: ${peer.ipaddress}`);
-							ipPeers.push({
-								peer,
-								ipaddress:peer.ipaddress
-							});
-							resolve();
-						} else {
-							resolve();
-						}	
-					})
-				)
-				.then(()=>{
-					let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x=>x.peer.name);
-					if(cv(3)) ll("matching peers:",matches);
-					if(matches.length > 0){
-						client.connection.end("ok\r\n"+matches.join("\r\n")+"\r\n+++\r\n");
-					}else{
-						client.connection.end("fail\r\n+++\r\n");
-					}
-				})
-				.catch(lle);
-			});
+							})
+						)
+						.then(() => {
+							let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
+							logger.debug("matching peers:" + inspect(matches));
+							if (matches.length > 0) {
+								client.connection.end("ok\r\n" + matches.join("\r\n") + "\r\n+++\r\n");
+							} else {
+								client.connection.end("fail\r\n+++\r\n");
+							}
+						})
+						.catch(logger.error);
+				});
 		} else {
 			client.connection.end("error\r\nnot a valid host or ip\r\n");
 		}
@@ -169,14 +184,14 @@ async function checkIp(data:number[]|Buffer, client:client){
 	}
 }
 
-function sendEmail(messageName:string, values:{
-	[index:string]:string|number;
-}):Promise<any> {
-	return new Promise((resolve, reject)=>{
-		let message:{
-			"subject":string,
-			"html"?:string,
-			"text"?:string
+function sendEmail(messageName: string, values: {
+	[index: string]: string | number;
+}): Promise < any > {
+	return new Promise((resolve, reject) => {
+		let message: {
+			"subject": string,
+			"html" ? : string,
+			"text" ? : string
 		} = config.eMail.messages[messageName];
 		if (!message) {
 			resolve();
@@ -185,34 +200,32 @@ function sendEmail(messageName:string, values:{
 				from: config.eMail.from,
 				to: config.eMail.to,
 				subject: message.subject,
-				text:"",
-				html:""
+				text: "",
+				html: ""
 			};
-		
-			let type = message.html?"html":message.text?"text":null;
+
+			let type = message.html ? "html" : message.text ? "text" : null;
 			// if(type){
 			//	 mailOptions[type] = message[type];
 			//	 for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
 			// }
-			if(type){
-				mailOptions[type] = message[type].replace(/\[([^\]]*)\]/g,(match, key)=>values[key]||"NULL");
-			}else{
-				mailOptions.text = "configuration error in config/mailMessages.json";	
+			if (type) {
+				mailOptions[type] = message[type].replace(/\[([^\]]*)\]/g, (match, key) => values[key] || "NULL");
+			} else {
+				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
 
-			if(cv(2)&&config.logITelexCom) {
-				ll("sending mail:\n", mailOptions, "\nto server", global.transporter.options["host"]);
-			} else if (cv(1)) {
-				ll(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
-			}
-			
-			(<nodemailer.Transporter>global.transporter).sendMail(mailOptions, function (error, info) {
+			if (config.logITelexCom) logger.info(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
+			if (config.logITelexCom) logger.verbose("sending mail:\n" + inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
+
+			( < nodemailer.Transporter > global.transporter).sendMail(mailOptions, function (error, info) {
 				if (error) {
-					// if (cv(2)) lle(error);
+					// if (cv(2)) logger.error(error);
 					reject(error);
 				} else {
-					if(cv(1)&&config.logITelexCom) ll('Message sent:', info.messageId);
-					if (config.eMail.useTestAccount) if (config.logITelexCom) ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+					if (config.logITelexCom) logger.info('Message sent:' + info.messageId);
+					if (config.eMail.useTestAccount)
+						if (config.logITelexCom) logger.warn('Preview URL:', nodemailer.getTestMessageUrl(info));
 					resolve();
 				}
 			});
@@ -220,25 +233,25 @@ function sendEmail(messageName:string, values:{
 	});
 }
 
-const symbolName = (s:symbol):string=>(s&&typeof s.toString === "function")?/Symbol\((.*)\)/.exec(s.toString())[1]:"NULL";
+const symbolName = (s: symbol): string => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
 
-interface connection extends net.Socket{
+interface connection extends net.Socket {
 	//TODO
 }
-interface client{
+interface client {
 	// cnum?:symbol;
-	name:string;
-	connection:connection;
-	state:symbol,
-	readbuffer:Buffer;
-	writebuffer:ITelexCom.peer[];
-	packages:ITelexCom.Package_decoded[];
-	handling:boolean;
-	timeout?:NodeJS.Timer;
-	handleTimeout?:NodeJS.Timer;
-	cb?:()=>void;
-	servernum?:number;
-	newEntries?:number;
+	name: string;
+	connection: connection;
+	state: symbol,
+		readbuffer: Buffer;
+	writebuffer: ITelexCom.peer[];
+	packages: ITelexCom.Package_decoded[];
+	handling: boolean;
+	timeout ? : NodeJS.Timer;
+	handleTimeout ? : NodeJS.Timer;
+	cb ? : () => void;
+	servernum ? : number;
+	newEntries ? : number;
 }
 
 //#region cool names
@@ -344,7 +357,7 @@ const names = [
 	"Adrien M. Legendre",
 	"Pappus",
 	"Thales",
-  
+
 	//pyhsicists
 	"Stephen Hawking",
 	"Albert Einstein",
@@ -445,39 +458,40 @@ const names = [
 	"Max von Laue or Max b",
 	"Franklin Diaz",
 	"Hideki Yukawa",
-  ];
-  
-  function randomName(){
-	return names[Math.floor(Math.random()*names.length)];
-  }
-  
-  var lastnames = [];
-  function clientName(){
+];
+
+function randomName() {
+	return names[Math.floor(Math.random() * names.length)];
+}
+
+var lastnames = [];
+
+function clientName() {
 	let name = randomName();
-	while(lastnames.indexOf(name)>-1) name = randomName();
+	while (lastnames.indexOf(name) > -1) name = randomName();
 	lastnames.unshift(name);
-	lastnames = lastnames.slice(0,8);
-	
+	lastnames = lastnames.slice(0, 8);
+
 	return name;
-  }
-  /**/
-  //#endregion
-  
-  //#region boring names
-  /*
+}
+/**/
+//#endregion
+
+//#region boring names
+/*
   function clientName(){
 	let date = new Date()
 	let d = date.getTime()+date.getTimezoneOffset()*-60000;
 	return `${(<any>((Math.floor(d/3600000)%24)+"")).padStart(2,"0")}:${(<any>((Math.floor(d/60000)%60)+"")).padStart(2,"0")}:${(<any>((Math.floor(d/1000)%60)+"")).padStart(2,"0")},${(<any>((d%1000)+"")).padStart(3,"0")}`;
   }
   */
-  //#endregion
+//#endregion
 
 
 export {
-    SqlQuery,
-    checkIp,
-    sendEmail,
+	SqlQuery,
+	checkIp,
+	sendEmail,
 	increaseErrorCounter,
 	resetErrorCounter,
 	serverErrors,

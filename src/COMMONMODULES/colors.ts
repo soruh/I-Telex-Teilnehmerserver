@@ -44,7 +44,7 @@ const COLORS = {
 };
 
 
-function disable(bool?:boolean):void{
+function disable(bool ? : boolean): void {
 	if (bool) {
 		for (let i in this) {
 			if (typeof this[i] === "string") this[i] = "";
@@ -52,9 +52,9 @@ function disable(bool?:boolean):void{
 	}
 };
 
-function colorsAt(str:string):{
-	[index:string]: string;
-}{
+function colorsAt(str: string): {
+	[index: string]: string;
+} {
 	var colors = {};
 	for (let i in COLORS) {
 		if (typeof COLORS[i] === "string") {

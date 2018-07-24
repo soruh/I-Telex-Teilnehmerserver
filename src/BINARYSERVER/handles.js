@@ -6,18 +6,17 @@ function getTimezone(date) {
     return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
 }
 //#region imports
-const util = require("util");
+const util_1 = require("util");
 const ip = require("ip");
 const config_js_1 = require("../COMMONMODULES/config.js");
-const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const misc_js_1 = require("./misc.js");
 const misc_js_2 = require("./misc.js");
 //#endregion
+const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
-const cv = config_js_1.default.cv;
 /*<PKGTYPES>
 Client_update: 1
 Address_confirm: 2
@@ -42,8 +41,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     var { number, pin, port } = pkg.data;
     var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
     if (number < 10000) {
-        if (cv(1))
-            logWithLineNumbers_js_1.lle(`${colors_js_1.default.FgRed}client ${colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgRed} tried to update ${number} which is too small(<10000)${colors_js_1.default.Reset}`);
+        logger.warn(`${colors_js_1.default.FgRed}client ${colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgRed} tried to update ${number} which is too small(<10000)${colors_js_1.default.Reset}`);
         return void misc_js_1.sendEmail("invalidNumber", {
             "[IpFull]": client.connection.remoteAddress,
             "[Ip]": ipaddress,
@@ -55,7 +53,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             client.connection.end();
             resolve();
         })
-            .catch(logWithLineNumbers_js_1.lle);
+            .catch(logger.error);
     }
     misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
         .then((entries) => {
@@ -64,8 +62,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         let [entry] = entries.filter(x => x.type != 0);
         if (entry) {
             if (entry.type != 5) {
-                if (cv(1))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "not DynIp type" + colors_js_1.default.Reset);
+                logger.info(colors_js_1.default.FgRed + "not DynIp type" + colors_js_1.default.Reset);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpType", {
                     "[type]": entry.type,
@@ -77,11 +74,10 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "[timeZone]": getTimezone(new Date())
                 })
                     .then(resolve)
-                    .catch(logWithLineNumbers_js_1.lle);
+                    .catch(logger.error);
             }
             if (entry.pin != pin) {
-                if (cv(1))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "wrong DynIp pin" + colors_js_1.default.Reset);
+                logger.info(colors_js_1.default.FgRed + "wrong DynIp pin" + colors_js_1.default.Reset);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpPin", {
                     "[Ip]": ipaddress,
@@ -91,12 +87,16 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "[timeZone]": getTimezone(new Date())
                 })
                     .then(resolve)
-                    .catch(logWithLineNumbers_js_1.lle);
+                    .catch(logger.error);
             }
             if (ipaddress == entry.ipaddress && port == entry.port) {
-                if (cv(2))
-                    logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgYellow}not UPDATING, nothing to update${colors_js_1.default.Reset}`);
-                return void client.connection.write(ITelexCom.encPackage({ type: 2, data: { ipaddress } }), () => resolve());
+                logger.verbose(`${colors_js_1.default.FgYellow}not UPDATING, nothing to update${colors_js_1.default.Reset}`);
+                return void client.connection.write(ITelexCom.encPackage({
+                    type: 2,
+                    data: {
+                        ipaddress
+                    }
+                }), () => resolve());
             }
             misc_js_2.SqlQuery(`UPDATE teilnehmer SET 
 				port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE
@@ -110,9 +110,14 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 // 	client.connection.write(ITelexCom.encPackage({type: 2, data: {ipaddress}}), ()=>resolve());
                 // })
                 .then(() => {
-                client.connection.write(ITelexCom.encPackage({ type: 2, data: { ipaddress } }), () => resolve());
+                client.connection.write(ITelexCom.encPackage({
+                    type: 2,
+                    data: {
+                        ipaddress
+                    }
+                }), () => resolve());
             })
-                .catch(logWithLineNumbers_js_1.lle);
+                .catch(logger.error);
         }
         else {
             misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
@@ -120,7 +125,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
 				VALUES (${"?, ".repeat(11)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
                 .then(function (result) {
                 if (!(result && result.affectedRows)) {
-                    logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "could not create entry", colors_js_1.default.Reset);
+                    logger.error(colors_js_1.default.FgRed + "could not create entry" + colors_js_1.default.Reset);
                     return void resolve();
                 }
                 misc_js_1.sendEmail("new", {
@@ -130,36 +135,46 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "[date]": new Date().toLocaleString(),
                     "[timeZone]": getTimezone(new Date())
                 })
-                    .catch(logWithLineNumbers_js_1.lle);
-                client.connection.write(ITelexCom.encPackage({ type: 2, data: { ipaddress } }), () => resolve());
+                    .catch(logger.error);
+                client.connection.write(ITelexCom.encPackage({
+                    type: 2,
+                    data: {
+                        ipaddress
+                    }
+                }), () => resolve());
             })
-                .catch(logWithLineNumbers_js_1.lle);
+                .catch(logger.error);
         }
     })
-        .catch(logWithLineNumbers_js_1.lle);
+        .catch(logger.error);
 });
 handles[3][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
     if (pkg.data.version != 1) {
-        if (cv(0))
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "unsupported package version, sending '0x04' package" + colors_js_1.default.Reset);
-        return void client.connection.write(ITelexCom.encPackage({ type: 4 }), () => resolve());
+        logger.warning(colors_js_1.default.FgRed + "unsupported package version, sending '0x04' package" + colors_js_1.default.Reset);
+        return void client.connection.write(ITelexCom.encPackage({
+            type: 4
+        }), () => resolve());
     }
     misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number])
         .then(function (result) {
-        if (cv(2))
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, result, colors_js_1.default.Reset);
+        logger.verbose(colors_js_1.default.FgCyan + util_1.inspect(result) + colors_js_1.default.Reset);
         if (result && result.length == 1) {
             let [data] = result;
             data.pin = "0";
-            client.connection.write(ITelexCom.encPackage({ type: 5, data }), () => resolve());
+            client.connection.write(ITelexCom.encPackage({
+                type: 5,
+                data
+            }), () => resolve());
         }
         else {
-            client.connection.write(ITelexCom.encPackage({ type: 4 }), () => resolve());
+            client.connection.write(ITelexCom.encPackage({
+                type: 4
+            }), () => resolve());
         }
     })
-        .catch(logWithLineNumbers_js_1.lle);
+        .catch(logger.error);
 });
 handles[5][constants.states.FULLQUERY] =
     handles[5][constants.states.LOGIN] = (pkg, client) => new Promise((resolve, reject) => {
@@ -168,8 +183,7 @@ handles[5][constants.states.FULLQUERY] =
         var names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
         names = names.filter(name => pkg.data[name] !== undefined);
         var values = names.map(name => pkg.data[name]);
-        if (cv(2))
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got dataset for:" + colors_js_1.default.FgCyan + pkg.data.number + colors_js_1.default.Reset);
+        logger.verbose(colors_js_1.default.FgGreen + "got dataset for:" + colors_js_1.default.FgCyan + pkg.data.number + colors_js_1.default.Reset);
         misc_js_2.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
             .then((entries) => {
             if (!entries)
@@ -179,18 +193,19 @@ handles[5][constants.states.FULLQUERY] =
                 if (typeof client.newEntries != "number")
                     client.newEntries = 0;
                 if (pkg.data.timestamp <= entry.timestamp) {
-                    if (cv(2))
-                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "recieved entry is " + colors_js_1.default.FgCyan + (+entry.timestamp - pkg.data.timestamp) + colors_js_1.default.FgYellow + " seconds older and was ignored" + colors_js_1.default.Reset);
-                    return void client.connection.write(ITelexCom.encPackage({ type: 8 }), () => resolve());
+                    logger.verbose(colors_js_1.default.FgYellow + "recieved entry is " + colors_js_1.default.FgCyan + (+entry.timestamp - pkg.data.timestamp) + colors_js_1.default.FgYellow + " seconds older and was ignored" + colors_js_1.default.Reset);
+                    return void client.connection.write(ITelexCom.encPackage({
+                        type: 8
+                    }), () => resolve());
                 }
                 client.newEntries++;
-                if (cv(1) && !cv(2))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "got new dataset for:" + colors_js_1.default.FgCyan + pkg.data.number + colors_js_1.default.Reset);
-                if (cv(2))
-                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "recieved entry is " + colors_js_1.default.FgCyan + (pkg.data.timestamp - entry.timestamp) + "seconds newer" + colors_js_1.default.FgGreen + " > " + colors_js_1.default.FgCyan + entry.timestamp + colors_js_1.default.Reset);
+                logger.info(colors_js_1.default.FgGreen + "got new dataset for:" + colors_js_1.default.FgCyan + pkg.data.number + colors_js_1.default.Reset);
+                logger.verbose(colors_js_1.default.FgGreen + "recieved entry is " + colors_js_1.default.FgCyan + (pkg.data.timestamp - entry.timestamp) + "seconds newer" + colors_js_1.default.FgGreen + " > " + colors_js_1.default.FgCyan + entry.timestamp + colors_js_1.default.Reset);
                 misc_js_2.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]))
-                    .then(() => client.connection.write(ITelexCom.encPackage({ type: 8 }), () => resolve()))
-                    .catch(logWithLineNumbers_js_1.lle);
+                    .then(() => client.connection.write(ITelexCom.encPackage({
+                    type: 8
+                }), () => resolve()))
+                    .catch(logger.error);
             }
             else {
                 misc_js_2.SqlQuery(`
@@ -200,20 +215,20 @@ handles[5][constants.states.FULLQUERY] =
 				${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([
                     config_js_1.default.setChangedOnNewerEntry ? 1 : 0
                 ]))
-                    .then(() => client.connection.write(ITelexCom.encPackage({ type: 8 }), () => resolve()))
-                    .catch(logWithLineNumbers_js_1.lle);
+                    .then(() => client.connection.write(ITelexCom.encPackage({
+                    type: 8
+                }), () => resolve()))
+                    .catch(logger.error);
             }
         })
-            .catch(logWithLineNumbers_js_1.lle);
+            .catch(logger.error);
     });
 handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
     if (pkg.data.serverpin != config_js_1.default.serverPin && !(readonly && config_js_1.default.allowFullQueryInReadonly)) {
-        if (cv(1)) {
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "serverpin is incorrect! " + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + " ending client.connection!" + colors_js_1.default.Reset); //TODO: remove pin logging
-            client.connection.end();
-        }
+        logger.info(colors_js_1.default.FgRed + "serverpin is incorrect! " + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + " ending client.connection!" + colors_js_1.default.Reset); //TODO: remove pin logging
+        client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "[IpFull]": client.connection.remoteAddress,
             "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
@@ -221,29 +236,30 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             "[timeZone]": getTimezone(new Date())
         })
             .then(() => resolve())
-            .catch(logWithLineNumbers_js_1.lle);
+            .catch(logger.error);
     }
-    if (cv(1))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
+    logger.info(colors_js_1.default.FgGreen + "serverpin is correct!" + colors_js_1.default.Reset);
     misc_js_2.SqlQuery("SELECT  * FROM teilnehmer;")
         .then((result) => {
         if (!result || result.length === 0)
-            return void client.connection.write(ITelexCom.encPackage({ type: 9 }), () => resolve());
+            return void client.connection.write(ITelexCom.encPackage({
+                type: 9
+            }), () => resolve());
         client.writebuffer = result;
         client.state = constants.states.RESPONDING;
-        return ITelexCom.handlePackage({ type: 8 }, client);
+        return ITelexCom.handlePackage({
+            type: 8
+        }, client);
     })
         .then(() => resolve())
-        .catch(logWithLineNumbers_js_1.lle);
+        .catch(logger.error);
 });
 handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
     if (pkg.data.serverpin != config_js_1.default.serverPin && !(readonly && config_js_1.default.allowLoginInReadonly)) {
-        if (cv(1)) {
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "serverpin is incorrect!" + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + "ending client.connection!" + colors_js_1.default.Reset);
-            client.connection.end();
-        }
+        logger.info(colors_js_1.default.FgRed + "serverpin is incorrect!" + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + "ending client.connection!" + colors_js_1.default.Reset);
+        client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "[IpFull]": client.connection.remoteAddress,
             "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
@@ -251,31 +267,30 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             "[timeZone]": getTimezone(new Date())
         })
             .then(() => resolve())
-            .catch(logWithLineNumbers_js_1.lle);
+            .catch(logger.error);
     }
-    if (cv(1))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen, "serverpin is correct!", colors_js_1.default.Reset);
+    logger.info(colors_js_1.default.FgGreen + "serverpin is correct!" + colors_js_1.default.Reset);
     client.state = constants.states.LOGIN;
-    client.connection.write(ITelexCom.encPackage({ type: 8 }), () => resolve());
+    client.connection.write(ITelexCom.encPackage({
+        type: 8
+    }), () => resolve());
 });
 handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
-    if (cv(2)) {
-        let toSend = [];
-        for (let o of client.writebuffer) {
-            toSend.push(o.number);
-        }
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "entrys to transmit:" + colors_js_1.default.FgCyan + (cv(3) ? util.inspect(toSend).replace(/\n/g, "") : toSend.length) + colors_js_1.default.Reset);
-    }
+    logger.info(colors_js_1.default.FgGreen + "entrys to transmit:" + colors_js_1.default.FgCyan + client.writebuffer.length + colors_js_1.default.Reset);
     if (client.writebuffer.length === 0) {
         client.state = constants.states.STANDBY;
-        return void client.connection.write(ITelexCom.encPackage({ type: 9 }), () => resolve());
+        return void client.connection.write(ITelexCom.encPackage({
+            type: 9
+        }), () => resolve());
     }
     let data = client.writebuffer.shift();
-    if (cv(1))
-        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}sent dataset for ${colors_js_1.default.FgCyan}${data.name} (${data.number})${colors_js_1.default.Reset}`);
-    client.connection.write(ITelexCom.encPackage({ type: 5, data }), () => resolve());
+    logger.info(`${colors_js_1.default.FgGreen}sent dataset for ${colors_js_1.default.FgCyan}${data.name} (${data.number})${colors_js_1.default.Reset}`);
+    client.connection.write(ITelexCom.encPackage({
+        type: 5,
+        data
+    }), () => resolve());
 });
 handles[9][constants.states.FULLQUERY] =
     handles[9][constants.states.LOGIN] = (pkg, client) => new Promise((resolve, reject) => {
@@ -297,14 +312,21 @@ handles[10][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, r
     misc_js_2.SqlQuery(searchstring, searchWords)
         .then(function (result) {
         if (!result || result.length == 0)
-            return void client.connection.write(ITelexCom.encPackage({ type: 9 }), () => resolve());
+            return void client.connection.write(ITelexCom.encPackage({
+                type: 9
+            }), () => resolve());
         client.state = constants.states.RESPONDING;
         client.writebuffer = result
             .filter(x => x.disabled != 1 && x.type != 0)
-            .map(x => { x.pin = "0"; return x; });
-        return ITelexCom.handlePackage({ type: 8 }, client);
+            .map(x => {
+            x.pin = "0";
+            return x;
+        });
+        return ITelexCom.handlePackage({
+            type: 8
+        }, client);
     })
         .then(() => resolve())
-        .catch(logWithLineNumbers_js_1.lle);
+        .catch(logger.error);
 });
 exports.default = handles;

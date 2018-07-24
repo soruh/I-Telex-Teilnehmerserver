@@ -6,12 +6,14 @@
     "explainBuffers":2,
 
     "logDate":true,
-    "logLineNumbers":false,
-    "bufferLogWithWhitespace":true,
-
-    "repairPm2Colors":false,
     "disableColors":false,
+    "printServerErrorsOnExit":true,
 
-    "stdoutLog":null,
-    "stderrLog":null
+    "binaryserverLog": null,
+    "binaryserverErrorLog": null,
+    "logBinaryserverToConsole": true,
+
+    "webserverLog": null,
+    "webserverErrorLog": null,
+    "logWebserverToConsole": true
 }

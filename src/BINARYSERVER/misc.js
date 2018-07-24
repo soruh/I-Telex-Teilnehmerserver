@@ -9,8 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
-const util = require("util");
+const util_1 = require("util");
 const mysql = require("mysql");
 const ip = require("ip");
 const nodemailer = require("nodemailer");
@@ -19,6 +18,7 @@ const colors_js_1 = require("../COMMONMODULES/colors.js");
 const dns_1 = require("dns");
 const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
 //#endregion
+const logger = global.logger;
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
     let offsetStr = (Math.floor(offset / 60)).padStart(2, "0") + ":" + (offset % 60).padStart(2, "0");
@@ -26,7 +26,6 @@ function getTimezone(date) {
 }
 var serverErrors = {};
 exports.serverErrors = serverErrors;
-const cv = config_js_1.default.cv;
 const { mySqlConnectionOptions } = config_js_1.default;
 mySqlConnectionOptions["multipleStatements"] = true;
 function increaseErrorCounter(serverkey, error, code) {
@@ -46,8 +45,7 @@ function increaseErrorCounter(serverkey, error, code) {
         };
     }
     let warn = config_js_1.default.warnAtErrorCounts.indexOf(serverErrors[serverkey].errorCounter) > -1;
-    if (cv(1))
-        logWithLineNumbers_js_1.lle(`${colors_js_1.default.FgYellow}increased errorCounter for server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgYellow} to ${warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan}${serverErrors[serverkey].errorCounter}${colors_js_1.default.Reset}`);
+    logger.warn(`${colors_js_1.default.FgYellow}increased errorCounter for server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgYellow} to ${warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan}${serverErrors[serverkey].errorCounter}${colors_js_1.default.Reset}`);
     if (warn)
         sendEmail("ServerError", {
             "[server]": serverkey,
@@ -63,26 +61,27 @@ function resetErrorCounter(serverkey) {
         serverErrors[serverkey].errorCounter = 0;
         if (config_js_1.default.deleteErrorsOnReconnect)
             serverErrors[serverkey].errors = [];
-        if (cv(2))
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset error counter for: " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.Reset);
+        logger.verbose(colors_js_1.default.FgGreen + "reset error counter for: " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.Reset);
     }
 }
 exports.resetErrorCounter = resetErrorCounter;
 function SqlQuery(query, options) {
     return new Promise((resolve, reject) => {
         query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-        if (cv(3))
-            logWithLineNumbers_js_1.llo(3, colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query + " " + (options || "") + colors_js_1.default.Reset);
-        if (cv(2) || (cv(1) && /(update)|(insert)/gi.test(query)))
-            logWithLineNumbers_js_1.llo(3, colors_js_1.default.BgLightBlue + colors_js_1.default.FgBlack + mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim() + colors_js_1.default.Reset);
+        logger.debug(colors_js_1.default.BgLightCyan + colors_js_1.default.FgBlack + query + " " + (options || "") + colors_js_1.default.Reset);
+        let msg = colors_js_1.default.BgLightBlue + colors_js_1.default.FgBlack + mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim() + colors_js_1.default.Reset;
+        if (/(update)|(insert)/gi.test(query)) {
+            logger.info(msg);
+        }
+        else {
+            logger.verbose(msg);
+        }
         if (global.sqlPool) {
             global.sqlPool.query(query, options, function (err, res) {
                 if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
-                    if (cv(3))
-                        logWithLineNumbers_js_1.ll("number of open connections: " + global.sqlPool["_allConnections"].length);
+                    logger.debug("number of open connections: " + global.sqlPool["_allConnections"].length);
                 if (err) {
-                    if (cv(0))
-                        logWithLineNumbers_js_1.llo(1, colors_js_1.default.FgRed, err, colors_js_1.default.Reset);
+                    logger.error(colors_js_1.default.FgRed + util_1.inspect(err) + colors_js_1.default.Reset);
                     reject(err);
                 }
                 else {
@@ -91,7 +90,7 @@ function SqlQuery(query, options) {
             });
         }
         else {
-            logWithLineNumbers_js_1.lle(`sql pool is not set!`);
+            logger.error(`sql pool is not set!`);
         }
     });
 }
@@ -100,23 +99,20 @@ function checkIp(data, client) {
     return __awaiter(this, void 0, void 0, function* () {
         if (config_js_1.default.doDnsLookups) {
             var arg = data.slice(1).toString().split("\n")[0].split("\r")[0];
-            if (cv(1))
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}checking if ${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} belongs to any participant${colors_js_1.default.Reset}`);
+            logger.info(`${colors_js_1.default.FgGreen}checking if ${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} belongs to any participant${colors_js_1.default.Reset}`);
             let ipAddr = "";
             if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
                 ipAddr = arg;
             }
             else {
                 try {
-                    let { address, family } = yield util.promisify(dns_1.lookup)(arg);
+                    let { address, family } = yield util_1.promisify(dns_1.lookup)(arg);
                     ipAddr = address;
-                    if (cv(2))
-                        logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} resolved to ${colors_js_1.default.FgCyan + ipAddr + colors_js_1.default.Reset}`);
+                    logger.verbose(`${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} resolved to ${colors_js_1.default.FgCyan + ipAddr + colors_js_1.default.Reset}`);
                 }
                 catch (e) {
                     client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-                    if (cv(3))
-                        logWithLineNumbers_js_1.ll(e);
+                    logger.debug(e);
                     return;
                 }
             }
@@ -128,7 +124,7 @@ function checkIp(data, client) {
                         if ((!peer.ipaddress) && peer.hostname) {
                             // if(cv(3)) ll(`hostname: ${peer.hostname}`)
                             dns_1.lookup(peer.hostname, {}, function (err, address, family) {
-                                // if (cv(3) && err) lle(colors.FgRed, err, colors.Reset);
+                                // if (cv(3) && err) logger.error(colors.FgRed + util.inspect(err), colors.Reset);
                                 if (address) {
                                     ipPeers.push({
                                         peer,
@@ -153,8 +149,7 @@ function checkIp(data, client) {
                     }))
                         .then(() => {
                         let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
-                        if (cv(3))
-                            logWithLineNumbers_js_1.ll("matching peers:", matches);
+                        logger.debug("matching peers:" + util_1.inspect(matches));
                         if (matches.length > 0) {
                             client.connection.end("ok\r\n" + matches.join("\r\n") + "\r\n+++\r\n");
                         }
@@ -162,7 +157,7 @@ function checkIp(data, client) {
                             client.connection.end("fail\r\n+++\r\n");
                         }
                     })
-                        .catch(logWithLineNumbers_js_1.lle);
+                        .catch(logger.error);
                 });
             }
             else {
@@ -200,23 +195,21 @@ function sendEmail(messageName, values) {
             else {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            if (cv(2) && config_js_1.default.logITelexCom) {
-                logWithLineNumbers_js_1.ll("sending mail:\n", mailOptions, "\nto server", global.transporter.options["host"]);
-            }
-            else if (cv(1)) {
-                logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
-            }
+            if (config_js_1.default.logITelexCom)
+                logger.info(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
+            if (config_js_1.default.logITelexCom)
+                logger.verbose("sending mail:\n" + util_1.inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
             global.transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
-                    // if (cv(2)) lle(error);
+                    // if (cv(2)) logger.error(error);
                     reject(error);
                 }
                 else {
-                    if (cv(1) && config_js_1.default.logITelexCom)
-                        logWithLineNumbers_js_1.ll('Message sent:', info.messageId);
+                    if (config_js_1.default.logITelexCom)
+                        logger.info('Message sent:' + info.messageId);
                     if (config_js_1.default.eMail.useTestAccount)
                         if (config_js_1.default.logITelexCom)
-                            logWithLineNumbers_js_1.ll('Preview URL:', nodemailer.getTestMessageUrl(info));
+                            logger.warn('Preview URL:', nodemailer.getTestMessageUrl(info));
                     resolve();
                 }
             });

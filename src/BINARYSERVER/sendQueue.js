@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../COMMONMODULES/config.js");
-const logWithLineNumbers_js_1 = require("../COMMONMODULES/logWithLineNumbers.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
@@ -10,17 +9,16 @@ const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");
 const misc_js_1 = require("./misc.js");
 const updateQueue_js_1 = require("./updateQueue.js");
+const util_1 = require("util");
 //#endregion
-const cv = config_js_1.default.cv;
 const readonly = (config_js_1.default.serverPin == null);
+const logger = global.logger;
 function sendQueue() {
     return updateQueue_js_1.default()
         .then(() => new Promise((resolve, reject) => {
-        if (cv(2))
-            logWithLineNumbers_js_1.ll(colors_js_1.default.FgMagenta + "sending " + colors_js_1.default.FgCyan + "Queue" + colors_js_1.default.Reset);
+        logger.verbose(colors_js_1.default.FgMagenta + "sending " + colors_js_1.default.FgCyan + "Queue" + colors_js_1.default.Reset);
         if (readonly) {
-            if (cv(2))
-                logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "Read-only mode -> aborting " + colors_js_1.default.FgCyan + "sendQueue" + colors_js_1.default.Reset);
+            logger.verbose(colors_js_1.default.FgYellow + "Read-only mode -> aborting " + colors_js_1.default.FgCyan + "sendQueue" + colors_js_1.default.Reset);
             resolve();
         }
         else {
@@ -40,8 +38,7 @@ function sendQueue() {
                                 .then(function (result2) {
                                 if (result2.length == 1) {
                                     var serverinf = result2[0];
-                                    if (cv(2))
-                                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, serverinf, colors_js_1.default.Reset);
+                                    logger.verbose(colors_js_1.default.FgCyan + util_1.inspect(serverinf) + colors_js_1.default.Reset);
                                     try {
                                         // var isConnected = false;
                                         // for (let key in connections) {
@@ -60,12 +57,10 @@ function sendQueue() {
                                         })
                                             .then(client => {
                                             client.servernum = server[0].server;
-                                            if (cv(1))
-                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors_js_1.default.Reset);
+                                            logger.info(colors_js_1.default.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors_js_1.default.Reset);
                                             client.writebuffer = [];
                                             serialEachPromise_js_1.default(server, serverdata => new Promise((resolve, reject) => {
-                                                if (cv(2))
-                                                    logWithLineNumbers_js_1.ll(colors_js_1.default.FgCyan, serverdata, colors_js_1.default.Reset);
+                                                logger.verbose(colors_js_1.default.FgCyan + util_1.inspect(serverdata) + colors_js_1.default.Reset);
                                                 var existing = null;
                                                 for (let t of teilnehmer) {
                                                     if (t.uid == serverdata.message) {
@@ -77,21 +72,18 @@ function sendQueue() {
                                                         .then(function (res) {
                                                         if (res.affectedRows > 0) {
                                                             client.writebuffer.push(existing); //TODO
-                                                            if (cv(1))
-                                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "deleted queue entry " + colors_js_1.default.FgCyan + existing.name + colors_js_1.default.FgGreen + " from queue" + colors_js_1.default.Reset);
+                                                            logger.info(colors_js_1.default.FgGreen + "deleted queue entry " + colors_js_1.default.FgCyan + existing.name + colors_js_1.default.FgGreen + " from queue" + colors_js_1.default.Reset);
                                                             resolve();
                                                         }
                                                         else {
-                                                            if (cv(1))
-                                                                logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "could not delete queue entry " + colors_js_1.default.FgCyan + existing.name + colors_js_1.default.FgRed + " from queue" + colors_js_1.default.Reset);
+                                                            logger.info(colors_js_1.default.FgRed + "could not delete queue entry " + colors_js_1.default.FgCyan + existing.name + colors_js_1.default.FgRed + " from queue" + colors_js_1.default.Reset);
                                                             resolve();
                                                         }
                                                     })
-                                                        .catch(logWithLineNumbers_js_1.lle);
+                                                        .catch(logger.error);
                                                 }
                                                 else {
-                                                    if (cv(2))
-                                                        logWithLineNumbers_js_1.ll(colors_js_1.default.FgRed + "entry does not exist" + colors_js_1.default.FgCyan + colors_js_1.default.Reset);
+                                                    logger.verbose(colors_js_1.default.FgRed + "entry does not exist" + colors_js_1.default.FgCyan + colors_js_1.default.Reset);
                                                     resolve();
                                                 }
                                             }))
@@ -107,42 +99,40 @@ function sendQueue() {
                                                     resolve();
                                                 });
                                             })
-                                                .catch(logWithLineNumbers_js_1.lle);
+                                                .catch(logger.error);
                                         })
-                                            .catch(logWithLineNumbers_js_1.lle);
+                                            .catch(logger.error);
                                         // } else {
                                         // 	if (cv(1)) ll(colors.FgYellow + "already connected to server " + server[0].server + colors.Reset);
                                         // 	resolve();
                                         // }
                                     }
                                     catch (e) {
-                                        if (cv(2))
-                                            logWithLineNumbers_js_1.lle(e);
+                                        logger.debug(e);
                                         resolve();
                                     }
                                 }
                                 else {
                                     misc_js_1.SqlQuery("DELETE FROM queue WHERE server=?;", [server[0].server])
                                         .then(resolve)
-                                        .catch(logWithLineNumbers_js_1.lle);
+                                        .catch(logger.error);
                                 }
                             })
-                                .catch(logWithLineNumbers_js_1.lle);
+                                .catch(logger.error);
                         }))
                             .then(() => {
                             resolve();
                         })
-                            .catch(logWithLineNumbers_js_1.lle);
+                            .catch(logger.error);
                     }
                     else {
-                        if (cv(2))
-                            logWithLineNumbers_js_1.ll(colors_js_1.default.FgYellow + "No queue!", colors_js_1.default.Reset);
+                        logger.verbose(colors_js_1.default.FgYellow + "No queue!" + colors_js_1.default.Reset);
                         resolve();
                     }
                 })
-                    .catch(logWithLineNumbers_js_1.lle);
+                    .catch(logger.error);
             })
-                .catch(logWithLineNumbers_js_1.lle);
+                .catch(logger.error);
         }
     }));
 }
