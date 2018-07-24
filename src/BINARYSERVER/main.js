@@ -16,6 +16,8 @@ const config_js_1 = require("../COMMONMODULES/config.js");
             if (winston.config.npm.levels.hasOwnProperty(config_js_1.default.loggingVerbosity))
                 return config_js_1.default.loggingVerbosity;
         }
+        console.log(`valid logging levels are:\n${util.inspect(winston.config.npm.levels)}\n
+		(key or value)`);
         throw "invalid logging level";
     };
     let resolvePath = function resolvePath(pathToResolve) {

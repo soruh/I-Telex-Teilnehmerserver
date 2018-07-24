@@ -25,6 +25,9 @@ declare global {
 			if (winston.config.npm.levels.hasOwnProperty(config.loggingVerbosity))
 				return config.loggingVerbosity;
 		}
+		console.log(`valid logging levels are:\n${util.inspect(winston.config.npm.levels)}\n
+		(key or value)`);
+		
 		throw "invalid logging level";
 	}
 	let resolvePath = function resolvePath(pathToResolve: string): string {
