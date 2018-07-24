@@ -35,7 +35,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 			logger.info(colors.FgYellow + "client " + colors.FgCyan + client.name + colors.FgYellow + " disconnected" + colors.Reset);
 			clearTimeout(client.timeout);
 
-			logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.FgGreen}${colors.Reset}`);
+			// logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.FgGreen}${colors.Reset}`);
 			client = null;
 		}
 	});
@@ -60,11 +60,11 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 		} else {
 			logger.verbose(colors.FgGreen + "serving binary request" + colors.Reset);
 
-			logger.verbose("Buffer for client " + client.name + ":" + colors.FgCyan + inspect(client.readbuffer) + colors.Reset);
-			logger.verbose("New Data for client " + client.name + ":" + colors.FgCyan + inspect(data) + colors.Reset);
+			logger.debug(colors.FgCyan+"Buffer for client " +colors.FgCyan+ client.name + colors.FgGreen+":" + colors.FgCyan + inspect(client.readbuffer) + colors.Reset);
+			logger.debug(colors.FgGreen+"New Data for client " + colors.FgCyan+ client.name + colors.FgGreen+":" + colors.FgCyan + inspect(data) + colors.Reset);
 			var res = ITelexCom.getCompletePackages(data, client.readbuffer);
-			logger.verbose("New Buffer:" + colors.FgCyan + inspect(res[1]) + colors.Reset);
-			logger.verbose("complete Package(s):" + colors.FgCyan+ inspect(res[0])+ colors.Reset);
+			logger.debug(colors.FgGreen+"New Buffer:" + colors.FgCyan + inspect(res[1]) + colors.Reset);
+			logger.debug(colors.FgGreen+"complete Package(s):" + colors.FgCyan+ inspect(res[0])+ colors.Reset);
 			client.readbuffer = res[1];
 			if (res[0]) {
 				client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
@@ -88,15 +88,6 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 									}
 									return await ITelexCom.handlePackage(pkg, client);
 								}
-								// (pkg, key)=>new Promise((resolve, reject)=>{
-								// 	if ((cv(1) && (nPackages > 1)) || cv(2)) ll(`${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${nPackages}${colors.Reset}`);
-								// 	ITelexCom.handlePackage(pkg, client)
-								// 	.then(()=>{
-								// 		// handled++;
-								// 		resolve();
-								// 	})
-								// 	.catch(logger.error);
-								// })
 							)
 							.then((res) => {
 								client.packages.splice(0, res.length); //handled);

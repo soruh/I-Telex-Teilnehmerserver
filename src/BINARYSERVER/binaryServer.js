@@ -34,7 +34,7 @@ var binaryServer = net.createServer(function (connection) {
                 logger.info(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${client.newEntries}${colors_js_1.default.FgGreen} new entries${colors_js_1.default.Reset}`);
             logger.info(colors_js_1.default.FgYellow + "client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgYellow + " disconnected" + colors_js_1.default.Reset);
             clearTimeout(client.timeout);
-            logger.info(`${colors_js_1.default.FgGreen}deleted connection ${colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen}${colors_js_1.default.Reset}`);
+            // logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.FgGreen}${colors.Reset}`);
             client = null;
         }
     });
@@ -59,11 +59,11 @@ var binaryServer = net.createServer(function (connection) {
         }
         else {
             logger.verbose(colors_js_1.default.FgGreen + "serving binary request" + colors_js_1.default.Reset);
-            logger.verbose("Buffer for client " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
-            logger.verbose("New Data for client " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+            logger.debug(colors_js_1.default.FgCyan + "Buffer for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
+            logger.debug(colors_js_1.default.FgGreen + "New Data for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
             var res = ITelexCom.getCompletePackages(data, client.readbuffer);
-            logger.verbose("New Buffer:" + colors_js_1.default.FgCyan + util_1.inspect(res[1]) + colors_js_1.default.Reset);
-            logger.verbose("complete Package(s):" + colors_js_1.default.FgCyan + util_1.inspect(res[0]) + colors_js_1.default.Reset);
+            logger.debug(colors_js_1.default.FgGreen + "New Buffer:" + colors_js_1.default.FgCyan + util_1.inspect(res[1]) + colors_js_1.default.Reset);
+            logger.debug(colors_js_1.default.FgGreen + "complete Package(s):" + colors_js_1.default.FgCyan + util_1.inspect(res[0]) + colors_js_1.default.Reset);
             client.readbuffer = res[1];
             if (res[0]) {
                 client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
@@ -86,17 +86,7 @@ var binaryServer = net.createServer(function (connection) {
                                 }
                                 return yield ITelexCom.handlePackage(pkg, client);
                             });
-                        }
-                        // (pkg, key)=>new Promise((resolve, reject)=>{
-                        // 	if ((cv(1) && (nPackages > 1)) || cv(2)) ll(`${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${nPackages}${colors.Reset}`);
-                        // 	ITelexCom.handlePackage(pkg, client)
-                        // 	.then(()=>{
-                        // 		// handled++;
-                        // 		resolve();
-                        // 	})
-                        // 	.catch(logger.error);
-                        // })
-                        )
+                        })
                             .then((res) => {
                             client.packages.splice(0, res.length); //handled);
                             client.handling = false;

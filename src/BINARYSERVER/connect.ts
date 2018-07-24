@@ -20,8 +20,6 @@ import {
 //#endregion
 
 const logger = global.logger;
-const verbosity = config.loggingVerbosity;
-var cv = level => level <= verbosity; //check verbosity
 
 function connect(
 	onEnd: (client: client) => void,
@@ -50,23 +48,24 @@ function connect(
 			if (client.newEntries != null) logger.info(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
 			logger.info(colors.FgYellow + "server " + colors.FgCyan + client.name + colors.FgYellow + " ended!" + colors.Reset);
 
-			logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.Reset}`);
+			// logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.Reset}`);
 			client = null;
 			onEnd(client);
 		});
 		socket.on('timeout', () => {
-			if (cv(1)) logger.error(colors.FgRed + "server: " + colors.FgCyan + serverkey + colors.FgRed + " timed out" + colors.Reset);
+			logger.warn(colors.FgRed + "server: " + colors.FgCyan + serverkey + colors.FgRed + " timed out" + colors.Reset);
 			// socket.emit("end");
 			// socket.emit("error",new Error("timeout"));
 			increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
 			socket.end();
 		});
 		socket.on('error', error => {
-			if (cv(3)) logger.error(error);
 			if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
 				logger.info(`${colors.FgRed}server ${colors.FgCyan+inspect(options)+colors.FgRed} had an error${colors.Reset}`);
 				increaseErrorCounter(serverkey, error, error["code"]);
-				logger.warning(colors.FgRed + "server " + colors.FgCyan + serverkey + colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan + serverErrors[serverkey].errorCounter + colors.Reset);
+				logger.info(colors.FgRed + "server " + colors.FgCyan + serverkey + colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan + serverErrors[serverkey].errorCounter + colors.Reset);
+			}else{
+				logger.debug(error);
 			}
 			socket.end();
 		});
@@ -74,12 +73,11 @@ function connect(
 			logger.verbose(colors.FgGreen + "recieved data:" + colors.FgCyan + inspect(data) + colors.Reset);
 			logger.verbose(colors.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors.Reset);
 			try {
-				//if(cv(2)) ll(colors.FgCyan,data,"\n"+colors.FgYellow,data.toString(),colors.Reset);
-				// if(cv(2)) ll("Buffer for client "+client.name+":"+colors.FgCyan,client.readbuffer,colors.Reset);
-				// if(cv(2)) ll("New Data for client "+client.name+":"+colors.FgCyan,data,colors.Reset);
+				logger.debug(colors.FgGreen+"Buffer for client "+colors.FgCyan+ client.name+colors.FgGreen+ ":"+colors.FgCyan+inspect(client.readbuffer)+colors.Reset);
+				logger.debug(colors.FgGreen+"New Data for client "+colors.FgCyan+ client.name+colors.FgGreen+":"+colors.FgCyan+inspect(data)+colors.Reset);
 				var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-				// if(cv(2)) ll("New Buffer "+client.name+":"+colors.FgCyan,res[1],colors.Reset);
-				// if(cv(2)) ll("Package "+client.name+":"+colors.FgCyan,res[0],colors.Reset);
+				logger.debug(colors.FgGreen+"New Buffer "+client.name+":"+colors.FgCyan+inspect(rest)+colors.Reset);
+				logger.debug(colors.FgGreen+"Packages "+client.name+":"+colors.FgCyan+inspect(packages)+colors.Reset);
 				client.readbuffer = rest;
 				client.packages = client.packages.concat(ITelexCom.decPackages(packages));
 				let handleTimeout = () => {
@@ -119,7 +117,7 @@ function connect(
 				};
 				handleTimeout();
 			} catch (e) {
-				if (cv(2)) logger.error(e);
+				logger.debug(e);
 			}
 		});
 		socket.connect(options, () => {

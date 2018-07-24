@@ -113,7 +113,7 @@ function sendQueue() {
 																	})
 																	.catch(logger.error);
 																// } else {
-																// 	if (cv(1)) ll(colors.FgYellow + "already connected to server " + server[0].server + colors.Reset);
+																// 	logger.warn(colors.FgYellow + "already connected to server " + server[0].server + colors.Reset);
 																// 	resolve();
 																// }
 															} catch (e) {

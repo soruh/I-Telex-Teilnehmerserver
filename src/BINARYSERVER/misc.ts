@@ -141,20 +141,20 @@ async function checkIp(data: number[] | Buffer, client: client) {
 					serialEachPromise(peers, peer =>
 							new Promise((resolve, reject) => {
 								if ((!peer.ipaddress) && peer.hostname) {
-									// if(cv(3)) ll(`hostname: ${peer.hostname}`)
+									// logger.debug(`hostname: ${peer.hostname}`)
 									lookup(peer.hostname, {}, function (err, address, family) {
-										// if (cv(3) && err) logger.error(colors.FgRed + util.inspect(err), colors.Reset);
+										// if (err) logger.debug(colors.FgRed + util.inspect(err), colors.Reset);
 										if (address) {
 											ipPeers.push({
 												peer,
 												ipaddress: address
 											});
-											// if(cv(3)) ll(`${peer.hostname} resolved to ${address}`);
+											// logger.debug(`${peer.hostname} resolved to ${address}`);
 										}
 										resolve();
 									});
 								} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
-									// if(cv(3)) ll(`ip: ${peer.ipaddress}`);
+									// logger.debug(`ip: ${peer.ipaddress}`);
 									ipPeers.push({
 										peer,
 										ipaddress: peer.ipaddress
@@ -220,7 +220,7 @@ function sendEmail(messageName: string, values: {
 
 			( < nodemailer.Transporter > global.transporter).sendMail(mailOptions, function (error, info) {
 				if (error) {
-					// if (cv(2)) logger.error(error);
+					//logger.debug(error);
 					reject(error);
 				} else {
 					if (config.logITelexCom) logger.info('Message sent:' + info.messageId);

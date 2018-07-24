@@ -649,7 +649,7 @@ function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 function ascii(data: number[] | Buffer, client: client): void {
 	var number: string = "";
 	for (let byte of data) {
-		//if(cv(2)) if (config.logITelexCom) ll(String.fromCharCode(byte));
+		//if (config.logITelexCom) logger.debug(String.fromCharCode(byte));
 		let char = String.fromCharCode(byte);
 		if (/([0-9])/.test(char)) number += char;
 	}

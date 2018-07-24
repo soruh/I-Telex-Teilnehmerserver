@@ -487,7 +487,7 @@ exports.decPackages = decPackages;
 function ascii(data, client) {
     var number = "";
     for (let byte of data) {
-        //if(cv(2)) if (config.logITelexCom) ll(String.fromCharCode(byte));
+        //if (config.logITelexCom) logger.debug(String.fromCharCode(byte));
         let char = String.fromCharCode(byte);
         if (/([0-9])/.test(char))
             number += char;
