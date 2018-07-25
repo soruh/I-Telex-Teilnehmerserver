@@ -14,9 +14,9 @@ const util_1 = require("util");
 const readonly = (config_js_1.default.serverPin == null);
 const logger = global.logger;
 function sendQueue() {
+    logger.verbose(colors_js_1.default.FgMagenta + "sending " + colors_js_1.default.FgCyan + "Queue" + colors_js_1.default.Reset);
     return updateQueue_js_1.default()
         .then(() => new Promise((resolve, reject) => {
-        logger.verbose(colors_js_1.default.FgMagenta + "sending " + colors_js_1.default.FgCyan + "Queue" + colors_js_1.default.Reset);
         if (readonly) {
             logger.verbose(colors_js_1.default.FgYellow + "Read-only mode -> aborting " + colors_js_1.default.FgCyan + "sendQueue" + colors_js_1.default.Reset);
             resolve();

@@ -22,9 +22,9 @@ const readonly = (config.serverPin == null);
 const logger = global.logger;
 
 function sendQueue() {
+	logger.verbose(colors.FgMagenta + "sending " + colors.FgCyan + "Queue" + colors.Reset);
 	return updateQueue()
 		.then(() => new Promise((resolve, reject) => {
-			logger.verbose(colors.FgMagenta + "sending " + colors.FgCyan + "Queue" + colors.Reset);
 			if (readonly) {
 				logger.verbose(colors.FgYellow + "Read-only mode -> aborting " + colors.FgCyan + "sendQueue" + colors.Reset);
 				resolve();

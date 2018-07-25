@@ -48,9 +48,9 @@ router.post('/list', function (req, res) {
       //remove private values if the password is wrong or not set
       if(req.body.password != config.webInterfacePassword){
         delete publicEntry.disabled;
-        delete publicEntry.changed;
       }
       delete publicEntry.pin; // never send pin
+      delete publicEntry.changed; // never send changed
 
       return publicEntry;
     });
