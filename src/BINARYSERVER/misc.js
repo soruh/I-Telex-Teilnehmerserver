@@ -21,7 +21,7 @@ const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
 const logger = global.logger;
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
-    let offsetStr = (Math.floor(offset / 60)).padStart(2, "0") + ":" + (offset % 60).padStart(2, "0");
+    let offsetStr = (Math.floor(offset / 60)).toString().padStart(2, "0") + ":" + (offset % 60).padStart(2, "0");
     return "UTC" + (offset < 0 ? "" : "+") + offsetStr;
 }
 var serverErrors = {};

@@ -22,7 +22,7 @@ const logger = global.logger;
 
 function getTimezone(date: Date) {
 	let offset = -1 * date.getTimezoneOffset();
-	let offsetStr = ( < any > (Math.floor(offset / 60))).padStart(2, "0") + ":" + ( < any > (offset % 60)).padStart(2, "0");
+	let offsetStr = ( < any > (Math.floor(offset / 60)).toString()).padStart(2, "0") + ":" + ( < any > (offset % 60)).padStart(2, "0");
 	return "UTC" + (offset < 0 ? "" : "+") + offsetStr;
 }
 
