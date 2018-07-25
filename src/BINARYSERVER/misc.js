@@ -29,11 +29,6 @@ exports.errorCounters = errorCounters;
 const { mySqlConnectionOptions } = config_js_1.default;
 mySqlConnectionOptions["multipleStatements"] = true;
 function increaseErrorCounter(serverkey, error, code) {
-    let newError = {
-        error: error,
-        code: code,
-        timeStamp: Date.now()
-    };
     if (errorCounters.hasOwnProperty(serverkey)) {
         errorCounters[serverkey]++;
     }
@@ -46,7 +41,7 @@ function increaseErrorCounter(serverkey, error, code) {
         sendEmail("ServerError", {
             "[server]": serverkey,
             "[errorCounter]": errorCounters[serverkey],
-            "[lastError]": error.code,
+            "[lastError]": code,
             "[date]": new Date().toLocaleString(),
             "[timeZone]": getTimezone(new Date())
         });
@@ -433,6 +428,6 @@ else {
     exports.clientName = clientName = function clientName() {
         let date = new Date();
         let d = date.getTime() + date.getTimezoneOffset() * -60000;
-        return `${((Math.floor(d / 3600000) % 24) + "").padStart(2, "0")}:${((Math.floor(d / 60000) % 60) + "").padStart(2, "0")}:${((Math.floor(d / 1000) % 60) + "").padStart(2, "0")},${((d % 1000) + "").padStart(3, "0")}`;
+        return `${((Math.floor(d / 3600000) % 24).toString()).padStart(2, "0")}:${((Math.floor(d / 60000) % 60).toString()).padStart(2, "0")}:${((Math.floor(d / 1000) % 60) + "").padStart(2, "0")},${((d % 1000) + "").padStart(3, "0")}`;
     };
 }
