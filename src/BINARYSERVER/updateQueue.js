@@ -8,6 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+//#region imports
+// import config from '../COMMONMODULES/config.js';
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
 const misc_js_1 = require("./misc.js");

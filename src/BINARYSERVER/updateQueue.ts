@@ -1,6 +1,6 @@
 "use strict";
 //#region imports
-import config from '../COMMONMODULES/config.js';
+// import config from '../COMMONMODULES/config.js';
 import colors from "../COMMONMODULES/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from '../COMMONMODULES/serialEachPromise.js';

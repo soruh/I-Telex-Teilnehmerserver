@@ -16,7 +16,7 @@ import {
 	lookup
 } from "dns";
 import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
-import * as winston from "winston";
+// import * as winston from "winston";
 //#endregion
 const logger = global.logger;
 
@@ -218,11 +218,11 @@ interface client {
 	name: string;
 	connection: connection;
 	state: symbol,
-		readbuffer: Buffer;
+	readbuffer: Buffer;
 	writebuffer: ITelexCom.peer[];
 	packages: ITelexCom.Package_decoded[];
 	// handling: boolean;
-	timeout ? : NodeJS.Timer;
+	// timeout ? : NodeJS.Timer;
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;
 	servernum ? : number;

@@ -33,7 +33,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 		if (client) {
 			if (client.newEntries != null) logger.info(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
 			logger.info(colors.FgYellow + "client " + colors.FgCyan + client.name + colors.FgYellow + " disconnected" + colors.Reset);
-			clearTimeout(client.timeout);
+			// clearTimeout(client.timeout);
 
 			// logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.FgGreen}${colors.Reset}`);
 			client = null;
@@ -69,7 +69,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 				client.readbuffer = res[1];
 				if (res[0]) {
 					client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
-					// let timeout = function () {
+					// let handleTimeout = function () {
 					// if (client.handling === false) {
 							// client.handling = true;
 							// if (client.timeout != null) {
@@ -95,10 +95,10 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 								})
 								.catch(logger.error);
 					// 	} else {
-					// 		client.timeout = setTimeout(timeout, 10);
+					// 		client.timeout = setTimeout(handleTimeout, 10);
 					// 	}
 					// };
-					// timeout();
+					// handleTimeout();
 				}
 			}
 		}

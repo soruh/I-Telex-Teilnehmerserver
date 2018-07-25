@@ -33,7 +33,7 @@ var binaryServer = net.createServer(function (connection) {
             if (client.newEntries != null)
                 logger.info(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${client.newEntries}${colors_js_1.default.FgGreen} new entries${colors_js_1.default.Reset}`);
             logger.info(colors_js_1.default.FgYellow + "client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgYellow + " disconnected" + colors_js_1.default.Reset);
-            clearTimeout(client.timeout);
+            // clearTimeout(client.timeout);
             // logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.FgGreen}${colors.Reset}`);
             client = null;
         }
@@ -68,7 +68,7 @@ var binaryServer = net.createServer(function (connection) {
                 client.readbuffer = res[1];
                 if (res[0]) {
                     client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
-                    // let timeout = function () {
+                    // let handleTimeout = function () {
                     // if (client.handling === false) {
                     // client.handling = true;
                     // if (client.timeout != null) {
@@ -93,10 +93,10 @@ var binaryServer = net.createServer(function (connection) {
                     })
                         .catch(logger.error);
                     // 	} else {
-                    // 		client.timeout = setTimeout(timeout, 10);
+                    // 		client.timeout = setTimeout(handleTimeout, 10);
                     // 	}
                     // };
-                    // timeout();
+                    // handleTimeout();
                 }
             }
         }
