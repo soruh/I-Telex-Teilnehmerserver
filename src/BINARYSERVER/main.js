@@ -4,7 +4,7 @@ const path = require("path");
 const util = require("util");
 const mysql = require("mysql");
 const winston = require("winston");
-const config_js_1 = require("../COMMONMODULES/config.js");
+const config_js_1 = require("../SHARED/config.js");
 {
     let getLoggingLevel = function getLoggingLevel() {
         if (typeof config_js_1.default.binaryserverLoggingLevel === "number") {
@@ -67,9 +67,9 @@ const config_js_1 = require("../COMMONMODULES/config.js");
 }
 //#region imports
 const timers = require("../BINARYSERVER/timers.js");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
+const colors_js_1 = require("../SHARED/colors.js");
 const nodemailer = require("nodemailer");
-const misc = require("../COMMONMODULES/misc.js");
+const misc = require("../SHARED/misc.js");
 const FullQuery_js_1 = require("./FullQuery.js");
 const sendQueue_js_1 = require("./sendQueue.js");
 // import updateQueue from './updateQueue.js';

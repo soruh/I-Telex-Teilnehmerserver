@@ -13,10 +13,10 @@ const util_1 = require("util");
 const mysql = require("mysql");
 const ip = require("ip");
 const nodemailer = require("nodemailer");
-const config_js_1 = require("../COMMONMODULES/config.js");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
+const config_js_1 = require("../SHARED/config.js");
+const colors_js_1 = require("../SHARED/colors.js");
 const dns_1 = require("dns");
-const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
+const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 // import * as winston from "winston";
 //#endregion
 const logger = global.logger;

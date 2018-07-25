@@ -3,12 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const util_1 = require("util");
 const net = require("net");
-const config_js_1 = require("../COMMONMODULES/config.js");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
+const config_js_1 = require("../SHARED/config.js");
+const colors_js_1 = require("../SHARED/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
-const misc_js_1 = require("../COMMONMODULES/misc.js");
+const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
+const misc_js_1 = require("../SHARED/misc.js");
 //#endregion
 const logger = global.logger;
 function connect(onEnd, options) {

@@ -9,12 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const net = require("net");
-const config_js_1 = require("../COMMONMODULES/config.js");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
+const config_js_1 = require("../SHARED/config.js");
+const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
-const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
-const misc_js_1 = require("../COMMONMODULES/misc.js");
+const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
+const misc_js_1 = require("../SHARED/misc.js");
 const util_1 = require("util");
 const logger = global.logger;
 var binaryServer = net.createServer(function (connection) {

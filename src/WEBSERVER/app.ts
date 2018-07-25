@@ -5,9 +5,9 @@ import * as favicon from "serve-favicon";
 import * as cookieParser from "cookie-parser";
 import * as bodyParser from "body-parser";
 import * as path from "path";
-import colors from "../COMMONMODULES/colors.js";
+import colors from "../SHARED/colors.js";
 
-import config from '../COMMONMODULES/config.js';
+import config from '../SHARED/config.js';
 import * as winston from "winston";
 import { inspect } from "util";
 import { Pool } from "mysql";

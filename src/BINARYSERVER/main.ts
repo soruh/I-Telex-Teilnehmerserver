@@ -3,7 +3,7 @@ import * as path from "path";
 import * as util from 'util';
 import * as mysql from "mysql";
 import * as winston from "winston";
-import config from '../COMMONMODULES/config.js';
+import config from '../SHARED/config.js';
 
 declare global {
 	namespace NodeJS {
@@ -86,9 +86,9 @@ declare global {
 
 //#region imports
 import * as timers from "../BINARYSERVER/timers.js";
-import colors from "../COMMONMODULES/colors.js";
+import colors from "../SHARED/colors.js";
 import * as nodemailer from "nodemailer";
-import * as misc from "../COMMONMODULES/misc.js";
+import * as misc from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 // import updateQueue from './updateQueue.js';

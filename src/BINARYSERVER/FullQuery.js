@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-const config_js_1 = require("../COMMONMODULES/config.js");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
+const config_js_1 = require("../SHARED/config.js");
+const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
-const misc = require("../COMMONMODULES/misc.js");
-const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
+const misc = require("../SHARED/misc.js");
+const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");
 //#endregion
 const logger = global.logger;

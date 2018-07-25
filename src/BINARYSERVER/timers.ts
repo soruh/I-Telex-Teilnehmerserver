@@ -1,8 +1,8 @@
 "use strict";
 
 //#region imports
-import colors from "../COMMONMODULES/colors.js";
-import {symbolName} from "../COMMONMODULES/misc.js";
+import colors from "../SHARED/colors.js";
+import {symbolName} from "../SHARED/misc.js";
 //#endregion
 
 const logger = global.logger;

@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const ip = require("ip");
-const config_js_1 = require("../COMMONMODULES/config.js");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
+const config_js_1 = require("../SHARED/config.js");
+const colors_js_1 = require("../SHARED/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
 const handles_js_1 = require("../BINARYSERVER/handles.js");
-const misc_js_1 = require("../COMMONMODULES/misc.js");
+const misc_js_1 = require("../SHARED/misc.js");
 const util_1 = require("util");
 //#endregion
 const logger = global.logger;

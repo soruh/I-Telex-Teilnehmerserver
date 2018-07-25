@@ -5,18 +5,18 @@ import {
 	inspect
 } from "util";
 import * as net from "net";
-import config from '../COMMONMODULES/config.js';
-import colors from "../COMMONMODULES/colors.js";
+import config from '../SHARED/config.js';
+import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
+import serialEachPromise from "../SHARED/serialEachPromise.js";
 import {
 	increaseErrorCounter,
 	errorCounters,
 	resetErrorCounter,
 	client,
 	clientName
-} from "../COMMONMODULES/misc.js";
+} from "../SHARED/misc.js";
 //#endregion
 
 const logger = global.logger;

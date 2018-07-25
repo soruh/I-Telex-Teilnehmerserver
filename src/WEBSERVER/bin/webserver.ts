@@ -1,5 +1,5 @@
 "use strict";
-import config from '../../COMMONMODULES/config.js';
+import config from '../../SHARED/config.js';
 import app from '../../WEBSERVER/app';
 import * as http from "http";
 

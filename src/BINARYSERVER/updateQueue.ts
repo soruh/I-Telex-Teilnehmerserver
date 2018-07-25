@@ -1,10 +1,10 @@
 "use strict";
 //#region imports
-// import config from '../COMMONMODULES/config.js';
-import colors from "../COMMONMODULES/colors.js";
+// import config from '../SHARED/config.js';
+import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import serialEachPromise from '../COMMONMODULES/serialEachPromise.js';
-import {SqlQuery} from '../COMMONMODULES/misc.js';
+import serialEachPromise from '../SHARED/serialEachPromise.js';
+import {SqlQuery} from '../SHARED/misc.js';
 
 //#endregion
 

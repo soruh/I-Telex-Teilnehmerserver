@@ -5,8 +5,8 @@ const favicon = require("serve-favicon");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const path = require("path");
-const colors_js_1 = require("../COMMONMODULES/colors.js");
-const config_js_1 = require("../COMMONMODULES/config.js");
+const colors_js_1 = require("../SHARED/colors.js");
+const config_js_1 = require("../SHARED/config.js");
 const winston = require("winston");
 const util_1 = require("util");
 {

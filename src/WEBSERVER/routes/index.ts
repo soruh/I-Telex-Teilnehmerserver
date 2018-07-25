@@ -3,10 +3,10 @@
 import * as mysql from "mysql";
 import * as express from "express";
 
-import config from '../../COMMONMODULES/config.js';
-import colors from '../../COMMONMODULES/colors.js';
+import config from '../../SHARED/config.js';
+import colors from '../../SHARED/colors.js';
 import { inspect } from "util";
-import { SqlQuery } from "../../COMMONMODULES/misc.js";
+import { SqlQuery } from "../../SHARED/misc.js";
 
 var mySqlConnectionOptions = config['mySqlConnectionOptions'];
 

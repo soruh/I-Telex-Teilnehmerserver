@@ -9,10 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-// import config from '../COMMONMODULES/config.js';
-const colors_js_1 = require("../COMMONMODULES/colors.js");
-const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
-const misc_js_1 = require("../COMMONMODULES/misc.js");
+// import config from '../SHARED/config.js';
+const colors_js_1 = require("../SHARED/colors.js");
+const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
+const misc_js_1 = require("../SHARED/misc.js");
 //#endregion
 const logger = global.logger;
 function updateQueue() {

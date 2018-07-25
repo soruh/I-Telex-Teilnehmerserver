@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("../../COMMONMODULES/config.js");
+const config_js_1 = require("../../SHARED/config.js");
 const app_1 = require("../../WEBSERVER/app");
 const http = require("http");
 var port = normalizePort(config_js_1.default.webServerPort.toString());

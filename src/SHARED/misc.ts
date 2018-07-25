@@ -4,13 +4,13 @@ import * as mysql from "mysql";
 import * as ip from "ip";
 import * as net from "net";
 import * as nodemailer from "nodemailer";
-import config from '../COMMONMODULES/config.js';
-import colors from "../COMMONMODULES/colors.js";
+import config from '../SHARED/config.js';
+import colors from "../SHARED/colors.js";
 
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import {lookup} from "dns";
-import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
+import serialEachPromise from "../SHARED/serialEachPromise.js";
 // import * as winston from "winston";
 //#endregion
 const logger = global.logger;

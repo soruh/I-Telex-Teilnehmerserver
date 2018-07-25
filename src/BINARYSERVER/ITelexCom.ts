@@ -2,15 +2,15 @@
 
 //#region imports
 import * as ip from "ip";
-import config from '../COMMONMODULES/config.js';
-import colors from "../COMMONMODULES/colors.js";
+import config from '../SHARED/config.js';
+import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import handles from "../BINARYSERVER/handles.js";
 import {
 	SqlQuery,
 	symbolName,
 	client
-} from "../COMMONMODULES/misc.js";
+} from "../SHARED/misc.js";
 import {
 	inspect
 } from "util";
