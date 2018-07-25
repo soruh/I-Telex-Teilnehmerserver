@@ -22,7 +22,7 @@ var binaryServer = net.createServer(function (connection) {
         name: misc_js_1.clientName(),
         connection: connection,
         state: constants.states.STANDBY,
-        handling: false,
+        // handling: false,
         readbuffer: null,
         writebuffer: null,
         packages: []
@@ -89,7 +89,7 @@ var binaryServer = net.createServer(function (connection) {
                     })
                         .then((res) => {
                         client.packages.splice(0, res.length); //handled);
-                        client.handling = false;
+                        // client.handling = false;
                     })
                         .catch(logger.error);
                     // 	} else {

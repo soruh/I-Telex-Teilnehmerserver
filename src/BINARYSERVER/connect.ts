@@ -40,7 +40,7 @@ function connect(
 			readbuffer: new Buffer(0),
 			state: constants.states.STANDBY,
 			packages: [],
-			handling: false,
+			// handling: false,
 			writebuffer: [],
 		};
 		socket.setTimeout(config.connectionTimeout);
@@ -83,13 +83,13 @@ function connect(
 					client.readbuffer = rest;
 					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
 					let handleTimeout = () => {
-						logger.verbose(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
-						if (client.handling === false) {
-							client.handling = true;
-							if (client.handleTimeout != null) {
-								clearTimeout(client.handleTimeout);
-								client.handleTimeout = null;
-							}
+						// logger.verbose(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
+						// if (client.handling === false) {
+						// 	client.handling = true;
+						// 	if (client.handleTimeout != null) {
+						// 		clearTimeout(client.handleTimeout);
+						// 		client.handleTimeout = null;
+						// 	}
 							serialEachPromise(client.packages, (pkg, key) => new Promise((resolve, reject) => {
 									{
 										let msg = colors.FgGreen + "handling package " + colors.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors.Reset;
@@ -108,16 +108,16 @@ function connect(
 										.catch(logger.error);
 								}))
 								.then(() => {
-									client.handling = false;
+									// client.handling = false;
 								})
 								.catch(logger.error);
-						} else {
-							if (client.handleTimeout == null) {
-								client.handleTimeout = setTimeout(handleTimeout, 10);
-							}
-						}
+						// } else {
+						// 	if (client.handleTimeout == null) {
+						// 		client.handleTimeout = setTimeout(handleTimeout, 10);
+						// 	}
+						// }
 					};
-					handleTimeout();
+					// handleTimeout();
 				} catch (e) {
 					logger.error(colors.FgRed + inspect(e) + colors.Reset);
 				}

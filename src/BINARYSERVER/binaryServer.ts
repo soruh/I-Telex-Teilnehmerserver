@@ -23,7 +23,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 		name: clientName(),
 		connection: connection,
 		state: constants.states.STANDBY,
-		handling: false,
+		// handling: false,
 		readbuffer: null,
 		writebuffer: null,
 		packages: []
@@ -91,7 +91,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 								)
 								.then((res) => {
 									client.packages.splice(0, res.length); //handled);
-									client.handling = false;
+									// client.handling = false;
 								})
 								.catch(logger.error);
 					// 	} else {

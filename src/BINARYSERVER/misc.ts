@@ -221,7 +221,7 @@ interface client {
 		readbuffer: Buffer;
 	writebuffer: ITelexCom.peer[];
 	packages: ITelexCom.Package_decoded[];
-	handling: boolean;
+	// handling: boolean;
 	timeout ? : NodeJS.Timer;
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;
