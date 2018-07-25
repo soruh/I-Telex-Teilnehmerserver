@@ -76,7 +76,7 @@ router.post('/edit', function (req, res) {
   
   switch (req.body.typekey) {
     case "edit": 
-      pool.query("SELECT * FROM teilnehmer WHERER uid=?;", [req.body.uid], function (err, entry) {
+      pool.query("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid], function (err, entry) {
         if (err) return void res.json({
           successful: false,
           message: err
