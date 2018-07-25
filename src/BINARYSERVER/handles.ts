@@ -1,11 +1,4 @@
 "use strict";
-
-function getTimezone(date) { //TODO: figure out way to not hav this in all files where it is used
-	let offset = -1 * date.getTimezoneOffset();
-	let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
-	return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
-}
-
 //#region imports
 import {
 	inspect
@@ -17,7 +10,8 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import {
 	client,
-	sendEmail
+	sendEmail,
+	getTimezone
 } from './misc.js';
 import {
 	SqlQuery
@@ -254,7 +248,7 @@ handles[6][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_6, client
 		if (!client) return void resolve();
 
 		if (pkg.data.serverpin != config.serverPin && !(readonly && config.allowFullQueryInReadonly)) {
-			logger.info(colors.FgRed + "serverpin is incorrect! " + colors.FgCyan + pkg.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + " ending client.connection!" + colors.Reset); //TODO: remove pin logging
+			logger.info(colors.FgRed + "serverpin is incorrect! " + colors.FgCyan + pkg.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + " ending client connection!" + colors.Reset); //TODO: remove pin logging
 			client.connection.end();
 			return void sendEmail("wrongServerPin", {
 					"[IpFull]": client.connection.remoteAddress,

@@ -25,6 +25,7 @@ function getTimezone(date) {
     let offsetStr = (Math.floor(offset / 60)).toString().padStart(2, "0") + ":" + (offset % 60).toString().padStart(2, "0");
     return "UTC" + (offset < 0 ? "" : "+") + offsetStr;
 }
+exports.getTimezone = getTimezone;
 var errorCounters = {};
 exports.errorCounters = errorCounters;
 function increaseErrorCounter(serverkey, error, code) {

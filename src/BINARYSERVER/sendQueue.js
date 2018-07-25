@@ -71,7 +71,7 @@ function sendQueue() {
                                                     misc_js_1.SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
                                                         .then(function (res) {
                                                         if (res.affectedRows > 0) {
-                                                            client.writebuffer.push(existing); //TODO
+                                                            client.writebuffer.push(existing);
                                                             logger.info(colors_js_1.default.FgGreen + "deleted queue entry " + colors_js_1.default.FgCyan + existing.name + colors_js_1.default.FgGreen + " from queue" + colors_js_1.default.Reset);
                                                             resolve();
                                                         }

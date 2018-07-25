@@ -219,7 +219,7 @@ $(document).ready(function () {
                 port: {
                     required: {
                         depends: function (element) {
-                            var type = optionType(formId + " select[name=type]"); //TODO
+                            var type = optionType(formId + " select[name=type]");
                             return (type != "email");
                         }
                     },
@@ -337,8 +337,8 @@ $(document).ready(function () {
                 port: {
                     required: {
                         depends: function (element) {
-                            var type = optionType(formId + " select[name=type]"); //TODO
-                            return (type != "email");
+                            let type = optionType(formId + " select[name=type]");
+                            return type != "email";
                         }
                     },
                     max: 65536,
@@ -359,8 +359,8 @@ $(document).ready(function () {
                     maxlength: 40,
                     required: {
                         depends: function (element) {
-                            var type = optionType(formId + " select[name=type]");
-                            return (type == "email");
+                            let type = optionType(formId + " select[name=type]");
+                            return type == "email";
                         }
                     }
                 },

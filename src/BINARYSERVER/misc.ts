@@ -53,7 +53,7 @@ function resetErrorCounter(serverkey: string) {
 	logger.verbose(colors.FgGreen + "reset error counter for: " + colors.FgCyan + serverkey + colors.Reset);
 }
 
-function SqlQuery(query: string, options ? : any[]): Promise < any > { //TODO: Promise<any>-> real type
+function SqlQuery(query: string, options ? : any[]): Promise < any > {
 	return new Promise((resolve, reject) => {
 		query = query.replace(/\n/g, "").replace(/\s+/g, " ");
 
@@ -210,9 +210,11 @@ function sendEmail(messageName: string, values: {
 
 const symbolName = (s: symbol): string => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
 
-interface connection extends net.Socket {
-	//TODO
-}
+// interface connection extends net.Socket {
+
+// }
+type connection = net.Socket;
+
 interface client {
 	// cnum?:symbol;
 	name: string;
@@ -468,5 +470,6 @@ export {
 	errorCounters,
 	symbolName,
 	client,
-	clientName
+	clientName,
+	getTimezone
 }

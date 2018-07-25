@@ -70,46 +70,46 @@ function sendQueue() {
 																		logger.info(colors.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors.Reset);
 																		client.writebuffer = [];
 																		serialEachPromise(server, serverdata =>
-																				new Promise((resolve, reject) => {
-																					logger.verbose(colors.FgCyan + inspect(serverdata) + colors.Reset);
-																					var existing: ITelexCom.peer = null;
-																					for (let t of teilnehmer) {
-																						if (t.uid == serverdata.message) {
-																							existing = t;
-																						}
-																					}
-																					if (existing) {
-																						SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
-																							.then(function (res) {
-																								if (res.affectedRows > 0) {
-																									client.writebuffer.push(existing); //TODO
-																									logger.info(colors.FgGreen + "deleted queue entry " + colors.FgCyan + existing.name + colors.FgGreen + " from queue" + colors.Reset);
-																									resolve();
-																								} else {
-																									logger.info(colors.FgRed + "could not delete queue entry " + colors.FgCyan + existing.name + colors.FgRed + " from queue" + colors.Reset);
-																									resolve();
-																								}
-																							})
-																							.catch(logger.error);
+																		new Promise((resolve, reject) => {
+																			logger.verbose(colors.FgCyan + inspect(serverdata) + colors.Reset);
+																			var existing: ITelexCom.peer = null;
+																			for (let t of teilnehmer) {
+																				if (t.uid == serverdata.message) {
+																					existing = t;
+																				}
+																			}
+																			if (existing) {
+																				SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
+																				.then(function (res) {
+																					if (res.affectedRows > 0) {
+																						client.writebuffer.push(existing);
+																						logger.info(colors.FgGreen + "deleted queue entry " + colors.FgCyan + existing.name + colors.FgGreen + " from queue" + colors.Reset);
+																						resolve();
 																					} else {
-																						logger.verbose(colors.FgRed + "entry does not exist" + colors.FgCyan + colors.Reset);
+																						logger.info(colors.FgRed + "could not delete queue entry " + colors.FgCyan + existing.name + colors.FgRed + " from queue" + colors.Reset);
 																						resolve();
 																					}
 																				})
-																			)
-																			.then(() => {
-																				client.connection.write(ITelexCom.encPackage({
-																					type: 7,
-																					data: {
-																						serverpin: config.serverPin,
-																						version: 1
-																					}
-																				}), () => {
-																					client.state = constants.states.RESPONDING;
-																					resolve();
-																				});
-																			})
-																			.catch(logger.error);
+																				.catch(logger.error);
+																			} else {
+																				logger.verbose(colors.FgRed + "entry does not exist" + colors.FgCyan + colors.Reset);
+																				resolve();
+																			}
+																		})
+																		)
+																		.then(() => {
+																			client.connection.write(ITelexCom.encPackage({
+																				type: 7,
+																				data: {
+																					serverpin: config.serverPin,
+																					version: 1
+																				}
+																			}), () => {
+																				client.state = constants.states.RESPONDING;
+																				resolve();
+																			});
+																		})
+																		.catch(logger.error);
 																	})
 																	.catch(logger.error);
 																// } else {

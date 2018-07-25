@@ -1,6 +1,4 @@
 "use strict";
-//TODO: Object.defineProperty(Date.prototype, 'getTimezone', { value:
-
 
 //#region imports
 import * as ip from "ip";
@@ -361,15 +359,17 @@ function handlePackage(obj: Package_decoded, client: client) {
 }
 
 function getCompletePackages(data: Buffer, part ? : Buffer): [Buffer, Buffer] {
+	var combined = part ? Buffer.concat([part, data]) : data;
+	var type = combined[0];
+	var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
+
 	if (config.logITelexCom) logger.debug("extracting packages from data:");
 	if (config.logITelexCom) logger.debug("data: " + inspect(data));
 	if (config.logITelexCom) logger.debug("part: " + inspect(part));
-	var combined = part ? Buffer.concat([part, data]) : data;
 	if (config.logITelexCom) logger.debug("combined: " + inspect(combined));
-	var type = combined[0]; //TODO check for valid type
-	var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
 	if (config.logITelexCom) logger.debug("type: " + inspect(type));
 	if (config.logITelexCom) logger.debug("packagelength: " + packagelength);
+
 	if (combined.length == packagelength) {
 		if (config.logITelexCom) logger.debug("combined.length == packagelength");
 		if (config.logITelexCom) logger.debug(`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
@@ -377,26 +377,27 @@ function getCompletePackages(data: Buffer, part ? : Buffer): [Buffer, Buffer] {
 			combined,
 			new Buffer(0)
 		];
-	} else if (combined.length > packagelength) {
+	}
+	if (combined.length > packagelength) {
 		if (config.logITelexCom) logger.debug("combined.length > packagelength");
 		let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
 		return [
 			Buffer.concat([combined.slice(0, packagelength), rest[0]]),
 			rest[1]
 		];
-	} else if (combined.length < packagelength) {
+	}
+	if (combined.length < packagelength) {
 		if (config.logITelexCom) logger.verbose(`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
 		if (config.logITelexCom) logger.debug("combined.length < packagelength");
 		return [
 			new Buffer(0),
 			combined
 		];
-	} else {
-		return ([
-			new Buffer(0),
-			new Buffer(0)
-		]);
 	}
+	return ([
+		new Buffer(0),
+		new Buffer(0)
+	]);
 }
 
 function unmapIpV4fromIpV6(ipaddress: string): string {
@@ -649,53 +650,51 @@ function ascii(data: number[] | Buffer, client: client): void {
 		let char = String.fromCharCode(byte);
 		if (/([0-9])/.test(char)) number += char;
 	}
-	if (number != "") {
-		if (!isNaN(parseInt(number))) {
-			if (config.logITelexCom) logger.info(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
-			SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
-				.then(function (result: peerList) {
-					if (!result || result.length == 0) {
-						let send: string = "";
-						send += "fail\r\n";
-						send += number + "\r\n";
-						send += "unknown\r\n";
-						send += "+++\r\n";
-						client.connection.end(send, function () { //TODO: .write?
-							if (config.logITelexCom) logger.info(colors.FgRed + "Entry not found/visible" + colors.Reset);
-							if (config.logITelexCom) logger.verbose(colors.FgRed + "sent:\n" + colors.FgCyan + send + colors.Reset);
-						});
-					} else {
-						let send: string = "";
-						let res = result[0];
-						send += "ok\r\n";
-						send += res.number + "\r\n";
-						send += res.name + "\r\n";
-						send += res.type + "\r\n";
-						if ([2, 4, 5].indexOf(res.type) > -1) {
-							send += res.ipaddress + "\r\n";
-						} else if ([1, 3, 6].indexOf(res.type) > -1) {
-							send += res.hostname + "\r\n";
-						}
-						/* else if (res.type == 6) {
-												send += res.hostname + "\r\n";
-											}*/
-						else {
-							send += "ERROR\r\n";
-						}
-						send += res.port + "\r\n";
-						send += (res.extension || "-") + "\r\n";
-						send += "+++\r\n";
-						client.connection.end(send, function () {
-							if (config.logITelexCom) logger.info(colors.FgRed + "Entry found" + colors.Reset);
-							if (config.logITelexCom) logger.verbose(colors.FgRed + "sent:\n" + colors.FgCyan + send + colors.Reset);
+	if (number != ""&&(!isNaN(parseInt(number)))) {
+		if (config.logITelexCom) logger.info(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
+		SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
+		.then(function (result: peerList) {
+			if (!result || result.length == 0) {
+				let send: string = "";
+				send += "fail\r\n";
+				send += number + "\r\n";
+				send += "unknown\r\n";
+				send += "+++\r\n";
+				client.connection.end/*.write*/(send, function () {
+					if (config.logITelexCom) logger.info(colors.FgRed + "Entry not found/visible" + colors.Reset);
+					if (config.logITelexCom) logger.verbose(colors.FgRed + "sent:\n" + colors.FgCyan + send + colors.Reset);
+				});
+			} else {
+				let send: string = "";
+				let res = result[0];
+				send += "ok\r\n";
+				send += res.number + "\r\n";
+				send += res.name + "\r\n";
+				send += res.type + "\r\n";
+				if ([2, 4, 5].indexOf(res.type) > -1) {
+					send += res.ipaddress + "\r\n";
+				} else if ([1, 3, 6].indexOf(res.type) > -1) {
+					send += res.hostname + "\r\n";
+				}
+				/* else if (res.type == 6) {
+										send += res.hostname + "\r\n";
+									}*/
+				else {
+					send += "ERROR\r\n";
+				}
+				send += res.port + "\r\n";
+				send += (res.extension || "-") + "\r\n";
+				send += "+++\r\n";
+				client.connection.end(send, function () {
+					if (config.logITelexCom) logger.info(colors.FgRed + "Entry found" + colors.Reset);
+					if (config.logITelexCom) logger.verbose(colors.FgRed + "sent:\n" + colors.FgCyan + send + colors.Reset);
 
-						});
-					}
-				})
-				.catch(logger.error);
-		}
+				});
+			}
+		})
+		.catch(logger.error);
 	} else {
-		//TODO connection.end()?
+		client.connection.end();
 	}
 }
 

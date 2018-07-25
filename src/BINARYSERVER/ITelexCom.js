@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-//TODO: Object.defineProperty(Date.prototype, 'getTimezone', { value:
 //#region imports
 const ip = require("ip");
 const config_js_1 = require("../COMMONMODULES/config.js");
@@ -170,17 +169,17 @@ function handlePackage(obj, client) {
 }
 exports.handlePackage = handlePackage;
 function getCompletePackages(data, part) {
+    var combined = part ? Buffer.concat([part, data]) : data;
+    var type = combined[0];
+    var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
     if (config_js_1.default.logITelexCom)
         logger.debug("extracting packages from data:");
     if (config_js_1.default.logITelexCom)
         logger.debug("data: " + util_1.inspect(data));
     if (config_js_1.default.logITelexCom)
         logger.debug("part: " + util_1.inspect(part));
-    var combined = part ? Buffer.concat([part, data]) : data;
     if (config_js_1.default.logITelexCom)
         logger.debug("combined: " + util_1.inspect(combined));
-    var type = combined[0]; //TODO check for valid type
-    var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
     if (config_js_1.default.logITelexCom)
         logger.debug("type: " + util_1.inspect(type));
     if (config_js_1.default.logITelexCom)
@@ -195,7 +194,7 @@ function getCompletePackages(data, part) {
             new Buffer(0)
         ];
     }
-    else if (combined.length > packagelength) {
+    if (combined.length > packagelength) {
         if (config_js_1.default.logITelexCom)
             logger.debug("combined.length > packagelength");
         let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
@@ -204,7 +203,7 @@ function getCompletePackages(data, part) {
             rest[1]
         ];
     }
-    else if (combined.length < packagelength) {
+    if (combined.length < packagelength) {
         if (config_js_1.default.logITelexCom)
             logger.verbose(`${colors_js_1.default.FgGreen}recieved ${colors_js_1.default.FgCyan}${combined.length}${colors_js_1.default.FgGreen}/${colors_js_1.default.FgCyan}${packagelength}${colors_js_1.default.FgGreen} bytes for next package${colors_js_1.default.Reset}`);
         if (config_js_1.default.logITelexCom)
@@ -214,12 +213,10 @@ function getCompletePackages(data, part) {
             combined
         ];
     }
-    else {
-        return ([
-            new Buffer(0),
-            new Buffer(0)
-        ]);
-    }
+    return ([
+        new Buffer(0),
+        new Buffer(0)
+    ]);
 }
 exports.getCompletePackages = getCompletePackages;
 function unmapIpV4fromIpV6(ipaddress) {
@@ -488,60 +485,58 @@ function ascii(data, client) {
         if (/([0-9])/.test(char))
             number += char;
     }
-    if (number != "") {
-        if (!isNaN(parseInt(number))) {
-            if (config_js_1.default.logITelexCom)
-                logger.info(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
-            misc_js_1.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
-                .then(function (result) {
-                if (!result || result.length == 0) {
-                    let send = "";
-                    send += "fail\r\n";
-                    send += number + "\r\n";
-                    send += "unknown\r\n";
-                    send += "+++\r\n";
-                    client.connection.end(send, function () {
-                        if (config_js_1.default.logITelexCom)
-                            logger.info(colors_js_1.default.FgRed + "Entry not found/visible" + colors_js_1.default.Reset);
-                        if (config_js_1.default.logITelexCom)
-                            logger.verbose(colors_js_1.default.FgRed + "sent:\n" + colors_js_1.default.FgCyan + send + colors_js_1.default.Reset);
-                    });
+    if (number != "" && (!isNaN(parseInt(number)))) {
+        if (config_js_1.default.logITelexCom)
+            logger.info(colors_js_1.default.FgGreen + "starting lookup for: " + colors_js_1.default.FgCyan + number + colors_js_1.default.Reset);
+        misc_js_1.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
+            .then(function (result) {
+            if (!result || result.length == 0) {
+                let send = "";
+                send += "fail\r\n";
+                send += number + "\r\n";
+                send += "unknown\r\n";
+                send += "+++\r\n";
+                client.connection.end /*.write*/(send, function () {
+                    if (config_js_1.default.logITelexCom)
+                        logger.info(colors_js_1.default.FgRed + "Entry not found/visible" + colors_js_1.default.Reset);
+                    if (config_js_1.default.logITelexCom)
+                        logger.verbose(colors_js_1.default.FgRed + "sent:\n" + colors_js_1.default.FgCyan + send + colors_js_1.default.Reset);
+                });
+            }
+            else {
+                let send = "";
+                let res = result[0];
+                send += "ok\r\n";
+                send += res.number + "\r\n";
+                send += res.name + "\r\n";
+                send += res.type + "\r\n";
+                if ([2, 4, 5].indexOf(res.type) > -1) {
+                    send += res.ipaddress + "\r\n";
                 }
+                else if ([1, 3, 6].indexOf(res.type) > -1) {
+                    send += res.hostname + "\r\n";
+                }
+                /* else if (res.type == 6) {
+                                        send += res.hostname + "\r\n";
+                                    }*/
                 else {
-                    let send = "";
-                    let res = result[0];
-                    send += "ok\r\n";
-                    send += res.number + "\r\n";
-                    send += res.name + "\r\n";
-                    send += res.type + "\r\n";
-                    if ([2, 4, 5].indexOf(res.type) > -1) {
-                        send += res.ipaddress + "\r\n";
-                    }
-                    else if ([1, 3, 6].indexOf(res.type) > -1) {
-                        send += res.hostname + "\r\n";
-                    }
-                    /* else if (res.type == 6) {
-                                            send += res.hostname + "\r\n";
-                                        }*/
-                    else {
-                        send += "ERROR\r\n";
-                    }
-                    send += res.port + "\r\n";
-                    send += (res.extension || "-") + "\r\n";
-                    send += "+++\r\n";
-                    client.connection.end(send, function () {
-                        if (config_js_1.default.logITelexCom)
-                            logger.info(colors_js_1.default.FgRed + "Entry found" + colors_js_1.default.Reset);
-                        if (config_js_1.default.logITelexCom)
-                            logger.verbose(colors_js_1.default.FgRed + "sent:\n" + colors_js_1.default.FgCyan + send + colors_js_1.default.Reset);
-                    });
+                    send += "ERROR\r\n";
                 }
-            })
-                .catch(logger.error);
-        }
+                send += res.port + "\r\n";
+                send += (res.extension || "-") + "\r\n";
+                send += "+++\r\n";
+                client.connection.end(send, function () {
+                    if (config_js_1.default.logITelexCom)
+                        logger.info(colors_js_1.default.FgRed + "Entry found" + colors_js_1.default.Reset);
+                    if (config_js_1.default.logITelexCom)
+                        logger.verbose(colors_js_1.default.FgRed + "sent:\n" + colors_js_1.default.FgCyan + send + colors_js_1.default.Reset);
+                });
+            }
+        })
+            .catch(logger.error);
     }
     else {
-        //TODO connection.end()?
+        client.connection.end();
     }
 }
 exports.ascii = ascii;

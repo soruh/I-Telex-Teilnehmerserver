@@ -1,10 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function getTimezone(date) {
-    let offset = -1 * date.getTimezoneOffset();
-    let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
-    return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
-}
 //#region imports
 const util_1 = require("util");
 const ip = require("ip");
@@ -47,7 +42,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             "[Ip]": ipaddress,
             "[number]": number,
             "[date]": new Date().toLocaleString(),
-            "[timeZone]": getTimezone(new Date())
+            "[timeZone]": misc_js_1.getTimezone(new Date())
         })
             .then(() => {
             client.connection.end();
@@ -71,7 +66,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "[number]": entry.number,
                     "[name]": entry.name,
                     "[date]": new Date().toLocaleString(),
-                    "[timeZone]": getTimezone(new Date())
+                    "[timeZone]": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
                     .catch(logger.error);
@@ -84,7 +79,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "[number]": entry.number,
                     "[name]": entry.name,
                     "[date]": new Date().toLocaleString(),
-                    "[timeZone]": getTimezone(new Date())
+                    "[timeZone]": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
                     .catch(logger.error);
@@ -133,7 +128,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "[Ip]": ipaddress,
                     "[number]": number,
                     "[date]": new Date().toLocaleString(),
-                    "[timeZone]": getTimezone(new Date())
+                    "[timeZone]": misc_js_1.getTimezone(new Date())
                 })
                     .catch(logger.error);
                 client.connection.write(ITelexCom.encPackage({
@@ -227,13 +222,13 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (!client)
         return void resolve();
     if (pkg.data.serverpin != config_js_1.default.serverPin && !(readonly && config_js_1.default.allowFullQueryInReadonly)) {
-        logger.info(colors_js_1.default.FgRed + "serverpin is incorrect! " + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + " ending client.connection!" + colors_js_1.default.Reset); //TODO: remove pin logging
+        logger.info(colors_js_1.default.FgRed + "serverpin is incorrect! " + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + " ending client connection!" + colors_js_1.default.Reset); //TODO: remove pin logging
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "[IpFull]": client.connection.remoteAddress,
             "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
             "[date]": new Date().toLocaleString(),
-            "[timeZone]": getTimezone(new Date())
+            "[timeZone]": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
             .catch(logger.error);
@@ -264,7 +259,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             "[IpFull]": client.connection.remoteAddress,
             "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
             "[date]": new Date().toLocaleString(),
-            "[timeZone]": getTimezone(new Date())
+            "[timeZone]": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
             .catch(logger.error);
