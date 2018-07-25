@@ -708,9 +708,9 @@ function updateContent(unSortedList:list) {
         }
 
         let modify_container = $("<div></div>");
-        modify_container.addClass("td admin_only");
+        modify_container.addClass("td cell admin_only");
             let edit = $("<div></div>");
-            edit.addClass("td");
+            // edit.addClass("td");
             let span = $("<span></span>");
                 span.addClass("btn  btn-primary btn-sm glyphicon glyphicon-pencil edit");
                 span.data("uid", entry.uid);
@@ -720,7 +720,7 @@ function updateContent(unSortedList:list) {
             modify_container.append(edit);
             
             let remove = $("<div></div>");
-            remove.addClass("td");
+            // remove.addClass("td");
             span = $("<span></span>");
                 span.addClass("btn btn-danger btn-sm glyphicon glyphicon-trash remove");
                 span.data("uid", entry.uid);
