@@ -1,21 +1,5 @@
 "use strict";
-
-import * as fs from "fs";
 import * as path from "path";
-import * as heapdump from "heapdump";
-var heapdumpCounter = 0;
-var heapdumpPath = path.join(__dirname, "../../heapdumps/");
-try{
-	fs.mkdirSync(heapdumpPath);
-}catch(e){}
-
-setInterval(()=>{
-	console.error("creating heapdump #"+heapdumpCounter);
-	heapdump.writeSnapshot(path.join(heapdumpPath, `heapdump_${heapdumpCounter++}.heapsnapshot`));
-},60*60*1000);
-
-
-// import * as path from "path";
 import * as util from 'util';
 import * as mysql from "mysql";
 import * as winston from "winston";
