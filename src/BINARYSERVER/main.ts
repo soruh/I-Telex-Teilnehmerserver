@@ -184,7 +184,7 @@ if (config.printServerErrorsOnExit) {
 	let exitHandler = function exitHandler(options, err) {
 		if (options.cleanup) {
 			logger.error("exited with code: " + err);
-			logger.error(`serverErrors:\n${util.inspect(misc.serverErrors,{depth:null})}`);
+			logger.error(`serverErrors:\n${util.inspect(misc.errorCounters)}`);
 		} else {
 			logger.error(util.inspect(err));
 		}

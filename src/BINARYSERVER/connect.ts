@@ -12,7 +12,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
 import {
 	increaseErrorCounter,
-	serverErrors,
+	errorCounters,
 	resetErrorCounter,
 	client,
 	clientName
@@ -63,7 +63,7 @@ function connect(
 			if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
 				logger.info(`${colors.FgRed}server ${colors.FgCyan+inspect(options)+colors.FgRed} had an error${colors.Reset}`);
 				increaseErrorCounter(serverkey, error, error["code"]);
-				logger.info(colors.FgRed + "server " + colors.FgCyan + serverkey + colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan + serverErrors[serverkey].errorCounter + colors.Reset);
+				logger.info(colors.FgRed + "server " + colors.FgCyan + serverkey + colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan + errorCounters[serverkey] + colors.Reset);
 			}else{
 				logger.debug(error);
 			}

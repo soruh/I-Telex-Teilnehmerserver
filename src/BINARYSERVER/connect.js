@@ -45,7 +45,7 @@ function connect(onEnd, options) {
             if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
                 logger.info(`${colors_js_1.default.FgRed}server ${colors_js_1.default.FgCyan + util_1.inspect(options) + colors_js_1.default.FgRed} had an error${colors_js_1.default.Reset}`);
                 misc_js_1.increaseErrorCounter(serverkey, error, error["code"]);
-                logger.info(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan + misc_js_1.serverErrors[serverkey].errorCounter + colors_js_1.default.Reset);
+                logger.info(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan + misc_js_1.errorCounters[serverkey] + colors_js_1.default.Reset);
             }
             else {
                 logger.debug(error);
