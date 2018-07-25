@@ -16,5 +16,5 @@
   "webServerPort":3030,
   "webInterfacePassword":"XXX",
 
-  "deleteErrorsOnReconnect": true
+  "scientistNames":true
 }

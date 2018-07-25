@@ -49,9 +49,9 @@ interface configFile {
 
     webServerPort: number,
     webInterfacePassword: string,
-
-    deleteErrorsOnReconnect: boolean,
+    
     warnAtErrorCounts: number[],
+    scientistNames:boolean,
 
     eMail: {
       useTestAccount: boolean,
