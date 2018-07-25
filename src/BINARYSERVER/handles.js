@@ -152,7 +152,7 @@ handles[3][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (!client)
         return void resolve();
     if (pkg.data.version != 1) {
-        logger.warning(colors_js_1.default.FgRed + "unsupported package version, sending '0x04' package" + colors_js_1.default.Reset);
+        logger.warn(colors_js_1.default.FgRed + "unsupported package version, sending '0x04' package" + colors_js_1.default.Reset);
         return void client.connection.write(ITelexCom.encPackage({
             type: 4
         }), () => resolve());

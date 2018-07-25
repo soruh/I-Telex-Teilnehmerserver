@@ -21,7 +21,7 @@ function getFullQuery() {
 		misc.SqlQuery("SELECT  * FROM servers;")
 			.then((servers: ITelexCom.serverList) => {
 				if (servers.length == 0) {
-					logger.warning(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "FullQuery" + colors.Reset);
+					logger.warn(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "FullQuery" + colors.Reset);
 					return void resolve();
 				}
 				// for (let i in servers) {

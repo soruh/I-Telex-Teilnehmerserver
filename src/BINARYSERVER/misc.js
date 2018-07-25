@@ -26,8 +26,6 @@ function getTimezone(date) {
 }
 var errorCounters = {};
 exports.errorCounters = errorCounters;
-const { mySqlConnectionOptions } = config_js_1.default;
-mySqlConnectionOptions["multipleStatements"] = true;
 function increaseErrorCounter(serverkey, error, code) {
     if (errorCounters.hasOwnProperty(serverkey)) {
         errorCounters[serverkey]++;

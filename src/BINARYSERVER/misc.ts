@@ -30,12 +30,6 @@ var errorCounters: {
 	[index: string]:number;
 } = {};
 
-
-const {
-	mySqlConnectionOptions
-} = config;
-mySqlConnectionOptions["multipleStatements"] = true;
-
 function increaseErrorCounter(serverkey: string, error: Error, code: string): void {
 	if (errorCounters.hasOwnProperty(serverkey)) {
 		errorCounters[serverkey]++;

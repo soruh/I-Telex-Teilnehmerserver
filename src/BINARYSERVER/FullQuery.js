@@ -17,7 +17,7 @@ function getFullQuery() {
         misc.SqlQuery("SELECT  * FROM servers;")
             .then((servers) => {
             if (servers.length == 0) {
-                logger.warning(colors_js_1.default.FgYellow + "No configured servers -> aborting " + colors_js_1.default.FgCyan + "FullQuery" + colors_js_1.default.Reset);
+                logger.warn(colors_js_1.default.FgYellow + "No configured servers -> aborting " + colors_js_1.default.FgCyan + "FullQuery" + colors_js_1.default.Reset);
                 return void resolve();
             }
             // for (let i in servers) {

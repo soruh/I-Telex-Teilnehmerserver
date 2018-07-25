@@ -172,7 +172,7 @@ handles[3][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_3, client
 		if (!client) return void resolve();
 
 		if (pkg.data.version != 1) {
-			logger.warning(colors.FgRed + "unsupported package version, sending '0x04' package" + colors.Reset);
+			logger.warn(colors.FgRed + "unsupported package version, sending '0x04' package" + colors.Reset);
 			return void client.connection.write(ITelexCom.encPackage({
 				type: 4
 			}), () => resolve());
