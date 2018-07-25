@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import config from '../COMMONMODULES/config.js';
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
-const misc_js_1 = require("./misc.js");
+const misc_js_1 = require("../COMMONMODULES/misc.js");
 //#endregion
 const logger = global.logger;
 function updateQueue() {

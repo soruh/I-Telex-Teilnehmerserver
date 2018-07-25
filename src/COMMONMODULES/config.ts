@@ -44,7 +44,8 @@ interface configFile {
 
     printServerErrorsOnExit:boolean,
     binaryPort: number,
-    loggingVerbosity: number | string,
+    binaryserverLoggingLevel: number | string,
+    webserverLoggingLevel: number | string,
     disableColors: boolean,
 
     webServerPort: number,

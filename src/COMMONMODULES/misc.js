@@ -72,6 +72,7 @@ function SqlQuery(query, options) {
                     reject(err);
                 }
                 else {
+                    // logger.debug("result:\n"+inspect(res));
                     resolve(res);
                 }
             });

@@ -12,10 +12,10 @@ import {
 	client,
 	sendEmail,
 	getTimezone
-} from './misc.js';
+} from '../COMMONMODULES/misc.js';
 import {
 	SqlQuery
-} from './misc.js';
+} from '../COMMONMODULES/misc.js';
 
 //#endregion
 const logger = global.logger;

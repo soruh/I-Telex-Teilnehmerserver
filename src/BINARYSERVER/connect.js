@@ -8,7 +8,7 @@ const colors_js_1 = require("../COMMONMODULES/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
-const misc_js_1 = require("./misc.js");
+const misc_js_1 = require("../COMMONMODULES/misc.js");
 //#endregion
 const logger = global.logger;
 function connect(onEnd, options) {

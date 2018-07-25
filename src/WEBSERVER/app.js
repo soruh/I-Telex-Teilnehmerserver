@@ -11,15 +11,19 @@ const winston = require("winston");
 const util_1 = require("util");
 {
     let getLoggingLevel = function getLoggingLevel() {
-        if (typeof config_js_1.default.loggingVerbosity === "number") {
-            let level = Object.entries(winston.config.npm.levels).find(([, value]) => value == config_js_1.default.loggingVerbosity);
+        if (typeof config_js_1.default.webserverLoggingLevel === "number") {
+            let level = Object.entries(winston.config.npm.levels).find(([, value]) => value == config_js_1.default.webserverLoggingLevel);
             if (level)
                 return level[0];
         }
-        if (typeof config_js_1.default.loggingVerbosity === "string") {
-            if (winston.config.npm.levels.hasOwnProperty(config_js_1.default.loggingVerbosity))
-                return config_js_1.default.loggingVerbosity;
+        if (typeof config_js_1.default.webserverLoggingLevel === "string") {
+            if (winston.config.npm.levels.hasOwnProperty(config_js_1.default.webserverLoggingLevel))
+                return config_js_1.default.webserverLoggingLevel;
         }
+        console.log("valid logging levels are:");
+        console.log(Object.entries(winston.config.npm.levels)
+            .map(([key, value]) => `${value}/${key}${value == 3 ? " - not used" : ""}`)
+            .join("\n"));
         throw "invalid logging level";
     };
     let resolvePath = function resolvePath(pathToResolve) {
@@ -30,11 +34,11 @@ const util_1 = require("util");
     let transports = [];
     if (config_js_1.default.webserverLog)
         transports.push(new winston.transports.File({
-            filename: resolvePath(config_js_1.default.binaryserverLog)
+            filename: resolvePath(config_js_1.default.webserverLog)
         }));
     if (config_js_1.default.webserverErrorLog)
         transports.push(new winston.transports.File({
-            filename: resolvePath(config_js_1.default.binaryserverErrorLog),
+            filename: resolvePath(config_js_1.default.webserverErrorLog),
             level: 'error'
         }));
     if (config_js_1.default.logWebserverToConsole)

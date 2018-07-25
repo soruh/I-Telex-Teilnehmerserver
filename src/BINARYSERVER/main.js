@@ -7,18 +7,18 @@ const winston = require("winston");
 const config_js_1 = require("../COMMONMODULES/config.js");
 {
     let getLoggingLevel = function getLoggingLevel() {
-        if (typeof config_js_1.default.loggingVerbosity === "number") {
-            let level = Object.entries(winston.config.npm.levels).find(([, value]) => value == config_js_1.default.loggingVerbosity);
+        if (typeof config_js_1.default.binaryserverLoggingLevel === "number") {
+            let level = Object.entries(winston.config.npm.levels).find(([, value]) => value == config_js_1.default.binaryserverLoggingLevel);
             if (level)
                 return level[0];
         }
-        if (typeof config_js_1.default.loggingVerbosity === "string") {
-            if (winston.config.npm.levels.hasOwnProperty(config_js_1.default.loggingVerbosity))
-                return config_js_1.default.loggingVerbosity;
+        if (typeof config_js_1.default.binaryserverLoggingLevel === "string") {
+            if (winston.config.npm.levels.hasOwnProperty(config_js_1.default.binaryserverLoggingLevel))
+                return config_js_1.default.binaryserverLoggingLevel;
         }
         console.log("valid logging levels are:");
         console.log(Object.entries(winston.config.npm.levels)
-            .map(([key, value]) => `${value}/${key}`)
+            .map(([key, value]) => `${value}/${key}${value == 3 ? " - not used" : ""}`)
             .join("\n"));
         throw "invalid logging level";
     };
@@ -69,7 +69,7 @@ const config_js_1 = require("../COMMONMODULES/config.js");
 const timers = require("../BINARYSERVER/timers.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const nodemailer = require("nodemailer");
-const misc = require("../BINARYSERVER/misc.js");
+const misc = require("../COMMONMODULES/misc.js");
 const FullQuery_js_1 = require("./FullQuery.js");
 const sendQueue_js_1 = require("./sendQueue.js");
 // import updateQueue from './updateQueue.js';

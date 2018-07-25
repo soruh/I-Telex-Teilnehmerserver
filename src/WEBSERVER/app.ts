@@ -10,23 +10,32 @@ import colors from "../COMMONMODULES/colors.js";
 import config from '../COMMONMODULES/config.js';
 import * as winston from "winston";
 import { inspect } from "util";
+import { Pool } from "mysql";
 declare global {
 	namespace NodeJS {
 		interface Global {
-			logger: winston.Logger;
+      logger: winston.Logger;
+      sqlPool: Pool;
 		}
 	}
 }
 {
 	let getLoggingLevel = function getLoggingLevel(): string {
-		if (typeof config.loggingVerbosity === "number") {
-			let level = ( < any > Object).entries(winston.config.npm.levels).find(([, value]) => value == config.loggingVerbosity);
+		if (typeof config.webserverLoggingLevel === "number") {
+			let level = ( < any > Object).entries(winston.config.npm.levels).find(([, value]) => value == config.webserverLoggingLevel);
 			if (level) return level[0];
 		}
-		if (typeof config.loggingVerbosity === "string") {
-			if (winston.config.npm.levels.hasOwnProperty(config.loggingVerbosity))
-				return config.loggingVerbosity;
+		if (typeof config.webserverLoggingLevel === "string") {
+			if (winston.config.npm.levels.hasOwnProperty(config.webserverLoggingLevel))
+				return config.webserverLoggingLevel;
 		}
+		console.log("valid logging levels are:");
+		console.log(
+			(<any>Object).entries(winston.config.npm.levels)
+			.map(([key, value])=>`${value}/${key}${value==3?" - not used":""}`)
+			.join("\n")
+		);
+		
 		throw "invalid logging level";
 	}
 	let resolvePath = function resolvePath(pathToResolve: string): string {
@@ -36,12 +45,12 @@ declare global {
 	let transports = [];
 	if (config.webserverLog) transports.push(
 		new winston.transports.File({
-			filename: resolvePath(config.binaryserverLog)
+			filename: resolvePath(config.webserverLog)
 		})
 	);
 	if (config.webserverErrorLog) transports.push(
 		new winston.transports.File({
-			filename: resolvePath(config.binaryserverErrorLog),
+			filename: resolvePath(config.webserverErrorLog),
 			level: 'error'
 		})
 	)

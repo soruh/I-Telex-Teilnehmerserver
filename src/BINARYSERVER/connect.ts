@@ -16,7 +16,7 @@ import {
 	resetErrorCounter,
 	client,
 	clientName
-} from "./misc.js";
+} from "../COMMONMODULES/misc.js";
 //#endregion
 
 const logger = global.logger;

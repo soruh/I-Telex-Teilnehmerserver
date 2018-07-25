@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const colors_js_1 = require("../COMMONMODULES/colors.js");
-const misc_js_1 = require("./misc.js");
+const misc_js_1 = require("../COMMONMODULES/misc.js");
 //#endregion
 const logger = global.logger;
 var timeouts = new Map();

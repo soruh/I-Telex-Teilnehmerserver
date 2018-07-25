@@ -7,8 +7,8 @@ const config_js_1 = require("../COMMONMODULES/config.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
-const misc_js_1 = require("./misc.js");
-const misc_js_2 = require("./misc.js");
+const misc_js_1 = require("../COMMONMODULES/misc.js");
+const misc_js_2 = require("../COMMONMODULES/misc.js");
 //#endregion
 const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);

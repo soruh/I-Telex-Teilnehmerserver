@@ -1,8 +1,5 @@
 //#region imports
-import {
-	inspect,
-	promisify
-} from "util";
+import {inspect, promisify} from "util";
 import * as mysql from "mysql";
 import * as ip from "ip";
 import * as net from "net";
@@ -12,9 +9,7 @@ import colors from "../COMMONMODULES/colors.js";
 
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import {
-	lookup
-} from "dns";
+import {lookup} from "dns";
 import serialEachPromise from "../COMMONMODULES/serialEachPromise.js";
 // import * as winston from "winston";
 //#endregion
@@ -74,6 +69,7 @@ function SqlQuery(query: string, options ? : any[]): Promise < any > {
 					logger.error(colors.FgRed + inspect(err) + colors.Reset);
 					reject(err);
 				} else {
+					// logger.debug("result:\n"+inspect(res));
 					resolve(res);
 				}
 			});

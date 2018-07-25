@@ -6,14 +6,8 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 
 import serialEachPromise from '../COMMONMODULES/serialEachPromise.js';
-import {
-	checkIp,
-	client,
-	clientName
-} from './misc.js';
-import {
-	inspect
-} from 'util';
+import {checkIp, client, clientName} from '../COMMONMODULES/misc.js';
+import {inspect} from 'util';
 
 
 const logger = global.logger;

@@ -10,7 +10,7 @@ import {
 	SqlQuery,
 	symbolName,
 	client
-} from "./misc.js";
+} from "../COMMONMODULES/misc.js";
 import {
 	inspect
 } from "util";

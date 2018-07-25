@@ -5,7 +5,7 @@ const config_js_1 = require("../COMMONMODULES/config.js");
 const colors_js_1 = require("../COMMONMODULES/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
-const misc = require("../BINARYSERVER/misc.js");
+const misc = require("../COMMONMODULES/misc.js");
 const serialEachPromise_js_1 = require("../COMMONMODULES/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");
 //#endregion

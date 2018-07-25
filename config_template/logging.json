@@ -1,5 +1,6 @@
 {
-    "loggingVerbosity":1,
+    "binaryserverLoggingLevel":2,
+    "webserverLoggingLevel":2,
 
     "logITelexCom":false,
     "logFullBuffer": false,

@@ -17,18 +17,18 @@ declare global {
 
 {
 	let getLoggingLevel = function getLoggingLevel(): string {
-		if (typeof config.loggingVerbosity === "number") {
-			let level = ( < any > Object).entries(winston.config.npm.levels).find(([, value]) => value == config.loggingVerbosity);
+		if (typeof config.binaryserverLoggingLevel === "number") {
+			let level = ( < any > Object).entries(winston.config.npm.levels).find(([, value]) => value == config.binaryserverLoggingLevel);
 			if (level) return level[0];
 		}
-		if (typeof config.loggingVerbosity === "string") {
-			if (winston.config.npm.levels.hasOwnProperty(config.loggingVerbosity))
-				return config.loggingVerbosity;
+		if (typeof config.binaryserverLoggingLevel === "string") {
+			if (winston.config.npm.levels.hasOwnProperty(config.binaryserverLoggingLevel))
+				return config.binaryserverLoggingLevel;
 		}
 		console.log("valid logging levels are:");
 		console.log(
 			(<any>Object).entries(winston.config.npm.levels)
-			.map(([key, value])=>`${value}/${key}`)
+			.map(([key, value])=>`${value}/${key}${value==3?" - not used":""}`)
 			.join("\n")
 		);
 		
@@ -88,7 +88,7 @@ declare global {
 import * as timers from "../BINARYSERVER/timers.js";
 import colors from "../COMMONMODULES/colors.js";
 import * as nodemailer from "nodemailer";
-import * as misc from "../BINARYSERVER/misc.js";
+import * as misc from "../COMMONMODULES/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 // import updateQueue from './updateQueue.js';

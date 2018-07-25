@@ -4,9 +4,7 @@
 import colors from "../COMMONMODULES/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from '../COMMONMODULES/serialEachPromise.js';
-import {
-	SqlQuery
-} from './misc.js';
+import {SqlQuery} from '../COMMONMODULES/misc.js';
 
 //#endregion
 

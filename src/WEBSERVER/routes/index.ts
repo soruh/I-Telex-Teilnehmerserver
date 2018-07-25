@@ -5,12 +5,16 @@ import * as express from "express";
 
 import config from '../../COMMONMODULES/config.js';
 import colors from '../../COMMONMODULES/colors.js';
+import { inspect } from "util";
+import { SqlQuery } from "../../COMMONMODULES/misc.js";
 
 var mySqlConnectionOptions = config['mySqlConnectionOptions'];
 
 const logger = global.logger;
-const pool = mysql.createPool(mySqlConnectionOptions);
-pool.getConnection(function (err, connection) {
+global.sqlPool = mysql.createPool(mySqlConnectionOptions);
+const sqlPool = global.sqlPool;
+
+sqlPool.getConnection(function (err, connection) {
   if (err) {
     logger.error(colors.FgRed+ "could not connect to database!"+ colors.Reset);
     throw err;
@@ -28,11 +32,9 @@ router.get('/', function (req, res, next) {
 router.post('/list', function (req, res) {
   // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
-  pool.query("SELECT * FROM teilnehmer", function (err, privateList:any[]) {
-    if (err) return void res.json({
-      successful: false,
-      message: err
-    });
+  SqlQuery("SELECT * FROM teilnehmer")
+  .then((privateList:any[])=>{
+    if (privateList===void 0) return void 0;
 
     let publicList = 
     privateList
@@ -59,115 +61,159 @@ router.post('/list', function (req, res) {
       successful: true,
       result: publicList
     });
+  })
+  .catch(err=>{logger.error(err);
+    res.json({
+      successful: false,
+      message: err
+    })
   });
 });
 
 router.post('/edit', function (req, res) {
   // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
-  if (req.body.password !== config.webInterfacePassword)
-  return void res.json({
-    successful: false,
-    message: {
-      code: -1,
-      text: "wrong password!"
-    }
-  });
-  
+  logger.debug(`request body: ${inspect(req.body)}`);
+  logger.verbose(`typekey: ${req.body.typekey}`);
+  if (req.body.password !== config.webInterfacePassword){
+    logger.warn(`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
+    return void res.json({
+      successful: false,
+      message: {
+        code: -1,
+        text: "wrong password!"
+      }
+    });
+  }
   switch (req.body.typekey) {
     case "edit": 
-      pool.query("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid], function (err, entry) {
-        if (err) return void res.json({
-          successful: false,
-          message: err
-        });
+      SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid])
+      .then(entry=>{
+        if (entry===void 0) return void 0;
 
-        if(entry.number === req.body.number){
-          pool.query("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1 WHERE uid=?;",
+        if(entry&&entry.number == req.body.number){
+          logger.debug("number wasn't changed updating");
+          logger.debug(`${entry.number} == ${req.body.number}`);
+          SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1 WHERE uid=?;",
           [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, Math.floor(Date.now() / 1000), req.body.uid
-          ], function (err, result) {
-            if (err) return void res.json({
-              successful: false,
-              message: err
-            }); 
+          ])
+          .then(result=>{
+            if (result===void 0) return void 0;
 
             res.json({
               successful: true,
               message: result
             });
-          });
-        }else{
-          pool.query("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid], function (err, result) {
-            if (err) return void res.json({
+          })
+          .catch(err=>{logger.error(err);
+            res.json({
               successful: false,
               message: err
-            }); 
+            })
+          });
+        }else{
+          logger.debug("number was changed inserting");
+          logger.debug(`${entry.number} != ${req.body.number}`);
+          SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid])
+          .then(result=>{
+            if (result===void 0) return void 0;
 
-            pool.query("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?, 1)",
-            [req.body.number, req.body.name, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, Math.floor(Date.now() / 1000)],
-            function (err, result) {
-              if (err) return void res.json({
-                successful: false,
-                message: err
-              }); 
+            SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+            [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, Math.floor(Date.now() / 1000)])
+            .then(result=>{
+              if (result===void 0) return void 0;
 
               res.json({
                 successful: true,
                 message: result
               });
+            })
+            .catch(err=>{logger.error(err);
+              res.json({
+                successful: false,
+                message: err
+              })
             });
+          })
+          .catch(err=>{logger.error(err);
+            res.json({
+              successful: false,
+              message: err
+            })
           });
         }
-      });
-      break;
-    case "new":
-      pool.query("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number], function (err, existing) {
-        if (err) return void res.json({
+      })
+      .catch(err=>{logger.error(err);
+        res.json({
           successful: false,
           message: err
-        });
+        })
+      });;
+      break;
+    case "new":
+      SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number])
+      .then(existing=>{
+        logger.debug(inspect(existing));
+        if (existing===void 0) return void 0;
 
-        if(existing.type != 0) return res.json({
+        if(existing&&existing.length==1&&existing[0].type !== 0) return res.json({
           successful: false,
           message: new Error("entry already exists")
         });
+        logger.debug("");
       
-        pool.query("DELETE FROM teilnehmer WHERE uid=?;", [existing.uid], function (err, result){
-          if (err) return void res.json({
-            successful: false,
-            message: err
-          });
+        SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number])
+        .then(result=>{
+          if (result===void 0) return void 0;
           
-          pool.query(
+          SqlQuery(
             "INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);",
-            [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, Math.floor(Date.now() / 1000)],
-            function (err, result){
-              if (err) return void res.json({
-                successful: false,
-                message: err
-              });
+            [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, Math.floor(Date.now() / 1000)])
+            .then(result=>{
+              if (result===void 0) return void 0;
 
               res.json({
                 successful: true,
                 message: result
               });
+            })
+            .catch(err=>{logger.error(err);
+              res.json({
+                successful: false,
+                message: err
+              })
             });
+        })
+        .catch(err=>{logger.error(err);
+          res.json({
+            successful: false,
+            message: err
+          })
         });
+      })
+      .catch(err=>{logger.error(err);
+        res.json({
+          successful: false,
+          message: err
+        })
       });
       break;
     case "delete":
-      pool.query("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;",
-      [Math.floor(Date.now() / 1000), req.body.uid],
-      function (err, result) {
-        if (err) return void res.json({
-          successful: false,
-          message: err
-        });
+      SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;",
+      [Math.floor(Date.now() / 1000), req.body.uid])
+      .then(result=>{
+        if (result===void 0) return void 0;
         
         res.json({
           successful: true,
           message: result
         });
+      })
+      .catch(err=>{logger.error(err);
+        res.json({
+          successful: false,
+          message: err
+        })
       });
       break;
     case "confirm password":

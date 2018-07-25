@@ -2,7 +2,7 @@
 
 //#region imports
 import colors from "../COMMONMODULES/colors.js";
-import {symbolName} from "./misc.js";
+import {symbolName} from "../COMMONMODULES/misc.js";
 //#endregion
 
 const logger = global.logger;
