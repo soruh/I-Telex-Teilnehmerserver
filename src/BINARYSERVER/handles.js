@@ -38,11 +38,11 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (number < 10000) {
         logger.warn(`${colors_js_1.default.FgRed}client ${colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgRed} tried to update ${number} which is too small(<10000)${colors_js_1.default.Reset}`);
         return void misc_js_1.sendEmail("invalidNumber", {
-            "[IpFull]": client.connection.remoteAddress,
-            "[Ip]": ipaddress,
-            "[number]": number,
-            "[date]": new Date().toLocaleString(),
-            "[timeZone]": misc_js_1.getTimezone(new Date())
+            "IpFull": client.connection.remoteAddress,
+            "Ip": ipaddress,
+            "number": number.toString(),
+            "date": new Date().toLocaleString(),
+            "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => {
             client.connection.end();
@@ -60,13 +60,13 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 logger.info(colors_js_1.default.FgRed + "not DynIp type" + colors_js_1.default.Reset);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpType", {
-                    "[type]": entry.type,
-                    "[IpFull]": client.connection.remoteAddress,
-                    "[Ip]": ipaddress,
-                    "[number]": entry.number,
-                    "[name]": entry.name,
-                    "[date]": new Date().toLocaleString(),
-                    "[timeZone]": misc_js_1.getTimezone(new Date())
+                    "type": entry.type.toString(),
+                    "IpFull": client.connection.remoteAddress,
+                    "Ip": ipaddress,
+                    "number": entry.number.toString(),
+                    "name": entry.name,
+                    "date": new Date().toLocaleString(),
+                    "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
                     .catch(logger.error);
@@ -75,11 +75,11 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 logger.info(colors_js_1.default.FgRed + "wrong DynIp pin" + colors_js_1.default.Reset);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpPin", {
-                    "[Ip]": ipaddress,
-                    "[number]": entry.number,
-                    "[name]": entry.name,
-                    "[date]": new Date().toLocaleString(),
-                    "[timeZone]": misc_js_1.getTimezone(new Date())
+                    "Ip": ipaddress,
+                    "number": entry.number.toString(),
+                    "name": entry.name,
+                    "date": new Date().toLocaleString(),
+                    "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
                     .catch(logger.error);
@@ -124,11 +124,11 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     return void resolve();
                 }
                 misc_js_1.sendEmail("new", {
-                    "[IpFull]": client.connection.remoteAddress,
-                    "[Ip]": ipaddress,
-                    "[number]": number,
-                    "[date]": new Date().toLocaleString(),
-                    "[timeZone]": misc_js_1.getTimezone(new Date())
+                    "IpFull": client.connection.remoteAddress,
+                    "Ip": ipaddress,
+                    "number": number.toString(),
+                    "date": new Date().toLocaleString(),
+                    "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .catch(logger.error);
                 client.connection.write(ITelexCom.encPackage({
@@ -225,10 +225,10 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         logger.info(colors_js_1.default.FgRed + "serverpin is incorrect! " + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + " ending client connection!" + colors_js_1.default.Reset); //TODO: remove pin logging
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
-            "[IpFull]": client.connection.remoteAddress,
-            "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
-            "[date]": new Date().toLocaleString(),
-            "[timeZone]": misc_js_1.getTimezone(new Date())
+            "IpFull": client.connection.remoteAddress,
+            "Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+            "date": new Date().toLocaleString(),
+            "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
             .catch(logger.error);
@@ -256,10 +256,10 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         logger.info(colors_js_1.default.FgRed + "serverpin is incorrect!" + colors_js_1.default.FgCyan + pkg.data.serverpin + colors_js_1.default.FgRed + " != " + colors_js_1.default.FgCyan + config_js_1.default.serverPin + colors_js_1.default.FgRed + "ending client.connection!" + colors_js_1.default.Reset);
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
-            "[IpFull]": client.connection.remoteAddress,
-            "[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
-            "[date]": new Date().toLocaleString(),
-            "[timeZone]": misc_js_1.getTimezone(new Date())
+            "IpFull": client.connection.remoteAddress,
+            "Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+            "date": new Date().toLocaleString(),
+            "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
             .catch(logger.error);

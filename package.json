@@ -12,21 +12,23 @@
     "stop": "pm2 delete ecosystem.config.js"
   },
   "dependencies": {
-    "express": "^4.16.3",
     "body-parser": "^1.18.3",
     "cookie-parser": "~1.4.3",
-    "serve-favicon": "~2.4.2",
+    "express": "^4.16.3",
     "heapdump": "^0.3.9",
-    "nodemailer": "^4.4.1",
-    "mysql": "^2.13.0",
-    "pug": "^2.0.0-rc.4",
+    "intl": "^1.2.5",
     "ip": "^1.1.5",
+    "mysql": "^2.13.0",
+    "nodemailer": "^4.4.1",
+    "pug": "^2.0.0-rc.4",
+    "serve-favicon": "~2.4.2",
     "winston": "^3.0.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.1",
     "@types/express": "^4.16.0",
     "@types/heapdump": "^0.3.1",
+    "@types/intl": "^1.2.0",
     "@types/ip": "0.0.31",
     "@types/jquery.validation": "^1.16.4",
     "@types/morgan": "^1.7.35",

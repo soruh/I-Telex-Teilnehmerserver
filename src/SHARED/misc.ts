@@ -35,11 +35,11 @@ function increaseErrorCounter(serverkey: string, error: Error, code: string): vo
 	logger.warn(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${errorCounters[serverkey]}${colors.Reset}`);
 	if (warn)
 		sendEmail("ServerError", {
-			"[server]": serverkey,
-			"[errorCounter]": errorCounters[serverkey],
-			"[lastError]": code,
-			"[date]": new Date().toLocaleString(),
-			"[timeZone]": getTimezone(new Date())
+			"server": serverkey,
+			"errorCounter": errorCounters[serverkey].toString(),
+			"lastError": code,
+			"date": new Date().toLocaleString(),
+			"timeZone": getTimezone(new Date())
 		});
 }
 
@@ -156,7 +156,7 @@ async function checkIp(data: number[] | Buffer, client: client) {
 }
 
 function sendEmail(messageName: string, values: {
-	[index: string]: string | number;
+	[index: string]: string;
 }): Promise < any > {
 	return new Promise((resolve, reject) => {
 		let message: {
@@ -181,22 +181,22 @@ function sendEmail(messageName: string, values: {
 			//	 for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
 			// }
 			if (type) {
-				mailOptions[type] = message[type].replace(/\[([^\]]*)\]/g, (match, key) => values[key] || "NULL");
+				mailOptions[type] = (<string>message[type]).replace(/\[([^\]]*)\]/g, (match, key) =>values[key] || "NULL");
 			} else {
 				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
-
-			if (config.logITelexCom) logger.info(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error(text)"+colors.Reset}`);
-			if (config.logITelexCom) logger.verbose("sending mail:\n" + inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
+			logger.info(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error"+colors.Reset}`);
+			logger.debug(`mail values:${inspect(values)}`);
+			logger.verbose("sending mail:\n" + inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
 
 			( < nodemailer.Transporter > global.transporter).sendMail(mailOptions, function (error, info) {
 				if (error) {
 					//logger.debug(error);
 					reject(error);
 				} else {
-					if (config.logITelexCom) logger.info('Message sent:' + info.messageId);
+					logger.info('Message sent:' + info.messageId);
 					if (config.eMail.useTestAccount)
-						if (config.logITelexCom) logger.warn('Preview URL:', nodemailer.getTestMessageUrl(info));
+						logger.warn(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
 					resolve();
 				}
 			});

@@ -1,5 +1,6 @@
 "use strict";
 import * as path from "path";
+import * as intl from "intl";
 import * as util from 'util';
 import * as mysql from "mysql";
 import * as winston from "winston";

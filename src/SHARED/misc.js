@@ -39,11 +39,11 @@ function increaseErrorCounter(serverkey, error, code) {
     logger.warn(`${colors_js_1.default.FgYellow}increased errorCounter for server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgYellow} to ${warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan}${errorCounters[serverkey]}${colors_js_1.default.Reset}`);
     if (warn)
         sendEmail("ServerError", {
-            "[server]": serverkey,
-            "[errorCounter]": errorCounters[serverkey],
-            "[lastError]": code,
-            "[date]": new Date().toLocaleString(),
-            "[timeZone]": getTimezone(new Date())
+            "server": serverkey,
+            "errorCounter": errorCounters[serverkey].toString(),
+            "lastError": code,
+            "date": new Date().toLocaleString(),
+            "timeZone": getTimezone(new Date())
         });
 }
 exports.increaseErrorCounter = increaseErrorCounter;
@@ -183,21 +183,18 @@ function sendEmail(messageName, values) {
             else {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            if (config_js_1.default.logITelexCom)
-                logger.info(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error(text)" + colors_js_1.default.Reset}`);
-            if (config_js_1.default.logITelexCom)
-                logger.verbose("sending mail:\n" + util_1.inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
+            logger.info(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error" + colors_js_1.default.Reset}`);
+            logger.debug(`mail values:${util_1.inspect(values)}`);
+            logger.verbose("sending mail:\n" + util_1.inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
             global.transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     //logger.debug(error);
                     reject(error);
                 }
                 else {
-                    if (config_js_1.default.logITelexCom)
-                        logger.info('Message sent:' + info.messageId);
+                    logger.info('Message sent:' + info.messageId);
                     if (config_js_1.default.eMail.useTestAccount)
-                        if (config_js_1.default.logITelexCom)
-                            logger.warn('Preview URL:', nodemailer.getTestMessageUrl(info));
+                        logger.warn(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
                     resolve();
                 }
             });

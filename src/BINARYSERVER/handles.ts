@@ -54,11 +54,11 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 		if (number < 10000) {
 			logger.warn(`${colors.FgRed}client ${colors.FgCyan+client.name+colors.FgRed} tried to update ${number} which is too small(<10000)${colors.Reset}`);
 			return void sendEmail("invalidNumber", {
-					"[IpFull]": client.connection.remoteAddress,
-					"[Ip]": ipaddress,
-					"[number]": number,
-					"[date]": new Date().toLocaleString(),
-					"[timeZone]": getTimezone(new Date())
+					"IpFull": client.connection.remoteAddress,
+					"Ip": ipaddress,
+					"number": number.toString(),
+					"date": new Date().toLocaleString(),
+					"timeZone": getTimezone(new Date())
 				})
 				.then(() => {
 					client.connection.end();
@@ -76,13 +76,13 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 						logger.info(colors.FgRed + "not DynIp type" + colors.Reset);
 						client.connection.end();
 						return void sendEmail("wrongDynIpType", {
-								"[type]": entry.type,
-								"[IpFull]": client.connection.remoteAddress,
-								"[Ip]": ipaddress,
-								"[number]": entry.number,
-								"[name]": entry.name,
-								"[date]": new Date().toLocaleString(),
-								"[timeZone]": getTimezone(new Date())
+								"type": entry.type.toString(),
+								"IpFull": client.connection.remoteAddress,
+								"Ip": ipaddress,
+								"number": entry.number.toString(),
+								"name": entry.name,
+								"date": new Date().toLocaleString(),
+								"timeZone": getTimezone(new Date())
 							})
 							.then(resolve)
 							.catch(logger.error);
@@ -91,11 +91,11 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 						logger.info(colors.FgRed + "wrong DynIp pin" + colors.Reset);
 						client.connection.end();
 						return void sendEmail("wrongDynIpPin", {
-								"[Ip]": ipaddress,
-								"[number]": entry.number,
-								"[name]": entry.name,
-								"[date]": new Date().toLocaleString(),
-								"[timeZone]": getTimezone(new Date())
+								"Ip": ipaddress,
+								"number": entry.number.toString(),
+								"name": entry.name,
+								"date": new Date().toLocaleString(),
+								"timeZone": getTimezone(new Date())
 							})
 							.then(resolve)
 							.catch(logger.error);
@@ -141,11 +141,11 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 								return void resolve();
 							}
 							sendEmail("new", {
-									"[IpFull]": client.connection.remoteAddress,
-									"[Ip]": ipaddress,
-									"[number]": number,
-									"[date]": new Date().toLocaleString(),
-									"[timeZone]": getTimezone(new Date())
+									"IpFull": client.connection.remoteAddress,
+									"Ip": ipaddress,
+									"number": number.toString(),
+									"date": new Date().toLocaleString(),
+									"timeZone": getTimezone(new Date())
 								})
 								.catch(logger.error);
 
@@ -251,10 +251,10 @@ handles[6][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_6, client
 			logger.info(colors.FgRed + "serverpin is incorrect! " + colors.FgCyan + pkg.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + " ending client connection!" + colors.Reset); //TODO: remove pin logging
 			client.connection.end();
 			return void sendEmail("wrongServerPin", {
-					"[IpFull]": client.connection.remoteAddress,
-					"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
-					"[date]": new Date().toLocaleString(),
-					"[timeZone]": getTimezone(new Date())
+					"IpFull": client.connection.remoteAddress,
+					"Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+					"date": new Date().toLocaleString(),
+					"timeZone": getTimezone(new Date())
 				})
 				.then(() => resolve())
 				.catch(logger.error);
@@ -285,10 +285,10 @@ handles[7][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_7, client
 			logger.info(colors.FgRed + "serverpin is incorrect!" + colors.FgCyan + pkg.data.serverpin + colors.FgRed + " != " + colors.FgCyan + config.serverPin + colors.FgRed + "ending client.connection!" + colors.Reset);
 			client.connection.end();
 			return void sendEmail("wrongServerPin", {
-					"[IpFull]": client.connection.remoteAddress,
-					"[Ip]": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
-					"[date]": new Date().toLocaleString(),
-					"[timeZone]": getTimezone(new Date())
+					"IpFull": client.connection.remoteAddress,
+					"Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+					"date": new Date().toLocaleString(),
+					"timeZone": getTimezone(new Date())
 				})
 				.then(() => resolve())
 				.catch(logger.error);
