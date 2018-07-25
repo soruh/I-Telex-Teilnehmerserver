@@ -64,41 +64,41 @@ function connect(onEnd, options) {
                     logger.debug(colors_js_1.default.FgGreen + "Packages " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(packages) + colors_js_1.default.Reset);
                     client.readbuffer = rest;
                     client.packages = client.packages.concat(ITelexCom.decPackages(packages));
-                    let handleTimeout = () => {
-                        // logger.verbose(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
-                        // if (client.handling === false) {
-                        // 	client.handling = true;
-                        // 	if (client.handleTimeout != null) {
-                        // 		clearTimeout(client.handleTimeout);
-                        // 		client.handleTimeout = null;
-                        // 	}
-                        serialEachPromise_js_1.default(client.packages, (pkg, key) => new Promise((resolve, reject) => {
-                            {
-                                let msg = colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset;
-                                if (Object.keys(client.packages).length > 1) {
-                                    logger.info(msg);
-                                }
-                                else {
-                                    logger.verbose(msg);
-                                }
+                    // let handleTimeout = () => {
+                    // logger.verbose(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
+                    // if (client.handling === false) {
+                    // 	client.handling = true;
+                    // 	if (client.handleTimeout != null) {
+                    // 		clearTimeout(client.handleTimeout);
+                    // 		client.handleTimeout = null;
+                    // 	}
+                    serialEachPromise_js_1.default(client.packages, (pkg, key) => new Promise((resolve, reject) => {
+                        {
+                            let msg = colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset;
+                            if (Object.keys(client.packages).length > 1) {
+                                logger.info(msg);
                             }
-                            ITelexCom.handlePackage(pkg, client)
-                                .then(() => {
-                                client.packages.splice(+key, 1);
-                                resolve();
-                            })
-                                .catch(logger.error);
-                        }))
+                            else {
+                                logger.verbose(msg);
+                            }
+                        }
+                        ITelexCom.handlePackage(pkg, client)
                             .then(() => {
-                            // client.handling = false;
+                            client.packages.splice(+key, 1);
+                            resolve();
                         })
                             .catch(logger.error);
-                        // } else {
-                        // 	if (client.handleTimeout == null) {
-                        // 		client.handleTimeout = setTimeout(handleTimeout, 10);
-                        // 	}
-                        // }
-                    };
+                    }))
+                        .then(() => {
+                        // client.handling = false;
+                    })
+                        .catch(logger.error);
+                    // } else {
+                    // 	if (client.handleTimeout == null) {
+                    // 		client.handleTimeout = setTimeout(handleTimeout, 10);
+                    // 	}
+                    // }
+                    // };
                     // handleTimeout();
                 }
                 catch (e) {

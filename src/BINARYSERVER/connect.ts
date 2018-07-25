@@ -82,7 +82,7 @@ function connect(
 					logger.debug(colors.FgGreen+"Packages "+client.name+":"+colors.FgCyan+inspect(packages)+colors.Reset);
 					client.readbuffer = rest;
 					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
-					let handleTimeout = () => {
+					// let handleTimeout = () => {
 						// logger.verbose(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
 						// if (client.handling === false) {
 						// 	client.handling = true;
@@ -116,7 +116,7 @@ function connect(
 						// 		client.handleTimeout = setTimeout(handleTimeout, 10);
 						// 	}
 						// }
-					};
+					// };
 					// handleTimeout();
 				} catch (e) {
 					logger.error(colors.FgRed + inspect(e) + colors.Reset);
