@@ -122,7 +122,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         else {
             misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
                 .then(() => misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed)
-				VALUES (${"?, ".repeat(11)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
+				VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
                 .then(function (result) {
                 if (!(result && result.affectedRows)) {
                     logger.error(colors_js_1.default.FgRed + "could not create entry" + colors_js_1.default.Reset);
