@@ -108,7 +108,7 @@ function sendQueue() {
                                         // }
                                     }
                                     catch (e) {
-                                        logger.debug(e);
+                                        logger.error(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
                                         resolve();
                                     }
                                 }

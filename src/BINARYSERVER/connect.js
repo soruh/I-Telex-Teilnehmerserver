@@ -53,56 +53,58 @@ function connect(onEnd, options) {
             socket.end();
         });
         socket.on('data', (data) => {
-            logger.verbose(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
-            logger.verbose(colors_js_1.default.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors_js_1.default.Reset);
-            try {
-                logger.debug(colors_js_1.default.FgGreen + "Buffer for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
-                logger.debug(colors_js_1.default.FgGreen + "New Data for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
-                var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-                logger.debug(colors_js_1.default.FgGreen + "New Buffer " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(rest) + colors_js_1.default.Reset);
-                logger.debug(colors_js_1.default.FgGreen + "Packages " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(packages) + colors_js_1.default.Reset);
-                client.readbuffer = rest;
-                client.packages = client.packages.concat(ITelexCom.decPackages(packages));
-                let handleTimeout = () => {
-                    logger.verbose(colors_js_1.default.FgGreen + "handling: " + colors_js_1.default.FgCyan + client.handling + colors_js_1.default.Reset);
-                    if (client.handling === false) {
-                        client.handling = true;
-                        if (client.handleTimeout != null) {
-                            clearTimeout(client.handleTimeout);
-                            client.handleTimeout = null;
-                        }
-                        serialEachPromise_js_1.default(client.packages, (pkg, key) => new Promise((resolve, reject) => {
-                            {
-                                let msg = colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset;
-                                if (Object.keys(client.packages).length > 1) {
-                                    logger.info(msg);
-                                }
-                                else {
-                                    logger.verbose(msg);
-                                }
+            if (client) {
+                logger.verbose(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+                logger.verbose(colors_js_1.default.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors_js_1.default.Reset);
+                try {
+                    logger.debug(colors_js_1.default.FgGreen + "Buffer for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
+                    logger.debug(colors_js_1.default.FgGreen + "New Data for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+                    var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
+                    logger.debug(colors_js_1.default.FgGreen + "New Buffer " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(rest) + colors_js_1.default.Reset);
+                    logger.debug(colors_js_1.default.FgGreen + "Packages " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(packages) + colors_js_1.default.Reset);
+                    client.readbuffer = rest;
+                    client.packages = client.packages.concat(ITelexCom.decPackages(packages));
+                    let handleTimeout = () => {
+                        logger.verbose(colors_js_1.default.FgGreen + "handling: " + colors_js_1.default.FgCyan + client.handling + colors_js_1.default.Reset);
+                        if (client.handling === false) {
+                            client.handling = true;
+                            if (client.handleTimeout != null) {
+                                clearTimeout(client.handleTimeout);
+                                client.handleTimeout = null;
                             }
-                            ITelexCom.handlePackage(pkg, client)
+                            serialEachPromise_js_1.default(client.packages, (pkg, key) => new Promise((resolve, reject) => {
+                                {
+                                    let msg = colors_js_1.default.FgGreen + "handling package " + colors_js_1.default.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors_js_1.default.Reset;
+                                    if (Object.keys(client.packages).length > 1) {
+                                        logger.info(msg);
+                                    }
+                                    else {
+                                        logger.verbose(msg);
+                                    }
+                                }
+                                ITelexCom.handlePackage(pkg, client)
+                                    .then(() => {
+                                    client.packages.splice(+key, 1);
+                                    resolve();
+                                })
+                                    .catch(logger.error);
+                            }))
                                 .then(() => {
-                                client.packages.splice(+key, 1);
-                                resolve();
+                                client.handling = false;
                             })
                                 .catch(logger.error);
-                        }))
-                            .then(() => {
-                            client.handling = false;
-                        })
-                            .catch(logger.error);
-                    }
-                    else {
-                        if (client.handleTimeout == null) {
-                            client.handleTimeout = setTimeout(handleTimeout, 10);
                         }
-                    }
-                };
-                handleTimeout();
-            }
-            catch (e) {
-                logger.debug(e);
+                        else {
+                            if (client.handleTimeout == null) {
+                                client.handleTimeout = setTimeout(handleTimeout, 10);
+                            }
+                        }
+                    };
+                    handleTimeout();
+                }
+                catch (e) {
+                    logger.error(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
+                }
             }
         });
         socket.connect(options, () => {

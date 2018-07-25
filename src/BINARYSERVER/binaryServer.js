@@ -48,56 +48,56 @@ var binaryServer = net.createServer(function (connection) {
         connection.end();
     });
     connection.on('data', function (data) {
-        logger.verbose(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
-        logger.verbose(colors_js_1.default.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors_js_1.default.Reset);
-        if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
-            logger.verbose(colors_js_1.default.FgGreen + "serving ascii request" + colors_js_1.default.Reset);
-            ITelexCom.ascii(data, client);
-        }
-        else if (data[0] == 'c'.charCodeAt(0)) {
-            misc_js_1.checkIp(data, client);
-        }
-        else {
-            logger.verbose(colors_js_1.default.FgGreen + "serving binary request" + colors_js_1.default.Reset);
-            logger.debug(colors_js_1.default.FgCyan + "Buffer for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
-            logger.debug(colors_js_1.default.FgGreen + "New Data for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
-            var res = ITelexCom.getCompletePackages(data, client.readbuffer);
-            logger.debug(colors_js_1.default.FgGreen + "New Buffer:" + colors_js_1.default.FgCyan + util_1.inspect(res[1]) + colors_js_1.default.Reset);
-            logger.debug(colors_js_1.default.FgGreen + "complete Package(s):" + colors_js_1.default.FgCyan + util_1.inspect(res[0]) + colors_js_1.default.Reset);
-            client.readbuffer = res[1];
-            if (res[0]) {
-                client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
-                let timeout = function () {
-                    if (client.handling === false) {
-                        client.handling = true;
-                        if (client.timeout != null) {
-                            clearTimeout(client.timeout);
-                            client.timeout = null;
-                        }
-                        let nPackages = client.packages.length;
-                        serialEachPromise_js_1.default(client.packages, function (pkg, key) {
-                            return __awaiter(this, void 0, void 0, function* () {
-                                let msg = `${colors_js_1.default.FgGreen}handling package ${colors_js_1.default.FgCyan}${+key + 1}/${nPackages}${colors_js_1.default.Reset}`;
-                                if (nPackages > 1) {
-                                    logger.info(msg);
-                                }
-                                else {
-                                    logger.verbose(msg);
-                                }
-                                return yield ITelexCom.handlePackage(pkg, client);
-                            });
-                        })
-                            .then((res) => {
-                            client.packages.splice(0, res.length); //handled);
-                            client.handling = false;
-                        })
-                            .catch(logger.error);
-                    }
-                    else {
-                        client.timeout = setTimeout(timeout, 10);
-                    }
-                };
-                timeout();
+        if (client) {
+            logger.verbose(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+            logger.verbose(colors_js_1.default.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors_js_1.default.Reset);
+            if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
+                logger.verbose(colors_js_1.default.FgGreen + "serving ascii request" + colors_js_1.default.Reset);
+                ITelexCom.ascii(data, client);
+            }
+            else if (data[0] == 'c'.charCodeAt(0)) {
+                misc_js_1.checkIp(data, client);
+            }
+            else {
+                logger.verbose(colors_js_1.default.FgGreen + "serving binary request" + colors_js_1.default.Reset);
+                logger.debug(colors_js_1.default.FgCyan + "Buffer for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
+                logger.debug(colors_js_1.default.FgGreen + "New Data for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+                var res = ITelexCom.getCompletePackages(data, client.readbuffer);
+                logger.debug(colors_js_1.default.FgGreen + "New Buffer:" + colors_js_1.default.FgCyan + util_1.inspect(res[1]) + colors_js_1.default.Reset);
+                logger.debug(colors_js_1.default.FgGreen + "complete Package(s):" + colors_js_1.default.FgCyan + util_1.inspect(res[0]) + colors_js_1.default.Reset);
+                client.readbuffer = res[1];
+                if (res[0]) {
+                    client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
+                    // let timeout = function () {
+                    // if (client.handling === false) {
+                    // client.handling = true;
+                    // if (client.timeout != null) {
+                    // 	clearTimeout(client.timeout);
+                    // 	client.timeout = null;
+                    // }
+                    serialEachPromise_js_1.default(client.packages, function (pkg, key) {
+                        return __awaiter(this, void 0, void 0, function* () {
+                            let msg = `${colors_js_1.default.FgGreen}handling package ${colors_js_1.default.FgCyan}${+key + 1}/${client.packages.length}${colors_js_1.default.Reset}`;
+                            if (client.packages.length > 1) {
+                                logger.info(msg);
+                            }
+                            else {
+                                logger.verbose(msg);
+                            }
+                            return yield ITelexCom.handlePackage(pkg, client);
+                        });
+                    })
+                        .then((res) => {
+                        client.packages.splice(0, res.length); //handled);
+                        client.handling = false;
+                    })
+                        .catch(logger.error);
+                    // 	} else {
+                    // 		client.timeout = setTimeout(timeout, 10);
+                    // 	}
+                    // };
+                    // timeout();
+                }
             }
         }
     });

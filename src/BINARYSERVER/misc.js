@@ -104,7 +104,7 @@ function checkIp(data, client) {
                 }
                 catch (e) {
                     client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-                    logger.debug(e);
+                    logger.debug(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
                     return;
                 }
             }

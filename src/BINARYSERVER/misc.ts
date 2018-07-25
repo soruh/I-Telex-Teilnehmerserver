@@ -112,7 +112,7 @@ async function checkIp(data: number[] | Buffer, client: client) {
 				logger.verbose(`${colors.FgCyan+arg+colors.FgGreen} resolved to ${colors.FgCyan+ipAddr+colors.Reset}`);
 			} catch (e) {
 				client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-				logger.debug(e)
+				logger.debug(colors.FgRed + inspect(e) + colors.Reset);
 				return;
 			}
 		}

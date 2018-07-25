@@ -23,26 +23,22 @@ import {
 const logger = global.logger;
 
 
-try{
-	Object.defineProperty(Buffer.prototype, 'readNullTermString', {
-		value: function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length) {
-			// logger.error(highlightBuffer(this));
-			// logger.error("start:"+start);
-			// logger.error("end:"+end);
-			// logger.error(highlightBuffer(this,start,end));
-			let firstZero = this.indexOf(0, start);
-			// logger.error("firstZero:"+firstZero);
-			let stop = firstZero >= start && firstZero <= end ? firstZero : end;
-			// logger.error("stop:"+firstZero);
-			// logger.error(highlightBuffer(this,start,stop));
-			// logger.error("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
+Object.defineProperty(Buffer.prototype, 'readNullTermString', {
+	value: function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length) {
+		// logger.error(highlightBuffer(this));
+		// logger.error("start:"+start);
+		// logger.error("end:"+end);
+		// logger.error(highlightBuffer(this,start,end));
+		let firstZero = this.indexOf(0, start);
+		// logger.error("firstZero:"+firstZero);
+		let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+		// logger.error("stop:"+firstZero);
+		// logger.error(highlightBuffer(this,start,stop));
+		// logger.error("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
 
-			return this.toString(encoding, start, stop);
-		}
-	});
-}catch(e){
-
-}
+		return this.toString(encoding, start, stop);
+	}
+});
 
 // function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
 // 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+(<any>x).toString(16));

@@ -117,7 +117,7 @@ function sendQueue() {
 																// 	resolve();
 																// }
 															} catch (e) {
-																logger.debug(e);
+																logger.error(colors.FgRed + inspect(e) + colors.Reset);
 																resolve();
 															}
 														} else {
