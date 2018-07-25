@@ -117,7 +117,7 @@ function connect(after, options, callback) {
                         logWithLineNumbers_js_1.ll(`${colors_js_1.default.FgRed}server ${colors_js_1.default.FgCyan + util.inspect(options) + colors_js_1.default.FgRed} had an error${colors_js_1.default.Reset}`);
                     misc.increaseErrorCounter(serverkey, error, error["code"]);
                     if (cv(0))
-                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan, misc.serverErrors[serverkey].errorCounter, colors_js_1.default.Reset);
+                        logWithLineNumbers_js_1.lle(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan, misc.errorCounters[serverkey], colors_js_1.default.Reset);
                 }
                 // } else {
                 // 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);
