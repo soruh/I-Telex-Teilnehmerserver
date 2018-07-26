@@ -29,6 +29,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 			// clearTimeout(client.timeout);
 
 			// logger.info(inspect`deleted connection `);
+			client.connection.removeAllListeners("data");
 			client = null;
 		}
 	});
@@ -56,12 +57,12 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 	
 				logger.debug(inspect`Buffer for client ${client.name}: ${client.readbuffer}`);
 				logger.debug(inspect`New Data for client ${client.name}: ${data}`);
-				var res = ITelexCom.getCompletePackages(data, client.readbuffer);
-				logger.debug(inspect`New Buffer: ${res[1]}`);
-				logger.debug(inspect`complete Package(s): ${res[0]}`);
-				client.readbuffer = res[1];
-				if (res[0]) {
-					client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
+				var [packages,rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
+				logger.debug(inspect`New Buffer: ${rest}`);
+				logger.debug(inspect`complete Package(s): ${packages}`);
+				client.readbuffer = rest;
+				if (packages) {
+					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
 					// let handleTimeout = function () {
 					// if (client.handling === false) {
 							// client.handling = true;
@@ -83,7 +84,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 									}
 								)
 								.then((res) => {
-									client.packages.splice(0, res.length); //handled);
+									if(client) client.packages.splice(0, res.length); //handled);
 									// client.handling = false;
 								})
 								.catch(err=>{logger.error(inspect`${err}`)});

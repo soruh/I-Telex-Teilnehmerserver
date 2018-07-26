@@ -33,6 +33,7 @@ var binaryServer = net.createServer(function (connection) {
             logger.info(misc_js_1.inspect `client ${client.name} disconnected!`);
             // clearTimeout(client.timeout);
             // logger.info(inspect`deleted connection `);
+            client.connection.removeAllListeners("data");
             client = null;
         }
     });
@@ -60,12 +61,12 @@ var binaryServer = net.createServer(function (connection) {
                 logger.verbose(misc_js_1.inspect `serving binary request`);
                 logger.debug(misc_js_1.inspect `Buffer for client ${client.name}: ${client.readbuffer}`);
                 logger.debug(misc_js_1.inspect `New Data for client ${client.name}: ${data}`);
-                var res = ITelexCom.getCompletePackages(data, client.readbuffer);
-                logger.debug(misc_js_1.inspect `New Buffer: ${res[1]}`);
-                logger.debug(misc_js_1.inspect `complete Package(s): ${res[0]}`);
-                client.readbuffer = res[1];
-                if (res[0]) {
-                    client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
+                var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
+                logger.debug(misc_js_1.inspect `New Buffer: ${rest}`);
+                logger.debug(misc_js_1.inspect `complete Package(s): ${packages}`);
+                client.readbuffer = rest;
+                if (packages) {
+                    client.packages = client.packages.concat(ITelexCom.decPackages(packages));
                     // let handleTimeout = function () {
                     // if (client.handling === false) {
                     // client.handling = true;
@@ -86,7 +87,8 @@ var binaryServer = net.createServer(function (connection) {
                         });
                     })
                         .then((res) => {
-                        client.packages.splice(0, res.length); //handled);
+                        if (client)
+                            client.packages.splice(0, res.length); //handled);
                         // client.handling = false;
                     })
                         .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
