@@ -6,14 +6,7 @@ import config from '../SHARED/config.js';
 import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import handles from "../BINARYSERVER/handles.js";
-import {
-	SqlQuery,
-	symbolName,
-	client
-} from "../SHARED/misc.js";
-import {
-	inspect
-} from "util";
+import {SqlQuery, symbolName, client, inspect} from "../SHARED/misc.js";
 
 //#endregion
 
@@ -332,7 +325,7 @@ function handlePackage(obj: Package_decoded, client: client) {
 				resolve();
 			} else {
 				try {
-					if (config.logITelexCom) logger.verbose(colors.FgGreen + "handling package:" + colors.FgCyan +inspect(obj)+ colors.FgGreen + "for: " + colors.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
+					if (config.logITelexCom) logger.verbose(inspect`${colors.FgGreen}handling package: ${colors.FgCyan}${obj}${colors.FgGreen} + "for: ${colors.FgCyan}${obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress}${colors.Reset}`);
 					if (config.logITelexCom) logger.info(colors.FgGreen + "handling type:" + colors.FgCyan+ obj.type+ colors.FgGreen + "for: " + colors.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
 
 					if (typeof handles[obj.type][client.state] == "function") {
@@ -342,7 +335,7 @@ function handlePackage(obj: Package_decoded, client: client) {
 								.then(resolve)
 								.catch(reject);
 						} catch (e) {
-							logger.error(colors.FgRed + inspect(e) + colors.Reset);
+							logger.error(inspect`${colors.FgRed}${e}${colors.Reset}`);
 							resolve();
 						}
 					} else {
@@ -350,7 +343,7 @@ function handlePackage(obj: Package_decoded, client: client) {
 						resolve();
 					}
 				} catch (e) {
-					logger.error(colors.FgRed + inspect(e) + colors.Reset);
+					logger.error(inspect`${colors.FgRed}${e}${colors.Reset}`);
 					resolve();
 				}
 			}
@@ -364,11 +357,11 @@ function getCompletePackages(data: Buffer, part ? : Buffer): [Buffer, Buffer] {
 	var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
 
 	if (config.logITelexCom) logger.debug("extracting packages from data:");
-	if (config.logITelexCom) logger.debug("data: " + inspect(data));
-	if (config.logITelexCom) logger.debug("part: " + inspect(part));
-	if (config.logITelexCom) logger.debug("combined: " + inspect(combined));
-	if (config.logITelexCom) logger.debug("type: " + inspect(type));
-	if (config.logITelexCom) logger.debug("packagelength: " + packagelength);
+	if (config.logITelexCom) logger.debug(inspect`data: ${data}`);
+	if (config.logITelexCom) logger.debug(inspect`part: ${part}`);
+	if (config.logITelexCom) logger.debug(inspect`combined: ${combined}`);
+	if (config.logITelexCom) logger.debug(inspect`type: ${type}`);
+	if (config.logITelexCom) logger.debug(inspect`packagelength: ${packagelength}`);
 
 	if (combined.length == packagelength) {
 		if (config.logITelexCom) logger.debug("combined.length == packagelength");
@@ -415,7 +408,7 @@ function unmapIpV4fromIpV6(ipaddress: string): string {
 }
 
 function encPackage(pkg: Package_decoded): Buffer {
-	if (config.logITelexCom) logger.info(colors.FgGreen + "encoding:" + colors.FgCyan + inspect(pkg) + colors.Reset);
+	if (config.logITelexCom) logger.info(inspect`${colors.FgGreen}encoding: ${colors.FgCyan}${pkg}${colors.Reset}`);
 	if (pkg.datalength == null) pkg.datalength = constants.PackageSizes[pkg.type];
 	var buffer: PackageData_encoded = new Buffer(pkg.datalength + 2);
 
@@ -638,7 +631,7 @@ function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 		let pkg = decPackage(buffer.slice(typepos, typepos + datalength + 2));
 		if (pkg) out.push(pkg);
 	}
-	if (config.logITelexCom) logger.info(colors.FgGreen + "decoded:" + colors.FgCyan + inspect(out) + colors.Reset);
+	if (config.logITelexCom) logger.info(inspect`${colors.FgGreen}decoded: ${colors.FgCyan}${out}${colors.Reset}`);
 	return out;
 }
 

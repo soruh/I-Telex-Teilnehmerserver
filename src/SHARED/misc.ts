@@ -1,5 +1,5 @@
 //#region imports
-import {inspect, promisify} from "util";
+import * as util from "util";
 import * as mysql from "mysql";
 import * as ip from "ip";
 import * as net from "net";
@@ -14,6 +14,28 @@ import serialEachPromise from "../SHARED/serialEachPromise.js";
 // import * as winston from "winston";
 //#endregion
 const logger = global.logger;
+
+function inspect(substrings:TemplateStringsArray, ...values:any[]):string{
+	var substringArray = Array.from(substrings);
+	// substringArray = substringArray.map(substring=>colors.FgCyan+substring+colors.Reset);
+	substringArray = substringArray.map(substring=>"\x1b[032m"+substring+"\x1b[000m");
+	values = values.map(value=>{
+		// if(typeof value === "string") return colors.FgGreen+value+colors.Reset;
+		if(typeof value === "string") return "\x1b[036m"+value+"\x1b[000m";
+		return util.inspect(value,{
+			colors:true, //config.disableColors
+			depth:2,
+		})
+		// .replace(/\u0001b\[39m/g,colors.Reset);
+		.replace(/\u0001b\[39m/g,"\x1b[000m");
+	});
+	var combined = [];
+	while(values.length+substringArray.length>0){
+		if(substringArray.length>0) combined.push(substringArray.shift());
+		if(values.length>0) combined.push(values.shift());
+	}
+	return combined.join('');
+}
 
 function getTimezone(date: Date) {
 	let offset = -1 * date.getTimezoneOffset();
@@ -66,10 +88,10 @@ function SqlQuery(query: string, options ? : any[]): Promise < any > {
 					logger.debug("number of open connections: " + global.sqlPool["_allConnections"].length);
 
 				if (err) {
-					logger.error(colors.FgRed + inspect(err) + colors.Reset);
+					logger.error(inspect`colors.FgRed${err}colors.Reset`);
 					reject(err);
 				} else {
-					// logger.debug("result:\n"+inspect(res));
+					// logger.debug(inspect`result:\n${res}`);
 					resolve(res);
 				}
 			});
@@ -92,12 +114,12 @@ async function checkIp(data: number[] | Buffer, client: client) {
 				let {
 					address,
 					family
-				} = await promisify(lookup)(arg);
+				} = await util.promisify(lookup)(arg);
 				ipAddr = address;
 				logger.verbose(`${colors.FgCyan+arg+colors.FgGreen} resolved to ${colors.FgCyan+ipAddr+colors.Reset}`);
 			} catch (e) {
 				client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-				logger.debug(colors.FgRed + inspect(e) + colors.Reset);
+				logger.error(inspect`${colors.FgRed}${e}${colors.Reset}`);
 				return;
 			}
 		}
@@ -114,7 +136,7 @@ async function checkIp(data: number[] | Buffer, client: client) {
 								if ((!peer.ipaddress) && peer.hostname) {
 									// logger.debug(`hostname: ${peer.hostname}`)
 									lookup(peer.hostname, {}, function (err, address, family) {
-										// if (err) logger.debug(colors.FgRed + util.inspect(err), colors.Reset);
+										// if (err) logger.debug(inspect`${colors.FgRed}${err}${colors.Reset}`);
 										if (address) {
 											ipPeers.push({
 												peer,
@@ -138,9 +160,9 @@ async function checkIp(data: number[] | Buffer, client: client) {
 						)
 						.then(() => {
 							let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
-							logger.debug("matching peers:" + inspect(matches));
+							logger.debug(inspect`matching peers:${matches}`);
 							if (matches.length > 0) {
-								client.connection.end("ok\r\n" + matches.join("\r\n") + "\r\n+++\r\n");
+								client.connection.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
 							} else {
 								client.connection.end("fail\r\n+++\r\n");
 							}
@@ -185,16 +207,16 @@ function sendEmail(messageName: string, values: {
 			} else {
 				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
-			logger.info(`${colors.FgGreen}sending email of type ${colors.FgCyan+messageName||"config error"+colors.Reset}`);
-			logger.debug(`mail values:${inspect(values)}`);
-			logger.verbose("sending mail:\n" + inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
+			logger.info(`${colors.FgGreen}sending email of type ${colors.FgCyan}${messageName||"config error"}${colors.Reset}`);
+			logger.debug(inspect`mail values:${values}`);
+			logger.verbose(inspect`sending mail:\n${mailOptions}\nto server${global.transporter.options["host"]}`);
 
 			( < nodemailer.Transporter > global.transporter).sendMail(mailOptions, function (error, info) {
 				if (error) {
 					//logger.debug(error);
 					reject(error);
 				} else {
-					logger.info('Message sent:' + info.messageId);
+					logger.info(`Message sent: ${info.messageId}`);
 					if (config.eMail.useTestAccount)
 						logger.warn(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
 					resolve();
@@ -467,5 +489,6 @@ export {
 	symbolName,
 	client,
 	clientName,
-	getTimezone
+	getTimezone,
+	inspect
 }

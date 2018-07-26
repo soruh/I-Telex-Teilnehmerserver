@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-const util_1 = require("util");
+const util = require("util");
 const mysql = require("mysql");
 const ip = require("ip");
 const nodemailer = require("nodemailer");
@@ -20,6 +20,31 @@ const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 // import * as winston from "winston";
 //#endregion
 const logger = global.logger;
+function inspect(substrings, ...values) {
+    var substringArray = Array.from(substrings);
+    // substringArray = substringArray.map(substring=>colors.FgCyan+substring+colors.Reset);
+    substringArray = substringArray.map(substring => "\x1b[032m" + substring + "\x1b[000m");
+    values = values.map(value => {
+        // if(typeof value === "string") return colors.FgGreen+value+colors.Reset;
+        if (typeof value === "string")
+            return "\x1b[036m" + value + "\x1b[000m";
+        return util.inspect(value, {
+            colors: true,
+            depth: 2,
+        })
+            // .replace(/\u0001b\[39m/g,colors.Reset);
+            .replace(/\u0001b\[39m/g, "\x1b[000m");
+    });
+    var combined = [];
+    while (values.length + substringArray.length > 0) {
+        if (substringArray.length > 0)
+            combined.push(substringArray.shift());
+        if (values.length > 0)
+            combined.push(values.shift());
+    }
+    return combined.join('');
+}
+exports.inspect = inspect;
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
     let offsetStr = (Math.floor(offset / 60)).toString().padStart(2, "0") + ":" + (offset % 60).toString().padStart(2, "0");
@@ -68,11 +93,11 @@ function SqlQuery(query, options) {
                 if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
                     logger.debug("number of open connections: " + global.sqlPool["_allConnections"].length);
                 if (err) {
-                    logger.error(colors_js_1.default.FgRed + util_1.inspect(err) + colors_js_1.default.Reset);
+                    logger.error(inspect `colors.FgRed${err}colors.Reset`);
                     reject(err);
                 }
                 else {
-                    // logger.debug("result:\n"+inspect(res));
+                    // logger.debug(inspect`result:\n${res}`);
                     resolve(res);
                 }
             });
@@ -94,13 +119,13 @@ function checkIp(data, client) {
             }
             else {
                 try {
-                    let { address, family } = yield util_1.promisify(dns_1.lookup)(arg);
+                    let { address, family } = yield util.promisify(dns_1.lookup)(arg);
                     ipAddr = address;
                     logger.verbose(`${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} resolved to ${colors_js_1.default.FgCyan + ipAddr + colors_js_1.default.Reset}`);
                 }
                 catch (e) {
                     client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-                    logger.debug(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
+                    logger.error(inspect `${colors_js_1.default.FgRed}${e}${colors_js_1.default.Reset}`);
                     return;
                 }
             }
@@ -112,7 +137,7 @@ function checkIp(data, client) {
                         if ((!peer.ipaddress) && peer.hostname) {
                             // logger.debug(`hostname: ${peer.hostname}`)
                             dns_1.lookup(peer.hostname, {}, function (err, address, family) {
-                                // if (err) logger.debug(colors.FgRed + util.inspect(err), colors.Reset);
+                                // if (err) logger.debug(inspect`${colors.FgRed}${err}${colors.Reset}`);
                                 if (address) {
                                     ipPeers.push({
                                         peer,
@@ -137,9 +162,9 @@ function checkIp(data, client) {
                     }))
                         .then(() => {
                         let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
-                        logger.debug("matching peers:" + util_1.inspect(matches));
+                        logger.debug(inspect `matching peers:${matches}`);
                         if (matches.length > 0) {
-                            client.connection.end("ok\r\n" + matches.join("\r\n") + "\r\n+++\r\n");
+                            client.connection.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
                         }
                         else {
                             client.connection.end("fail\r\n+++\r\n");
@@ -183,16 +208,16 @@ function sendEmail(messageName, values) {
             else {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            logger.info(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan + messageName || "config error" + colors_js_1.default.Reset}`);
-            logger.debug(`mail values:${util_1.inspect(values)}`);
-            logger.verbose("sending mail:\n" + util_1.inspect(mailOptions) + "\nto server" + global.transporter.options["host"]);
+            logger.info(`${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan}${messageName || "config error"}${colors_js_1.default.Reset}`);
+            logger.debug(inspect `mail values:${values}`);
+            logger.verbose(inspect `sending mail:\n${mailOptions}\nto server${global.transporter.options["host"]}`);
             global.transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     //logger.debug(error);
                     reject(error);
                 }
                 else {
-                    logger.info('Message sent:' + info.messageId);
+                    logger.info(`Message sent: ${info.messageId}`);
                     if (config_js_1.default.eMail.useTestAccount)
                         logger.warn(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
                     resolve();

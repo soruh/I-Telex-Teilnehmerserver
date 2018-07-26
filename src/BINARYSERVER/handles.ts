@@ -1,21 +1,12 @@
 "use strict";
 //#region imports
-import {
-	inspect
-} from 'util';
 import * as ip from "ip";
 import config from '../SHARED/config.js';
 import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import {
-	client,
-	sendEmail,
-	getTimezone
-} from '../SHARED/misc.js';
-import {
-	SqlQuery
-} from '../SHARED/misc.js';
+import {client, sendEmail, getTimezone, inspect} from '../SHARED/misc.js';
+import {SqlQuery} from '../SHARED/misc.js';
 
 //#endregion
 const logger = global.logger;
@@ -174,7 +165,7 @@ handles[3][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_3, client
 
 		SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number])
 			.then(function (result: ITelexCom.peerList) {
-				logger.verbose(colors.FgCyan + inspect(result) + colors.Reset);
+				logger.verbose(inspect`${colors.FgCyan}${result}${colors.Reset}`);
 				if (result && result.length == 1) {
 					let [data] = result;
 					data.pin = "0";

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-const util_1 = require("util");
 const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
@@ -154,7 +153,7 @@ handles[3][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     }
     misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number])
         .then(function (result) {
-        logger.verbose(colors_js_1.default.FgCyan + util_1.inspect(result) + colors_js_1.default.Reset);
+        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgCyan}${result}${colors_js_1.default.Reset}`);
         if (result && result.length == 1) {
             let [data] = result;
             data.pin = "0";

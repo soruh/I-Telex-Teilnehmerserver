@@ -7,13 +7,8 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
 import connect from './connect.js';
-import {
-	SqlQuery
-} from '../SHARED/misc.js';
+import {SqlQuery, inspect} from '../SHARED/misc.js';
 import updateQueue from './updateQueue.js';
-import {
-	inspect
-} from 'util';
 
 //#endregion
 
@@ -51,7 +46,7 @@ function sendQueue() {
 					.then(function (result2: ITelexCom.serverList) {
 						if (result2.length == 1) {
 							var serverinf = result2[0];
-							logger.verbose(colors.FgCyan + inspect(serverinf) + colors.Reset);
+							logger.verbose(inspect`${colors.FgCyan}${serverinf}${colors.Reset}`);
 							try {
 								// var isConnected = false;
 								// for (let key in connections) {
@@ -75,7 +70,7 @@ function sendQueue() {
 									client.writebuffer = [];
 									serialEachPromise(server, serverdata =>
 									new Promise((resolve, reject) => {
-										logger.verbose(colors.FgCyan + inspect(serverdata) + colors.Reset);
+										logger.verbose(inspect`${colors.FgCyan}${serverdata}${colors.Reset}`);
 										var existing: ITelexCom.peer = null;
 										for (let t of teilnehmer) {
 											if (t.uid == serverdata.message) {
@@ -122,7 +117,7 @@ function sendQueue() {
 							// 	resolve();
 							// }
 							} catch (e) {
-								logger.error(colors.FgRed + inspect(e) + colors.Reset);
+								logger.error(inspect`${colors.FgRed}${e}${colors.Reset}`);
 								resolve();
 							}
 						} else {

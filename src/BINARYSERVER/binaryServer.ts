@@ -6,8 +6,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 
 import serialEachPromise from '../SHARED/serialEachPromise.js';
-import {checkIp, client, clientName} from '../SHARED/misc.js';
-import {inspect} from 'util';
+import {checkIp, client, clientName, inspect} from '../SHARED/misc.js';
 
 
 const logger = global.logger;
@@ -44,7 +43,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 	});
 	connection.on('data', function (data: Buffer): void {
 		if(client){
-			logger.verbose(colors.FgGreen + "recieved data:" + colors.FgCyan + inspect(data) + colors.Reset);
+			logger.verbose(inspect`${colors.FgGreen}recieved data:${colors.FgCyan}${data}${colors.Reset}`);
 			logger.verbose(colors.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors.Reset);
 	
 			if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
@@ -55,11 +54,11 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 			} else {
 				logger.verbose(colors.FgGreen + "serving binary request" + colors.Reset);
 	
-				logger.debug(colors.FgCyan+"Buffer for client " +colors.FgCyan+ client.name + colors.FgGreen+":" + colors.FgCyan + inspect(client.readbuffer) + colors.Reset);
-				logger.debug(colors.FgGreen+"New Data for client " + colors.FgCyan+ client.name + colors.FgGreen+":" + colors.FgCyan + inspect(data) + colors.Reset);
+				logger.debug(inspect`${colors.FgCyan}Buffer for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${client.readbuffer}${colors.Reset}`);
+				logger.debug(inspect`${colors.FgGreen}New Data for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${data}${colors.Reset}`);
 				var res = ITelexCom.getCompletePackages(data, client.readbuffer);
-				logger.debug(colors.FgGreen+"New Buffer:" + colors.FgCyan + inspect(res[1]) + colors.Reset);
-				logger.debug(colors.FgGreen+"complete Package(s):" + colors.FgCyan+ inspect(res[0])+ colors.Reset);
+				logger.debug(inspect`${colors.FgGreen}New Buffer: ${colors.FgCyan }${res[1]}${colors.Reset}`);
+				logger.debug(inspect`${colors.FgGreen}complete Package(s): ${colors.FgCyan}${res[0]}${colors.Reset}`);
 				client.readbuffer = res[1];
 				if (res[0]) {
 					client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
@@ -98,6 +97,6 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 		}
 	});
 });
-binaryServer.on("error", err => logger.error(`server error: ${inspect(err)}`));
+binaryServer.on("error", err => logger.error(inspect`server error: ${err}`));
 
 export default binaryServer;

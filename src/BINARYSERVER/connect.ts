@@ -1,22 +1,13 @@
 "use strict";
 
 //#region imports
-import {
-	inspect
-} from "util";
 import * as net from "net";
 import config from '../SHARED/config.js';
 import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from "../SHARED/serialEachPromise.js";
-import {
-	increaseErrorCounter,
-	errorCounters,
-	resetErrorCounter,
-	client,
-	clientName
-} from "../SHARED/misc.js";
+import {increaseErrorCounter, errorCounters, resetErrorCounter, client, clientName, inspect} from "../SHARED/misc.js";
 //#endregion
 
 const logger = global.logger;
@@ -61,9 +52,9 @@ function connect(
 		});
 		socket.on('error', error => {
 			if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
-				logger.info(`${colors.FgRed}server ${colors.FgCyan+inspect(options)+colors.FgRed} had an error${colors.Reset}`);
+				logger.info(inspect`${colors.FgRed}server ${colors.FgCyan}${options}${colors.FgRed} had an error${colors.Reset}`);
 				increaseErrorCounter(serverkey, error, error["code"]);
-				logger.info(colors.FgRed + "server " + colors.FgCyan + serverkey + colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan + errorCounters[serverkey] + colors.Reset);
+				logger.info(`${colors.FgRed}server ${colors.FgCyan}${serverkey}${colors.FgRed} could not be reached; errorCounter: ${colors.FgCyan}${errorCounters[serverkey]}${colors.Reset}`);
 			}else{
 				logger.debug(error);
 			}
@@ -72,14 +63,14 @@ function connect(
 		socket.on('data', (data: Buffer) => {
 			if(client){
 
-				logger.verbose(colors.FgGreen + "recieved data:" + colors.FgCyan + inspect(data) + colors.Reset);
+				logger.verbose(inspect`${colors.FgGreen}recieved data: ${colors.FgCyan}${data}${colors.Reset}`);
 				logger.verbose(colors.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors.Reset);
 				try {
-					logger.debug(colors.FgGreen+"Buffer for client "+colors.FgCyan+ client.name+colors.FgGreen+ ":"+colors.FgCyan+inspect(client.readbuffer)+colors.Reset);
-					logger.debug(colors.FgGreen+"New Data for client "+colors.FgCyan+ client.name+colors.FgGreen+":"+colors.FgCyan+inspect(data)+colors.Reset);
+					logger.debug(inspect`${colors.FgGreen}Buffer for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${client.readbuffer}${colors.Reset}`);
+					logger.debug(inspect`${colors.FgGreen}New Data for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${data}${colors.Reset}`);
 					var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-					logger.debug(colors.FgGreen+"New Buffer "+client.name+":"+colors.FgCyan+inspect(rest)+colors.Reset);
-					logger.debug(colors.FgGreen+"Packages "+client.name+":"+colors.FgCyan+inspect(packages)+colors.Reset);
+					logger.debug(inspect`${colors.FgGreen}New Buffer for client ${client.name}: ${colors.FgCyan}${rest}${colors.Reset}`);
+					logger.debug(inspect`${colors.FgGreen}Packages for client ${client.name}: ${colors.FgCyan}${packages}${colors.Reset}`);
 					client.readbuffer = rest;
 					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
 					// let handleTimeout = () => {
@@ -119,12 +110,12 @@ function connect(
 					// };
 					// handleTimeout();
 				} catch (e) {
-					logger.error(colors.FgRed + inspect(e) + colors.Reset);
+					logger.error(inspect`${colors.FgRed}${e}${colors.Reset}`);
 				}
 			}
 		});
 		socket.connect(options, () => {
-			logger.info(colors.FgGreen + "connected to:" + colors.FgCyan + inspect(options) + colors.FgGreen + "as server " + colors.FgCyan + client.name + colors.Reset);
+			logger.info(inspect`${colors.FgGreen}connected to: ${colors.FgCyan}${options}${colors.FgGreen} as server ${colors.FgCyan}${client.name}${colors.Reset}`);
 			resetErrorCounter(serverkey);
 			resolve(client);
 		});

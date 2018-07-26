@@ -9,7 +9,6 @@ const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const updateQueue_js_1 = require("./updateQueue.js");
-const util_1 = require("util");
 //#endregion
 const readonly = (config_js_1.default.serverPin == null);
 const logger = global.logger;
@@ -40,7 +39,7 @@ function sendQueue() {
                         .then(function (result2) {
                         if (result2.length == 1) {
                             var serverinf = result2[0];
-                            logger.verbose(colors_js_1.default.FgCyan + util_1.inspect(serverinf) + colors_js_1.default.Reset);
+                            logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgCyan}${serverinf}${colors_js_1.default.Reset}`);
                             try {
                                 // var isConnected = false;
                                 // for (let key in connections) {
@@ -62,7 +61,7 @@ function sendQueue() {
                                     logger.info(colors_js_1.default.FgGreen + 'connected to server ' + server[0].server + ': ' + serverinf.addresse + " on port " + serverinf.port + colors_js_1.default.Reset);
                                     client.writebuffer = [];
                                     serialEachPromise_js_1.default(server, serverdata => new Promise((resolve, reject) => {
-                                        logger.verbose(colors_js_1.default.FgCyan + util_1.inspect(serverdata) + colors_js_1.default.Reset);
+                                        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgCyan}${serverdata}${colors_js_1.default.Reset}`);
                                         var existing = null;
                                         for (let t of teilnehmer) {
                                             if (t.uid == serverdata.message) {
@@ -111,7 +110,7 @@ function sendQueue() {
                                 // }
                             }
                             catch (e) {
-                                logger.error(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
+                                logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}${e}${colors_js_1.default.Reset}`);
                                 resolve();
                             }
                         }

@@ -1,7 +1,6 @@
 "use strict";
 import * as path from "path";
 import * as intl from "intl";
-import * as util from 'util';
 import * as mysql from "mysql";
 import * as winston from "winston";
 import config from '../SHARED/config.js';
@@ -89,7 +88,7 @@ declare global {
 import * as timers from "../BINARYSERVER/timers.js";
 import colors from "../SHARED/colors.js";
 import * as nodemailer from "nodemailer";
-import * as misc from "../SHARED/misc.js";
+import {inspect, errorCounters} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 // import updateQueue from './updateQueue.js';
@@ -145,7 +144,7 @@ global.sqlPool.getConnection(function (err, connection) {
 						}
 					};
 				} else {
-					logger.warn(colors.FgMagenta + "Got email test account:\n" + colors.FgCyan + util.inspect(account) + colors.Reset);
+					logger.warn(inspect`${colors.FgMagenta}Got email test account:\n${colors.FgCyan}${account}${colors.Reset}`);
 					global.transporter = nodemailer.createTransport({
 						host: 'smtp.ethereal.email',
 						port: 587,
@@ -169,9 +168,9 @@ if (config.printServerErrorsOnExit) {
 	let exitHandler = function exitHandler(options, err) {
 		if (options.cleanup) {
 			logger.error("exited with code: " + err);
-			logger.error(`serverErrors:\n${util.inspect(misc.errorCounters)}`);
+			logger.error(inspect`serverErrors:\n${errorCounters}`);
 		} else {
-			logger.error(util.inspect(err));
+			logger.error(inspect`${err}`);
 		}
 		if (options.exit) process.exit(options.code);
 	};

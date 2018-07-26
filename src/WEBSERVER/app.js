@@ -8,7 +8,7 @@ const path = require("path");
 const colors_js_1 = require("../SHARED/colors.js");
 const config_js_1 = require("../SHARED/config.js");
 const winston = require("winston");
-const util_1 = require("util");
+const misc_js_1 = require("../SHARED/misc.js");
 {
     let getLoggingLevel = function getLoggingLevel() {
         if (typeof config_js_1.default.webserverLoggingLevel === "number") {
@@ -168,7 +168,7 @@ app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = err;
-    logger.error(util_1.inspect(err));
+    logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}${err}${colors_js_1.default.Reset}`);
     // render the error page
     res.status(err.status || 500);
     res.render('error');

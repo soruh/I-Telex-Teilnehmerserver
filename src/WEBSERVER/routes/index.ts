@@ -5,8 +5,7 @@ import * as express from "express";
 
 import config from '../../SHARED/config.js';
 import colors from '../../SHARED/colors.js';
-import { inspect } from "util";
-import { SqlQuery } from "../../SHARED/misc.js";
+import { SqlQuery, inspect } from "../../SHARED/misc.js";
 
 var mySqlConnectionOptions = config['mySqlConnectionOptions'];
 
@@ -73,7 +72,7 @@ router.post('/list', function (req, res) {
 router.post('/edit', function (req, res) {
   // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
-  logger.debug(`request body: ${inspect(req.body)}`);
+  logger.debug(inspect`request body: ${req.body}`);
   logger.verbose(`typekey: ${req.body.typekey}`);
   if (req.body.password !== config.webInterfacePassword){
     logger.warn(`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
@@ -153,7 +152,7 @@ router.post('/edit', function (req, res) {
     case "new":
       SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number])
       .then(existing=>{
-        logger.debug(inspect(existing));
+        logger.debug(inspect`${existing}`);
         if (existing===void 0) return void 0;
 
         if(existing&&existing.length==1&&existing[0].type !== 0) return res.json({

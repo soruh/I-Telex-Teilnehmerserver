@@ -4,7 +4,6 @@ const mysql = require("mysql");
 const express = require("express");
 const config_js_1 = require("../../SHARED/config.js");
 const colors_js_1 = require("../../SHARED/colors.js");
-const util_1 = require("util");
 const misc_js_1 = require("../../SHARED/misc.js");
 var mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
 const logger = global.logger;
@@ -62,7 +61,7 @@ router.post('/list', function (req, res) {
 router.post('/edit', function (req, res) {
     // ll(req.body);
     res.header("Content-Type", "application/json; charset=utf-8");
-    logger.debug(`request body: ${util_1.inspect(req.body)}`);
+    logger.debug(misc_js_1.inspect `request body: ${req.body}`);
     logger.verbose(`typekey: ${req.body.typekey}`);
     if (req.body.password !== config_js_1.default.webInterfacePassword) {
         logger.warn(`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
@@ -146,7 +145,7 @@ router.post('/edit', function (req, res) {
         case "new":
             misc_js_1.SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number])
                 .then(existing => {
-                logger.debug(util_1.inspect(existing));
+                logger.debug(misc_js_1.inspect `${existing}`);
                 if (existing === void 0)
                     return void 0;
                 if (existing && existing.length == 1 && existing[0].type !== 0)

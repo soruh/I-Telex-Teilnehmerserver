@@ -15,7 +15,6 @@ const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const misc_js_1 = require("../SHARED/misc.js");
-const util_1 = require("util");
 const logger = global.logger;
 var binaryServer = net.createServer(function (connection) {
     var client = {
@@ -49,7 +48,7 @@ var binaryServer = net.createServer(function (connection) {
     });
     connection.on('data', function (data) {
         if (client) {
-            logger.verbose(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+            logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgGreen}recieved data:${colors_js_1.default.FgCyan}${data}${colors_js_1.default.Reset}`);
             logger.verbose(colors_js_1.default.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors_js_1.default.Reset);
             if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
                 logger.verbose(colors_js_1.default.FgGreen + "serving ascii request" + colors_js_1.default.Reset);
@@ -60,11 +59,11 @@ var binaryServer = net.createServer(function (connection) {
             }
             else {
                 logger.verbose(colors_js_1.default.FgGreen + "serving binary request" + colors_js_1.default.Reset);
-                logger.debug(colors_js_1.default.FgCyan + "Buffer for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
-                logger.debug(colors_js_1.default.FgGreen + "New Data for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+                logger.debug(misc_js_1.inspect `${colors_js_1.default.FgCyan}Buffer for client ${colors_js_1.default.FgCyan}${client.name}${colors_js_1.default.FgGreen}: ${colors_js_1.default.FgCyan}${client.readbuffer}${colors_js_1.default.Reset}`);
+                logger.debug(misc_js_1.inspect `${colors_js_1.default.FgGreen}New Data for client ${colors_js_1.default.FgCyan}${client.name}${colors_js_1.default.FgGreen}: ${colors_js_1.default.FgCyan}${data}${colors_js_1.default.Reset}`);
                 var res = ITelexCom.getCompletePackages(data, client.readbuffer);
-                logger.debug(colors_js_1.default.FgGreen + "New Buffer:" + colors_js_1.default.FgCyan + util_1.inspect(res[1]) + colors_js_1.default.Reset);
-                logger.debug(colors_js_1.default.FgGreen + "complete Package(s):" + colors_js_1.default.FgCyan + util_1.inspect(res[0]) + colors_js_1.default.Reset);
+                logger.debug(misc_js_1.inspect `${colors_js_1.default.FgGreen}New Buffer: ${colors_js_1.default.FgCyan}${res[1]}${colors_js_1.default.Reset}`);
+                logger.debug(misc_js_1.inspect `${colors_js_1.default.FgGreen}complete Package(s): ${colors_js_1.default.FgCyan}${res[0]}${colors_js_1.default.Reset}`);
                 client.readbuffer = res[1];
                 if (res[0]) {
                     client.packages = client.packages.concat(ITelexCom.decPackages(res[0]));
@@ -102,5 +101,5 @@ var binaryServer = net.createServer(function (connection) {
         }
     });
 });
-binaryServer.on("error", err => logger.error(`server error: ${util_1.inspect(err)}`));
+binaryServer.on("error", err => logger.error(misc_js_1.inspect `server error: ${err}`));
 exports.default = binaryServer;

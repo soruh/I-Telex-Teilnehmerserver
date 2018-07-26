@@ -9,7 +9,7 @@ import colors from "../SHARED/colors.js";
 
 import config from '../SHARED/config.js';
 import * as winston from "winston";
-import { inspect } from "util";
+import { inspect } from "../SHARED/misc.js";
 import { Pool } from "mysql";
 declare global {
 	namespace NodeJS {
@@ -198,7 +198,7 @@ app.use(function (err, req, res, next) {
 
   res.locals.message = err.message;
   res.locals.error = err;
-  logger.error(inspect(err));
+  logger.error(inspect`${colors.FgRed}${err}${colors.Reset}`);
 
   // render the error page
   res.status(err.status || 500);

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-const util = require("util");
 const mysql = require("mysql");
 const winston = require("winston");
 const config_js_1 = require("../SHARED/config.js");
@@ -69,7 +68,7 @@ const config_js_1 = require("../SHARED/config.js");
 const timers = require("../BINARYSERVER/timers.js");
 const colors_js_1 = require("../SHARED/colors.js");
 const nodemailer = require("nodemailer");
-const misc = require("../SHARED/misc.js");
+const misc_js_1 = require("../SHARED/misc.js");
 const FullQuery_js_1 = require("./FullQuery.js");
 const sendQueue_js_1 = require("./sendQueue.js");
 // import updateQueue from './updateQueue.js';
@@ -114,7 +113,7 @@ global.sqlPool.getConnection(function (err, connection) {
                     };
                 }
                 else {
-                    logger.warn(colors_js_1.default.FgMagenta + "Got email test account:\n" + colors_js_1.default.FgCyan + util.inspect(account) + colors_js_1.default.Reset);
+                    logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Got email test account:\n${colors_js_1.default.FgCyan}${account}${colors_js_1.default.Reset}`);
                     global.transporter = nodemailer.createTransport({
                         host: 'smtp.ethereal.email',
                         port: 587,
@@ -138,10 +137,10 @@ if (config_js_1.default.printServerErrorsOnExit) {
     let exitHandler = function exitHandler(options, err) {
         if (options.cleanup) {
             logger.error("exited with code: " + err);
-            logger.error(`serverErrors:\n${util.inspect(misc.errorCounters)}`);
+            logger.error(misc_js_1.inspect `serverErrors:\n${misc_js_1.errorCounters}`);
         }
         else {
-            logger.error(util.inspect(err));
+            logger.error(misc_js_1.inspect `${err}`);
         }
         if (options.exit)
             process.exit(options.code);

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-const util_1 = require("util");
 const net = require("net");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
@@ -43,9 +42,9 @@ function connect(onEnd, options) {
         });
         socket.on('error', error => {
             if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
-                logger.info(`${colors_js_1.default.FgRed}server ${colors_js_1.default.FgCyan + util_1.inspect(options) + colors_js_1.default.FgRed} had an error${colors_js_1.default.Reset}`);
+                logger.info(misc_js_1.inspect `${colors_js_1.default.FgRed}server ${colors_js_1.default.FgCyan}${options}${colors_js_1.default.FgRed} had an error${colors_js_1.default.Reset}`);
                 misc_js_1.increaseErrorCounter(serverkey, error, error["code"]);
-                logger.info(colors_js_1.default.FgRed + "server " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.FgRed + " could not be reached; errorCounter:" + colors_js_1.default.FgCyan + misc_js_1.errorCounters[serverkey] + colors_js_1.default.Reset);
+                logger.info(`${colors_js_1.default.FgRed}server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgRed} could not be reached; errorCounter: ${colors_js_1.default.FgCyan}${misc_js_1.errorCounters[serverkey]}${colors_js_1.default.Reset}`);
             }
             else {
                 logger.debug(error);
@@ -54,14 +53,14 @@ function connect(onEnd, options) {
         });
         socket.on('data', (data) => {
             if (client) {
-                logger.verbose(colors_js_1.default.FgGreen + "recieved data:" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+                logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgGreen}recieved data: ${colors_js_1.default.FgCyan}${data}${colors_js_1.default.Reset}`);
                 logger.verbose(colors_js_1.default.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors_js_1.default.Reset);
                 try {
-                    logger.debug(colors_js_1.default.FgGreen + "Buffer for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(client.readbuffer) + colors_js_1.default.Reset);
-                    logger.debug(colors_js_1.default.FgGreen + "New Data for client " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgGreen + ":" + colors_js_1.default.FgCyan + util_1.inspect(data) + colors_js_1.default.Reset);
+                    logger.debug(misc_js_1.inspect `${colors_js_1.default.FgGreen}Buffer for client ${colors_js_1.default.FgCyan}${client.name}${colors_js_1.default.FgGreen}: ${colors_js_1.default.FgCyan}${client.readbuffer}${colors_js_1.default.Reset}`);
+                    logger.debug(misc_js_1.inspect `${colors_js_1.default.FgGreen}New Data for client ${colors_js_1.default.FgCyan}${client.name}${colors_js_1.default.FgGreen}: ${colors_js_1.default.FgCyan}${data}${colors_js_1.default.Reset}`);
                     var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-                    logger.debug(colors_js_1.default.FgGreen + "New Buffer " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(rest) + colors_js_1.default.Reset);
-                    logger.debug(colors_js_1.default.FgGreen + "Packages " + client.name + ":" + colors_js_1.default.FgCyan + util_1.inspect(packages) + colors_js_1.default.Reset);
+                    logger.debug(misc_js_1.inspect `${colors_js_1.default.FgGreen}New Buffer for client ${client.name}: ${colors_js_1.default.FgCyan}${rest}${colors_js_1.default.Reset}`);
+                    logger.debug(misc_js_1.inspect `${colors_js_1.default.FgGreen}Packages for client ${client.name}: ${colors_js_1.default.FgCyan}${packages}${colors_js_1.default.Reset}`);
                     client.readbuffer = rest;
                     client.packages = client.packages.concat(ITelexCom.decPackages(packages));
                     // let handleTimeout = () => {
@@ -102,12 +101,12 @@ function connect(onEnd, options) {
                     // handleTimeout();
                 }
                 catch (e) {
-                    logger.error(colors_js_1.default.FgRed + util_1.inspect(e) + colors_js_1.default.Reset);
+                    logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}${e}${colors_js_1.default.Reset}`);
                 }
             }
         });
         socket.connect(options, () => {
-            logger.info(colors_js_1.default.FgGreen + "connected to:" + colors_js_1.default.FgCyan + util_1.inspect(options) + colors_js_1.default.FgGreen + "as server " + colors_js_1.default.FgCyan + client.name + colors_js_1.default.Reset);
+            logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}connected to: ${colors_js_1.default.FgCyan}${options}${colors_js_1.default.FgGreen} as server ${colors_js_1.default.FgCyan}${client.name}${colors_js_1.default.Reset}`);
             misc_js_1.resetErrorCounter(serverkey);
             resolve(client);
         });
