@@ -319,17 +319,17 @@ function handlePackage(obj: Package_decoded, client: client) {
 			logger.warn(inspect`no package to handle`);
 			resolve();
 		} else {
-			if (config.logITelexCom) logger.verbose(inspect`state: ${symbolName(client.state)}`);
+			logger.verbose(inspect`state: ${symbolName(client.state)}`);
 			if (obj.type == 0xff) {
 				logger.warn(inspect`remote client had error: ${Buffer.from( < number[] > obj.data).toString()}`);
 				resolve();
 			} else {
 				try {
-					if (config.logITelexCom) logger.info(inspect`handling type: ${obj.type} for: ${client.name}`);
-					if (config.logITelexCom) logger.verbose(inspect`handling package: ${obj} for: ${client.name}`);
+					logger.info(inspect`handling type: ${obj.type} for: ${client.name}`);
+					logger.verbose(inspect`handling package: ${obj} for: ${client.name}`);
 
 					if (typeof handles[obj.type][client.state] == "function") {
-						if (config.logITelexCom) logger.verbose(inspect`calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${symbolName(client.state)}`);
+						logger.verbose(inspect`calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${symbolName(client.state)}`);
 						try {
 							handles[obj.type][client.state](obj, client)
 								.then(resolve)
@@ -398,19 +398,19 @@ function getCompletePackages(data: Buffer, part ? : Buffer): [Buffer, Buffer] {
 function unmapIpV4fromIpV6(ipaddress: string): string {
 	if (ip.isV4Format(ipaddress)) {
 		return ipaddress;
-	} else if (ip.isV6Format(ipaddress)) {
+	}
+	if (ip.isV6Format(ipaddress)) {
 		if (ip.isV4Format(ipaddress.toLowerCase().split("::ffff:")[1])) {
 			return ipaddress.toLowerCase().split("::ffff:")[1]
 		} else {
 			return "0.0.0.0";
 		}
-	} else {
-		return "0.0.0.0";
 	}
+	return "0.0.0.0";
 }
 
 function encPackage(pkg: Package_decoded): Buffer {
-	if (config.logITelexCom) logger.info(inspect`encoding: ${pkg}`);
+	if (config.logITelexCom) logger.verbose(inspect`encoding: ${pkg}`);
 	if (pkg.datalength == null) pkg.datalength = constants.PackageSizes[pkg.type];
 	var buffer: PackageData_encoded = new Buffer(pkg.datalength + 2);
 
@@ -498,7 +498,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.write(pkg.data.pattern || "", 3, 40);
 			break;
 	}
-	if (config.logITelexCom) logger.info(inspect`encoded: `);
+	if (config.logITelexCom) logger.verbose(inspect`encoded: ${buffer}`);
 	return buffer;
 }
 
@@ -509,7 +509,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 		datalength: < any > buffer[1],
 		data: null
 	};
-	if (config.logITelexCom) logger.info(inspect`decoding package: ${(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
+	if (config.logITelexCom) logger.verbose(inspect`decoding package: ${(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
 	switch (pkg.type) {
 		case 1:
 			pkg.data = {
@@ -614,7 +614,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 
 function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 	if (!(buffer instanceof Buffer)) buffer = Buffer.from(buffer);
-	if (config.logITelexCom) logger.info(inspect`decoding data: `);
+	if (config.logITelexCom) logger.verbose(inspect`decoding data: ${buffer}`);
 	var out: Package_decoded[] = [];
 
 	for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
@@ -633,7 +633,7 @@ function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 		let pkg = decPackage(buffer.slice(typepos, typepos + datalength + 2));
 		if (pkg) out.push(pkg);
 	}
-	if (config.logITelexCom) logger.info(inspect`decoded: ${out}`);
+	if (config.logITelexCom) logger.verbose(inspect`decoded: ${out}`);
 	return out;
 }
 

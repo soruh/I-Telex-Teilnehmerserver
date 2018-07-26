@@ -127,21 +127,17 @@ function handlePackage(obj, client) {
             resolve();
         }
         else {
-            if (config_js_1.default.logITelexCom)
-                logger.verbose(misc_js_1.inspect `state: ${misc_js_1.symbolName(client.state)}`);
+            logger.verbose(misc_js_1.inspect `state: ${misc_js_1.symbolName(client.state)}`);
             if (obj.type == 0xff) {
                 logger.warn(misc_js_1.inspect `remote client had error: ${Buffer.from(obj.data).toString()}`);
                 resolve();
             }
             else {
                 try {
-                    if (config_js_1.default.logITelexCom)
-                        logger.info(misc_js_1.inspect `handling type: ${obj.type} for: ${client.name}`);
-                    if (config_js_1.default.logITelexCom)
-                        logger.verbose(misc_js_1.inspect `handling package: ${obj} for: ${client.name}`);
+                    logger.info(misc_js_1.inspect `handling type: ${obj.type} for: ${client.name}`);
+                    logger.verbose(misc_js_1.inspect `handling package: ${obj} for: ${client.name}`);
                     if (typeof handles_js_1.default[obj.type][client.state] == "function") {
-                        if (config_js_1.default.logITelexCom)
-                            logger.verbose(misc_js_1.inspect `calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${misc_js_1.symbolName(client.state)}`);
+                        logger.verbose(misc_js_1.inspect `calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${misc_js_1.symbolName(client.state)}`);
                         try {
                             handles_js_1.default[obj.type][client.state](obj, client)
                                 .then(resolve)
@@ -217,7 +213,7 @@ function unmapIpV4fromIpV6(ipaddress) {
     if (ip.isV4Format(ipaddress)) {
         return ipaddress;
     }
-    else if (ip.isV6Format(ipaddress)) {
+    if (ip.isV6Format(ipaddress)) {
         if (ip.isV4Format(ipaddress.toLowerCase().split("::ffff:")[1])) {
             return ipaddress.toLowerCase().split("::ffff:")[1];
         }
@@ -225,13 +221,11 @@ function unmapIpV4fromIpV6(ipaddress) {
             return "0.0.0.0";
         }
     }
-    else {
-        return "0.0.0.0";
-    }
+    return "0.0.0.0";
 }
 function encPackage(pkg) {
     if (config_js_1.default.logITelexCom)
-        logger.info(misc_js_1.inspect `encoding: ${pkg}`);
+        logger.verbose(misc_js_1.inspect `encoding: ${pkg}`);
     if (pkg.datalength == null)
         pkg.datalength = constants.PackageSizes[pkg.type];
     var buffer = new Buffer(pkg.datalength + 2);
@@ -321,7 +315,7 @@ function encPackage(pkg) {
             break;
     }
     if (config_js_1.default.logITelexCom)
-        logger.info(misc_js_1.inspect `encoded: `);
+        logger.verbose(misc_js_1.inspect `encoded: ${buffer}`);
     return buffer;
 }
 exports.encPackage = encPackage;
@@ -332,7 +326,7 @@ function decPackage(buffer) {
         data: null
     };
     if (config_js_1.default.logITelexCom)
-        logger.info(misc_js_1.inspect `decoding package: ${(config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
+        logger.verbose(misc_js_1.inspect `decoding package: ${(config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
     switch (pkg.type) {
         case 1:
             pkg.data = {
@@ -444,7 +438,7 @@ function decPackages(buffer) {
     if (!(buffer instanceof Buffer))
         buffer = Buffer.from(buffer);
     if (config_js_1.default.logITelexCom)
-        logger.info(misc_js_1.inspect `decoding data: `);
+        logger.verbose(misc_js_1.inspect `decoding data: ${buffer}`);
     var out = [];
     for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
         var type = +buffer[typepos];
@@ -467,7 +461,7 @@ function decPackages(buffer) {
             out.push(pkg);
     }
     if (config_js_1.default.logITelexCom)
-        logger.info(misc_js_1.inspect `decoded: ${out}`);
+        logger.verbose(misc_js_1.inspect `decoded: ${out}`);
     return out;
 }
 exports.decPackages = decPackages;
