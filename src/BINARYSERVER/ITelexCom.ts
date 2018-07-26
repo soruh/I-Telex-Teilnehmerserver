@@ -39,42 +39,42 @@ Object.defineProperty(Buffer.prototype, 'readNullTermString', {
 // 	}	
 // 	return "<Buffer "+array.join(" ")+">\x1b[000m"
 // }
-function explainData(data: Buffer): string {
-	let str = "<Buffer";
-	var type: number;
-	var datalength: number;
-	for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
-		type = +data[typepos];
-		datalength = +data[typepos + 1];
-		let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
+// function explainData(data: Buffer): string {
+// 	let str = "<Buffer";
+// 	var type: number;
+// 	var datalength: number;
+// 	for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
+// 		type = +data[typepos];
+// 		datalength = +data[typepos + 1];
+// 		let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
 
-		array = array.map((value, index) =>
-			index == 0 ?
-			"\x1b[036m" + value + "\x1b[000m" :
-			index == 1 ?
-			"\x1b[032m" + value + "\x1b[000m" :
-			"\x1b[000m" + value + "\x1b[000m"
-		);
-		str += " " + array.join(" ");
-	}
-	str += ">";
-	return str;
-}
+// 		array = array.map((value, index) =>
+// 			index == 0 ?
+// 			"\x1b[036m" + value + "\x1b[000m" :
+// 			index == 1 ?
+// 			"\x1b[032m" + value + "\x1b[000m" :
+// 			"\x1b[000m" + value + "\x1b[000m"
+// 		);
+// 		str += " " + array.join(" ");
+// 	}
+// 	str += ">";
+// 	return str;
+// }
 
 function inspectBuffer(buffer: Buffer): string {
-	return Array.from(buffer).map((x => (x < 16 ? "0" : "") + x.toString(16))).join(" ");
+	return Array.from(buffer).map(x => (<any>x.toString(16)).padStart(2, "0")).join(" ");
 }
 
 function explainPackagePart(buffer: Buffer, name: string, color: string) {
 	if (config.explainBuffers > 1) {
-		return ` ${color}[${name}: ${inspectBuffer(buffer)}]\x1b[000m`;
+		return ` ${color}[${name}: ${inspectBuffer(buffer)}]${colors.Reset}`;
 	} else {
 		return ` [${name}: ${inspectBuffer(buffer)}]`;
 	}
 }
 
 function explainPackage(pkg: Buffer): string {
-	let res: string = "<Buffer";
+	let res: string = (config.explainBuffers > 1 ? colors.Reset : "")+"<Buffer";
 
 	let type = pkg[0];
 	let datalength = pkg[1];
@@ -131,7 +131,7 @@ function explainPackage(pkg: Buffer): string {
 		default:
 			res = inspectBuffer(pkg);
 	}
-	res += (config.explainBuffers > 1 ? "\x1b[000m" : "") + ">";
+	res += ">";
 	return res;
 }
 

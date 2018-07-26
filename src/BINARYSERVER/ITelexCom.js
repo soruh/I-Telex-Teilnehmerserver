@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
+const colors_js_1 = require("../SHARED/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
 const handles_js_1 = require("../BINARYSERVER/handles.js");
 const misc_js_1 = require("../SHARED/misc.js");
@@ -31,37 +32,39 @@ Object.defineProperty(Buffer.prototype, 'readNullTermString', {
 // 	}	
 // 	return "<Buffer "+array.join(" ")+">\x1b[000m"
 // }
-function explainData(data) {
-    let str = "<Buffer";
-    var type;
-    var datalength;
-    for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
-        type = +data[typepos];
-        datalength = +data[typepos + 1];
-        let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
-        array = array.map((value, index) => index == 0 ?
-            "\x1b[036m" + value + "\x1b[000m" :
-            index == 1 ?
-                "\x1b[032m" + value + "\x1b[000m" :
-                "\x1b[000m" + value + "\x1b[000m");
-        str += " " + array.join(" ");
-    }
-    str += ">";
-    return str;
-}
+// function explainData(data: Buffer): string {
+// 	let str = "<Buffer";
+// 	var type: number;
+// 	var datalength: number;
+// 	for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
+// 		type = +data[typepos];
+// 		datalength = +data[typepos + 1];
+// 		let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
+// 		array = array.map((value, index) =>
+// 			index == 0 ?
+// 			"\x1b[036m" + value + "\x1b[000m" :
+// 			index == 1 ?
+// 			"\x1b[032m" + value + "\x1b[000m" :
+// 			"\x1b[000m" + value + "\x1b[000m"
+// 		);
+// 		str += " " + array.join(" ");
+// 	}
+// 	str += ">";
+// 	return str;
+// }
 function inspectBuffer(buffer) {
-    return Array.from(buffer).map((x => (x < 16 ? "0" : "") + x.toString(16))).join(" ");
+    return Array.from(buffer).map(x => x.toString(16).padStart(2, "0")).join(" ");
 }
 function explainPackagePart(buffer, name, color) {
     if (config_js_1.default.explainBuffers > 1) {
-        return ` ${color}[${name}: ${inspectBuffer(buffer)}]\x1b[000m`;
+        return ` ${color}[${name}: ${inspectBuffer(buffer)}]${colors_js_1.default.Reset}`;
     }
     else {
         return ` [${name}: ${inspectBuffer(buffer)}]`;
     }
 }
 function explainPackage(pkg) {
-    let res = "<Buffer";
+    let res = (config_js_1.default.explainBuffers > 1 ? colors_js_1.default.Reset : "") + "<Buffer";
     let type = pkg[0];
     let datalength = pkg[1];
     res += explainPackagePart(Buffer.from([type]), "type", "\x1b[036m");
@@ -115,7 +118,7 @@ function explainPackage(pkg) {
         default:
             res = inspectBuffer(pkg);
     }
-    res += (config_js_1.default.explainBuffers > 1 ? "\x1b[000m" : "") + ">";
+    res += ">";
     return res;
 }
 exports.explainPackage = explainPackage;
