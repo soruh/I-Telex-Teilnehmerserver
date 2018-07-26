@@ -88,14 +88,18 @@ router.post('/edit', function (req, res) {
   switch (req.body.typekey) {
     case "edit": 
       SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid])
-      .then(entry=>{
+      .then(entries=>{
+        if (entries===void 0) return void 0;
+        let [entry] = entries;
         if (entry===void 0) return void 0;
+        logger.debug(inspect`exising entry: ${entry}`);
+        
 
-        if(entry&&entry.number == req.body.number){
+        if(entry.number == req.body.number){
           logger.debug(inspect`number wasn't changed updating`);
           logger.debug(inspect`${entry.number} == ${req.body.number}`);
-          SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1 WHERE uid=?;",
-          [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, Math.floor(Date.now() / 1000), req.body.uid
+          SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;",
+          [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, Math.floor(Date.now() / 1000), entry.pin, req.body.uid
           ])
           .then(result=>{
             if (result===void 0) return void 0;
