@@ -29,6 +29,7 @@ interface configFile {
     allowLoginInReadonly: boolean,
     doDnsLookups: boolean,
     // updateQueueInterval: number,
+    cleanUpInterval:number,
     queueSendInterval: number,
     fullQueryInterval: number,
     fullQueryServer: string,
@@ -38,6 +39,7 @@ interface configFile {
     binaryserverErrorLog: string,
     logBinaryserverToConsole: boolean,
 
+    keepDeltedFor:number,
     webserverLog: string,
     webserverErrorLog: string,
     logWebserverToConsole: boolean

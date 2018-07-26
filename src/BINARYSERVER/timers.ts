@@ -1,7 +1,7 @@
 "use strict";
 
 //#region imports
-import colors from "../SHARED/colors.js";
+// import colors from "../SHARED/colors.js";
 import {inspect, symbolName} from "../SHARED/misc.js";
 //#endregion
 
@@ -54,7 +54,7 @@ class Timer {
     this.complete = this.total_time_run >= this.duration;
     this.remaining = this.duration - this.total_time_run;
     if (this.complete) {
-      logger.debug(`restarted timeout ${this.name||''}`);
+      logger.debug(inspect`restarted timeout ${this.name||''}`);
       this.start_time = Date.now();
       this.resume();
     } else {
@@ -66,14 +66,14 @@ class Timer {
 function pauseAll() {
   for (var [name, timeout] of timeouts) {
     timeout.pause();
-    logger.debug(`paused timeout: ${symbolName(name)}remaining: ${timeout.remaining}`);
+    logger.debug(inspect`paused timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
   }
 }
 
 function resumeAll() {
   for (var [name, timeout] of timeouts) {
     timeout.resume();
-    logger.debug(`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
+    logger.debug(inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
   }
 }
 
@@ -92,14 +92,14 @@ function TimeoutWrapper < T > (
     new Timer(
       function () {
         pauseAll();
-        logger.debug(inspect`called: ${fnName} with: [${args.slice(1)}]`);
+        logger.debug(inspect`called: ${fnName} with: ${args.slice(1)}`);
         fn.apply(null, args)
           .then(() => {
-            logger.debug(inspect`finishedcallback for timeout: ${fnName}`);
+            logger.debug(inspect`finished callback for timeout: ${fnName}`);
             resumeAll();
           })
           .catch(err => {
-            logger.error(inspect`error in timeout: ${fnName}error: ${err}`);
+            logger.error(inspect`error in timeout: ${fnName} error: ${err}`);
             resumeAll();
           });
       },

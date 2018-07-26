@@ -3,10 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
+// import colors from "../SHARED/colors.js";
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const misc_js_2 = require("../SHARED/misc.js");
+// import { lookup } from "dns";
 //#endregion
 const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
@@ -200,6 +202,9 @@ handles[5][constants.states.FULLQUERY] =
                     type: 8
                 }), () => resolve()))
                     .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            }
+            else if (pkg.data.type == 0) {
+                logger.info(misc_js_1.inspect `not inserting delted entry: ${pkg.data}`);
             }
             else {
                 misc_js_2.SqlQuery(`

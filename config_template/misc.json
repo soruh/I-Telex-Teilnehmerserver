@@ -1,6 +1,8 @@
 {
   "DynIpUpdateNameDifference": 20,
 
+  "keepDeltedFor":200,
+
   "setChangedOnNewerEntry":true,
   "allowInvalidPackageSizes":true,
 

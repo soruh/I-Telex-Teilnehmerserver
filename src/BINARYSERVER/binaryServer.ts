@@ -1,7 +1,7 @@
 "use strict";
 import * as net from 'net';
 import config from '../SHARED/config.js';
-import colors from "../SHARED/colors.js";
+// import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 

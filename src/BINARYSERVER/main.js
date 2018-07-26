@@ -65,7 +65,6 @@ const config_js_1 = require("../SHARED/config.js");
         transports //: transports
     });
 }
-//#region imports
 const timers = require("../BINARYSERVER/timers.js");
 const colors_js_1 = require("../SHARED/colors.js");
 const nodemailer = require("nodemailer");
@@ -74,7 +73,7 @@ const FullQuery_js_1 = require("./FullQuery.js");
 const sendQueue_js_1 = require("./sendQueue.js");
 // import updateQueue from './updateQueue.js';
 const binaryServer_js_1 = require("./binaryServer.js");
-//#endregion
+const cleanUp_js_1 = require("./cleanUp.js");
 const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
 if (readonly)
@@ -88,6 +87,7 @@ function init() {
         timers.TimeoutWrapper(FullQuery_js_1.default, config_js_1.default.fullQueryInterval);
         // timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
         timers.TimeoutWrapper(sendQueue_js_1.default, config_js_1.default.queueSendInterval);
+        timers.TimeoutWrapper(cleanUp_js_1.default, config_js_1.default.cleanUpInterval);
         FullQuery_js_1.default();
     });
 }

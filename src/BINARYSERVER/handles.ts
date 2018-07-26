@@ -2,12 +2,12 @@
 //#region imports
 import * as ip from "ip";
 import config from '../SHARED/config.js';
-import colors from "../SHARED/colors.js";
+// import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import {client, sendEmail, getTimezone, inspect} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
-import { lookup } from "dns";
+// import { lookup } from "dns";
 
 //#endregion
 const logger = global.logger;
@@ -218,7 +218,9 @@ new Promise((resolve, reject) => {
 						type: 8
 					}), () => resolve()))
 					.catch(err=>{logger.error(inspect`${err}`)});
-			} else {
+			} else if(pkg.data.type == 0) {
+				logger.info(inspect`not inserting delted entry: ${pkg.data}`)
+			}else{
 				SqlQuery(`
 			INSERT INTO teilnehmer (
 				${names.join(",")+(names.length>0?",":"")} changed

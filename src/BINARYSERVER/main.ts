@@ -1,4 +1,5 @@
 "use strict";
+
 import * as path from "path";
 import * as intl from "intl";
 import * as mysql from "mysql";
@@ -84,7 +85,6 @@ declare global {
 	});
 }
 
-//#region imports
 import * as timers from "../BINARYSERVER/timers.js";
 import colors from "../SHARED/colors.js";
 import * as nodemailer from "nodemailer";
@@ -93,7 +93,7 @@ import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 // import updateQueue from './updateQueue.js';
 import binaryServer from './binaryServer.js';
-//#endregion
+import cleanUp from "./cleanUp.js";
 
 const logger = global.logger;
 
@@ -112,6 +112,7 @@ function init() {
 		timers.TimeoutWrapper(getFullQuery, config.fullQueryInterval);
 		// timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
 		timers.TimeoutWrapper(sendQueue, config.queueSendInterval);
+		timers.TimeoutWrapper(cleanUp, config.cleanUpInterval);
 		getFullQuery();
 	});
 }

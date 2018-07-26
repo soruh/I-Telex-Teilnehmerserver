@@ -1,7 +1,7 @@
 "use strict";
 //#region imports
 // import config from '../SHARED/config.js';
-import colors from "../SHARED/colors.js";
+// import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
 import {SqlQuery, inspect} from '../SHARED/misc.js';

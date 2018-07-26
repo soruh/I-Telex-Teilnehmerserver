@@ -1,5 +1,6 @@
 {
     "queueSendInterval":3600000,
     "fullQueryInterval":86400000,
+    "cleanUpInterval":86400000,
     "connectionTimeout":30000
 }

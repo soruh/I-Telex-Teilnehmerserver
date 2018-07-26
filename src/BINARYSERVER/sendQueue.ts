@@ -2,7 +2,7 @@
 //#region imports
 
 import config from '../SHARED/config.js';
-import colors from "../SHARED/colors.js";
+// import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
