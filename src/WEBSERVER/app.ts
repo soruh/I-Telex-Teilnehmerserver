@@ -1,16 +1,10 @@
 "use strict";
 
-import * as express from "express";
-import * as favicon from "serve-favicon";
-import * as cookieParser from "cookie-parser";
-import * as bodyParser from "body-parser";
-import * as path from "path";
-import colors from "../SHARED/colors.js";
-
-import config from '../SHARED/config.js';
 import * as winston from "winston";
-import { inspect } from "../SHARED/misc.js";
+import config from '../SHARED/config.js';
+import * as path from "path";
 import { Pool } from "mysql";
+
 declare global {
 	namespace NodeJS {
 		interface Global {
@@ -88,7 +82,18 @@ declare global {
 	});
 }
 
+import * as express from "express";
+import * as favicon from "serve-favicon";
+import * as cookieParser from "cookie-parser";
+import * as bodyParser from "body-parser";
+
+
+import colors from "../SHARED/colors.js";
+
+import { inspect } from "../SHARED/misc.js";
+
 const logger = global.logger;
+
 var app = express();
 
 // view engine setup

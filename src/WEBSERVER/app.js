@@ -1,14 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const express = require("express");
-const favicon = require("serve-favicon");
-const cookieParser = require("cookie-parser");
-const bodyParser = require("body-parser");
-const path = require("path");
-const colors_js_1 = require("../SHARED/colors.js");
-const config_js_1 = require("../SHARED/config.js");
 const winston = require("winston");
-const misc_js_1 = require("../SHARED/misc.js");
+const config_js_1 = require("../SHARED/config.js");
+const path = require("path");
 {
     let getLoggingLevel = function getLoggingLevel() {
         if (typeof config_js_1.default.webserverLoggingLevel === "number") {
@@ -70,6 +64,12 @@ const misc_js_1 = require("../SHARED/misc.js");
         transports //: transports
     });
 }
+const express = require("express");
+const favicon = require("serve-favicon");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+const colors_js_1 = require("../SHARED/colors.js");
+const misc_js_1 = require("../SHARED/misc.js");
 const logger = global.logger;
 var app = express();
 // view engine setup
