@@ -69,11 +69,11 @@ declare global {
 	// })();
 
 	let formats = [];
-	formats.push(winston.format.timestamp());
+	if(config.logDate) formats.push(winston.format.timestamp());
 	if(!config.disableColors) formats.push(winston.format.colorize())
 	// formats.push(getLine),
 	let logPadding = config.disableColors?7:17;
-	formats.push(winston.format.printf(info=>`${info.timestamp.replace("T"," ").slice(0, -1)} ${(<any>info.level).padStart(logPadding)}: ${info.message}`));
+	formats.push(winston.format.printf(info=>`${config.logDate?(info.timestamp.replace("T"," ").slice(0, -1)+" "):""}${(<any>info.level).padStart(logPadding)}: ${info.message}`));
 	// formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
 
 	global.logger = winston.createLogger({

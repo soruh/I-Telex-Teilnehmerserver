@@ -50,12 +50,13 @@ const config_js_1 = require("../SHARED/config.js");
     // 	return info;
     // })();
     let formats = [];
-    formats.push(winston.format.timestamp());
+    if (config_js_1.default.logDate)
+        formats.push(winston.format.timestamp());
     if (!config_js_1.default.disableColors)
         formats.push(winston.format.colorize());
     // formats.push(getLine),
     let logPadding = config_js_1.default.disableColors ? 7 : 17;
-    formats.push(winston.format.printf(info => `${info.timestamp.replace("T", " ").slice(0, -1)} ${info.level.padStart(logPadding)}: ${info.message}`));
+    formats.push(winston.format.printf(info => `${config_js_1.default.logDate ? (info.timestamp.replace("T", " ").slice(0, -1) + " ") : ""}${info.level.padStart(logPadding)}: ${info.message}`));
     // formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
     global.logger = winston.createLogger({
         level: getLoggingLevel(),
