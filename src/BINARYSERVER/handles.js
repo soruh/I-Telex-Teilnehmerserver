@@ -92,8 +92,8 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 }), () => resolve());
             }
             misc_js_2.SqlQuery(`UPDATE teilnehmer SET 
-				port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE
-				number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+			port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE
+			number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
                 port, ipaddress, Math.floor(Date.now() / 1000), number,
                 config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin
             ])
@@ -115,7 +115,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         else {
             misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
                 .then(() => misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed)
-				VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
+			VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
                 .then(function (result) {
                 if (!(result && result.affectedRows)) {
                     logger.error(misc_js_1.inspect `could not create entry`);
@@ -202,10 +202,10 @@ handles[5][constants.states.FULLQUERY] =
             }
             else {
                 misc_js_2.SqlQuery(`
-				INSERT INTO teilnehmer (
-					${names.join(",") + (names.length > 0 ? "," : "")} changed
-				) VALUES(
-				${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([
+			INSERT INTO teilnehmer (
+				${names.join(",") + (names.length > 0 ? "," : "")} changed
+			) VALUES(
+			${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([
                     config_js_1.default.setChangedOnNewerEntry ? 1 : 0
                 ]))
                     .then(() => client.connection.write(ITelexCom.encPackage({
@@ -322,4 +322,13 @@ handles[10][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, r
         .then(() => resolve())
         .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
 });
+handles[255][constants.states.RESPONDING] =
+    handles[255][constants.states.FULLQUERY] =
+        handles[255][constants.states.STANDBY] =
+            handles[255][constants.states.LOGIN] =
+                (pkg, client) => new Promise((resolve, reject) => {
+                    if (!client)
+                        return void resolve();
+                    logger.error(misc_js_1.inspect `server sent error message: ${pkg}`);
+                });
 exports.default = handles;
