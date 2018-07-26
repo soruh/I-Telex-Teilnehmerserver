@@ -16,5 +16,7 @@
 
     "webserverLog": null,
     "webserverErrorLog": null,
-    "logWebserverToConsole": true
+    "logWebserverToConsole": true,
+
+    "scientistNames":true
 }
