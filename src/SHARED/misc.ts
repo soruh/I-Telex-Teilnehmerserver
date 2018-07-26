@@ -218,7 +218,7 @@ function sendEmail(messageName: string, values: {
 			}
 			logger.info(inspect`sending email of type ${messageName||"config error"}`);
 			logger.debug(inspect`mail values: ${values}`);
-			logger.verbose(inspect`sending mail:\n${mailOptions}\nto server${global.transporter.options["host"]}`);
+			logger.verbose(inspect`sending mail:\n${mailOptions}\nto server ${global.transporter.options["host"]}`);
 
 			( < nodemailer.Transporter > global.transporter).sendMail(mailOptions, function (error, info) {
 				if (error) {
