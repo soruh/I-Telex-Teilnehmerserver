@@ -171,9 +171,9 @@ app.use((req, res, next)=>{
   ].join(' ');
   
   if (req.url == "/") {
-    logger.info(message);
+    logger.info(inspect`${message}`);
   }else{
-    logger.verbose(message);
+    logger.verbose(inspect`${message}`);
   }
   next();
 });

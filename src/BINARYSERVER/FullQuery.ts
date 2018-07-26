@@ -5,7 +5,7 @@ import config from '../SHARED/config.js';
 import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import * as misc from "../SHARED/misc.js";
+import {inspect, SqlQuery} from "../SHARED/misc.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
 import connect from './connect.js';
 
@@ -17,11 +17,11 @@ const readonly = (config.serverPin == null);
 
 function getFullQuery() {
 	return new Promise((resolve, reject) => {
-		logger.verbose(colors.FgMagenta + "geting " + colors.FgCyan + "FullQuery" + colors.Reset);
-		misc.SqlQuery("SELECT  * FROM servers;")
+		logger.verbose(inspect`${colors.FgMagenta}geting ${colors.FgCyan}FullQuery${colors.Reset}`);
+		SqlQuery("SELECT  * FROM servers;")
 			.then((servers: ITelexCom.serverList) => {
 				if (servers.length == 0) {
-					logger.warn(colors.FgYellow + "No configured servers -> aborting " + colors.FgCyan + "FullQuery" + colors.Reset);
+					logger.warn(inspect`${colors.FgYellow}No configured servers -> aborting ${colors.FgCyan}FullQuery${colors.Reset}`);
 					return void resolve();
 				}
 				// for (let i in servers) {
@@ -65,11 +65,11 @@ function getFullQuery() {
 								client.cb = resolve;
 							});
 						}))
-						.catch(logger.error)
+						.catch(err=>{logger.error(inspect`${err}`)})
 				}))
 			})
 			.then(() => resolve())
-			.catch(logger.error);
+			.catch(err=>{logger.error(inspect`${err}`)});
 		//}
 	});
 }

@@ -16,16 +16,16 @@ const logger = global.logger;
 
 Object.defineProperty(Buffer.prototype, 'readNullTermString', {
 	value: function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length) {
-		// logger.error(highlightBuffer(this));
-		// logger.error("start:"+start);
-		// logger.error("end:"+end);
-		// logger.error(highlightBuffer(this,start,end));
+		// logger.error(inspect`${highlightBuffer(this)}`);
+		// logger.error(inspect`start: ${start}`);
+		// logger.error(inspect`end:${end}`);
+		// logger.error(inspect`${highlightBuffer(this,start,end)}`);
 		let firstZero = this.indexOf(0, start);
-		// logger.error("firstZero:"+firstZero);
+		// logger.error(inspect`firstZero: ${firstZero}`);
 		let stop = firstZero >= start && firstZero <= end ? firstZero : end;
-		// logger.error("stop:"+firstZero);
-		// logger.error(highlightBuffer(this,start,stop));
-		// logger.error("result:\x1b[030m"+this.toString(encoding,start,stop)+"\x1b[000m\n\n");
+		// logger.error(inspect`stop: ${firstZero}`);
+		// logger.error(inspect`${highlightBuffer(this,start,stop)}`);
+		// logger.error(inspect`result:\x1b[030m${this.toString(encoding,start,stop)}${colors.Reset}\n\n`);
 
 		return this.toString(encoding, start, stop);
 	}
@@ -316,20 +316,20 @@ type queue = queueEntry[];
 function handlePackage(obj: Package_decoded, client: client) {
 	return new Promise((resolve, reject) => {
 		if (!obj) {
-			logger.warn(colors.FgRed + "no package to handle" + colors.Reset);
+			logger.warn(inspect`${colors.FgRed}no package to handle${colors.Reset}`);
 			resolve();
 		} else {
-			if (config.logITelexCom) logger.verbose(colors.FgGreen + "state: " + colors.FgCyan + symbolName(client.state) + colors.Reset);
+			if (config.logITelexCom) logger.verbose(inspect`${colors.FgGreen}state: ${colors.FgCyan}${symbolName(client.state)}${colors.Reset}`);
 			if (obj.type == 0xff) {
-				logger.warn(colors.FgRed + "remote client had error:", Buffer.from( < number[] > obj.data).toString());
+				logger.warn(inspect`${colors.FgRed}remote client had error: ${Buffer.from( < number[] > obj.data).toString()}`);
 				resolve();
 			} else {
 				try {
-					if (config.logITelexCom) logger.verbose(inspect`${colors.FgGreen}handling package: ${colors.FgCyan}${obj}${colors.FgGreen} + "for: ${colors.FgCyan}${obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress}${colors.Reset}`);
-					if (config.logITelexCom) logger.info(colors.FgGreen + "handling type:" + colors.FgCyan+ obj.type+ colors.FgGreen + "for: " + colors.FgCyan + (obj.type == 1 ? "#" + obj.data.number : client.connection.remoteAddress) + colors.Reset);
+					if (config.logITelexCom) logger.info(inspect`${colors.FgGreen}handling type: ${colors.FgCyan}${obj.type}${colors.FgGreen} for: ${colors.FgCyan}${client.name}${colors.Reset}`);
+					if (config.logITelexCom) logger.verbose(inspect`${colors.FgGreen}handling package: ${colors.FgCyan}${obj}${colors.FgGreen} for: ${colors.FgCyan}${client.name}${colors.Reset}`);
 
 					if (typeof handles[obj.type][client.state] == "function") {
-						if (config.logITelexCom) logger.verbose(colors.FgGreen + "calling handler for type " + colors.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors.FgGreen + " in state " + colors.FgCyan + symbolName(client.state) + colors.Reset);
+						if (config.logITelexCom) logger.verbose(inspect`${colors.FgGreen}calling handler for type ${colors.FgCyan}${constants.PackageNames[obj.type]} (${obj.type})${colors.FgGreen} in state ${colors.FgCyan}${symbolName(client.state)}${colors.Reset}`);
 						try {
 							handles[obj.type][client.state](obj, client)
 								.then(resolve)
@@ -339,7 +339,7 @@ function handlePackage(obj: Package_decoded, client: client) {
 							resolve();
 						}
 					} else {
-						logger.warn(colors.FgRed + "type " + colors.FgCyan + constants.PackageNames[obj.type] + "(" + obj.type + ")" + colors.FgRed + " not supported in state " + colors.FgCyan + symbolName(client.state) + colors.Reset);
+						logger.warn(inspect`${colors.FgRed}type ${colors.FgCyan}${constants.PackageNames[obj.type]} (${obj.type})${colors.FgRed} not supported in state ${colors.FgCyan}${symbolName(client.state)}${colors.Reset}`);
 						resolve();
 					}
 				} catch (e) {
@@ -356,23 +356,25 @@ function getCompletePackages(data: Buffer, part ? : Buffer): [Buffer, Buffer] {
 	var type = combined[0];
 	var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
 
-	if (config.logITelexCom) logger.debug("extracting packages from data:");
-	if (config.logITelexCom) logger.debug(inspect`data: ${data}`);
-	if (config.logITelexCom) logger.debug(inspect`part: ${part}`);
-	if (config.logITelexCom) logger.debug(inspect`combined: ${combined}`);
-	if (config.logITelexCom) logger.debug(inspect`type: ${type}`);
-	if (config.logITelexCom) logger.debug(inspect`packagelength: ${packagelength}`);
+	if (config.logITelexCom){
+		logger.debug(inspect`extracting packages from data:`);
+		logger.debug(inspect`data: ${data}`);
+		logger.debug(inspect`part: ${part}`);
+		logger.debug(inspect`combined: ${combined}`);
+		logger.debug(inspect`type: ${type}`);
+		logger.debug(inspect`packagelength: ${packagelength}`);
+	}
 
 	if (combined.length == packagelength) {
-		if (config.logITelexCom) logger.debug("combined.length == packagelength");
-		if (config.logITelexCom) logger.debug(`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
+		if (config.logITelexCom) logger.debug(inspect`combined.length == packagelength`);
+		if (config.logITelexCom) logger.debug(inspect`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
 		return [
 			combined,
 			new Buffer(0)
 		];
 	}
 	if (combined.length > packagelength) {
-		if (config.logITelexCom) logger.debug("combined.length > packagelength");
+		if (config.logITelexCom) logger.debug(inspect`combined.length > packagelength`);
 		let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
 		return [
 			Buffer.concat([combined.slice(0, packagelength), rest[0]]),
@@ -380,8 +382,8 @@ function getCompletePackages(data: Buffer, part ? : Buffer): [Buffer, Buffer] {
 		];
 	}
 	if (combined.length < packagelength) {
-		if (config.logITelexCom) logger.verbose(`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
-		if (config.logITelexCom) logger.debug("combined.length < packagelength");
+		if (config.logITelexCom) logger.verbose(inspect`${colors.FgGreen}recieved ${colors.FgCyan}${combined.length}${colors.FgGreen}/${colors.FgCyan}${packagelength}${colors.FgGreen} bytes for next package${colors.Reset}`);
+		if (config.logITelexCom) logger.debug(inspect`combined.length < packagelength`);
 		return [
 			new Buffer(0),
 			combined
@@ -445,7 +447,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			} else {
 				ext = parseInt(pkg.data.extension);
 			}
-			// logger.error("\n");
+			// ll("\n");
 			// ll(buffer);
 			// ll(pkg.data.number, 2, 4);
 			buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
@@ -496,7 +498,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.write(pkg.data.pattern || "", 3, 40);
 			break;
 	}
-	if (config.logITelexCom) logger.info(colors.FgGreen + "encoded:" + colors.Reset, (config.explainBuffers > 0 ? explainPackage(buffer) : buffer));
+	if (config.logITelexCom) logger.info(inspect`${colors.FgGreen}encoded: ${colors.Reset+(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
 	return buffer;
 }
 
@@ -507,7 +509,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 		datalength: < any > buffer[1],
 		data: null
 	};
-	if (config.logITelexCom) logger.info(colors.FgGreen + "decoding package:" + colors.Reset, (config.explainBuffers > 0 ? explainPackage(buffer) : buffer));
+	if (config.logITelexCom) logger.info(inspect`${colors.FgGreen}decoding package: {colors.Reset+(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
 	switch (pkg.type) {
 		case 1:
 			pkg.data = {
@@ -604,7 +606,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 			};
 			break;
 		default:
-			logger.error(colors.FgRed + "invalid/unsupported type: " + colors.FgCyan + pkg.type + colors.Reset);
+			logger.error(inspect`${colors.FgRed}invalid/unsupported type: ${colors.FgCyan}${pkg.type}${colors.Reset}`);
 			return null
 	}
 	return pkg;
@@ -612,7 +614,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 
 function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 	if (!(buffer instanceof Buffer)) buffer = Buffer.from(buffer);
-	if (config.logITelexCom) logger.info(colors.FgGreen + "decoding data:" + colors.Reset, (config.explainBuffers ? explainData(buffer) : buffer), colors.Reset);
+	if (config.logITelexCom) logger.info(inspect`${colors.FgGreen}decoding data: ${colors.Reset+(config.explainBuffers ? explainData(buffer) : buffer)}`);
 	var out: Package_decoded[] = [];
 
 	for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
@@ -620,11 +622,11 @@ function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 		var datalength: number = +buffer[typepos + 1];
 
 		if (type in constants.PackageSizes && constants.PackageSizes[type] != datalength) {
-			if (config.logITelexCom) logger.info(`${colors.FgRed}size missmatch: ${constants.PackageSizes[type]} != ${datalength}${colors.Reset}`);
+			if (config.logITelexCom) logger.info(inspect`${colors.FgRed}size missmatch: ${constants.PackageSizes[type]} != ${datalength}${colors.Reset}`);
 			if (config.allowInvalidPackageSizes) {
-				if (config.logITelexCom) logger.info(`${colors.FgRed}using package of invalid size!${colors.Reset}`);
+				if (config.logITelexCom) logger.info(inspect`${colors.FgRed}using package of invalid size!${colors.Reset}`);
 			} else {
-				if (config.logITelexCom) logger.verbose(`${colors.FgYellow}ignoring package, because it is of invalid size!${colors.Reset}`);
+				if (config.logITelexCom) logger.verbose(inspect`${colors.FgYellow}ignoring package, because it is of invalid size!${colors.Reset}`);
 				continue;
 			}
 		}
@@ -639,12 +641,12 @@ function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 function ascii(data: number[] | Buffer, client: client): void {
 	var number: string = "";
 	for (let byte of data) {
-		//if (config.logITelexCom) logger.debug(String.fromCharCode(byte));
+		//if (config.logITelexCom) logger.debug(inspect`${String.fromCharCode(byte)}`);
 		let char = String.fromCharCode(byte);
 		if (/([0-9])/.test(char)) number += char;
 	}
 	if (number != ""&&(!isNaN(parseInt(number)))) {
-		if (config.logITelexCom) logger.info(colors.FgGreen + "starting lookup for: " + colors.FgCyan + number + colors.Reset);
+		if (config.logITelexCom) logger.info(inspect`${colors.FgGreen}starting lookup for: ${colors.FgCyan}${number}${colors.Reset}`);
 		SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
 		.then(function (result: peerList) {
 			if (!result || result.length == 0) {
@@ -654,8 +656,8 @@ function ascii(data: number[] | Buffer, client: client): void {
 				send += "unknown\r\n";
 				send += "+++\r\n";
 				client.connection.end/*.write*/(send, function () {
-					if (config.logITelexCom) logger.info(colors.FgRed + "Entry not found/visible" + colors.Reset);
-					if (config.logITelexCom) logger.verbose(colors.FgRed + "sent:\n" + colors.FgCyan + send + colors.Reset);
+					if (config.logITelexCom) logger.info(inspect`${colors.FgRed}Entry not found/visible${colors.Reset}`);
+					if (config.logITelexCom) logger.verbose(inspect`${colors.FgRed}sent:\n${colors.FgCyan}${send}${colors.Reset}`);
 				});
 			} else {
 				let send: string = "";
@@ -679,13 +681,13 @@ function ascii(data: number[] | Buffer, client: client): void {
 				send += (res.extension || "-") + "\r\n";
 				send += "+++\r\n";
 				client.connection.end(send, function () {
-					if (config.logITelexCom) logger.info(colors.FgRed + "Entry found" + colors.Reset);
-					if (config.logITelexCom) logger.verbose(colors.FgRed + "sent:\n" + colors.FgCyan + send + colors.Reset);
+					if (config.logITelexCom) logger.info(inspect`${colors.FgRed}Entry found${colors.Reset}`);
+					if (config.logITelexCom) logger.verbose(inspect`${colors.FgRed}sent:\n${colors.FgCyan}${send}${colors.Reset}`);
 
 				});
 			}
 		})
-		.catch(logger.error);
+		.catch(err=>{logger.error(inspect`${err}`)});
 	} else {
 		client.connection.end();
 	}

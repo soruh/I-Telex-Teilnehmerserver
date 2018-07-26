@@ -21,38 +21,38 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 		writebuffer: null,
 		packages: []
 	};
-	logger.info(colors.FgGreen + "client " + colors.FgCyan + client.name + colors.FgGreen + " connected from ipaddress: " + colors.FgCyan + connection.remoteAddress + colors.Reset); //.replace(/^.*:/,'')
+	logger.info(inspect`${colors.FgGreen}client ${colors.FgCyan}${client.name}${colors.FgGreen} connected from ipaddress: ${colors.FgCyan}${connection.remoteAddress}${colors.Reset}`); //.replace(/^.*:/,'')
 	connection.on('end', function (): void {
 		if (client) {
-			if (client.newEntries != null) logger.info(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
-			logger.info(colors.FgYellow + "client " + colors.FgCyan + client.name + colors.FgYellow + " disconnected" + colors.Reset);
+			if (client.newEntries != null) logger.info(inspect`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
+			logger.info(inspect`${colors.FgYellow}client ${colors.FgCyan}${client.name} ${colors.FgYellow}disconnected${colors.Reset}`);
 			// clearTimeout(client.timeout);
 
-			// logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.FgGreen}${colors.Reset}`);
+			// logger.info(inspect`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.FgGreen}${colors.Reset}`);
 			client = null;
 		}
 	});
 	connection.setTimeout(config.connectionTimeout);
 	connection.on('timeout', function (): void {
-		logger.info(colors.FgYellow + "client " + colors.FgCyan + client.name + colors.FgYellow + " timed out" + colors.Reset);
+		logger.info(inspect`${colors.FgYellow}client ${colors.FgCyan}${client.name}${colors.FgYellow} timed out${colors.Reset}`);
 		connection.end();
 	});
 	connection.on('error', function (err: Error): void {
-		logger.error(err);
+		logger.error(inspect`${err}`);
 		connection.end();
 	});
 	connection.on('data', function (data: Buffer): void {
 		if(client){
 			logger.verbose(inspect`${colors.FgGreen}recieved data:${colors.FgCyan}${data}${colors.Reset}`);
-			logger.verbose(colors.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors.Reset);
+			logger.verbose(inspect`${colors.FgCyan}${data.toString().replace(/[^ -~]/g, "·")}${colors.Reset}`);
 	
 			if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
-				logger.verbose(colors.FgGreen + "serving ascii request" + colors.Reset);
+				logger.verbose(inspect`${colors.FgGreen}serving ascii request${colors.Reset}`);
 				ITelexCom.ascii(data, client);
 			} else if (data[0] == 'c'.charCodeAt(0)) {
 				checkIp(data, client);
 			} else {
-				logger.verbose(colors.FgGreen + "serving binary request" + colors.Reset);
+				logger.verbose(inspect`${colors.FgGreen}serving binary request${colors.Reset}`);
 	
 				logger.debug(inspect`${colors.FgCyan}Buffer for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${client.readbuffer}${colors.Reset}`);
 				logger.debug(inspect`${colors.FgGreen}New Data for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${data}${colors.Reset}`);
@@ -73,7 +73,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 							serialEachPromise(
 									client.packages,
 									async function (pkg, key) {
-										let msg = `${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${client.packages.length}${colors.Reset}`;
+										let msg = inspect`${colors.FgGreen}handling package ${colors.FgCyan}${+key + 1}/${client.packages.length}${colors.Reset}`;
 										if (client.packages.length > 1) {
 											logger.info(msg);
 										} else {
@@ -86,7 +86,7 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 									client.packages.splice(0, res.length); //handled);
 									// client.handling = false;
 								})
-								.catch(logger.error);
+								.catch(err=>{logger.error(inspect`${err}`)});
 					// 	} else {
 					// 		client.timeout = setTimeout(handleTimeout, 10);
 					// 	}

@@ -77,13 +77,13 @@ const binaryServer_js_1 = require("./binaryServer.js");
 const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
 if (readonly)
-    logger.warn(`${colors_js_1.default.FgMagenta}Starting in read-only mode!${colors_js_1.default.Reset}`);
+    logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Starting in read-only mode!${colors_js_1.default.Reset}`);
 colors_js_1.default.disable(config_js_1.default.disableColors);
 const mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
 function init() {
-    logger.warn(colors_js_1.default.FgMagenta + "Initialising!" + colors_js_1.default.Reset);
+    logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Initialising!${colors_js_1.default.Reset}`);
     binaryServer_js_1.default.listen(config_js_1.default.binaryPort, function () {
-        logger.warn(colors_js_1.default.FgMagenta + "server is listening on port " + colors_js_1.default.FgCyan + config_js_1.default.binaryPort + colors_js_1.default.Reset);
+        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}server is listening on port ${colors_js_1.default.FgCyan}${config_js_1.default.binaryPort}${colors_js_1.default.Reset}`);
         timers.TimeoutWrapper(FullQuery_js_1.default, config_js_1.default.fullQueryInterval);
         // timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
         timers.TimeoutWrapper(sendQueue_js_1.default, config_js_1.default.queueSendInterval);
@@ -93,19 +93,19 @@ function init() {
 global.sqlPool = mysql.createPool(mySqlConnectionOptions);
 global.sqlPool.getConnection(function (err, connection) {
     if (err) {
-        logger.error(colors_js_1.default.FgRed + "Could not connect to database!" + colors_js_1.default.Reset);
+        logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}Could not connect to database!${colors_js_1.default.Reset}`);
         throw err;
     }
     else {
         connection.release();
-        logger.warn(colors_js_1.default.FgMagenta + "Successfully connected to the database!" + colors_js_1.default.Reset);
+        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Successfully connected to the database!${colors_js_1.default.Reset}`);
         if (config_js_1.default.eMail.useTestAccount) {
             nodemailer.createTestAccount(function (err, account) {
                 if (err) {
-                    logger.error(err);
+                    logger.error(misc_js_1.inspect `${err}`);
                     global.transporter = {
                         sendMail: function sendMail() {
-                            logger.error("can't send mail after Mail error");
+                            logger.error(misc_js_1.inspect `can't send mail after Mail error`);
                         },
                         options: {
                             host: "Failed to get test Account"
@@ -136,7 +136,7 @@ global.sqlPool.getConnection(function (err, connection) {
 if (config_js_1.default.printServerErrorsOnExit) {
     let exitHandler = function exitHandler(options, err) {
         if (options.cleanup) {
-            logger.error("exited with code: " + err);
+            logger.error(misc_js_1.inspect `exited with code: ${err}`);
             logger.error(misc_js_1.inspect `serverErrors:\n${misc_js_1.errorCounters}`);
         }
         else {

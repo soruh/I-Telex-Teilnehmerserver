@@ -11,11 +11,11 @@ global.sqlPool = mysql.createPool(mySqlConnectionOptions);
 const sqlPool = global.sqlPool;
 sqlPool.getConnection(function (err, connection) {
     if (err) {
-        logger.error(colors_js_1.default.FgRed + "could not connect to database!" + colors_js_1.default.Reset);
+        logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}could not connect to database!${colors_js_1.default.Reset}`);
         throw err;
     }
     else {
-        logger.warn(colors_js_1.default.FgGreen + "connected to database!" + colors_js_1.default.Reset);
+        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgGreen}connected to database!${colors_js_1.default.Reset}`);
         connection.release();
     }
 });
@@ -51,7 +51,7 @@ router.post('/list', function (req, res) {
         });
     })
         .catch(err => {
-        logger.error(err);
+        logger.error(misc_js_1.inspect `${err}`);
         res.json({
             successful: false,
             message: err
@@ -62,9 +62,9 @@ router.post('/edit', function (req, res) {
     // ll(req.body);
     res.header("Content-Type", "application/json; charset=utf-8");
     logger.debug(misc_js_1.inspect `request body: ${req.body}`);
-    logger.verbose(`typekey: ${req.body.typekey}`);
+    logger.verbose(misc_js_1.inspect `typekey: ${req.body.typekey}`);
     if (req.body.password !== config_js_1.default.webInterfacePassword) {
-        logger.warn(`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
+        logger.warn(misc_js_1.inspect `${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
         return void res.json({
             successful: false,
             message: {
@@ -80,8 +80,8 @@ router.post('/edit', function (req, res) {
                 if (entry === void 0)
                     return void 0;
                 if (entry && entry.number == req.body.number) {
-                    logger.debug("number wasn't changed updating");
-                    logger.debug(`${entry.number} == ${req.body.number}`);
+                    logger.debug(misc_js_1.inspect `number wasn't changed updating`);
+                    logger.debug(misc_js_1.inspect `${entry.number} == ${req.body.number}`);
                     misc_js_1.SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1 WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, Math.floor(Date.now() / 1000), req.body.uid
                     ])
                         .then(result => {
@@ -93,7 +93,7 @@ router.post('/edit', function (req, res) {
                         });
                     })
                         .catch(err => {
-                        logger.error(err);
+                        logger.error(misc_js_1.inspect `${err}`);
                         res.json({
                             successful: false,
                             message: err
@@ -101,8 +101,8 @@ router.post('/edit', function (req, res) {
                     });
                 }
                 else {
-                    logger.debug("number was changed inserting");
-                    logger.debug(`${entry.number} != ${req.body.number}`);
+                    logger.debug(misc_js_1.inspect `number was changed inserting`);
+                    logger.debug(misc_js_1.inspect `${entry.number} != ${req.body.number}`);
                     misc_js_1.SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid])
                         .then(result => {
                         if (result === void 0)
@@ -117,7 +117,7 @@ router.post('/edit', function (req, res) {
                             });
                         })
                             .catch(err => {
-                            logger.error(err);
+                            logger.error(misc_js_1.inspect `${err}`);
                             res.json({
                                 successful: false,
                                 message: err
@@ -125,7 +125,7 @@ router.post('/edit', function (req, res) {
                         });
                     })
                         .catch(err => {
-                        logger.error(err);
+                        logger.error(misc_js_1.inspect `${err}`);
                         res.json({
                             successful: false,
                             message: err
@@ -134,7 +134,7 @@ router.post('/edit', function (req, res) {
                 }
             })
                 .catch(err => {
-                logger.error(err);
+                logger.error(misc_js_1.inspect `${err}`);
                 res.json({
                     successful: false,
                     message: err
@@ -153,7 +153,6 @@ router.post('/edit', function (req, res) {
                         successful: false,
                         message: new Error("entry already exists")
                     });
-                logger.debug("");
                 misc_js_1.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number])
                     .then(result => {
                     if (result === void 0)
@@ -168,7 +167,7 @@ router.post('/edit', function (req, res) {
                         });
                     })
                         .catch(err => {
-                        logger.error(err);
+                        logger.error(misc_js_1.inspect `${err}`);
                         res.json({
                             successful: false,
                             message: err
@@ -176,7 +175,7 @@ router.post('/edit', function (req, res) {
                     });
                 })
                     .catch(err => {
-                    logger.error(err);
+                    logger.error(misc_js_1.inspect `${err}`);
                     res.json({
                         successful: false,
                         message: err
@@ -184,7 +183,7 @@ router.post('/edit', function (req, res) {
                 });
             })
                 .catch(err => {
-                logger.error(err);
+                logger.error(misc_js_1.inspect `${err}`);
                 res.json({
                     successful: false,
                     message: err
@@ -202,7 +201,7 @@ router.post('/edit', function (req, res) {
                 });
             })
                 .catch(err => {
-                logger.error(err);
+                logger.error(misc_js_1.inspect `${err}`);
                 res.json({
                     successful: false,
                     message: err

@@ -145,10 +145,10 @@ app.use((req, res, next) => {
         req.url.replace(/\//g, colors_js_1.default.FgLightBlack + "/" + colors_js_1.default.Reset)
     ].join(' ');
     if (req.url == "/") {
-        logger.info(message);
+        logger.info(misc_js_1.inspect `${message}`);
     }
     else {
-        logger.verbose(message);
+        logger.verbose(misc_js_1.inspect `${message}`);
     }
     next();
 });

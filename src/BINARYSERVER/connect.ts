@@ -21,7 +21,7 @@ function connect(
 ): Promise < client > {
 	return new Promise((resolve, reject) => {
 		let serverkey = options.host + ":" + options.port;
-		logger.info(colors.FgGreen + "trying to connect to:" + colors.FgCyan + serverkey + colors.Reset);
+		logger.info(inspect`${colors.FgGreen}trying to connect to: ${colors.FgCyan}${serverkey}${colors.Reset}`);
 
 
 		var socket = new net.Socket();
@@ -36,15 +36,15 @@ function connect(
 		};
 		socket.setTimeout(config.connectionTimeout);
 		socket.on('end', () => {
-			if (client.newEntries != null) logger.info(`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
-			logger.info(colors.FgYellow + "server " + colors.FgCyan + client.name + colors.FgYellow + " ended!" + colors.Reset);
+			if (client.newEntries != null) logger.info(inspect`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
+			logger.info(inspect`${colors.FgYellow}server ${colors.FgCyan}${client.name}${colors.FgYellow} ended!${colors.Reset}`);
 
-			// logger.info(`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.Reset}`);
+			// logger.info(inspect`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.Reset}`);
 			client = null;
 			onEnd(client);
 		});
 		socket.on('timeout', () => {
-			logger.warn(colors.FgRed + "server: " + colors.FgCyan + serverkey + colors.FgRed + " timed out" + colors.Reset);
+			logger.warn(inspect`${colors.FgRed}server: ${colors.FgCyan}${serverkey}${colors.FgRed} timed out${colors.Reset}`);
 			// socket.emit("end");
 			// socket.emit("error",new Error("timeout"));
 			increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
@@ -54,9 +54,9 @@ function connect(
 			if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
 				logger.info(inspect`${colors.FgRed}server ${colors.FgCyan}${options}${colors.FgRed} had an error${colors.Reset}`);
 				increaseErrorCounter(serverkey, error, error["code"]);
-				logger.info(`${colors.FgRed}server ${colors.FgCyan}${serverkey}${colors.FgRed} could not be reached; errorCounter: ${colors.FgCyan}${errorCounters[serverkey]}${colors.Reset}`);
+				logger.info(inspect`${colors.FgRed}server ${colors.FgCyan}${serverkey}${colors.FgRed} could not be reached; errorCounter: ${colors.FgCyan}${errorCounters[serverkey]}${colors.Reset}`);
 			}else{
-				logger.debug(error);
+				logger.debug(inspect`${error}`);
 			}
 			socket.end();
 		});
@@ -64,7 +64,7 @@ function connect(
 			if(client){
 
 				logger.verbose(inspect`${colors.FgGreen}recieved data: ${colors.FgCyan}${data}${colors.Reset}`);
-				logger.verbose(colors.FgCyan + data.toString().replace(/[^ -~]/g, "·") + colors.Reset);
+				logger.verbose(inspect`${colors.FgCyan}${data.toString().replace(/[^ -~]/g, "·")}${colors.Reset}`);
 				try {
 					logger.debug(inspect`${colors.FgGreen}Buffer for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${client.readbuffer}${colors.Reset}`);
 					logger.debug(inspect`${colors.FgGreen}New Data for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${data}${colors.Reset}`);
@@ -74,7 +74,7 @@ function connect(
 					client.readbuffer = rest;
 					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
 					// let handleTimeout = () => {
-						// logger.verbose(colors.FgGreen + "handling: " + colors.FgCyan + client.handling + colors.Reset);
+						// logger.verbose(inspect`${colors.FgGreen}handling: ${colors.FgCyan}${client.handling}${colors.Reset}`);
 						// if (client.handling === false) {
 						// 	client.handling = true;
 						// 	if (client.handleTimeout != null) {
@@ -85,9 +85,9 @@ function connect(
 									{
 										let msg = colors.FgGreen + "handling package " + colors.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors.Reset;
 										if (Object.keys(client.packages).length > 1) {
-											logger.info(msg);
+											logger.info(inspect`${msg}`);
 										} else {
-											logger.verbose(msg);
+											logger.verbose(inspect`${msg}`);
 										}
 									}
 	
@@ -96,12 +96,12 @@ function connect(
 											client.packages.splice(+key, 1);
 											resolve();
 										})
-										.catch(logger.error);
+										.catch(err=>{logger.error(inspect`${err}`)});
 								}))
 								.then(() => {
 									// client.handling = false;
 								})
-								.catch(logger.error);
+								.catch(err=>{logger.error(inspect`${err}`)});
 						// } else {
 						// 	if (client.handleTimeout == null) {
 						// 		client.handleTimeout = setTimeout(handleTimeout, 10);

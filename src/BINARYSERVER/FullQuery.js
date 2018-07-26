@@ -5,7 +5,7 @@ const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
-const misc = require("../SHARED/misc.js");
+const misc_js_1 = require("../SHARED/misc.js");
 const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");
 //#endregion
@@ -13,11 +13,11 @@ const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
 function getFullQuery() {
     return new Promise((resolve, reject) => {
-        logger.verbose(colors_js_1.default.FgMagenta + "geting " + colors_js_1.default.FgCyan + "FullQuery" + colors_js_1.default.Reset);
-        misc.SqlQuery("SELECT  * FROM servers;")
+        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgMagenta}geting ${colors_js_1.default.FgCyan}FullQuery${colors_js_1.default.Reset}`);
+        misc_js_1.SqlQuery("SELECT  * FROM servers;")
             .then((servers) => {
             if (servers.length == 0) {
-                logger.warn(colors_js_1.default.FgYellow + "No configured servers -> aborting " + colors_js_1.default.FgCyan + "FullQuery" + colors_js_1.default.Reset);
+                logger.warn(misc_js_1.inspect `${colors_js_1.default.FgYellow}No configured servers -> aborting ${colors_js_1.default.FgCyan}FullQuery${colors_js_1.default.Reset}`);
                 return void resolve();
             }
             // for (let i in servers) {
@@ -59,11 +59,11 @@ function getFullQuery() {
                         client.cb = resolve;
                     });
                 }))
-                    .catch(logger.error);
+                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
             }));
         })
             .then(() => resolve())
-            .catch(logger.error);
+            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
         //}
     });
 }

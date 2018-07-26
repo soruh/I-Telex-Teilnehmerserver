@@ -99,15 +99,15 @@ const logger = global.logger;
 
 const readonly = (config.serverPin == null);
 
-if (readonly) logger.warn(`${colors.FgMagenta}Starting in read-only mode!${colors.Reset}`);
+if (readonly) logger.warn(inspect`${colors.FgMagenta}Starting in read-only mode!${colors.Reset}`);
 colors.disable(config.disableColors);
 
 const mySqlConnectionOptions = config['mySqlConnectionOptions'];
 
 function init() {
-	logger.warn(colors.FgMagenta + "Initialising!" + colors.Reset);
+	logger.warn(inspect`${colors.FgMagenta}Initialising!${colors.Reset}`);
 	binaryServer.listen(config.binaryPort, function () {
-		logger.warn(colors.FgMagenta + "server is listening on port " + colors.FgCyan + config.binaryPort + colors.Reset);
+		logger.warn(inspect`${colors.FgMagenta}server is listening on port ${colors.FgCyan}${config.binaryPort}${colors.Reset}`);
 
 		timers.TimeoutWrapper(getFullQuery, config.fullQueryInterval);
 		// timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
@@ -126,18 +126,18 @@ type MailTransporter = nodemailer.Transporter | {
 global.sqlPool = mysql.createPool(mySqlConnectionOptions);
 global.sqlPool.getConnection(function (err, connection) {
 	if (err) {
-		logger.error(colors.FgRed + "Could not connect to database!" + colors.Reset);
+		logger.error(inspect`${colors.FgRed}Could not connect to database!${colors.Reset}`);
 		throw err;
 	} else {
 		connection.release();
-		logger.warn(colors.FgMagenta + "Successfully connected to the database!" + colors.Reset);
+		logger.warn(inspect`${colors.FgMagenta}Successfully connected to the database!${colors.Reset}`);
 		if (config.eMail.useTestAccount) {
 			nodemailer.createTestAccount(function (err, account) {
 				if (err) {
-					logger.error(err);
+					logger.error(inspect`${err}`);
 					global.transporter = {
 						sendMail: function sendMail() {
-							logger.error("can't send mail after Mail error");
+							logger.error(inspect`can't send mail after Mail error`);
 						},
 						options: {
 							host: "Failed to get test Account"
@@ -167,7 +167,7 @@ global.sqlPool.getConnection(function (err, connection) {
 if (config.printServerErrorsOnExit) {
 	let exitHandler = function exitHandler(options, err) {
 		if (options.cleanup) {
-			logger.error("exited with code: " + err);
+			logger.error(inspect`exited with code: ${err}`);
 			logger.error(inspect`serverErrors:\n${errorCounters}`);
 		} else {
 			logger.error(inspect`${err}`);
