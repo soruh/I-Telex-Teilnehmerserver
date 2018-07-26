@@ -39,7 +39,7 @@ interface configFile {
     binaryserverErrorLog: string,
     logBinaryserverToConsole: boolean,
 
-    keepDeltedFor:number,
+    keepDeletedFor:number,
     webserverLog: string,
     webserverErrorLog: string,
     logWebserverToConsole: boolean
