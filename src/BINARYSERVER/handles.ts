@@ -43,7 +43,7 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 		} = pkg.data;
 		var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
 		if (number < 10000) {
-			logger.warn(inspect`${colors.FgRed}client ${colors.FgCyan+client.name+colors.FgRed} tried to update ${number} which is too small(<10000)${colors.Reset}`);
+			logger.warn(inspect`client  tried to update ${number} which is too small(<10000)`);
 			return void sendEmail("invalidNumber", {
 					"IpFull": client.connection.remoteAddress,
 					"Ip": ipaddress,
@@ -64,7 +64,7 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 				let [entry] = entries.filter(x => x.type != 0);
 				if (entry) {
 					if (entry.type != 5) {
-						logger.info(inspect`${colors.FgRed}not DynIp type${colors.Reset}`);
+						logger.info(inspect`not DynIp type`);
 						client.connection.end();
 						return void sendEmail("wrongDynIpType", {
 								"type": entry.type.toString(),
@@ -79,7 +79,7 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 							.catch(err=>{logger.error(inspect`${err}`)});
 					}
 					if (entry.pin != pin) {
-						logger.info(inspect`${colors.FgRed}wrong DynIp pin${colors.Reset}`);
+						logger.info(inspect`wrong DynIp pin`);
 						client.connection.end();
 						return void sendEmail("wrongDynIpPin", {
 								"Ip": ipaddress,
@@ -92,7 +92,7 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 							.catch(err=>{logger.error(inspect`${err}`)});
 					}
 					if (ipaddress == entry.ipaddress && port == entry.port) {
-						logger.verbose(inspect`${colors.FgYellow}not UPDATING, nothing to update${colors.Reset}`);
+						logger.verbose(inspect`not UPDATING, nothing to update`);
 						return void client.connection.write(ITelexCom.encPackage({
 							type: 2,
 							data: {
@@ -128,7 +128,7 @@ handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client
 						))
 						.then(function (result) {
 							if (!(result && result.affectedRows)) {
-								logger.error(inspect`${colors.FgRed}could not create entry${colors.Reset}`);
+								logger.error(inspect`could not create entry`);
 								return void resolve();
 							}
 							sendEmail("new", {
@@ -157,7 +157,7 @@ handles[3][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_3, client
 		if (!client) return void resolve();
 
 		if (pkg.data.version != 1) {
-			logger.warn(inspect`${colors.FgRed}unsupported package version, sending '0x04' package${colors.Reset}`);
+			logger.warn(inspect`unsupported package version, sending '0x04' package`);
 			return void client.connection.write(ITelexCom.encPackage({
 				type: 4
 			}), () => resolve());
@@ -165,7 +165,7 @@ handles[3][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_3, client
 
 		SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number])
 			.then(function (result: ITelexCom.peerList) {
-				logger.verbose(inspect`${colors.FgCyan}${result}${colors.Reset}`);
+				logger.verbose(inspect`${result}`);
 				if (result && result.length == 1) {
 					let [data] = result;
 					data.pin = "0";
@@ -190,7 +190,7 @@ handles[5][constants.states.FULLQUERY] =
 		names = names.filter(name => pkg.data[name] !== undefined);
 		var values = names.map(name => pkg.data[name]);
 
-		logger.verbose(inspect`${colors.FgGreen}got dataset for:${colors.FgCyan}${pkg.data.number}${colors.Reset}`);
+		logger.verbose(inspect`got dataset for:${pkg.data.number}`);
 		SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
 			.then((entries: ITelexCom.peerList) => {
 				if (!entries) return void resolve();
@@ -199,15 +199,15 @@ handles[5][constants.states.FULLQUERY] =
 				if (entry) {
 					if (typeof client.newEntries != "number") client.newEntries = 0;
 					if (pkg.data.timestamp <= entry.timestamp) {
-						logger.verbose(inspect`${colors.FgYellow}recieved entry is ${colors.FgCyan}${+entry.timestamp - pkg.data.timestamp}${colors.FgYellow} seconds older and was ignored${colors.Reset}`);
+						logger.verbose(inspect`recieved entry is ${+entry.timestamp - pkg.data.timestamp} seconds older and was ignored`);
 						return void client.connection.write(ITelexCom.encPackage({
 							type: 8
 						}), () => resolve());
 					}
 
 					client.newEntries++;
-					logger.info(inspect`${colors.FgGreen}got new dataset for:${colors.FgCyan}${pkg.data.number}${colors.Reset}`);
-					logger.verbose(inspect`${colors.FgGreen}recieved entry is ${colors.FgCyan}${+pkg.data.timestamp - entry.timestamp} seconds newer ${colors.FgGreen} > ${colors.FgCyan}${entry.timestamp}${colors.Reset}`);
+					logger.info(inspect`got new dataset for:${pkg.data.number}`);
+					logger.verbose(inspect`recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
 
 
 					SqlQuery(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`,
@@ -239,7 +239,7 @@ handles[6][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_6, client
 		if (!client) return void resolve();
 
 		if (pkg.data.serverpin != config.serverPin && !(readonly && config.allowFullQueryInReadonly)) {
-			logger.info(inspect`${colors.FgRed}serverpin is incorrect! ${colors.FgCyan}${pkg.data.serverpin} ${colors.FgRed}!=${colors.FgCyan} ${config.serverPin}${colors.FgRed} ending client connection!${colors.Reset}`); //TODO: remove pin logging
+			logger.info(inspect`serverpin is incorrect! ${pkg.data.serverpin} != ${config.serverPin} ending client connection!`); //TODO: remove pin logging
 			client.connection.end();
 			return void sendEmail("wrongServerPin", {
 					"IpFull": client.connection.remoteAddress,
@@ -251,7 +251,7 @@ handles[6][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_6, client
 				.catch(err=>{logger.error(inspect`${err}`)});
 		}
 
-		logger.info(inspect`${colors.FgGreen}serverpin is correct!${colors.Reset}`);
+		logger.info(inspect`serverpin is correct!`);
 
 		SqlQuery("SELECT  * FROM teilnehmer;")
 			.then((result: ITelexCom.peerList) => {
@@ -273,7 +273,7 @@ handles[7][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_7, client
 		if (!client) return void resolve();
 
 		if (pkg.data.serverpin != config.serverPin && !(readonly && config.allowLoginInReadonly)) {
-			logger.info(inspect`${colors.FgRed}serverpin is incorrect! ${colors.FgCyan}${pkg.data.serverpin}${colors.FgRed} != ${colors.FgCyan}${config.serverPin}${colors.FgRed} ending client.connection!${colors.Reset}`);
+			logger.info(inspect`serverpin is incorrect! ${pkg.data.serverpin} != ${config.serverPin} ending client.connection!`);
 			client.connection.end();
 			return void sendEmail("wrongServerPin", {
 					"IpFull": client.connection.remoteAddress,
@@ -284,7 +284,7 @@ handles[7][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_7, client
 				.then(() => resolve())
 				.catch(err=>{logger.error(inspect`${err}`)});
 		}
-		logger.info(inspect`${colors.FgGreen}serverpin is correct!${colors.Reset}`);
+		logger.info(inspect`serverpin is correct!`);
 
 		client.state = constants.states.LOGIN;
 		client.connection.write(ITelexCom.encPackage({
@@ -296,7 +296,7 @@ handles[8][constants.states.RESPONDING] = (pkg: ITelexCom.Package_decoded_8, cli
 		if (!client) return void resolve();
 
 
-		logger.info(inspect`${colors.FgGreen}entrys to transmit:${colors.FgCyan}${client.writebuffer.length}${colors.Reset}`);
+		logger.info(inspect`entrys to transmit:${client.writebuffer.length}`);
 
 		if (client.writebuffer.length === 0) {
 			client.state = constants.states.STANDBY;
@@ -305,7 +305,7 @@ handles[8][constants.states.RESPONDING] = (pkg: ITelexCom.Package_decoded_8, cli
 			}), () => resolve());
 		}
 		let data = client.writebuffer.shift();
-		logger.info(inspect`${colors.FgGreen}sent dataset for ${colors.FgCyan}${data.name} (${data.number})${colors.Reset}`);
+		logger.info(inspect`sent dataset for ${data.name} (${data.number})`);
 		client.connection.write(ITelexCom.encPackage({
 			type: 5,
 			data

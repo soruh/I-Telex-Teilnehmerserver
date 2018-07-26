@@ -17,11 +17,11 @@ const readonly = (config.serverPin == null);
 
 function getFullQuery() {
 	return new Promise((resolve, reject) => {
-		logger.verbose(inspect`${colors.FgMagenta}geting ${colors.FgCyan}FullQuery${colors.Reset}`);
+		logger.verbose(inspect`geting FullQuery`);
 		SqlQuery("SELECT  * FROM servers;")
 			.then((servers: ITelexCom.serverList) => {
 				if (servers.length == 0) {
-					logger.warn(inspect`${colors.FgYellow}No configured servers -> aborting ${colors.FgCyan}FullQuery${colors.Reset}`);
+					logger.warn(inspect`No configured servers -> aborting FullQuery`);
 					return void resolve();
 				}
 				// for (let i in servers) {

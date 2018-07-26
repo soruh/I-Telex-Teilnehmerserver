@@ -21,7 +21,7 @@ function connect(
 ): Promise < client > {
 	return new Promise((resolve, reject) => {
 		let serverkey = options.host + ":" + options.port;
-		logger.info(inspect`${colors.FgGreen}trying to connect to: ${colors.FgCyan}${serverkey}${colors.Reset}`);
+		logger.info(inspect`trying to connect to: ${serverkey}`);
 
 
 		var socket = new net.Socket();
@@ -36,15 +36,15 @@ function connect(
 		};
 		socket.setTimeout(config.connectionTimeout);
 		socket.on('end', () => {
-			if (client.newEntries != null) logger.info(inspect`${colors.FgGreen}recieved ${colors.FgCyan}${client.newEntries}${colors.FgGreen} new entries${colors.Reset}`);
-			logger.info(inspect`${colors.FgYellow}server ${colors.FgCyan}${client.name}${colors.FgYellow} ended!${colors.Reset}`);
+			if (client.newEntries != null) logger.info(inspect`recieved ${client.newEntries} new entries`);
+			logger.info(inspect`server ${client.name} ended!`);
 
-			// logger.info(inspect`${colors.FgGreen}deleted connection ${colors.FgCyan+client.name+colors.Reset}`);
+			// logger.info(inspect`deleted connection `);
 			client = null;
 			onEnd(client);
 		});
 		socket.on('timeout', () => {
-			logger.warn(inspect`${colors.FgRed}server: ${colors.FgCyan}${serverkey}${colors.FgRed} timed out${colors.Reset}`);
+			logger.warn(inspect`server: ${serverkey} timed out`);
 			// socket.emit("end");
 			// socket.emit("error",new Error("timeout"));
 			increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
@@ -52,9 +52,9 @@ function connect(
 		});
 		socket.on('error', error => {
 			if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
-				logger.info(inspect`${colors.FgRed}server ${colors.FgCyan}${options}${colors.FgRed} had an error${colors.Reset}`);
+				logger.info(inspect`server ${options} had an error`);
 				increaseErrorCounter(serverkey, error, error["code"]);
-				logger.info(inspect`${colors.FgRed}server ${colors.FgCyan}${serverkey}${colors.FgRed} could not be reached; errorCounter: ${colors.FgCyan}${errorCounters[serverkey]}${colors.Reset}`);
+				logger.info(inspect`server ${serverkey} could not be reached; errorCounter: ${errorCounters[serverkey]}`);
 			}else{
 				logger.debug(inspect`${error}`);
 			}
@@ -63,18 +63,18 @@ function connect(
 		socket.on('data', (data: Buffer) => {
 			if(client){
 
-				logger.verbose(inspect`${colors.FgGreen}recieved data: ${colors.FgCyan}${data}${colors.Reset}`);
-				logger.verbose(inspect`${colors.FgCyan}${data.toString().replace(/[^ -~]/g, "·")}${colors.Reset}`);
+				logger.verbose(inspect`recieved data: ${data}`);
+				logger.verbose(inspect`${data.toString().replace(/[^ -~]/g, "·")}`);
 				try {
-					logger.debug(inspect`${colors.FgGreen}Buffer for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${client.readbuffer}${colors.Reset}`);
-					logger.debug(inspect`${colors.FgGreen}New Data for client ${colors.FgCyan}${client.name}${colors.FgGreen}: ${colors.FgCyan}${data}${colors.Reset}`);
+					logger.debug(inspect`Buffer for client ${client.name}: ${client.readbuffer}`);
+					logger.debug(inspect`New Data for client ${client.name}: ${data}`);
 					var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-					logger.debug(inspect`${colors.FgGreen}New Buffer for client ${client.name}: ${colors.FgCyan}${rest}${colors.Reset}`);
-					logger.debug(inspect`${colors.FgGreen}Packages for client ${client.name}: ${colors.FgCyan}${packages}${colors.Reset}`);
+					logger.debug(inspect`New Buffer for client ${client.name}: ${rest}`);
+					logger.debug(inspect`Packages for client ${client.name}: ${packages}`);
 					client.readbuffer = rest;
 					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
 					// let handleTimeout = () => {
-						// logger.verbose(inspect`${colors.FgGreen}handling: ${colors.FgCyan}${client.handling}${colors.Reset}`);
+						// logger.verbose(inspect`handling: ${client.handling}`);
 						// if (client.handling === false) {
 						// 	client.handling = true;
 						// 	if (client.handleTimeout != null) {
@@ -83,7 +83,7 @@ function connect(
 						// 	}
 							serialEachPromise(client.packages, (pkg, key) => new Promise((resolve, reject) => {
 									{
-										let msg = colors.FgGreen + "handling package " + colors.FgCyan + (+key + 1) + "/" + Object.keys(client.packages).length + colors.Reset;
+										let msg = `handling package ${+key + 1}/${Object.keys(client.packages).length}`;
 										if (Object.keys(client.packages).length > 1) {
 											logger.info(inspect`${msg}`);
 										} else {
@@ -110,12 +110,12 @@ function connect(
 					// };
 					// handleTimeout();
 				} catch (e) {
-					logger.error(inspect`${colors.FgRed}${e}${colors.Reset}`);
+					logger.error(inspect`${e}`);
 				}
 			}
 		});
 		socket.connect(options, () => {
-			logger.info(inspect`${colors.FgGreen}connected to: ${colors.FgCyan}${options}${colors.FgGreen} as server ${colors.FgCyan}${client.name}${colors.Reset}`);
+			logger.info(inspect`connected to: ${options} as server ${client.name}`);
 			resetErrorCounter(serverkey);
 			resolve(client);
 		});

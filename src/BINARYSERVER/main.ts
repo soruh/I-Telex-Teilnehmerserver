@@ -99,15 +99,15 @@ const logger = global.logger;
 
 const readonly = (config.serverPin == null);
 
-if (readonly) logger.warn(inspect`${colors.FgMagenta}Starting in read-only mode!${colors.Reset}`);
+if (readonly) logger.warn(inspect`Starting in read-only mode!`);
 colors.disable(config.disableColors);
 
 const mySqlConnectionOptions = config['mySqlConnectionOptions'];
 
 function init() {
-	logger.warn(inspect`${colors.FgMagenta}Initialising!${colors.Reset}`);
+	logger.warn(inspect`Initialising!`);
 	binaryServer.listen(config.binaryPort, function () {
-		logger.warn(inspect`${colors.FgMagenta}server is listening on port ${colors.FgCyan}${config.binaryPort}${colors.Reset}`);
+		logger.warn(inspect`server is listening on port ${config.binaryPort}`);
 
 		timers.TimeoutWrapper(getFullQuery, config.fullQueryInterval);
 		// timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
@@ -126,11 +126,11 @@ type MailTransporter = nodemailer.Transporter | {
 global.sqlPool = mysql.createPool(mySqlConnectionOptions);
 global.sqlPool.getConnection(function (err, connection) {
 	if (err) {
-		logger.error(inspect`${colors.FgRed}Could not connect to database!${colors.Reset}`);
+		logger.error(inspect`Could not connect to database!`);
 		throw err;
 	} else {
 		connection.release();
-		logger.warn(inspect`${colors.FgMagenta}Successfully connected to the database!${colors.Reset}`);
+		logger.warn(inspect`Successfully connected to the database!`);
 		if (config.eMail.useTestAccount) {
 			nodemailer.createTestAccount(function (err, account) {
 				if (err) {
@@ -144,7 +144,7 @@ global.sqlPool.getConnection(function (err, connection) {
 						}
 					};
 				} else {
-					logger.warn(inspect`${colors.FgMagenta}Got email test account:\n${colors.FgCyan}${account}${colors.Reset}`);
+					logger.warn(inspect`Got email test account:\n${account}`);
 					global.transporter = nodemailer.createTransport({
 						host: 'smtp.ethereal.email',
 						port: 587,

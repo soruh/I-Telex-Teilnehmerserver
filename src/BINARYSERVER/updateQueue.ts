@@ -13,11 +13,11 @@ const logger = global.logger;
 
 async function updateQueue() {
 	return new Promise((resolve, reject) => {
-		logger.verbose(inspect`${colors.FgMagenta}updating ${colors.FgCyan}Queue${colors.Reset}`);
+		logger.verbose(inspect`updating Queue`);
 		SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;")
 			.then(function (changed: ITelexCom.peerList) {
 				if (changed.length > 0) {
-					logger.info(inspect`${colors.FgCyan}${changed.length}${colors.FgGreen} numbers to enqueue${colors.Reset}`);
+					logger.info(inspect`${changed.length} numbers to enqueue`);
 
 					SqlQuery("SELECT * FROM servers;")
 						.then(function (servers: ITelexCom.serverList) {
@@ -31,7 +31,7 @@ async function updateQueue() {
 														.then(function () {
 															//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 															//.then(function(){
-															logger.verbose(inspect`${colors.FgGreen}enqueued: ${colors.FgCyan}${message.number}${colors.Reset}`);
+															logger.verbose(inspect`enqueued: ${message.number}`);
 															//})
 															//.catch(err=>{logger.error(inspect`${err}`)});
 														})
@@ -41,7 +41,7 @@ async function updateQueue() {
 														.then(function () {
 															//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 															//.then(function(){
-															logger.verbose(inspect`${colors.FgGreen}enqueued: ${colors.FgCyan}${message.number}${colors.Reset}`);
+															logger.verbose(inspect`enqueued: ${message.number}`);
 															//})
 															//.catch(err=>{logger.error(inspect`${err}`)});
 														})
@@ -53,7 +53,7 @@ async function updateQueue() {
 														.then(() => {
 															//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 															//.then(function(){
-															logger.verbose(inspect`${colors.FgGreen}enqueued: ${colors.FgCyan}message.number${colors.Reset}`);
+															logger.verbose(inspect`enqueued: message.number`);
 															//})
 															//.catch(err=>{logger.error(inspect`${err}`)});
 														})
@@ -64,24 +64,24 @@ async function updateQueue() {
 										)
 									)
 									.then(() => {
-										logger.info(inspect`${colors.FgGreen}finished enqueueing${colors.Reset}`);
-										logger.verbose(inspect`${colors.FgGreen}reseting changed flags...${colors.Reset}`);
+										logger.info(inspect`finished enqueueing`);
+										logger.verbose(inspect`reseting changed flags...`);
 										return SqlQuery(`UPDATE teilnehmer SET changed = 0 WHERE uid=?${" or uid=?".repeat(changed.length-1)};`, changed.map(entry => entry.uid));
 									})
 									.then(() => {
-										logger.verbose(inspect`${colors.FgGreen}reset ${colors.FgCyan}${changed.length}${colors.FgGreen} changed flags.${colors.Reset}`);
+										logger.verbose(inspect`reset ${changed.length} changed flags.`);
 										//sendQueue();
 										resolve();
 									})
 									.catch(err=>{logger.error(inspect`${err}`)});
 							} else {
-								logger.warn(inspect`${colors.FgYellow}No configured servers -> aborting ${colors.FgCyan}updateQueue${colors.Reset}`);
+								logger.warn(inspect`No configured servers -> aborting updateQueue`);
 								resolve();
 							}
 						})
 						.catch(err=>{logger.error(inspect`${err}`)});
 				} else {
-					logger.verbose(inspect`${colors.FgYellow}no numbers to enqueue${colors.Reset}`);
+					logger.verbose(inspect`no numbers to enqueue`);
 					resolve();
 				}
 			})

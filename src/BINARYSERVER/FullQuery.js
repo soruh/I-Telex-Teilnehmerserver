@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../SHARED/config.js");
-const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
@@ -13,11 +12,11 @@ const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
 function getFullQuery() {
     return new Promise((resolve, reject) => {
-        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgMagenta}geting ${colors_js_1.default.FgCyan}FullQuery${colors_js_1.default.Reset}`);
+        logger.verbose(misc_js_1.inspect `geting FullQuery`);
         misc_js_1.SqlQuery("SELECT  * FROM servers;")
             .then((servers) => {
             if (servers.length == 0) {
-                logger.warn(misc_js_1.inspect `${colors_js_1.default.FgYellow}No configured servers -> aborting ${colors_js_1.default.FgCyan}FullQuery${colors_js_1.default.Reset}`);
+                logger.warn(misc_js_1.inspect `No configured servers -> aborting FullQuery`);
                 return void resolve();
             }
             // for (let i in servers) {

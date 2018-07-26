@@ -19,9 +19,9 @@ const logger = global.logger;
 function sendQueue() {
 	return updateQueue()
 	.then(() => new Promise((resolve, reject) => {
-		logger.verbose(inspect`${colors.FgMagenta}sending ${colors.FgCyan}Queue${colors.Reset}`);
+		logger.verbose(inspect`sending Queue`);
 		if (readonly) {
-			logger.verbose(inspect`${colors.FgYellow}Read-only mode -> aborting ${colors.FgCyan}sendQueue${colors.Reset}`);
+			logger.verbose(inspect`Read-only mode -> aborting sendQueue`);
 			return void resolve();
 		}
 		SqlQuery("SELECT * FROM teilnehmer;")
@@ -29,7 +29,7 @@ function sendQueue() {
 			SqlQuery("SELECT * FROM queue;")
 			.then(function (queue: ITelexCom.queue) {
 				if (queue.length === 0) {
-					logger.verbose(inspect`${colors.FgYellow}No queue!${colors.Reset}`);
+					logger.verbose(inspect`No queue!`);
 					return void resolve();
 				}
 
@@ -46,7 +46,7 @@ function sendQueue() {
 					.then(function (result2: ITelexCom.serverList) {
 						if (result2.length == 1) {
 							var serverinf = result2[0];
-							logger.verbose(inspect`${colors.FgCyan}${serverinf}${colors.Reset}`);
+							logger.verbose(inspect`${serverinf}`);
 							try {
 								// var isConnected = false;
 								// for (let key in connections) {
@@ -66,11 +66,11 @@ function sendQueue() {
 								})
 								.then(client => {
 									client.servernum = server[0].server;
-									logger.info(inspect`${colors.FgGreen}connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}${colors.Reset}`);
+									logger.info(inspect`connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
 									client.writebuffer = [];
 									serialEachPromise(server, serverdata =>
 									new Promise((resolve, reject) => {
-										logger.verbose(inspect`${colors.FgCyan}${serverdata}${colors.Reset}`);
+										logger.verbose(inspect`${serverdata}`);
 										var existing: ITelexCom.peer = null;
 										for (let t of teilnehmer) {
 											if (t.uid == serverdata.message) {
@@ -83,16 +83,16 @@ function sendQueue() {
 											.then(function (res) {
 												if (res.affectedRows > 0) {
 													client.writebuffer.push(existing);
-													logger.info(inspect`${colors.FgGreen}deleted queue entry ${colors.FgCyan}${existing.name}${colors.FgGreen} from queue${colors.Reset}`);
+													logger.info(inspect`deleted queue entry ${existing.name} from queue`);
 													resolve();
 												} else {
-													logger.warn(inspect`${colors.FgRed}could not delete queue entry ${colors.FgCyan}${existing.name}${colors.FgRed} from queue${colors.Reset}`);
+													logger.warn(inspect`could not delete queue entry ${existing.name} from queue`);
 													resolve();
 												}
 											})
 											.catch(err=>{logger.error(inspect`${err}`)});
 										} else {
-											logger.verbose(inspect`${colors.FgRed}entry does not exist${colors.Reset}`);
+											logger.verbose(inspect`entry does not exist`);
 											resolve();
 										}
 									})
@@ -113,11 +113,11 @@ function sendQueue() {
 								})
 								.catch(err=>{logger.error(inspect`${err}`)});
 							// } else {
-							// 	logger.warn(inspect`${colors.FgYellow}already connected to server ${server[0].server}${colors.Reset}`);
+							// 	logger.warn(inspect`already connected to server ${server[0].server}`);
 							// 	resolve();
 							// }
 							} catch (e) {
-								logger.error(inspect`${colors.FgRed}${e}${colors.Reset}`);
+								logger.error(inspect`${e}`);
 								resolve();
 							}
 						} else {

@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../SHARED/config.js");
-const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
@@ -15,9 +14,9 @@ const logger = global.logger;
 function sendQueue() {
     return updateQueue_js_1.default()
         .then(() => new Promise((resolve, reject) => {
-        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgMagenta}sending ${colors_js_1.default.FgCyan}Queue${colors_js_1.default.Reset}`);
+        logger.verbose(misc_js_1.inspect `sending Queue`);
         if (readonly) {
-            logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgYellow}Read-only mode -> aborting ${colors_js_1.default.FgCyan}sendQueue${colors_js_1.default.Reset}`);
+            logger.verbose(misc_js_1.inspect `Read-only mode -> aborting sendQueue`);
             return void resolve();
         }
         misc_js_1.SqlQuery("SELECT * FROM teilnehmer;")
@@ -25,7 +24,7 @@ function sendQueue() {
             misc_js_1.SqlQuery("SELECT * FROM queue;")
                 .then(function (queue) {
                 if (queue.length === 0) {
-                    logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgYellow}No queue!${colors_js_1.default.Reset}`);
+                    logger.verbose(misc_js_1.inspect `No queue!`);
                     return void resolve();
                 }
                 var servers = {};
@@ -39,7 +38,7 @@ function sendQueue() {
                         .then(function (result2) {
                         if (result2.length == 1) {
                             var serverinf = result2[0];
-                            logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgCyan}${serverinf}${colors_js_1.default.Reset}`);
+                            logger.verbose(misc_js_1.inspect `${serverinf}`);
                             try {
                                 // var isConnected = false;
                                 // for (let key in connections) {
@@ -58,10 +57,10 @@ function sendQueue() {
                                 })
                                     .then(client => {
                                     client.servernum = server[0].server;
-                                    logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}${colors_js_1.default.Reset}`);
+                                    logger.info(misc_js_1.inspect `connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
                                     client.writebuffer = [];
                                     serialEachPromise_js_1.default(server, serverdata => new Promise((resolve, reject) => {
-                                        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgCyan}${serverdata}${colors_js_1.default.Reset}`);
+                                        logger.verbose(misc_js_1.inspect `${serverdata}`);
                                         var existing = null;
                                         for (let t of teilnehmer) {
                                             if (t.uid == serverdata.message) {
@@ -74,18 +73,18 @@ function sendQueue() {
                                                 .then(function (res) {
                                                 if (res.affectedRows > 0) {
                                                     client.writebuffer.push(existing);
-                                                    logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}deleted queue entry ${colors_js_1.default.FgCyan}${existing.name}${colors_js_1.default.FgGreen} from queue${colors_js_1.default.Reset}`);
+                                                    logger.info(misc_js_1.inspect `deleted queue entry ${existing.name} from queue`);
                                                     resolve();
                                                 }
                                                 else {
-                                                    logger.warn(misc_js_1.inspect `${colors_js_1.default.FgRed}could not delete queue entry ${colors_js_1.default.FgCyan}${existing.name}${colors_js_1.default.FgRed} from queue${colors_js_1.default.Reset}`);
+                                                    logger.warn(misc_js_1.inspect `could not delete queue entry ${existing.name} from queue`);
                                                     resolve();
                                                 }
                                             })
                                                 .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
                                         }
                                         else {
-                                            logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgRed}entry does not exist${colors_js_1.default.Reset}`);
+                                            logger.verbose(misc_js_1.inspect `entry does not exist`);
                                             resolve();
                                         }
                                     }))
@@ -105,12 +104,12 @@ function sendQueue() {
                                 })
                                     .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
                                 // } else {
-                                // 	logger.warn(inspect`${colors.FgYellow}already connected to server ${server[0].server}${colors.Reset}`);
+                                // 	logger.warn(inspect`already connected to server ${server[0].server}`);
                                 // 	resolve();
                                 // }
                             }
                             catch (e) {
-                                logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}${e}${colors_js_1.default.Reset}`);
+                                logger.error(misc_js_1.inspect `${e}`);
                                 resolve();
                             }
                         }

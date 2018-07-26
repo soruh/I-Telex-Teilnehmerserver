@@ -77,13 +77,13 @@ const binaryServer_js_1 = require("./binaryServer.js");
 const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
 if (readonly)
-    logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Starting in read-only mode!${colors_js_1.default.Reset}`);
+    logger.warn(misc_js_1.inspect `Starting in read-only mode!`);
 colors_js_1.default.disable(config_js_1.default.disableColors);
 const mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
 function init() {
-    logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Initialising!${colors_js_1.default.Reset}`);
+    logger.warn(misc_js_1.inspect `Initialising!`);
     binaryServer_js_1.default.listen(config_js_1.default.binaryPort, function () {
-        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}server is listening on port ${colors_js_1.default.FgCyan}${config_js_1.default.binaryPort}${colors_js_1.default.Reset}`);
+        logger.warn(misc_js_1.inspect `server is listening on port ${config_js_1.default.binaryPort}`);
         timers.TimeoutWrapper(FullQuery_js_1.default, config_js_1.default.fullQueryInterval);
         // timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
         timers.TimeoutWrapper(sendQueue_js_1.default, config_js_1.default.queueSendInterval);
@@ -93,12 +93,12 @@ function init() {
 global.sqlPool = mysql.createPool(mySqlConnectionOptions);
 global.sqlPool.getConnection(function (err, connection) {
     if (err) {
-        logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}Could not connect to database!${colors_js_1.default.Reset}`);
+        logger.error(misc_js_1.inspect `Could not connect to database!`);
         throw err;
     }
     else {
         connection.release();
-        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Successfully connected to the database!${colors_js_1.default.Reset}`);
+        logger.warn(misc_js_1.inspect `Successfully connected to the database!`);
         if (config_js_1.default.eMail.useTestAccount) {
             nodemailer.createTestAccount(function (err, account) {
                 if (err) {
@@ -113,7 +113,7 @@ global.sqlPool.getConnection(function (err, connection) {
                     };
                 }
                 else {
-                    logger.warn(misc_js_1.inspect `${colors_js_1.default.FgMagenta}Got email test account:\n${colors_js_1.default.FgCyan}${account}${colors_js_1.default.Reset}`);
+                    logger.warn(misc_js_1.inspect `Got email test account:\n${account}`);
                     global.transporter = nodemailer.createTransport({
                         host: 'smtp.ethereal.email',
                         port: 587,

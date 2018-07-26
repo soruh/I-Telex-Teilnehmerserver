@@ -15,10 +15,10 @@ const sqlPool = global.sqlPool;
 
 sqlPool.getConnection(function (err, connection) {
   if (err) {
-    logger.error(inspect`${colors.FgRed}could not connect to database!${colors.Reset}`);
+    logger.error(inspect`could not connect to database!`);
     throw err;
   } else {
-    logger.warn(inspect`${colors.FgGreen}connected to database!${colors.Reset}`);
+    logger.warn(inspect`connected to database!`);
     connection.release();
   }
 });

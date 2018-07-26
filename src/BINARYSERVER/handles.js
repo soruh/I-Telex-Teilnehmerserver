@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
-const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
@@ -35,7 +34,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     var { number, pin, port } = pkg.data;
     var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
     if (number < 10000) {
-        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgRed}client ${colors_js_1.default.FgCyan + client.name + colors_js_1.default.FgRed} tried to update ${number} which is too small(<10000)${colors_js_1.default.Reset}`);
+        logger.warn(misc_js_1.inspect `client  tried to update ${number} which is too small(<10000)`);
         return void misc_js_1.sendEmail("invalidNumber", {
             "IpFull": client.connection.remoteAddress,
             "Ip": ipaddress,
@@ -56,7 +55,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         let [entry] = entries.filter(x => x.type != 0);
         if (entry) {
             if (entry.type != 5) {
-                logger.info(misc_js_1.inspect `${colors_js_1.default.FgRed}not DynIp type${colors_js_1.default.Reset}`);
+                logger.info(misc_js_1.inspect `not DynIp type`);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpType", {
                     "type": entry.type.toString(),
@@ -71,7 +70,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
             }
             if (entry.pin != pin) {
-                logger.info(misc_js_1.inspect `${colors_js_1.default.FgRed}wrong DynIp pin${colors_js_1.default.Reset}`);
+                logger.info(misc_js_1.inspect `wrong DynIp pin`);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpPin", {
                     "Ip": ipaddress,
@@ -84,7 +83,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
             }
             if (ipaddress == entry.ipaddress && port == entry.port) {
-                logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgYellow}not UPDATING, nothing to update${colors_js_1.default.Reset}`);
+                logger.verbose(misc_js_1.inspect `not UPDATING, nothing to update`);
                 return void client.connection.write(ITelexCom.encPackage({
                     type: 2,
                     data: {
@@ -119,7 +118,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
 				VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
                 .then(function (result) {
                 if (!(result && result.affectedRows)) {
-                    logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}could not create entry${colors_js_1.default.Reset}`);
+                    logger.error(misc_js_1.inspect `could not create entry`);
                     return void resolve();
                 }
                 misc_js_1.sendEmail("new", {
@@ -146,14 +145,14 @@ handles[3][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (!client)
         return void resolve();
     if (pkg.data.version != 1) {
-        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgRed}unsupported package version, sending '0x04' package${colors_js_1.default.Reset}`);
+        logger.warn(misc_js_1.inspect `unsupported package version, sending '0x04' package`);
         return void client.connection.write(ITelexCom.encPackage({
             type: 4
         }), () => resolve());
     }
     misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number])
         .then(function (result) {
-        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgCyan}${result}${colors_js_1.default.Reset}`);
+        logger.verbose(misc_js_1.inspect `${result}`);
         if (result && result.length == 1) {
             let [data] = result;
             data.pin = "0";
@@ -177,7 +176,7 @@ handles[5][constants.states.FULLQUERY] =
         var names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
         names = names.filter(name => pkg.data[name] !== undefined);
         var values = names.map(name => pkg.data[name]);
-        logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgGreen}got dataset for:${colors_js_1.default.FgCyan}${pkg.data.number}${colors_js_1.default.Reset}`);
+        logger.verbose(misc_js_1.inspect `got dataset for:${pkg.data.number}`);
         misc_js_2.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
             .then((entries) => {
             if (!entries)
@@ -187,14 +186,14 @@ handles[5][constants.states.FULLQUERY] =
                 if (typeof client.newEntries != "number")
                     client.newEntries = 0;
                 if (pkg.data.timestamp <= entry.timestamp) {
-                    logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgYellow}recieved entry is ${colors_js_1.default.FgCyan}${+entry.timestamp - pkg.data.timestamp}${colors_js_1.default.FgYellow} seconds older and was ignored${colors_js_1.default.Reset}`);
+                    logger.verbose(misc_js_1.inspect `recieved entry is ${+entry.timestamp - pkg.data.timestamp} seconds older and was ignored`);
                     return void client.connection.write(ITelexCom.encPackage({
                         type: 8
                     }), () => resolve());
                 }
                 client.newEntries++;
-                logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}got new dataset for:${colors_js_1.default.FgCyan}${pkg.data.number}${colors_js_1.default.Reset}`);
-                logger.verbose(misc_js_1.inspect `${colors_js_1.default.FgGreen}recieved entry is ${colors_js_1.default.FgCyan}${+pkg.data.timestamp - entry.timestamp} seconds newer ${colors_js_1.default.FgGreen} > ${colors_js_1.default.FgCyan}${entry.timestamp}${colors_js_1.default.Reset}`);
+                logger.info(misc_js_1.inspect `got new dataset for:${pkg.data.number}`);
+                logger.verbose(misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
                 misc_js_2.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]))
                     .then(() => client.connection.write(ITelexCom.encPackage({
                     type: 8
@@ -221,7 +220,7 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (!client)
         return void resolve();
     if (pkg.data.serverpin != config_js_1.default.serverPin && !(readonly && config_js_1.default.allowFullQueryInReadonly)) {
-        logger.info(misc_js_1.inspect `${colors_js_1.default.FgRed}serverpin is incorrect! ${colors_js_1.default.FgCyan}${pkg.data.serverpin} ${colors_js_1.default.FgRed}!=${colors_js_1.default.FgCyan} ${config_js_1.default.serverPin}${colors_js_1.default.FgRed} ending client connection!${colors_js_1.default.Reset}`); //TODO: remove pin logging
+        logger.info(misc_js_1.inspect `serverpin is incorrect! ${pkg.data.serverpin} != ${config_js_1.default.serverPin} ending client connection!`); //TODO: remove pin logging
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "IpFull": client.connection.remoteAddress,
@@ -232,7 +231,7 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             .then(() => resolve())
             .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
     }
-    logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}serverpin is correct!${colors_js_1.default.Reset}`);
+    logger.info(misc_js_1.inspect `serverpin is correct!`);
     misc_js_2.SqlQuery("SELECT  * FROM teilnehmer;")
         .then((result) => {
         if (!result || result.length === 0)
@@ -252,7 +251,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (!client)
         return void resolve();
     if (pkg.data.serverpin != config_js_1.default.serverPin && !(readonly && config_js_1.default.allowLoginInReadonly)) {
-        logger.info(misc_js_1.inspect `${colors_js_1.default.FgRed}serverpin is incorrect! ${colors_js_1.default.FgCyan}${pkg.data.serverpin}${colors_js_1.default.FgRed} != ${colors_js_1.default.FgCyan}${config_js_1.default.serverPin}${colors_js_1.default.FgRed} ending client.connection!${colors_js_1.default.Reset}`);
+        logger.info(misc_js_1.inspect `serverpin is incorrect! ${pkg.data.serverpin} != ${config_js_1.default.serverPin} ending client.connection!`);
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "IpFull": client.connection.remoteAddress,
@@ -263,7 +262,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             .then(() => resolve())
             .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
     }
-    logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}serverpin is correct!${colors_js_1.default.Reset}`);
+    logger.info(misc_js_1.inspect `serverpin is correct!`);
     client.state = constants.states.LOGIN;
     client.connection.write(ITelexCom.encPackage({
         type: 8
@@ -272,7 +271,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
 handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
-    logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}entrys to transmit:${colors_js_1.default.FgCyan}${client.writebuffer.length}${colors_js_1.default.Reset}`);
+    logger.info(misc_js_1.inspect `entrys to transmit:${client.writebuffer.length}`);
     if (client.writebuffer.length === 0) {
         client.state = constants.states.STANDBY;
         return void client.connection.write(ITelexCom.encPackage({
@@ -280,7 +279,7 @@ handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve,
         }), () => resolve());
     }
     let data = client.writebuffer.shift();
-    logger.info(misc_js_1.inspect `${colors_js_1.default.FgGreen}sent dataset for ${colors_js_1.default.FgCyan}${data.name} (${data.number})${colors_js_1.default.Reset}`);
+    logger.info(misc_js_1.inspect `sent dataset for ${data.name} (${data.number})`);
     client.connection.write(ITelexCom.encPackage({
         type: 5,
         data

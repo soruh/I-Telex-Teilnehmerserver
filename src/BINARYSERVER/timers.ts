@@ -54,7 +54,7 @@ class Timer {
     this.complete = this.total_time_run >= this.duration;
     this.remaining = this.duration - this.total_time_run;
     if (this.complete) {
-      logger.debug(`${colors.FgMagenta}restarted timeout ${this.name ? " " + colors.FgCyan + this.name : ""}${colors.Reset}`);
+      logger.debug(`restarted timeout ${this.name||''}`);
       this.start_time = Date.now();
       this.resume();
     } else {
@@ -66,14 +66,14 @@ class Timer {
 function pauseAll() {
   for (var [name, timeout] of timeouts) {
     timeout.pause();
-    logger.debug(`${colors.FgBlue}paused ${colors.FgMagenta}timeout: ${colors.FgCyan}${symbolName(name)}${colors.FgMagenta}remaining: ${colors.FgCyan}${timeout.remaining}${colors.Reset}`);
+    logger.debug(`paused timeout: ${symbolName(name)}remaining: ${timeout.remaining}`);
   }
 }
 
 function resumeAll() {
   for (var [name, timeout] of timeouts) {
     timeout.resume();
-    logger.debug(`${colors.FgYellow}resumed ${colors.FgMagenta}timeout: ${colors.FgCyan}${symbolName(name)}${colors.FgMagenta} remaining: ${colors.FgCyan}${timeout.remaining}${colors.Reset}`);
+    logger.debug(`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
   }
 }
 
@@ -86,20 +86,20 @@ function TimeoutWrapper < T > (
     .toString()
     .split("(")[0]
     .split(" ")[1];
-  logger.info(inspect`${colors.FgMagenta}set timeout for: ${colors.FgCyan}${fnName}${colors.FgMagenta} to ${colors.FgCyan}${duration}${colors.FgMagenta}ms${colors.Reset}`);
+  logger.info(inspect`set timeout for: ${fnName} to ${duration}ms`);
   timeouts.set(
     Symbol(fnName),
     new Timer(
       function () {
         pauseAll();
-        logger.debug(inspect`${colors.FgMagenta}called: ${colors.FgCyan}${fnName}${colors.FgMagenta} with: ${colors.FgCyan}[${args.slice(1)}]${colors.Reset}`);
+        logger.debug(inspect`called: ${fnName} with: [${args.slice(1)}]`);
         fn.apply(null, args)
           .then(() => {
-            logger.debug(inspect`${colors.FgGreen}finished${colors.FgMagenta}callback for timeout: ${colors.FgCyan}${fnName}${colors.Reset}`);
+            logger.debug(inspect`finishedcallback for timeout: ${fnName}`);
             resumeAll();
           })
           .catch(err => {
-            logger.error(inspect`${colors.FgRed}error${colors.FgMagenta} in timeout: ${colors.FgCyan}${fnName}${colors.FgMagenta}error: ${err}${colors.Reset}`);
+            logger.error(inspect`error in timeout: ${fnName}error: ${err}`);
             resumeAll();
           });
       },

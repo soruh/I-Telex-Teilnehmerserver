@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mysql = require("mysql");
 const express = require("express");
 const config_js_1 = require("../../SHARED/config.js");
-const colors_js_1 = require("../../SHARED/colors.js");
 const misc_js_1 = require("../../SHARED/misc.js");
 var mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
 const logger = global.logger;
@@ -11,11 +10,11 @@ global.sqlPool = mysql.createPool(mySqlConnectionOptions);
 const sqlPool = global.sqlPool;
 sqlPool.getConnection(function (err, connection) {
     if (err) {
-        logger.error(misc_js_1.inspect `${colors_js_1.default.FgRed}could not connect to database!${colors_js_1.default.Reset}`);
+        logger.error(misc_js_1.inspect `could not connect to database!`);
         throw err;
     }
     else {
-        logger.warn(misc_js_1.inspect `${colors_js_1.default.FgGreen}connected to database!${colors_js_1.default.Reset}`);
+        logger.warn(misc_js_1.inspect `connected to database!`);
         connection.release();
     }
 });

@@ -20,21 +20,23 @@ const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 // import * as winston from "winston";
 //#endregion
 const logger = global.logger;
+function isAnyError(error) {
+    if (error instanceof Error)
+        return true;
+    return false;
+}
 function inspect(substrings, ...values) {
     var substringArray = Array.from(substrings);
-    // substringArray = substringArray.map(substring=>colors.FgCyan+substring+colors.Reset);
-    // substringArray = substringArray.map(substring=>"\x1b[032m"+substring+"\x1b[000m");
+    substringArray = substringArray.map(substring => colors_js_1.default.FgCyan + substring + colors_js_1.default.Reset);
     values = values.map(value => {
         if (typeof value === "string")
-            return value;
-        // if(typeof value === "string") return colors.FgGreen+value+colors.Reset;
-        // if(typeof value === "string") return "\x1b[036m"+value+"\x1b[000m";
+            return colors_js_1.default.FgGreen + value + colors_js_1.default.Reset;
+        if (isAnyError(value))
+            return colors_js_1.default.FgRed + util.inspect(value) + colors_js_1.default.Reset;
         return util.inspect(value, {
-            colors: false,
+            colors: !config_js_1.default.disableColors,
             depth: 2,
-        })
-            // .replace(/\u0001b\[39m/g,colors.Reset);
-            .replace(/\u0001b\[39m/g, "\x1b[000m");
+        }).replace(/\u0001b\[39m/g, colors_js_1.default.Reset);
     });
     var combined = [];
     while (values.length + substringArray.length > 0) {
@@ -62,7 +64,7 @@ function increaseErrorCounter(serverkey, error, code) {
         errorCounters[serverkey] = 1;
     }
     let warn = config_js_1.default.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
-    logger.warn(inspect `${colors_js_1.default.FgYellow}increased errorCounter for server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgYellow} to ${warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan}${errorCounters[serverkey]}${colors_js_1.default.Reset}`);
+    logger.warn(inspect `increased errorCounter for server ${serverkey} to ${(warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan) + errorCounters[serverkey] + colors_js_1.default.Reset}`);
     if (warn)
         sendEmail("ServerError", {
             "server": serverkey,
@@ -75,26 +77,28 @@ function increaseErrorCounter(serverkey, error, code) {
 exports.increaseErrorCounter = increaseErrorCounter;
 function resetErrorCounter(serverkey) {
     delete errorCounters[serverkey];
-    logger.verbose(inspect `${colors_js_1.default.FgGreen}reset error counter for: ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.Reset}`);
+    logger.verbose(inspect `reset error counter for: ${serverkey}`);
 }
 exports.resetErrorCounter = resetErrorCounter;
 function SqlQuery(query, options) {
     return new Promise((resolve, reject) => {
         query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-        logger.debug(inspect `${colors_js_1.default.BgLightCyan}${colors_js_1.default.FgBlack}${query} ${options || ""}${colors_js_1.default.Reset}`);
-        let msg = colors_js_1.default.BgLightBlue + colors_js_1.default.FgBlack + mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim() + colors_js_1.default.Reset;
-        if (/(update)|(insert)/gi.test(query)) {
-            logger.info(inspect `${msg}`);
-        }
-        else {
-            logger.verbose(inspect `${msg}`);
+        logger.debug(inspect `${query} ${options || ""}`);
+        {
+            let formatted = mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
+            if (/(update)|(insert)/gi.test(query)) {
+                logger.info(inspect `${formatted}`);
+            }
+            else {
+                logger.verbose(inspect `${formatted}`);
+            }
         }
         if (global.sqlPool) {
             global.sqlPool.query(query, options, function (err, res) {
                 if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
                     logger.debug(inspect `number of open connections: ${global.sqlPool["_allConnections"].length}`);
                 if (err) {
-                    logger.error(inspect `colors.FgRed${err}colors.Reset`);
+                    logger.error(inspect `${err}`);
                     reject(err);
                 }
                 else {
@@ -113,7 +117,7 @@ function checkIp(data, client) {
     return __awaiter(this, void 0, void 0, function* () {
         if (config_js_1.default.doDnsLookups) {
             var arg = data.slice(1).toString().split("\n")[0].split("\r")[0];
-            logger.info(inspect `${colors_js_1.default.FgGreen}checking if ${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} belongs to any participant${colors_js_1.default.Reset}`);
+            logger.info(inspect `checking if  belongs to any participant`);
             let ipAddr = "";
             if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
                 ipAddr = arg;
@@ -122,11 +126,11 @@ function checkIp(data, client) {
                 try {
                     let { address, family } = yield util.promisify(dns_1.lookup)(arg);
                     ipAddr = address;
-                    logger.verbose(inspect `${colors_js_1.default.FgCyan + arg + colors_js_1.default.FgGreen} resolved to ${colors_js_1.default.FgCyan + ipAddr + colors_js_1.default.Reset}`);
+                    logger.verbose(inspect ` resolved to `);
                 }
                 catch (e) {
                     client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-                    logger.error(inspect `${colors_js_1.default.FgRed}${e}${colors_js_1.default.Reset}`);
+                    logger.error(inspect `${e}`);
                     return;
                 }
             }
@@ -138,7 +142,7 @@ function checkIp(data, client) {
                         if ((!peer.ipaddress) && peer.hostname) {
                             // logger.debug(inspect`hostname: ${peer.hostname}`)
                             dns_1.lookup(peer.hostname, {}, function (err, address, family) {
-                                // if (err) logger.debug(inspect`${colors.FgRed}${err}${colors.Reset}`);
+                                // if (err) logger.debug(inspect`${err}`);
                                 if (address) {
                                     ipPeers.push({
                                         peer,
@@ -209,7 +213,7 @@ function sendEmail(messageName, values) {
             else {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            logger.info(inspect `${colors_js_1.default.FgGreen}sending email of type ${colors_js_1.default.FgCyan}${messageName || "config error"}${colors_js_1.default.Reset}`);
+            logger.info(inspect `sending email of type ${messageName || "config error"}`);
             logger.debug(inspect `mail values:${values}`);
             logger.verbose(inspect `sending mail:\n${mailOptions}\nto server${global.transporter.options["host"]}`);
             global.transporter.sendMail(mailOptions, function (error, info) {
