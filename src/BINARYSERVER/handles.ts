@@ -30,6 +30,7 @@ Peer_search: 10
 
 var handles = {}; //functions for handeling packages
 for (let i = 1; i <= 10; i++) handles[i] = {};
+handles[255] = {};
 //handes[type][state of this client.connection]
 //handles[2][constants.states.STANDBY] = (pkg,client)=>{}; NOT RECIEVED BY SERVER
 //handles[4][WAITING] = (pkg,client)=>{}; NOT RECIEVED BY SERVER
