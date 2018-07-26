@@ -113,6 +113,7 @@ Object.assign(collection, require("../../config/mysql.json"));
 Object.assign(collection, require("../../config/logging.json"));
 Object.assign(collection, require("../../config/misc.json"));
 Object.assign(collection, require("../../config/timings.json"));
+Object.assign(collection, require("../../config/serverpin.json"));
 
 const config: configFile = collection;
 
