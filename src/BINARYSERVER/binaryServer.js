@@ -33,7 +33,6 @@ var binaryServer = net.createServer(function (connection) {
             logger.info(misc_js_1.inspect `client ${client.name} disconnected!`);
             // clearTimeout(client.timeout);
             // logger.info(inspect`deleted connection `);
-            client.connection.removeAllListeners("data");
             client = null;
         }
     });

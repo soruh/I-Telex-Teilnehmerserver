@@ -39,7 +39,6 @@ function connect(
 			logger.info(inspect`server ${client.name} disconnected!`);
 
 			// logger.info(inspect`deleted connection `);
-			client.connection.removeAllListeners("data");
 			client = null;
 			onClose();
 		});

@@ -29,7 +29,6 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 			// clearTimeout(client.timeout);
 
 			// logger.info(inspect`deleted connection `);
-			client.connection.removeAllListeners("data");
 			client = null;
 		}
 	});

@@ -28,7 +28,6 @@ function connect(onClose, options) {
                 logger.info(misc_js_1.inspect `recieved ${client.newEntries} new entries`);
             logger.info(misc_js_1.inspect `server ${client.name} disconnected!`);
             // logger.info(inspect`deleted connection `);
-            client.connection.removeAllListeners("data");
             client = null;
             onClose();
         });
