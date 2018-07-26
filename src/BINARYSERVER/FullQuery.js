@@ -28,12 +28,12 @@ function getFullQuery() {
             if (config_js_1.default.fullQueryServer)
                 servers = servers.filter(server => server.port == config_js_1.default.fullQueryServer.split(":")[1] &&
                     server.addresse == config_js_1.default.fullQueryServer.split(":")[0]);
-            return serialEachPromise_js_1.default(servers, server => new Promise((resolve, reject) => {
-                connect_js_1.default(resolve, {
+            return serialEachPromise_js_1.default(servers, server => new Promise((resolveLoop, reject) => {
+                connect_js_1.default(resolveLoop, {
                     host: server.addresse,
                     port: +server.port
                 })
-                    .then(client => new Promise((resolve, reject) => {
+                    .then(client => {
                     let request;
                     if (readonly) {
                         request = {
@@ -55,9 +55,9 @@ function getFullQuery() {
                     }
                     client.connection.write(ITelexCom.encPackage(request), () => {
                         client.state = constants.states.FULLQUERY;
-                        client.cb = resolve;
+                        client.cb = resolveLoop;
                     });
-                }))
+                })
                     .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
             }));
         })

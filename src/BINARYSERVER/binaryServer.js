@@ -26,11 +26,11 @@ var binaryServer = net.createServer(function (connection) {
         packages: []
     };
     logger.info(misc_js_1.inspect `client ${client.name} connected from ipaddress: ${connection.remoteAddress}`); //.replace(/^.*:/,'')
-    connection.on('end', function () {
+    connection.on('close', function () {
         if (client) {
             if (client.newEntries != null)
                 logger.info(misc_js_1.inspect `recieved ${client.newEntries} new entries`);
-            logger.info(misc_js_1.inspect `client ${client.name} disconnected`);
+            logger.info(misc_js_1.inspect `client ${client.name} disconnected!`);
             // clearTimeout(client.timeout);
             // logger.info(inspect`deleted connection `);
             client = null;

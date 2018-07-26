@@ -9,7 +9,7 @@ const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const misc_js_1 = require("../SHARED/misc.js");
 //#endregion
 const logger = global.logger;
-function connect(onEnd, options) {
+function connect(onClose, options) {
     return new Promise((resolve, reject) => {
         let serverkey = options.host + ":" + options.port;
         logger.info(misc_js_1.inspect `trying to connect to: ${serverkey}`);
@@ -23,14 +23,13 @@ function connect(onEnd, options) {
             // handling: false,
             writebuffer: [],
         };
-        socket.setTimeout(config_js_1.default.connectionTimeout);
-        socket.on('end', () => {
+        socket.on('close', () => {
             if (client.newEntries != null)
                 logger.info(misc_js_1.inspect `recieved ${client.newEntries} new entries`);
-            logger.info(misc_js_1.inspect `server ${client.name} ended!`);
+            logger.info(misc_js_1.inspect `server ${client.name} disconnected!`);
             // logger.info(inspect`deleted connection `);
             client = null;
-            onEnd(client);
+            onClose();
         });
         socket.on('timeout', () => {
             logger.warn(misc_js_1.inspect `server: ${serverkey} timed out`);
@@ -48,7 +47,6 @@ function connect(onEnd, options) {
             else {
                 logger.debug(misc_js_1.inspect `${error}`);
             }
-            socket.end();
         });
         socket.on('data', (data) => {
             if (client) {
@@ -104,11 +102,13 @@ function connect(onEnd, options) {
                 }
             }
         });
-        socket.connect(options, () => {
+        socket.once('connect', () => {
             logger.info(misc_js_1.inspect `connected to: ${options} as server ${client.name}`);
             misc_js_1.resetErrorCounter(serverkey);
             resolve(client);
         });
+        socket.setTimeout(config_js_1.default.connectionTimeout);
+        socket.connect(options);
     });
 }
 exports.default = connect;

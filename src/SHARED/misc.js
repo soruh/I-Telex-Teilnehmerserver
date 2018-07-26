@@ -27,16 +27,19 @@ function isAnyError(error) {
 }
 function inspect(substrings, ...values) {
     var substringArray = Array.from(substrings);
-    substringArray = substringArray.map(substring => colors_js_1.default.FgCyan + substring + colors_js_1.default.Reset);
+    substringArray = substringArray.map(substring => colors_js_1.default.FgGreen + substring + colors_js_1.default.Reset);
     values = values.map(value => {
         if (typeof value === "string")
-            return colors_js_1.default.FgGreen + value + colors_js_1.default.Reset;
+            return colors_js_1.default.FgCyan + value + colors_js_1.default.Reset;
         if (isAnyError(value))
             return colors_js_1.default.FgRed + util.inspect(value) + colors_js_1.default.Reset;
-        return util.inspect(value, {
+        let inspected = util.inspect(value, {
             colors: !config_js_1.default.disableColors,
             depth: 2,
-        }).replace(/\u0001b\[39m/g, colors_js_1.default.Reset);
+        });
+        if (!config_js_1.default.disableColors)
+            inspected = inspected.replace(/\u0001b\[39m/g, colors_js_1.default.Reset);
+        return inspected;
     });
     var combined = [];
     while (values.length + substringArray.length > 0) {
@@ -67,7 +70,8 @@ function increaseErrorCounter(serverkey, error, code) {
     logger.warn(inspect `increased errorCounter for server ${serverkey} to ${(warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan) + errorCounters[serverkey] + colors_js_1.default.Reset}`);
     if (warn)
         sendEmail("ServerError", {
-            "server": serverkey,
+            "host": serverkey.split(":")[0],
+            "port": serverkey.split(":")[1],
             "errorCounter": errorCounters[serverkey].toString(),
             "lastError": code,
             "date": new Date().toLocaleString(),
@@ -214,7 +218,7 @@ function sendEmail(messageName, values) {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
             logger.info(inspect `sending email of type ${messageName || "config error"}`);
-            logger.debug(inspect `mail values:${values}`);
+            logger.debug(inspect `mail values: ${values}`);
             logger.verbose(inspect `sending mail:\n${mailOptions}\nto server${global.transporter.options["host"]}`);
             global.transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {

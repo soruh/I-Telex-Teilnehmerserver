@@ -22,10 +22,10 @@ var binaryServer = net.createServer(function (connection: net.Socket) {
 		packages: []
 	};
 	logger.info(inspect`client ${client.name} connected from ipaddress: ${connection.remoteAddress}`); //.replace(/^.*:/,'')
-	connection.on('end', function (): void {
+	connection.on('close', function (): void {
 		if (client) {
 			if (client.newEntries != null) logger.info(inspect`recieved ${client.newEntries} new entries`);
-			logger.info(inspect`client ${client.name} disconnected`);
+			logger.info(inspect`client ${client.name} disconnected!`);
 			// clearTimeout(client.timeout);
 
 			// logger.info(inspect`deleted connection `);

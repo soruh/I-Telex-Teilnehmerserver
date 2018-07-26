@@ -36,36 +36,36 @@ function getFullQuery() {
 					server.addresse == config.fullQueryServer.split(":")[0]);
 
 
-				return serialEachPromise(servers, server => new Promise((resolve, reject) => {
-					connect(resolve, {
-							host: server.addresse,
-							port: +server.port
-						})
-						.then(client => new Promise((resolve, reject) => {
-							let request: ITelexCom.Package_decoded_10 | ITelexCom.Package_decoded_6;
-							if (readonly) {
-								request = {
-									type: 10,
-									data: {
-										pattern: '',
-										version: 1
-									}
-								};
-							} else {
-								request = {
-									type: 6,
-									data: {
-										serverpin: config.serverPin,
-										version: 1
-									}
-								};
-							}
-							client.connection.write(ITelexCom.encPackage(request), () => {
-								client.state = constants.states.FULLQUERY;
-								client.cb = resolve;
-							});
-						}))
-						.catch(err=>{logger.error(inspect`${err}`)})
+				return serialEachPromise(servers, server => new Promise((resolveLoop, reject) => {
+					connect(resolveLoop, {
+						host: server.addresse,
+						port: +server.port
+					})
+					.then(client => {
+						let request: ITelexCom.Package_decoded_10 | ITelexCom.Package_decoded_6;
+						if (readonly) {
+							request = {
+								type: 10,
+								data: {
+									pattern: '',
+									version: 1
+								}
+							};
+						} else {
+							request = {
+								type: 6,
+								data: {
+									serverpin: config.serverPin,
+									version: 1
+								}
+							};
+						}
+						client.connection.write(ITelexCom.encPackage(request), () => {
+							client.state = constants.states.FULLQUERY;
+							client.cb = resolveLoop;
+						});
+					})
+					.catch(err=>{logger.error(inspect`${err}`)})
 				}))
 			})
 			.then(() => resolve())

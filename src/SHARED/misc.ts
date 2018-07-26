@@ -22,14 +22,17 @@ function isAnyError(error){
 }
 function inspect(substrings:TemplateStringsArray, ...values:any[]):string{
 	var substringArray = Array.from(substrings);
-	substringArray = substringArray.map(substring=>colors.FgCyan+substring+colors.Reset);
+	substringArray = substringArray.map(substring=>colors.FgGreen+substring+colors.Reset);
 	values = values.map(value=>{
-		if(typeof value === "string") return colors.FgGreen+value+colors.Reset;
+		if(typeof value === "string") return colors.FgCyan+value+colors.Reset;
 		if(isAnyError(value)) return colors.FgRed+util.inspect(value)+colors.Reset;
-		return util.inspect(value,{
+		let inspected = util.inspect(value,{
 			colors: !config.disableColors,
 			depth:2,
-		}).replace(/\u0001b\[39m/g,colors.Reset);
+		})
+		if(!config.disableColors)
+			inspected = inspected.replace(/\u0001b\[39m/g,colors.Reset);
+		return inspected;
 	});
 	var combined = [];
 	while(values.length+substringArray.length>0){
@@ -59,7 +62,8 @@ function increaseErrorCounter(serverkey: string, error: Error, code: string): vo
 	logger.warn(inspect`increased errorCounter for server ${serverkey} to ${(warn?colors.FgRed:colors.FgCyan)+errorCounters[serverkey]+colors.Reset}`);
 	if (warn)
 		sendEmail("ServerError", {
-			"server": serverkey,
+			"host": serverkey.split(":")[0],
+			"port": serverkey.split(":")[1],
 			"errorCounter": errorCounters[serverkey].toString(),
 			"lastError": code,
 			"date": new Date().toLocaleString(),
@@ -213,7 +217,7 @@ function sendEmail(messageName: string, values: {
 				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
 			logger.info(inspect`sending email of type ${messageName||"config error"}`);
-			logger.debug(inspect`mail values:${values}`);
+			logger.debug(inspect`mail values: ${values}`);
 			logger.verbose(inspect`sending mail:\n${mailOptions}\nto server${global.transporter.options["host"]}`);
 
 			( < nodemailer.Transporter > global.transporter).sendMail(mailOptions, function (error, info) {

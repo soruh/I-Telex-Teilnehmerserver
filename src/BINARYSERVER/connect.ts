@@ -13,7 +13,7 @@ import {increaseErrorCounter, errorCounters, resetErrorCounter, client, clientNa
 const logger = global.logger;
 
 function connect(
-	onEnd: (client: client) => void,
+	onClose: () => void,
 	options: {
 		host: string,
 		port: number
@@ -34,14 +34,13 @@ function connect(
 			// handling: false,
 			writebuffer: [],
 		};
-		socket.setTimeout(config.connectionTimeout);
-		socket.on('end', () => {
+		socket.on('close', () => {
 			if (client.newEntries != null) logger.info(inspect`recieved ${client.newEntries} new entries`);
-			logger.info(inspect`server ${client.name} ended!`);
+			logger.info(inspect`server ${client.name} disconnected!`);
 
 			// logger.info(inspect`deleted connection `);
 			client = null;
-			onEnd(client);
+			onClose();
 		});
 		socket.on('timeout', () => {
 			logger.warn(inspect`server: ${serverkey} timed out`);
@@ -58,11 +57,9 @@ function connect(
 			}else{
 				logger.debug(inspect`${error}`);
 			}
-			socket.end();
 		});
 		socket.on('data', (data: Buffer) => {
 			if(client){
-
 				logger.verbose(inspect`recieved data: ${data}`);
 				logger.verbose(inspect`${data.toString().replace(/[^ -~]/g, "·")}`);
 				try {
@@ -114,11 +111,13 @@ function connect(
 				}
 			}
 		});
-		socket.connect(options, () => {
+		socket.once('connect', ()=>{
 			logger.info(inspect`connected to: ${options} as server ${client.name}`);
 			resetErrorCounter(serverkey);
 			resolve(client);
 		});
+		socket.setTimeout(config.connectionTimeout);
+		socket.connect(options);
 	});
 }
 
