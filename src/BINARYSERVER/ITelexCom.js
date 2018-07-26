@@ -128,35 +128,29 @@ function handlePackage(obj, client) {
         }
         else {
             logger.verbose(misc_js_1.inspect `state: ${misc_js_1.symbolName(client.state)}`);
-            if (obj.type == 0xff) {
-                logger.warn(misc_js_1.inspect `remote client had error: ${Buffer.from(obj.data).toString()}`);
-                resolve();
-            }
-            else {
-                try {
-                    logger.info(misc_js_1.inspect `handling type: ${obj.type} for: ${client.name}`);
-                    logger.verbose(misc_js_1.inspect `handling package: ${obj} for: ${client.name}`);
-                    if (typeof handles_js_1.default[obj.type][client.state] == "function") {
-                        logger.verbose(misc_js_1.inspect `calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${misc_js_1.symbolName(client.state)}`);
-                        try {
-                            handles_js_1.default[obj.type][client.state](obj, client)
-                                .then(resolve)
-                                .catch(reject);
-                        }
-                        catch (e) {
-                            logger.error(misc_js_1.inspect `${e}`);
-                            resolve();
-                        }
+            try {
+                logger.info(misc_js_1.inspect `handling type: ${obj.type} for: ${client.name}`);
+                logger.verbose(misc_js_1.inspect `handling package: ${obj} for: ${client.name}`);
+                if (typeof handles_js_1.default[obj.type][client.state] == "function") {
+                    logger.verbose(misc_js_1.inspect `calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${misc_js_1.symbolName(client.state)}`);
+                    try {
+                        handles_js_1.default[obj.type][client.state](obj, client)
+                            .then(resolve)
+                            .catch(reject);
                     }
-                    else {
-                        logger.warn(misc_js_1.inspect `type ${constants.PackageNames[obj.type]} (${obj.type}) not supported in state ${misc_js_1.symbolName(client.state)}`);
+                    catch (e) {
+                        logger.error(misc_js_1.inspect `${e}`);
                         resolve();
                     }
                 }
-                catch (e) {
-                    logger.error(misc_js_1.inspect `${e}`);
+                else {
+                    logger.warn(misc_js_1.inspect `type ${constants.PackageNames[obj.type]} (${obj.type}) not supported in state ${misc_js_1.symbolName(client.state)}`);
                     resolve();
                 }
+            }
+            catch (e) {
+                logger.error(misc_js_1.inspect `${e}`);
+                resolve();
             }
         }
     });
@@ -226,8 +220,15 @@ function unmapIpV4fromIpV6(ipaddress) {
 function encPackage(pkg) {
     if (config_js_1.default.logITelexCom)
         logger.verbose(misc_js_1.inspect `encoding: ${pkg}`);
-    if (pkg.datalength == null)
-        pkg.datalength = constants.PackageSizes[pkg.type];
+    if (pkg.datalength == null) {
+        if (pkg.type == 255) {
+            if (pkg.data.message != null)
+                pkg.datalength = pkg.data.message.length;
+        }
+        else {
+            pkg.datalength = constants.PackageSizes[pkg.type];
+        }
+    }
     var buffer = new Buffer(pkg.datalength + 2);
     buffer[0] = pkg.type;
     buffer[1] = pkg.datalength;
@@ -312,6 +313,9 @@ function encPackage(pkg) {
         case 10:
             buffer.writeUIntLE(pkg.data.version || 0, 2, 1);
             buffer.write(pkg.data.pattern || "", 3, 40);
+            break;
+        case 255:
+            buffer.write(pkg.data.message || "", 2, pkg.datalength);
             break;
     }
     if (config_js_1.default.logITelexCom)
@@ -425,6 +429,11 @@ function decPackage(buffer) {
             pkg.data = {
                 version: buffer.readUIntLE(2, 1),
                 pattern: buffer.readNullTermString("utf8", 3, 43)
+            };
+            break;
+        case 255:
+            pkg.data = {
+                message: buffer.readNullTermString("utf8", 2),
             };
             break;
         default:

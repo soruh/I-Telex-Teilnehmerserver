@@ -215,8 +215,8 @@ interface Package_decoded_10 {
 }
 interface Package_decoded_255 {
 	type: 255,
-		datalength ? : number,
-		data: PackageData_decoded_255
+	datalength ? : number,
+	data: PackageData_decoded_255
 }
 interface PackageData_decoded_1 {
 	number: number,
@@ -263,7 +263,9 @@ interface PackageData_decoded_10 {
 	version: number,
 		pattern: string
 }
-type PackageData_decoded_255 = Buffer | number[];
+interface PackageData_decoded_255 {
+	message: string
+}
 
 
 type PackageData_encoded = number[] | Buffer;
@@ -320,32 +322,27 @@ function handlePackage(obj: Package_decoded, client: client) {
 			resolve();
 		} else {
 			logger.verbose(inspect`state: ${symbolName(client.state)}`);
-			if (obj.type == 0xff) {
-				logger.warn(inspect`remote client had error: ${Buffer.from( < number[] > obj.data).toString()}`);
-				resolve();
-			} else {
-				try {
-					logger.info(inspect`handling type: ${obj.type} for: ${client.name}`);
-					logger.verbose(inspect`handling package: ${obj} for: ${client.name}`);
+			try {
+				logger.info(inspect`handling type: ${obj.type} for: ${client.name}`);
+				logger.verbose(inspect`handling package: ${obj} for: ${client.name}`);
 
-					if (typeof handles[obj.type][client.state] == "function") {
-						logger.verbose(inspect`calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${symbolName(client.state)}`);
-						try {
-							handles[obj.type][client.state](obj, client)
-								.then(resolve)
-								.catch(reject);
-						} catch (e) {
-							logger.error(inspect`${e}`);
-							resolve();
-						}
-					} else {
-						logger.warn(inspect`type ${constants.PackageNames[obj.type]} (${obj.type}) not supported in state ${symbolName(client.state)}`);
+				if (typeof handles[obj.type][client.state] == "function") {
+					logger.verbose(inspect`calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${symbolName(client.state)}`);
+					try {
+						handles[obj.type][client.state](obj, client)
+							.then(resolve)
+							.catch(reject);
+					} catch (e) {
+						logger.error(inspect`${e}`);
 						resolve();
 					}
-				} catch (e) {
-					logger.error(inspect`${e}`);
+				} else {
+					logger.warn(inspect`type ${constants.PackageNames[obj.type]} (${obj.type}) not supported in state ${symbolName(client.state)}`);
 					resolve();
 				}
+			} catch (e) {
+				logger.error(inspect`${e}`);
+				resolve();
 			}
 		}
 	});
@@ -411,7 +408,14 @@ function unmapIpV4fromIpV6(ipaddress: string): string {
 
 function encPackage(pkg: Package_decoded): Buffer {
 	if (config.logITelexCom) logger.verbose(inspect`encoding: ${pkg}`);
-	if (pkg.datalength == null) pkg.datalength = constants.PackageSizes[pkg.type];
+	
+	if (pkg.datalength == null){
+		if (pkg.type == 255){
+			if(pkg.data.message!=null) pkg.datalength = pkg.data.message.length;
+		}else{
+			pkg.datalength = <any>constants.PackageSizes[pkg.type];
+		}
+	}
 	var buffer: PackageData_encoded = new Buffer(pkg.datalength + 2);
 
 	buffer[0] = pkg.type;
@@ -496,6 +500,9 @@ function encPackage(pkg: Package_decoded): Buffer {
 		case 10:
 			buffer.writeUIntLE(pkg.data.version || 0, 2, 1);
 			buffer.write(pkg.data.pattern || "", 3, 40);
+			break;
+		case 255:
+			buffer.write(pkg.data.message || "", 2, pkg.datalength);
 			break;
 	}
 	if (config.logITelexCom) logger.verbose(inspect`encoded: ${buffer}`);
@@ -605,9 +612,14 @@ function decPackage(buffer: Buffer): Package_decoded {
 				pattern: ( < any > buffer).readNullTermString("utf8", 3, 43)
 			};
 			break;
+		case 255:
+			pkg.data = {
+				message: ( < any > buffer).readNullTermString("utf8", 2),
+			};
+			break;
 		default:
-			logger.error(inspect`invalid/unsupported type: ${pkg.type}`);
-			return null
+			logger.error(inspect`invalid/unsupported type: ${(<any>pkg).type}`);
+			return null;
 	}
 	return pkg;
 }
