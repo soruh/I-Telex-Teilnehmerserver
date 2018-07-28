@@ -7,6 +7,7 @@ import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import handles from "../BINARYSERVER/handles.js";
 import {SqlQuery, symbolName, client, inspect} from "../SHARED/misc.js";
+import { Transform } from "stream";
 
 //#endregion
 
@@ -348,48 +349,22 @@ function handlePackage(obj: Package_decoded, client: client) {
 	});
 }
 
-function getCompletePackages(data: Buffer, part ? : Buffer): [Buffer, Buffer] {
-	var combined = part ? Buffer.concat([part, data]) : data;
-	var type = combined[0];
-	var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
-
-	if (config.logITelexCom){
-		logger.debug(inspect`extracting packages from data:`);
-		logger.debug(inspect`data: ${data}`);
-		logger.debug(inspect`part: ${part}`);
-		logger.debug(inspect`combined: ${combined}`);
-		logger.debug(inspect`type: ${type}`);
-		logger.debug(inspect`packagelength: ${packagelength}`);
-	}
-
-	if (combined.length == packagelength) {
-		if (config.logITelexCom) logger.debug(inspect`combined.length == packagelength`);
-		if (config.logITelexCom) logger.debug(inspect`recieved ${combined.length}/${packagelength} bytes for next package`);
-		return [
-			combined,
-			new Buffer(0)
-		];
-	}
-	if (combined.length > packagelength) {
-		if (config.logITelexCom) logger.debug(inspect`combined.length > packagelength`);
-		let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
-		return [
-			Buffer.concat([combined.slice(0, packagelength), rest[0]]),
-			rest[1]
-		];
-	}
-	if (combined.length < packagelength) {
-		if (config.logITelexCom) logger.verbose(inspect`recieved ${combined.length}/${packagelength} bytes for next package`);
-		if (config.logITelexCom) logger.debug(inspect`combined.length < packagelength`);
-		return [
-			new Buffer(0),
-			combined
-		];
-	}
-	return ([
-		new Buffer(0),
-		new Buffer(0)
-	]);
+class ChunkPackages extends Transform {
+    public buffer = Buffer.alloc(0);
+    constructor(options?){
+        super(options);
+    }
+    _transform(chunk:Buffer, encoding:string, callback:(err?:Error, data?:Buffer)=>void) {
+		this.buffer = Buffer.concat([this.buffer, chunk]);
+		
+		let packageLength = (this.buffer[1]+2)||Infinity;
+        while(packageLength <= this.buffer.length){
+            this.push(this.buffer.slice(0,packageLength));
+            this.buffer = this.buffer.slice(packageLength);
+            packageLength = (this.buffer[1]+2)||Infinity;
+        }
+        callback();
+    }
 }
 
 function unmapIpV4fromIpV6(ipaddress: string): string {
@@ -416,7 +391,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			pkg.datalength = <any>constants.PackageSizes[pkg.type];
 		}
 	}
-	var buffer: PackageData_encoded = new Buffer(pkg.datalength + 2);
+	var buffer: PackageData_encoded = Buffer.alloc(pkg.datalength + 2);
 
 	buffer[0] = pkg.type;
 	buffer[1] = pkg.datalength;
@@ -451,38 +426,16 @@ function encPackage(pkg: Package_decoded): Buffer {
 			} else {
 				ext = parseInt(pkg.data.extension);
 			}
-			// ll("\n");
-			// ll(buffer);
-			// ll(pkg.data.number, 2, 4);
 			buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
-			// ll(highlightBuffer(buffer, 2, 4));
-			// ll(pkg.data.name, 6, 40);
 			buffer.write(pkg.data.name || "", 6, 40);
-			// ll(highlightBuffer(buffer, 6, 40));
-			// ll(flags, 46, 2);
 			buffer.writeUIntLE(flags || 0, 46, 2);
-			// ll(highlightBuffer(buffer, 46, 2));
-			// ll(pkg.data.type, 48, 1);
 			buffer.writeUIntLE(pkg.data.type || 0, 48, 1);
-			// ll(highlightBuffer(buffer, 48, 1));
-			// ll(pkg.data.hostname, 49, 40);
 			buffer.write(pkg.data.hostname || "", 49, 40);
-			// ll(highlightBuffer(buffer, 49, 40));
-			// ll(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."),89);
 			ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), (<any>buffer), 89);
-			// ll(highlightBuffer(buffer, 89, 4));
-			// ll(+pkg.data.port, 93, 2);
 			buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
-			// ll(highlightBuffer(buffer, 93, 2));
-			// ll(ext, 95, 1);
 			buffer.writeUIntLE(ext || 0, 95, 1);
-			// ll(highlightBuffer(buffer, 95, 1));
-			// ll(+pkg.data.pin, 96, 2);
 			buffer.writeUIntLE(+pkg.data.pin || 0, 96, 2);
-			// ll(highlightBuffer(buffer, 96, 2));
-			// ll(pkg.data.timestamp + 2208988800, 98, 4);
 			buffer.writeUIntLE((+pkg.data.timestamp || 0) + 2208988800, 98, 4);
-			// ll(highlightBuffer(buffer, 98, 4));
 
 			break;
 		case 6:
@@ -711,7 +664,8 @@ function ascii(data: number[] | Buffer, client: client): void {
 //#region exports
 export {
 	//#region functions
-	getCompletePackages,
+	// getCompletePackages,
+	ChunkPackages,
 	handlePackage,
 	decPackage,
 	encPackage,

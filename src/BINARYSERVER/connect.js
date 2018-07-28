@@ -6,7 +6,6 @@ const config_js_1 = require("../SHARED/config.js");
 // import colors from "../SHARED/colors.js";
 const constants = require("../BINARYSERVER/constants.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const misc_js_1 = require("../SHARED/misc.js");
 //#endregion
 const logger = global.logger;
@@ -15,15 +14,22 @@ function connect(onClose, options) {
         let serverkey = options.host + ":" + options.port;
         logger.info(misc_js_1.inspect `trying to connect to: ${serverkey}`);
         var socket = new net.Socket();
+        var chunker = new ITelexCom.ChunkPackages();
+        socket.pipe(chunker);
         var client = {
             name: misc_js_1.clientName(),
             connection: socket,
-            readbuffer: new Buffer(0),
             state: constants.states.STANDBY,
-            packages: [],
-            // handling: false,
             writebuffer: [],
         };
+        chunker.on('data', (pkg) => {
+            if (client) {
+                logger.verbose(misc_js_1.inspect `recieved package: ${pkg}`);
+                logger.verbose(misc_js_1.inspect `${pkg.toString().replace(/[^ -~]/g, "·")}`);
+                ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
+                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            }
+        });
         socket.on('close', () => {
             if (client.newEntries != null)
                 logger.info(misc_js_1.inspect `recieved ${client.newEntries} new entries`);
@@ -47,60 +53,6 @@ function connect(onClose, options) {
             }
             else {
                 logger.debug(misc_js_1.inspect `${error}`);
-            }
-        });
-        socket.on('data', (data) => {
-            if (client) {
-                logger.verbose(misc_js_1.inspect `recieved data: ${data}`);
-                logger.verbose(misc_js_1.inspect `${data.toString().replace(/[^ -~]/g, "·")}`);
-                try {
-                    logger.debug(misc_js_1.inspect `Buffer for client ${client.name}: ${client.readbuffer}`);
-                    logger.debug(misc_js_1.inspect `New Data for client ${client.name}: ${data}`);
-                    var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-                    logger.debug(misc_js_1.inspect `New Buffer for client ${client.name}: ${rest}`);
-                    logger.debug(misc_js_1.inspect `Packages for client ${client.name}: ${packages}`);
-                    client.readbuffer = rest;
-                    client.packages = client.packages.concat(ITelexCom.decPackages(packages));
-                    // let handleTimeout = () => {
-                    // logger.verbose(inspect`handling: ${client.handling}`);
-                    // if (client.handling === false) {
-                    // 	client.handling = true;
-                    // 	if (client.handleTimeout != null) {
-                    // 		clearTimeout(client.handleTimeout);
-                    // 		client.handleTimeout = null;
-                    // 	}
-                    serialEachPromise_js_1.default(client.packages, (pkg, key) => new Promise((resolve, reject) => {
-                        {
-                            let msg = `handling package ${+key + 1}/${Object.keys(client.packages).length}`;
-                            if (Object.keys(client.packages).length > 1) {
-                                logger.info(misc_js_1.inspect `${msg}`);
-                            }
-                            else {
-                                logger.verbose(misc_js_1.inspect `${msg}`);
-                            }
-                        }
-                        ITelexCom.handlePackage(pkg, client)
-                            .then(() => {
-                            client.packages.splice(+key, 1);
-                            resolve();
-                        })
-                            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
-                    }))
-                        .then(() => {
-                        // client.handling = false;
-                    })
-                        .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
-                    // } else {
-                    // 	if (client.handleTimeout == null) {
-                    // 		client.handleTimeout = setTimeout(handleTimeout, 10);
-                    // 	}
-                    // }
-                    // };
-                    // handleTimeout();
-                }
-                catch (e) {
-                    logger.error(misc_js_1.inspect `${e}`);
-                }
             }
         });
         socket.once('connect', () => {

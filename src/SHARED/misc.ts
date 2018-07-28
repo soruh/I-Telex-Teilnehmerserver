@@ -243,15 +243,10 @@ const symbolName = (s: symbol): string => (s && typeof s.toString === "function"
 type connection = net.Socket;
 
 interface client {
-	// cnum?:symbol;
 	name: string;
 	connection: connection;
 	state: symbol,
-	readbuffer: Buffer;
 	writebuffer: ITelexCom.peer[];
-	packages: ITelexCom.Package_decoded[];
-	// handling: boolean;
-	// timeout ? : NodeJS.Timer;
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;
 	servernum ? : number;

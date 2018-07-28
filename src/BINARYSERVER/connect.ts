@@ -25,15 +25,24 @@ function connect(
 
 
 		var socket = new net.Socket();
+		var chunker = new ITelexCom.ChunkPackages();
+		socket.pipe(chunker);
+		
 		var client: client = {
 			name: clientName(),
 			connection: socket,
-			readbuffer: new Buffer(0),
 			state: constants.states.STANDBY,
-			packages: [],
-			// handling: false,
 			writebuffer: [],
 		};
+		chunker.on('data', (pkg: Buffer) => {
+			if(client){
+				logger.verbose(inspect`recieved package: ${pkg}`);
+				logger.verbose(inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
+
+				ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
+				.catch(err=>{logger.error(inspect`${err}`)});
+			}
+		});
 		socket.on('close', () => {
 			if (client.newEntries != null) logger.info(inspect`recieved ${client.newEntries} new entries`);
 			logger.info(inspect`server ${client.name} disconnected!`);
@@ -56,59 +65,6 @@ function connect(
 				logger.info(inspect`server ${serverkey} could not be reached; errorCounter: ${errorCounters[serverkey]}`);
 			}else{
 				logger.debug(inspect`${error}`);
-			}
-		});
-		socket.on('data', (data: Buffer) => {
-			if(client){
-				logger.verbose(inspect`recieved data: ${data}`);
-				logger.verbose(inspect`${data.toString().replace(/[^ -~]/g, "·")}`);
-				try {
-					logger.debug(inspect`Buffer for client ${client.name}: ${client.readbuffer}`);
-					logger.debug(inspect`New Data for client ${client.name}: ${data}`);
-					var [packages, rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-					logger.debug(inspect`New Buffer for client ${client.name}: ${rest}`);
-					logger.debug(inspect`Packages for client ${client.name}: ${packages}`);
-					client.readbuffer = rest;
-					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
-					// let handleTimeout = () => {
-						// logger.verbose(inspect`handling: ${client.handling}`);
-						// if (client.handling === false) {
-						// 	client.handling = true;
-						// 	if (client.handleTimeout != null) {
-						// 		clearTimeout(client.handleTimeout);
-						// 		client.handleTimeout = null;
-						// 	}
-							serialEachPromise(client.packages, (pkg, key) => new Promise((resolve, reject) => {
-									{
-										let msg = `handling package ${+key + 1}/${Object.keys(client.packages).length}`;
-										if (Object.keys(client.packages).length > 1) {
-											logger.info(inspect`${msg}`);
-										} else {
-											logger.verbose(inspect`${msg}`);
-										}
-									}
-	
-									ITelexCom.handlePackage(pkg, client)
-										.then(() => {
-											client.packages.splice(+key, 1);
-											resolve();
-										})
-										.catch(err=>{logger.error(inspect`${err}`)});
-								}))
-								.then(() => {
-									// client.handling = false;
-								})
-								.catch(err=>{logger.error(inspect`${err}`)});
-						// } else {
-						// 	if (client.handleTimeout == null) {
-						// 		client.handleTimeout = setTimeout(handleTimeout, 10);
-						// 	}
-						// }
-					// };
-					// handleTimeout();
-				} catch (e) {
-					logger.error(inspect`${e}`);
-				}
 			}
 		});
 		socket.once('connect', ()=>{

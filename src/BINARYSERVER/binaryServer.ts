@@ -5,96 +5,72 @@ import config from '../SHARED/config.js';
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 
-import serialEachPromise from '../SHARED/serialEachPromise.js';
 import {checkIp, client, clientName, inspect} from '../SHARED/misc.js';
 
 
 const logger = global.logger;
 
-var binaryServer = net.createServer(function (connection: net.Socket) {
+var binaryServer = net.createServer(function (socket: net.Socket) {
 	var client: client = {
 		name: clientName(),
-		connection: connection,
+		connection: socket,
 		state: constants.states.STANDBY,
-		// handling: false,
-		readbuffer: null,
-		writebuffer: null,
-		packages: []
+		writebuffer: [],
 	};
-	logger.info(inspect`client ${client.name} connected from ipaddress: ${connection.remoteAddress}`); //.replace(/^.*:/,'')
-	connection.on('close', function (): void {
-		if (client) {
-			if (client.newEntries != null) logger.info(inspect`recieved ${client.newEntries} new entries`);
-			logger.info(inspect`client ${client.name} disconnected!`);
-			// clearTimeout(client.timeout);
+	logger.info(inspect`client ${client.name} connected from ipaddress: ${socket.remoteAddress}`); //.replace(/^.*:/,'')
 
-			// logger.info(inspect`deleted connection `);
-			client = null;
+	var chunker = new ITelexCom.ChunkPackages();
+	socket.pipe(chunker);
+	
+	socket.setTimeout(config.connectionTimeout);
+
+	chunker.on('data', (pkg: Buffer) => {
+		if(client){
+			logger.verbose(inspect`recieved package: ${pkg}`);
+			logger.verbose(inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
+
+			ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
+			.catch(err=>{logger.error(inspect`${err}`)});
 		}
 	});
-	connection.setTimeout(config.connectionTimeout);
-	connection.on('timeout', function (): void {
-		logger.info(inspect`client ${client.name} timed out`);
-		connection.end();
-	});
-	connection.on('error', function (err: Error): void {
-		logger.error(inspect`${err}`);
-		connection.end();
-	});
-	connection.on('data', function (data: Buffer): void {
+	socket.on('data', function (data: Buffer): void {
 		if(client){
 			logger.verbose(inspect`recieved data:${data}`);
 			logger.verbose(inspect`${data.toString().replace(/[^ -~]/g, "·")}`);
 	
-			if (data[0] == 'q'.charCodeAt(0) && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
+			let nonBinary = false;
+			if (String.fromCharCode(data[0]) == 'q' && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
 				logger.verbose(inspect`serving ascii request`);
 				ITelexCom.ascii(data, client);
-			} else if (data[0] == 'c'.charCodeAt(0)) {
+				nonBinary = true;
+			} else if (String.fromCharCode(data[0]) == 'c') {
 				checkIp(data, client);
-			} else {
-				logger.verbose(inspect`serving binary request`);
-	
-				logger.debug(inspect`Buffer for client ${client.name}: ${client.readbuffer}`);
-				logger.debug(inspect`New Data for client ${client.name}: ${data}`);
-				var [packages,rest] = ITelexCom.getCompletePackages(data, client.readbuffer);
-				logger.debug(inspect`New Buffer: ${rest}`);
-				logger.debug(inspect`complete Package(s): ${packages}`);
-				client.readbuffer = rest;
-				if (packages) {
-					client.packages = client.packages.concat(ITelexCom.decPackages(packages));
-					// let handleTimeout = function () {
-					// if (client.handling === false) {
-							// client.handling = true;
-							// if (client.timeout != null) {
-							// 	clearTimeout(client.timeout);
-							// 	client.timeout = null;
-							// }
-	
-							serialEachPromise(
-									client.packages,
-									async function (pkg, key) {
-										let msg = inspect`handling package ${+key + 1}/${client.packages.length}`;
-										if (client.packages.length > 1) {
-											logger.info(msg);
-										} else {
-											logger.verbose(msg);
-										}
-										return await ITelexCom.handlePackage(pkg, client);
-									}
-								)
-								.then((res) => {
-									if(client) client.packages.splice(0, res.length); //handled);
-									// client.handling = false;
-								})
-								.catch(err=>{logger.error(inspect`${err}`)});
-					// 	} else {
-					// 		client.timeout = setTimeout(handleTimeout, 10);
-					// 	}
-					// };
-					// handleTimeout();
-				}
+				nonBinary = true;
+			}
+			if(nonBinary){
+				socket.unpipe(chunker);
+				// chunker.end();
+				chunker.destroy();
+				chunker = null;
 			}
 		}
+		
+	});
+	socket.on('close', function (): void {
+		if (client) {
+			if (client.newEntries != null) logger.info(inspect`recieved ${client.newEntries} new entries`);
+			logger.info(inspect`client ${client.name} disconnected!`);
+			// clearTimeout(client.timeout);
+			client = null;
+		}
+	});
+	socket.on('timeout', function (): void {
+		logger.info(inspect`client ${client.name} timed out`);
+		socket.end();
+	});
+	socket.on('error', function (err: Error): void {
+		logger.error(inspect`${err}`);
+		socket.end();
 	});
 });
 binaryServer.on("error", err => logger.error(inspect`server error: ${err}`));

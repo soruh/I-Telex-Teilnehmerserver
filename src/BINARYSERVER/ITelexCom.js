@@ -7,6 +7,7 @@ const colors_js_1 = require("../SHARED/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
 const handles_js_1 = require("../BINARYSERVER/handles.js");
 const misc_js_1 = require("../SHARED/misc.js");
+const stream_1 = require("stream");
 //#endregion
 const logger = global.logger;
 Object.defineProperty(Buffer.prototype, 'readNullTermString', {
@@ -159,53 +160,23 @@ function handlePackage(obj, client) {
     });
 }
 exports.handlePackage = handlePackage;
-function getCompletePackages(data, part) {
-    var combined = part ? Buffer.concat([part, data]) : data;
-    var type = combined[0];
-    var packagelength = (combined[1] != undefined ? combined[1] : Infinity) + 2;
-    if (config_js_1.default.logITelexCom) {
-        logger.debug(misc_js_1.inspect `extracting packages from data:`);
-        logger.debug(misc_js_1.inspect `data: ${data}`);
-        logger.debug(misc_js_1.inspect `part: ${part}`);
-        logger.debug(misc_js_1.inspect `combined: ${combined}`);
-        logger.debug(misc_js_1.inspect `type: ${type}`);
-        logger.debug(misc_js_1.inspect `packagelength: ${packagelength}`);
+class ChunkPackages extends stream_1.Transform {
+    constructor(options) {
+        super(options);
+        this.buffer = Buffer.alloc(0);
     }
-    if (combined.length == packagelength) {
-        if (config_js_1.default.logITelexCom)
-            logger.debug(misc_js_1.inspect `combined.length == packagelength`);
-        if (config_js_1.default.logITelexCom)
-            logger.debug(misc_js_1.inspect `recieved ${combined.length}/${packagelength} bytes for next package`);
-        return [
-            combined,
-            new Buffer(0)
-        ];
+    _transform(chunk, encoding, callback) {
+        this.buffer = Buffer.concat([this.buffer, chunk]);
+        let packageLength = (this.buffer[1] + 2) || Infinity;
+        while (packageLength <= this.buffer.length) {
+            this.push(this.buffer.slice(0, packageLength));
+            this.buffer = this.buffer.slice(packageLength);
+            packageLength = (this.buffer[1] + 2) || Infinity;
+        }
+        callback();
     }
-    if (combined.length > packagelength) {
-        if (config_js_1.default.logITelexCom)
-            logger.debug(misc_js_1.inspect `combined.length > packagelength`);
-        let rest = getCompletePackages(combined.slice(packagelength, combined.length), null);
-        return [
-            Buffer.concat([combined.slice(0, packagelength), rest[0]]),
-            rest[1]
-        ];
-    }
-    if (combined.length < packagelength) {
-        if (config_js_1.default.logITelexCom)
-            logger.verbose(misc_js_1.inspect `recieved ${combined.length}/${packagelength} bytes for next package`);
-        if (config_js_1.default.logITelexCom)
-            logger.debug(misc_js_1.inspect `combined.length < packagelength`);
-        return [
-            new Buffer(0),
-            combined
-        ];
-    }
-    return ([
-        new Buffer(0),
-        new Buffer(0)
-    ]);
 }
-exports.getCompletePackages = getCompletePackages;
+exports.ChunkPackages = ChunkPackages;
 function unmapIpV4fromIpV6(ipaddress) {
     if (ip.isV4Format(ipaddress)) {
         return ipaddress;
@@ -232,7 +203,7 @@ function encPackage(pkg) {
             pkg.datalength = constants.PackageSizes[pkg.type];
         }
     }
-    var buffer = new Buffer(pkg.datalength + 2);
+    var buffer = Buffer.alloc(pkg.datalength + 2);
     buffer[0] = pkg.type;
     buffer[1] = pkg.datalength;
     switch (pkg.type) {
@@ -268,38 +239,16 @@ function encPackage(pkg) {
             else {
                 ext = parseInt(pkg.data.extension);
             }
-            // ll("\n");
-            // ll(buffer);
-            // ll(pkg.data.number, 2, 4);
             buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
-            // ll(highlightBuffer(buffer, 2, 4));
-            // ll(pkg.data.name, 6, 40);
             buffer.write(pkg.data.name || "", 6, 40);
-            // ll(highlightBuffer(buffer, 6, 40));
-            // ll(flags, 46, 2);
             buffer.writeUIntLE(flags || 0, 46, 2);
-            // ll(highlightBuffer(buffer, 46, 2));
-            // ll(pkg.data.type, 48, 1);
             buffer.writeUIntLE(pkg.data.type || 0, 48, 1);
-            // ll(highlightBuffer(buffer, 48, 1));
-            // ll(pkg.data.hostname, 49, 40);
             buffer.write(pkg.data.hostname || "", 49, 40);
-            // ll(highlightBuffer(buffer, 49, 40));
-            // ll(unmapIpV4fromIpV6(pkg.data.ipaddress).split("."),89);
             ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), buffer, 89);
-            // ll(highlightBuffer(buffer, 89, 4));
-            // ll(+pkg.data.port, 93, 2);
             buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
-            // ll(highlightBuffer(buffer, 93, 2));
-            // ll(ext, 95, 1);
             buffer.writeUIntLE(ext || 0, 95, 1);
-            // ll(highlightBuffer(buffer, 95, 1));
-            // ll(+pkg.data.pin, 96, 2);
             buffer.writeUIntLE(+pkg.data.pin || 0, 96, 2);
-            // ll(highlightBuffer(buffer, 96, 2));
-            // ll(pkg.data.timestamp + 2208988800, 98, 4);
             buffer.writeUIntLE((+pkg.data.timestamp || 0) + 2208988800, 98, 4);
-            // ll(highlightBuffer(buffer, 98, 4));
             break;
         case 6:
             buffer.writeUIntLE(pkg.data.version || 0, 2, 1);
