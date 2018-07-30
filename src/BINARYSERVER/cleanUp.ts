@@ -16,6 +16,9 @@ return new Promise((resolve, reject)=>{
             resolve();
         })
         .catch(err=>{logger.error(inspect`${err}`)});
+    }else{
+        logger.verbose(inspect`config.keepDeletedFor not set, not cleaning up`);
+        reject();
     }
 });
 }

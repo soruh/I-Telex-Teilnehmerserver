@@ -16,6 +16,10 @@ function cleanUp() {
             })
                 .catch(err => { logger.error(misc_1.inspect `${err}`); });
         }
+        else {
+            logger.verbose(misc_1.inspect `config.keepDeletedFor not set, not cleaning up`);
+            reject();
+        }
     });
 }
 exports.default = cleanUp;
