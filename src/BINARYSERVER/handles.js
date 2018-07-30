@@ -174,7 +174,7 @@ handles[5][constants.states.FULLQUERY] =
         var names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
         names = names.filter(name => pkg.data[name] !== undefined);
         var values = names.map(name => pkg.data[name]);
-        logger.verbose(misc_js_1.inspect `got dataset for:${pkg.data.number}`);
+        logger.verbose(misc_js_1.inspect `got dataset for: ${pkg.data.number}`);
         misc_js_2.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
             .then((entries) => {
             if (!entries)
@@ -190,7 +190,7 @@ handles[5][constants.states.FULLQUERY] =
                     }), () => resolve());
                 }
                 client.newEntries++;
-                logger.info(misc_js_1.inspect `got new dataset for:${pkg.data.number}`);
+                logger.info(misc_js_1.inspect `got new dataset for: ${pkg.data.number}`);
                 logger.verbose(misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
                 misc_js_2.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]))
                     .then(() => client.connection.write(ITelexCom.encPackage({
@@ -270,7 +270,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
 handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
-    logger.info(misc_js_1.inspect `entrys to transmit:${client.writebuffer.length}`);
+    logger.info(misc_js_1.inspect `entrys to transmit: ${client.writebuffer.length}`);
     if (client.writebuffer.length === 0) {
         client.state = constants.states.STANDBY;
         return void client.connection.write(ITelexCom.encPackage({

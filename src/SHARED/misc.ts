@@ -169,7 +169,7 @@ async function checkIp(data: number[] | Buffer, client: client) {
 						)
 						.then(() => {
 							let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
-							logger.debug(inspect`matching peers:${matches}`);
+							logger.debug(inspect`matching peers: ${matches}`);
 							if (matches.length > 0) {
 								client.connection.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
 							} else {
@@ -479,7 +479,7 @@ if(config.scientistNames){
 	clientName = function clientName(){
 	  let date = new Date()
 	  let d = date.getTime()+date.getTimezoneOffset()*-60000;
-	  return `${(<any>((Math.floor(d/3600000)%24).toString())).padStart(2,"0")}:${(<any>((Math.floor(d/60000)%60).toString())).padStart(2,"0")}:${(<any>((Math.floor(d/1000)%60)+"")).padStart(2,"0")},${(<any>((d%1000)+"")).padStart(3,"0")}`;
+	  return `${(<any>((Math.floor(d/3600000)%24).toString())).padStart(2,"0")}: ${(<any>((Math.floor(d/60000)%60).toString())).padStart(2,"0")}: ${(<any>((Math.floor(d/1000)%60)+"")).padStart(2,"0")},${(<any>((d%1000)+"")).padStart(3,"0")}`;
 	}
 }
 

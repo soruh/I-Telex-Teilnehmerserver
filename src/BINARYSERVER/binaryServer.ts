@@ -29,7 +29,7 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 	var listeningForBinary= true;
 	var asciiListener = (data: Buffer): void => {
 		if(client){
-			logger.verbose(inspect`recieved data:${data}`);
+			logger.verbose(inspect`recieved data: ${data}`);
 			logger.verbose(inspect`${data.toString().replace(/[^ -~]/g, "·")}`);
 	
 			let nonBinary = false;

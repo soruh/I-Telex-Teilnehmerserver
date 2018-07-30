@@ -190,7 +190,7 @@ new Promise((resolve, reject) => {
 	names = names.filter(name => pkg.data[name] !== undefined);
 	var values = names.map(name => pkg.data[name]);
 
-	logger.verbose(inspect`got dataset for:${pkg.data.number}`);
+	logger.verbose(inspect`got dataset for: ${pkg.data.number}`);
 	SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
 		.then((entries: ITelexCom.peerList) => {
 			if (!entries) return void resolve();
@@ -206,7 +206,7 @@ new Promise((resolve, reject) => {
 				}
 
 				client.newEntries++;
-				logger.info(inspect`got new dataset for:${pkg.data.number}`);
+				logger.info(inspect`got new dataset for: ${pkg.data.number}`);
 				logger.verbose(inspect`recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
 
 
@@ -296,7 +296,7 @@ new Promise((resolve, reject) => {
 	if (!client) return void resolve();
 
 
-	logger.info(inspect`entrys to transmit:${client.writebuffer.length}`);
+	logger.info(inspect`entrys to transmit: ${client.writebuffer.length}`);
 
 	if (client.writebuffer.length === 0) {
 		client.state = constants.states.STANDBY;

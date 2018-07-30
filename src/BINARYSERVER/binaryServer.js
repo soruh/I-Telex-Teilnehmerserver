@@ -23,7 +23,7 @@ var binaryServer = net.createServer(function (socket) {
     var listeningForBinary = true;
     var asciiListener = (data) => {
         if (client) {
-            logger.verbose(misc_js_1.inspect `recieved data:${data}`);
+            logger.verbose(misc_js_1.inspect `recieved data: ${data}`);
             logger.verbose(misc_js_1.inspect `${data.toString().replace(/[^ -~]/g, "·")}`);
             let nonBinary = false;
             if (String.fromCharCode(data[0]) == 'q' && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
