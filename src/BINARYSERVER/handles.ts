@@ -37,17 +37,17 @@ handles[255] = {};
 handles[1][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_1, client: client) =>
 new Promise((resolve, reject) => {
 	if (!client) return void resolve();
+	
 
 	var {
 		number,
 		pin,
 		port
 	} = pkg.data;
-	var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
+	var ipaddress = client.ipAddress;
 	if (number < 10000) {
 		logger.warn(inspect`client  tried to update ${number} which is too small(<10000)`);
 		return void sendEmail("invalidNumber", {
-				"IpFull": client.connection.remoteAddress,
 				"Ip": ipaddress,
 				"number": number.toString(),
 				"date": new Date().toLocaleString(),
@@ -70,7 +70,6 @@ new Promise((resolve, reject) => {
 					client.connection.end();
 					return void sendEmail("wrongDynIpType", {
 							"type": entry.type.toString(),
-							"IpFull": client.connection.remoteAddress,
 							"Ip": ipaddress,
 							"number": entry.number.toString(),
 							"name": entry.name,
@@ -134,7 +133,6 @@ new Promise((resolve, reject) => {
 							return void resolve();
 						}
 						sendEmail("new", {
-								"IpFull": client.connection.remoteAddress,
 								"Ip": ipaddress,
 								"number": number.toString(),
 								"date": new Date().toLocaleString(),
@@ -246,8 +244,7 @@ new Promise((resolve, reject) => {
 		logger.info(inspect`serverpin is incorrect! ${pkg.data.serverpin} != ${config.serverPin} ending client connection!`); //TODO: remove pin logging
 		client.connection.end();
 		return void sendEmail("wrongServerPin", {
-				"IpFull": client.connection.remoteAddress,
-				"Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+				"Ip": client.ipAddress,
 				"date": new Date().toLocaleString(),
 				"timeZone": getTimezone(new Date())
 			})
@@ -280,8 +277,7 @@ new Promise((resolve, reject) => {
 		logger.info(inspect`serverpin is incorrect! ${pkg.data.serverpin} != ${config.serverPin} ending client.connection!`);
 		client.connection.end();
 		return void sendEmail("wrongServerPin", {
-				"IpFull": client.connection.remoteAddress,
-				"Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+				"Ip": client.ipAddress,
 				"date": new Date().toLocaleString(),
 				"timeZone": getTimezone(new Date())
 			})

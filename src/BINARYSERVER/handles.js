@@ -1,7 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-//#region imports
-const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
 // import colors from "../SHARED/colors.js";
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
@@ -35,11 +33,10 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (!client)
         return void resolve();
     var { number, pin, port } = pkg.data;
-    var ipaddress = client.connection.remoteAddress.replace(/^.*:/, '');
+    var ipaddress = client.ipAddress;
     if (number < 10000) {
         logger.warn(misc_js_1.inspect `client  tried to update ${number} which is too small(<10000)`);
         return void misc_js_1.sendEmail("invalidNumber", {
-            "IpFull": client.connection.remoteAddress,
             "Ip": ipaddress,
             "number": number.toString(),
             "date": new Date().toLocaleString(),
@@ -62,7 +59,6 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpType", {
                     "type": entry.type.toString(),
-                    "IpFull": client.connection.remoteAddress,
                     "Ip": ipaddress,
                     "number": entry.number.toString(),
                     "name": entry.name,
@@ -125,7 +121,6 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     return void resolve();
                 }
                 misc_js_1.sendEmail("new", {
-                    "IpFull": client.connection.remoteAddress,
                     "Ip": ipaddress,
                     "number": number.toString(),
                     "date": new Date().toLocaleString(),
@@ -229,8 +224,7 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         logger.info(misc_js_1.inspect `serverpin is incorrect! ${pkg.data.serverpin} != ${config_js_1.default.serverPin} ending client connection!`); //TODO: remove pin logging
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
-            "IpFull": client.connection.remoteAddress,
-            "Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+            "Ip": client.ipAddress,
             "date": new Date().toLocaleString(),
             "timeZone": misc_js_1.getTimezone(new Date())
         })
@@ -260,8 +254,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         logger.info(misc_js_1.inspect `serverpin is incorrect! ${pkg.data.serverpin} != ${config_js_1.default.serverPin} ending client.connection!`);
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
-            "IpFull": client.connection.remoteAddress,
-            "Ip": (ip.isV4Format(client.connection.remoteAddress.split("::")[1]) ? client.connection.remoteAddress.split("::")[1] : client.connection.remoteAddress),
+            "Ip": client.ipAddress,
             "date": new Date().toLocaleString(),
             "timeZone": misc_js_1.getTimezone(new Date())
         })

@@ -14,26 +14,20 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 	var client: client = {
 		name: clientName(),
 		connection: socket,
+		ipAddress: socket.remoteAddress.replace(/^.*:/, ''),
 		state: constants.states.STANDBY,
 		writebuffer: [],
 	};
-	logger.info(inspect`client ${client.name} connected from ipaddress: ${socket.remoteAddress}`); //.replace(/^.*:/,'')
+	logger.info(inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 
 	var chunker = new ITelexCom.ChunkPackages();
 	socket.pipe(chunker);
 	
 	socket.setTimeout(config.connectionTimeout);
 
-	chunker.on('data', (pkg: Buffer) => {
-		if(client){
-			logger.verbose(inspect`recieved package: ${pkg}`);
-			logger.verbose(inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
-
-			ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
-			.catch(err=>{logger.error(inspect`${err}`)});
-		}
-	});
-	socket.on('data', function (data: Buffer): void {
+	var listeningForAscii = true;
+	var listeningForBinary= true;
+	var asciiListener = (data: Buffer): void => {
 		if(client){
 			logger.verbose(inspect`recieved data:${data}`);
 			logger.verbose(inspect`${data.toString().replace(/[^ -~]/g, "·")}`);
@@ -47,15 +41,31 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 				checkIp(data, client);
 				nonBinary = true;
 			}
-			if(nonBinary){
+			if(nonBinary&&listeningForBinary){
 				socket.unpipe(chunker);
 				// chunker.end();
 				chunker.destroy();
 				chunker = null;
+				listeningForBinary = false;
 			}
 		}
-		
-	});
+	}
+	var binaryListener = (pkg: Buffer): void => {
+		if(client){
+			if(listeningForAscii){
+				socket.removeListener("data", asciiListener);
+				listeningForAscii = false;
+			}
+
+			logger.verbose(inspect`recieved package: ${pkg}`);
+			logger.verbose(inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
+
+			ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
+			.catch(err=>{logger.error(inspect`${err}`)});
+		}
+	}
+	socket.on('data', asciiListener);
+	chunker.on('data', binaryListener);
 	socket.on('close', function (): void {
 		if (client) {
 			if (client.newEntries != null) logger.info(inspect`recieved ${client.newEntries} new entries`);

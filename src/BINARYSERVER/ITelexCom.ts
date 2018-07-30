@@ -15,22 +15,17 @@ import { Transform } from "stream";
 const logger = global.logger;
 
 
-Object.defineProperty(Buffer.prototype, 'readNullTermString', {
-	value: function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length) {
-		// logger.error(inspect`${highlightBuffer(this)}`);
-		// logger.error(inspect`start: ${start}`);
-		// logger.error(inspect`end:${end}`);
-		// logger.error(inspect`${highlightBuffer(this,start,end)}`);
-		let firstZero = this.indexOf(0, start);
-		// logger.error(inspect`firstZero: ${firstZero}`);
-		let stop = firstZero >= start && firstZero <= end ? firstZero : end;
-		// logger.error(inspect`stop: ${firstZero}`);
-		// logger.error(inspect`${highlightBuffer(this,start,stop)}`);
-		// logger.error(inspect`result:\x1b[030m${this.toString(encoding,start,stop)}\n\n`);
+declare global {
+    interface Buffer {
+        readNullTermString:(string?, start?, end?)=>string;
+    }
+}
 
-		return this.toString(encoding, start, stop);
-	}
-});
+Buffer.prototype.readNullTermString =  function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length):string {
+    let firstZero = this.indexOf(0, start);
+    let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+    return this.toString(encoding, start, stop);
+};
 
 // function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
 // 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+(<any>x).toString(16));
@@ -510,10 +505,10 @@ function decPackage(buffer: Buffer): Package_decoded {
 			// <Date 4b>		96,100
 			pkg.data = {
 				number: buffer.readUIntLE(2, 4),
-				name: ( < any > buffer).readNullTermString("utf8", 6, 46),
+				name: buffer.readNullTermString("utf8", 6, 46),
 				disabled: (flags & 2) == 2 ? 1 : 0,
 				type: buffer.readUIntLE(48, 1),
-				hostname: ( < any > buffer).readNullTermString("utf8", 49, 89),
+				hostname: buffer.readNullTermString("utf8", 49, 89),
 				ipaddress: ip.toString(buffer, 89, 4),
 				port: buffer.readUIntLE(93, 2).toString(),
 				pin: buffer.readUIntLE(96, 2).toString(),
@@ -562,12 +557,12 @@ function decPackage(buffer: Buffer): Package_decoded {
 		case 10:
 			pkg.data = {
 				version: buffer.readUIntLE(2, 1),
-				pattern: ( < any > buffer).readNullTermString("utf8", 3, 43)
+				pattern: buffer.readNullTermString("utf8", 3, 43)
 			};
 			break;
 		case 255:
 			pkg.data = {
-				message: ( < any > buffer).readNullTermString("utf8", 2),
+				message: buffer.readNullTermString("utf8", 2),
 			};
 			break;
 		default:

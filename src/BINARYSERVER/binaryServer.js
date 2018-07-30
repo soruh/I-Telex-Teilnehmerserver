@@ -11,22 +11,17 @@ var binaryServer = net.createServer(function (socket) {
     var client = {
         name: misc_js_1.clientName(),
         connection: socket,
+        ipAddress: socket.remoteAddress.replace(/^.*:/, ''),
         state: constants.states.STANDBY,
         writebuffer: [],
     };
-    logger.info(misc_js_1.inspect `client ${client.name} connected from ipaddress: ${socket.remoteAddress}`); //.replace(/^.*:/,'')
+    logger.info(misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
     var chunker = new ITelexCom.ChunkPackages();
     socket.pipe(chunker);
     socket.setTimeout(config_js_1.default.connectionTimeout);
-    chunker.on('data', (pkg) => {
-        if (client) {
-            logger.verbose(misc_js_1.inspect `recieved package: ${pkg}`);
-            logger.verbose(misc_js_1.inspect `${pkg.toString().replace(/[^ -~]/g, "·")}`);
-            ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
-                .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
-        }
-    });
-    socket.on('data', function (data) {
+    var listeningForAscii = true;
+    var listeningForBinary = true;
+    var asciiListener = (data) => {
         if (client) {
             logger.verbose(misc_js_1.inspect `recieved data:${data}`);
             logger.verbose(misc_js_1.inspect `${data.toString().replace(/[^ -~]/g, "·")}`);
@@ -40,14 +35,29 @@ var binaryServer = net.createServer(function (socket) {
                 misc_js_1.checkIp(data, client);
                 nonBinary = true;
             }
-            if (nonBinary) {
+            if (nonBinary && listeningForBinary) {
                 socket.unpipe(chunker);
                 // chunker.end();
                 chunker.destroy();
                 chunker = null;
+                listeningForBinary = false;
             }
         }
-    });
+    };
+    var binaryListener = (pkg) => {
+        if (client) {
+            if (listeningForAscii) {
+                socket.removeListener("data", asciiListener);
+                listeningForAscii = false;
+            }
+            logger.verbose(misc_js_1.inspect `recieved package: ${pkg}`);
+            logger.verbose(misc_js_1.inspect `${pkg.toString().replace(/[^ -~]/g, "·")}`);
+            ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
+                .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+        }
+    };
+    socket.on('data', asciiListener);
+    chunker.on('data', binaryListener);
     socket.on('close', function () {
         if (client) {
             if (client.newEntries != null)

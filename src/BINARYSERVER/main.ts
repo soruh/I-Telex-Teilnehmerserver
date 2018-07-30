@@ -186,12 +186,12 @@ if (config.printServerErrorsOnExit) {
 		exit: true,
 		code: -2
 	}));
-	// process.on('SIGUSR1', exitHandler.bind(null, {
-	// 	exit: true,
-	// 	code: -3
-	// }));
-	// process.on('SIGUSR2', exitHandler.bind(null, {
-	// 	exit: true,
-	// 	code: -4
-	// }));
+	process.on('SIGUSR1', exitHandler.bind(null, {
+		exit: true,
+		code: -3
+	}));
+	process.on('SIGUSR2', exitHandler.bind(null, {
+		exit: true,
+		code: -4
+	}));
 }

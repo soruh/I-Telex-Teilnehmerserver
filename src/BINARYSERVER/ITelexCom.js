@@ -10,21 +10,11 @@ const misc_js_1 = require("../SHARED/misc.js");
 const stream_1 = require("stream");
 //#endregion
 const logger = global.logger;
-Object.defineProperty(Buffer.prototype, 'readNullTermString', {
-    value: function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
-        // logger.error(inspect`${highlightBuffer(this)}`);
-        // logger.error(inspect`start: ${start}`);
-        // logger.error(inspect`end:${end}`);
-        // logger.error(inspect`${highlightBuffer(this,start,end)}`);
-        let firstZero = this.indexOf(0, start);
-        // logger.error(inspect`firstZero: ${firstZero}`);
-        let stop = firstZero >= start && firstZero <= end ? firstZero : end;
-        // logger.error(inspect`stop: ${firstZero}`);
-        // logger.error(inspect`${highlightBuffer(this,start,stop)}`);
-        // logger.error(inspect`result:\x1b[030m${this.toString(encoding,start,stop)}\n\n`);
-        return this.toString(encoding, start, stop);
-    }
-});
+Buffer.prototype.readNullTermString = function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
+    let firstZero = this.indexOf(0, start);
+    let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+    return this.toString(encoding, start, stop);
+};
 // function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
 // 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+(<any>x).toString(16));
 // 	if(from in array&&length>0){

@@ -19,6 +19,7 @@ function connect(onClose, options) {
         var client = {
             name: misc_js_1.clientName(),
             connection: socket,
+            ipAddress: "",
             state: constants.states.STANDBY,
             writebuffer: [],
         };
@@ -56,6 +57,7 @@ function connect(onClose, options) {
             }
         });
         socket.once('connect', () => {
+            client.ipAddress = socket.remoteAddress.replace(/^.*:/, '');
             logger.info(misc_js_1.inspect `connected to: ${options} as server ${client.name}`);
             misc_js_1.resetErrorCounter(serverkey);
             resolve(client);

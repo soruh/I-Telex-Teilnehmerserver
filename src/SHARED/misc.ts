@@ -246,6 +246,7 @@ interface client {
 	name: string;
 	connection: connection;
 	state: symbol,
+	ipAddress:string,
 	writebuffer: ITelexCom.peer[];
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;
