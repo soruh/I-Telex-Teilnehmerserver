@@ -4,11 +4,11 @@
 
     "logITelexCom":false,
     "logFullBuffer": false,
+    "highlightSqlQueries": true,
     "explainBuffers":1,
 
     "logDate":true,
     "disableColors":false,
-    "printServerErrorsOnExit":true,
 
     "binaryserverLog": null,
     "binaryserverErrorLog": null,

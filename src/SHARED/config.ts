@@ -17,6 +17,7 @@ interface configFile {
 
     logLineNumbers: boolean,
     logDate: boolean,
+    highlightSqlQueries:boolean,
     bufferLogWithWhitespace: boolean,
     repairPm2Colors: boolean,
     logITelexCom: boolean,
@@ -44,7 +45,6 @@ interface configFile {
     webserverErrorLog: string,
     logWebserverToConsole: boolean
 
-    printServerErrorsOnExit:boolean,
     binaryPort: number,
     binaryserverLoggingLevel: number | string,
     webserverLoggingLevel: number | string,

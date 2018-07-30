@@ -84,17 +84,22 @@ function resetErrorCounter(serverkey) {
     logger.verbose(inspect `reset error counter for: ${serverkey}`);
 }
 exports.resetErrorCounter = resetErrorCounter;
+function highlightSql(str, color) {
+    if (config_js_1.default.highlightSqlQueries)
+        return `${color}${str}${colors_js_1.default.Reset}`;
+    return str;
+}
 function SqlQuery(query, options) {
     return new Promise((resolve, reject) => {
         query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-        logger.debug(inspect `${query} ${options || ""}`);
+        logger.debug(inspect `${highlightSql(query, colors_js_1.default.Reverse)} ${options || []}`);
         {
             let formatted = mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
             if (/(update)|(insert)/gi.test(query)) {
-                logger.info(inspect `${formatted}`);
+                logger.info(inspect `${highlightSql(formatted, colors_js_1.default.Reverse)}`);
             }
             else {
-                logger.verbose(inspect `${formatted}`);
+                logger.verbose(inspect `${highlightSql(formatted, colors_js_1.default.Reverse)}`);
             }
         }
         if (global.sqlPool) {

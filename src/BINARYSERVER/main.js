@@ -134,35 +134,3 @@ global.sqlPool.getConnection(function (err, connection) {
         }
     }
 });
-if (config_js_1.default.printServerErrorsOnExit) {
-    let exitHandler = function exitHandler(options, err) {
-        if (options.cleanup) {
-            logger.error(misc_js_1.inspect `exited with code: ${err}`);
-            logger.error(misc_js_1.inspect `serverErrors:\n${misc_js_1.errorCounters}`);
-        }
-        else {
-            logger.error(misc_js_1.inspect `${err}`);
-        }
-        if (options.exit)
-            process.exit(options.code);
-    };
-    process.on('exit', exitHandler.bind(null, {
-        cleanup: true
-    }));
-    process.on('SIGINT', exitHandler.bind(null, {
-        exit: true,
-        code: -1
-    }));
-    process.on('uncaughtException', exitHandler.bind(null, {
-        exit: true,
-        code: -2
-    }));
-    process.on('SIGUSR1', exitHandler.bind(null, {
-        exit: true,
-        code: -3
-    }));
-    process.on('SIGUSR2', exitHandler.bind(null, {
-        exit: true,
-        code: -4
-    }));
-}
