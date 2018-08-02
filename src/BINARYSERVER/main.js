@@ -14,8 +14,9 @@ const config_js_1 = require("../SHARED/config.js");
             "verbose sql": 4,
             "verbose network": 5,
             "debug": 6,
-            "iTelexCom": 7,
-            "silly": 8,
+            "queue": 7,
+            "iTelexCom": 8,
+            "silly": 9,
         },
         colors: {
             "error": "red",
@@ -25,6 +26,7 @@ const config_js_1 = require("../SHARED/config.js");
             "verbose sql": "green",
             "verbose network": "blue",
             "debug": "magenta",
+            "queue": "gray",
             "iTelexCom": "underline",
             "silly": "bold",
         }
