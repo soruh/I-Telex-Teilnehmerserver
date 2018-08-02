@@ -6,6 +6,12 @@ import * as mysql from "mysql";
 import * as winston from "winston";
 import config from '../SHARED/config.js';
 
+type MailTransporter = nodemailer.Transporter | {
+	sendMail: (...rest: any[]) => void,
+	options: {
+		host: string
+	}
+}
 declare global {
 	namespace NodeJS {
 		interface Global {
@@ -14,22 +20,63 @@ declare global {
 			logger: winston.Logger;
 		}
 	}
+	interface Buffer {
+		readNullTermString:(string?, start?, end?)=>string;
+	}
+	interface ObjectConstructor {
+		entries:(Object)=>Array<[string, any]>;
+		values:(Object)=>Array<any>;
+	}
+	interface String {
+		padStart:(paddingSize:number, padWith?:string)=>string;
+		padEnd:  (paddingSize:number, padWith?:string)=>string;
+	}
+	const sqlPool:mysql.Pool;
+	const transporter:MailTransporter;
+	const logger:winston.Logger;
 }
 
+
+
 {
+	let customLevels = {
+		levels:{
+			"error": 0,
+			"warning": 1,
+			"sql": 2,
+			"network": 3,			
+			"verbose sql": 4,
+			"verbose network": 5,
+			"debug": 6,
+			"iTelexCom": 7,
+			"silly":8,
+		},
+		colors:{
+			"error": "red",
+			"warning": "yellow",
+			"sql": "green",
+			"network": "cyan",
+			"verbose sql": "green",
+			"verbose network": "blue",
+			"debug": "magenta",
+			"iTelexCom": "underline",
+			"silly": "bold",
+		}
+	}
+	// let customLevels = winston.config.npm;
 	let getLoggingLevel = function getLoggingLevel(): string {
 		if (typeof config.binaryserverLoggingLevel === "number") {
-			let level = ( < any > Object).entries(winston.config.npm.levels).find(([, value]) => value == config.binaryserverLoggingLevel);
+			let level = Object.entries(customLevels.levels).find(([, value]) => value == config.binaryserverLoggingLevel);
 			if (level) return level[0];
 		}
 		if (typeof config.binaryserverLoggingLevel === "string") {
-			if (winston.config.npm.levels.hasOwnProperty(config.binaryserverLoggingLevel))
+			if (customLevels.levels.hasOwnProperty(config.binaryserverLoggingLevel))
 				return config.binaryserverLoggingLevel;
 		}
 		console.log("valid logging levels are:");
 		console.log(
-			(<any>Object).entries(winston.config.npm.levels)
-			.map(([key, value])=>`${value}/${key}${value==3?" - not used":""}`)
+			Object.entries(customLevels.levels)
+			.map(([key, value])=>`${value}/${key}`)
 			.join("\n")
 		);
 		
@@ -73,14 +120,26 @@ declare global {
 	if(config.logDate) formats.push(winston.format.timestamp());
 	if(!config.disableColors) formats.push(winston.format.colorize())
 	// formats.push(getLine),
-	let logPadding = config.disableColors?7:17;
-	formats.push(winston.format.printf(info=>`${config.logDate?(info.timestamp.replace("T"," ").slice(0, -1)+" "):""}${(<any>info.level).padStart(logPadding)}: ${info.message}`));
-	// formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
-
+	let levelPadding = Math.max(...Object.keys(customLevels.colors).map(x=>x.length));
+	formats.push(winston.format.printf(info=>
+		`${
+			config.logDate?(info.timestamp.replace("T"," ").replace("Z"," ")):""
+		}${
+			" ".repeat(levelPadding-info.level.replace(/\u001b\[\d{1,3}m/g,"").length)
+		}${
+			info.level
+		}: ${
+			info.message
+		}`)
+	);
+	// formats.push(winston.format.printf(info => `${info.timestamp} ${info.level.padStart(17)} ${info.line}: ${info.message}`));
+	
+	winston.addColors(customLevels.colors);
 	global.logger = winston.createLogger({
+		// exceptionHandlers: transports,
 		level: getLoggingLevel(),
+		levels:customLevels.levels,
 		format: winston.format.combine(...formats),
-		exitOnError: false,
 		transports //: transports
 	});
 }
@@ -95,19 +154,18 @@ import sendQueue from './sendQueue.js';
 import binaryServer from './binaryServer.js';
 import cleanUp from "./cleanUp.js";
 
-const logger = global.logger;
+
 
 const readonly = (config.serverPin == null);
-
-if (readonly) logger.warn(inspect`Starting in read-only mode!`);
+if (readonly) logger.log('warning', inspect`Starting in read-only mode!`);
 colors.disable(config.disableColors);
 
-const mySqlConnectionOptions = config['mySqlConnectionOptions'];
+const mySqlConnectionOptions = config.mySqlConnectionOptions;
 
 function init() {
-	logger.warn(inspect`Initialising!`);
+	logger.log('warning', inspect`Initialising!`);
 	binaryServer.listen(config.binaryPort, function () {
-		logger.warn(inspect`server is listening on port ${config.binaryPort}`);
+		logger.log('warning', inspect`server is listening on port ${config.binaryPort}`);
 
 		timers.TimeoutWrapper(getFullQuery, config.fullQueryInterval);
 		// timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
@@ -117,35 +175,30 @@ function init() {
 	});
 }
 
-type MailTransporter = nodemailer.Transporter | {
-	sendMail: (...rest: any[]) => void,
-	options: {
-		host: string
-	}
-}
-
 global.sqlPool = mysql.createPool(mySqlConnectionOptions);
 global.sqlPool.getConnection(function (err, connection) {
 	if (err) {
-		logger.error(inspect`Could not connect to database!`);
+		logger.log('error', inspect`${err}`);
+		logger.log('error', inspect`Could not connect to database!`)
 		throw err;
 	} else {
 		connection.release();
-		logger.warn(inspect`Successfully connected to the database!`);
+		logger.log('warning', inspect`Successfully connected to the database!`);
 		if (config.eMail.useTestAccount) {
 			nodemailer.createTestAccount(function (err, account) {
 				if (err) {
-					logger.error(inspect`${err}`);
+					logger.log('error', inspect`${err}`);
+					logger.log('error', inspect`Failed to get an email test Account`)
 					global.transporter = {
 						sendMail: function sendMail() {
-							logger.error(inspect`can't send mail after Mail error`);
+							logger.log('error', inspect`can't send mail after Mail error`);
 						},
 						options: {
 							host: "Failed to get test Account"
 						}
 					};
 				} else {
-					logger.warn(inspect`Got email test account:\n${account}`);
+					logger.log('warning', inspect`Got an email test account:\n${account}`);
 					global.transporter = nodemailer.createTransport({
 						host: 'smtp.ethereal.email',
 						port: 587,
@@ -163,4 +216,11 @@ global.sqlPool.getConnection(function (err, connection) {
 			init();
 		}
 	}
+});
+
+
+//write uncaught exceptions to all logs
+process.on('uncaughtException', err=>{
+	logger.log('error', inspect`uncaught exception ${err}`);
+	process.exit();
 });

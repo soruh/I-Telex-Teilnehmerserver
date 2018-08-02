@@ -5,18 +5,16 @@ const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
 const constants = require("../BINARYSERVER/constants.js");
-const handles_js_1 = require("../BINARYSERVER/handles.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const stream_1 = require("stream");
 //#endregion
-const logger = global.logger;
 Buffer.prototype.readNullTermString = function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
     let firstZero = this.indexOf(0, start);
     let stop = firstZero >= start && firstZero <= end ? firstZero : end;
     return this.toString(encoding, start, stop);
 };
 // function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
-// 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+(<any>x).toString(16));
+// 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+x.toString(16));
 // 	if(from in array&&length>0){
 // 		array[from] = "\x1b[046m"+"\x1b[030m"+array[from];
 // 		array[from+length-1] += "\x1b[000m";
@@ -114,42 +112,6 @@ function explainPackage(pkg) {
 }
 exports.explainPackage = explainPackage;
 //#endregion
-function handlePackage(obj, client) {
-    return new Promise((resolve, reject) => {
-        if (!obj) {
-            logger.warn(misc_js_1.inspect `no package to handle`);
-            resolve();
-        }
-        else {
-            logger.verbose(misc_js_1.inspect `state: ${misc_js_1.symbolName(client.state)}`);
-            try {
-                logger.info(misc_js_1.inspect `handling type: ${obj.type} for: ${client.name}`);
-                logger.verbose(misc_js_1.inspect `handling package: ${obj} for: ${client.name}`);
-                if (typeof handles_js_1.default[obj.type][client.state] == "function") {
-                    logger.verbose(misc_js_1.inspect `calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${misc_js_1.symbolName(client.state)}`);
-                    try {
-                        handles_js_1.default[obj.type][client.state](obj, client)
-                            .then(resolve)
-                            .catch(reject);
-                    }
-                    catch (e) {
-                        logger.error(misc_js_1.inspect `${e}`);
-                        resolve();
-                    }
-                }
-                else {
-                    logger.warn(misc_js_1.inspect `type ${constants.PackageNames[obj.type]} (${obj.type}) not supported in state ${misc_js_1.symbolName(client.state)}`);
-                    resolve();
-                }
-            }
-            catch (e) {
-                logger.error(misc_js_1.inspect `${e}`);
-                resolve();
-            }
-        }
-    });
-}
-exports.handlePackage = handlePackage;
 class ChunkPackages extends stream_1.Transform {
     constructor(options) {
         super(options);
@@ -167,23 +129,8 @@ class ChunkPackages extends stream_1.Transform {
     }
 }
 exports.ChunkPackages = ChunkPackages;
-function unmapIpV4fromIpV6(ipaddress) {
-    if (ip.isV4Format(ipaddress)) {
-        return ipaddress;
-    }
-    if (ip.isV6Format(ipaddress)) {
-        if (ip.isV4Format(ipaddress.toLowerCase().split("::ffff:")[1])) {
-            return ipaddress.toLowerCase().split("::ffff:")[1];
-        }
-        else {
-            return "0.0.0.0";
-        }
-    }
-    return "0.0.0.0";
-}
 function encPackage(pkg) {
-    if (config_js_1.default.logITelexCom)
-        logger.verbose(misc_js_1.inspect `encoding: ${pkg}`);
+    logger.log('iTelexCom', misc_js_1.inspect `encoding package : ${pkg}`);
     if (pkg.datalength == null) {
         if (pkg.type == 255) {
             if (pkg.data.message != null)
@@ -203,7 +150,9 @@ function encPackage(pkg) {
             buffer.writeUIntLE(+pkg.data.port || 0, 8, 2);
             break;
         case 2:
-            ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), buffer, 2);
+            var normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
+            if (ip.isV4Format(normalizedIp))
+                ip.toBuffer(normalizedIp, buffer, 2);
             break;
         case 3:
             buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
@@ -234,7 +183,9 @@ function encPackage(pkg) {
             buffer.writeUIntLE(flags || 0, 46, 2);
             buffer.writeUIntLE(pkg.data.type || 0, 48, 1);
             buffer.write(pkg.data.hostname || "", 49, 40);
-            ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), buffer, 89);
+            var normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
+            if (ip.isV4Format(normalizedIp))
+                ip.toBuffer(normalizedIp, buffer, 89);
             buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
             buffer.writeUIntLE(ext || 0, 95, 1);
             buffer.writeUIntLE(+pkg.data.pin || 0, 96, 2);
@@ -260,8 +211,7 @@ function encPackage(pkg) {
             buffer.write(pkg.data.message || "", 2, pkg.datalength);
             break;
     }
-    if (config_js_1.default.logITelexCom)
-        logger.verbose(misc_js_1.inspect `encoded: ${buffer}`);
+    logger.log('iTelexCom', misc_js_1.inspect `encoded: ${buffer}`);
     return buffer;
 }
 exports.encPackage = encPackage;
@@ -271,8 +221,7 @@ function decPackage(buffer) {
         datalength: buffer[1],
         data: null
     };
-    if (config_js_1.default.logITelexCom)
-        logger.verbose(misc_js_1.inspect `decoding package: ${(config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
+    logger.log('iTelexCom', misc_js_1.inspect `decoding package: ${(config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
     switch (pkg.type) {
         case 1:
             pkg.data = {
@@ -379,7 +328,7 @@ function decPackage(buffer) {
             };
             break;
         default:
-            logger.error(misc_js_1.inspect `invalid/unsupported type: ${pkg.type}`);
+            logger.log('warning', misc_js_1.inspect `recieved a package of invalid/unsupported type: ${pkg.type}`);
             return null;
     }
     return pkg;
@@ -388,22 +337,18 @@ exports.decPackage = decPackage;
 function decPackages(buffer) {
     if (!(buffer instanceof Buffer))
         buffer = Buffer.from(buffer);
-    if (config_js_1.default.logITelexCom)
-        logger.verbose(misc_js_1.inspect `decoding data: ${buffer}`);
+    logger.log('iTelexCom', misc_js_1.inspect `decoding data: ${buffer}`);
     var out = [];
     for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
         var type = +buffer[typepos];
         var datalength = +buffer[typepos + 1];
         if (type in constants.PackageSizes && constants.PackageSizes[type] != datalength) {
-            if (config_js_1.default.logITelexCom)
-                logger.info(misc_js_1.inspect `size missmatch: ${constants.PackageSizes[type]} != ${datalength}`);
+            logger.log('warning', misc_js_1.inspect `size missmatch: ${constants.PackageSizes[type]} != ${datalength}`);
             if (config_js_1.default.allowInvalidPackageSizes) {
-                if (config_js_1.default.logITelexCom)
-                    logger.info(misc_js_1.inspect `using package of invalid size!`);
+                logger.log('warning', misc_js_1.inspect `using package of invalid size!`);
             }
             else {
-                if (config_js_1.default.logITelexCom)
-                    logger.verbose(misc_js_1.inspect `ignoring package, because it is of invalid size!`);
+                logger.log('debug', misc_js_1.inspect `ignoring package, because it is of invalid size!`);
                 continue;
             }
         }
@@ -411,71 +356,7 @@ function decPackages(buffer) {
         if (pkg)
             out.push(pkg);
     }
-    if (config_js_1.default.logITelexCom)
-        logger.verbose(misc_js_1.inspect `decoded: ${out}`);
+    logger.log('iTelexCom', misc_js_1.inspect `decoded: ${out}`);
     return out;
 }
 exports.decPackages = decPackages;
-function ascii(data, client) {
-    var number = "";
-    for (let byte of data) {
-        //if (config.logITelexCom) logger.debug(inspect`${String.fromCharCode(byte)}`);
-        let char = String.fromCharCode(byte);
-        if (/([0-9])/.test(char))
-            number += char;
-    }
-    if (number != "" && (!isNaN(parseInt(number)))) {
-        if (config_js_1.default.logITelexCom)
-            logger.info(misc_js_1.inspect `starting lookup for: ${number}`);
-        misc_js_1.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
-            .then(function (result) {
-            if (!result || result.length == 0) {
-                let send = "";
-                send += "fail\r\n";
-                send += number + "\r\n";
-                send += "unknown\r\n";
-                send += "+++\r\n";
-                client.connection.end /*.write*/(send, function () {
-                    if (config_js_1.default.logITelexCom)
-                        logger.info(misc_js_1.inspect `Entry not found/visible`);
-                    if (config_js_1.default.logITelexCom)
-                        logger.verbose(misc_js_1.inspect `sent:\n${send}`);
-                });
-            }
-            else {
-                let send = "";
-                let res = result[0];
-                send += "ok\r\n";
-                send += res.number + "\r\n";
-                send += res.name + "\r\n";
-                send += res.type + "\r\n";
-                if ([2, 4, 5].indexOf(res.type) > -1) {
-                    send += res.ipaddress + "\r\n";
-                }
-                else if ([1, 3, 6].indexOf(res.type) > -1) {
-                    send += res.hostname + "\r\n";
-                }
-                /* else if (res.type == 6) {
-                                        send += res.hostname + "\r\n";
-                                    }*/
-                else {
-                    send += "ERROR\r\n";
-                }
-                send += res.port + "\r\n";
-                send += (res.extension || "-") + "\r\n";
-                send += "+++\r\n";
-                client.connection.end(send, function () {
-                    if (config_js_1.default.logITelexCom)
-                        logger.info(misc_js_1.inspect `Entry found`);
-                    if (config_js_1.default.logITelexCom)
-                        logger.verbose(misc_js_1.inspect `sent:\n${send}`);
-                });
-            }
-        })
-            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
-    }
-    else {
-        client.connection.end();
-    }
-}
-exports.ascii = ascii;

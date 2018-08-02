@@ -8,7 +8,6 @@ const misc_js_1 = require("../SHARED/misc.js");
 const misc_js_2 = require("../SHARED/misc.js");
 // import { lookup } from "dns";
 //#endregion
-const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
 /*<PKGTYPES>
 Client_update: 1
@@ -35,7 +34,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     var { number, pin, port } = pkg.data;
     var ipaddress = client.ipAddress;
     if (number < 10000) {
-        logger.warn(misc_js_1.inspect `client  tried to update ${number} which is too small(<10000)`);
+        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is too small(<10000)`);
         return void misc_js_1.sendEmail("invalidNumber", {
             "Ip": ipaddress,
             "number": number.toString(),
@@ -46,7 +45,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             client.connection.end();
             resolve();
         })
-            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
     }
     misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
         .then((entries) => {
@@ -55,7 +54,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         let [entry] = entries.filter(x => x.type != 0);
         if (entry) {
             if (entry.type != 5) {
-                logger.info(misc_js_1.inspect `not DynIp type`);
+                logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is not of DynIp type`);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpType", {
                     "type": entry.type.toString(),
@@ -66,10 +65,10 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
             if (entry.pin != pin) {
-                logger.info(misc_js_1.inspect `wrong DynIp pin`);
+                logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpPin", {
                     "Ip": ipaddress,
@@ -79,10 +78,10 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
             if (ipaddress == entry.ipaddress && port == entry.port) {
-                logger.verbose(misc_js_1.inspect `not UPDATING, nothing to update`);
+                logger.log('debug', misc_js_1.inspect `not UPDATING, nothing to update`);
                 return void client.connection.write(ITelexCom.encPackage({
                     type: 2,
                     data: {
@@ -109,7 +108,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     }
                 }), () => resolve());
             })
-                .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         }
         else {
             misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
@@ -117,7 +116,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
 			VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
                 .then(function (result) {
                 if (!(result && result.affectedRows)) {
-                    logger.error(misc_js_1.inspect `could not create entry`);
+                    logger.log('error', misc_js_1.inspect `could not create entry`);
                     return void resolve();
                 }
                 misc_js_1.sendEmail("new", {
@@ -126,7 +125,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "date": new Date().toLocaleString(),
                     "timeZone": misc_js_1.getTimezone(new Date())
                 })
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                 client.connection.write(ITelexCom.encPackage({
                     type: 2,
                     data: {
@@ -134,23 +133,20 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     }
                 }), () => resolve());
             })
-                .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         }
     })
-        .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
 });
 handles[3][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
     if (pkg.data.version != 1) {
-        logger.warn(misc_js_1.inspect `unsupported package version, sending '0x04' package`);
-        return void client.connection.write(ITelexCom.encPackage({
-            type: 4
-        }), () => resolve());
+        logger.log('warning', misc_js_1.inspect `client ${client.name} sent a package with version ${pkg.data.version} which is not supported by this server`);
+        return void client.connection.write(ITelexCom.encPackage({ type: 4 }), () => resolve());
     }
     misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number])
         .then(function (result) {
-        logger.verbose(misc_js_1.inspect `${result}`);
         if (result && result.length == 1) {
             let [data] = result;
             data.pin = "0";
@@ -165,7 +161,7 @@ handles[3][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             }), () => resolve());
         }
     })
-        .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
 });
 handles[5][constants.states.FULLQUERY] =
     handles[5][constants.states.LOGIN] = (pkg, client) => new Promise((resolve, reject) => {
@@ -174,7 +170,7 @@ handles[5][constants.states.FULLQUERY] =
         var names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
         names = names.filter(name => pkg.data[name] !== undefined);
         var values = names.map(name => pkg.data[name]);
-        logger.verbose(misc_js_1.inspect `got dataset for: ${pkg.data.number}`);
+        logger.log('verbose network', misc_js_1.inspect `got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
         misc_js_2.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number])
             .then((entries) => {
             if (!entries)
@@ -184,22 +180,22 @@ handles[5][constants.states.FULLQUERY] =
                 if (typeof client.newEntries != "number")
                     client.newEntries = 0;
                 if (pkg.data.timestamp <= entry.timestamp) {
-                    logger.verbose(misc_js_1.inspect `recieved entry is ${+entry.timestamp - pkg.data.timestamp} seconds older and was ignored`);
+                    logger.log('debug', misc_js_1.inspect `recieved entry is ${+entry.timestamp - pkg.data.timestamp} seconds older and was ignored`);
                     return void client.connection.write(ITelexCom.encPackage({
                         type: 8
                     }), () => resolve());
                 }
                 client.newEntries++;
-                logger.info(misc_js_1.inspect `got new dataset for: ${pkg.data.number}`);
-                logger.verbose(misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
+                logger.log('network', misc_js_1.inspect `got new dataset for: ${pkg.data.name}`);
+                logger.log('debug', misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
                 misc_js_2.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]))
                     .then(() => client.connection.write(ITelexCom.encPackage({
                     type: 8
                 }), () => resolve()))
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
             else if (pkg.data.type == 0) {
-                logger.info(misc_js_1.inspect `not inserting delted entry: ${pkg.data}`);
+                logger.log('debug', misc_js_1.inspect `not inserting deleted entry: ${pkg.data}`);
             }
             else {
                 misc_js_2.SqlQuery(`
@@ -212,16 +208,16 @@ handles[5][constants.states.FULLQUERY] =
                     .then(() => client.connection.write(ITelexCom.encPackage({
                     type: 8
                 }), () => resolve()))
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
         })
-            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
     });
 handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
     if (pkg.data.serverpin != config_js_1.default.serverPin && !(readonly && config_js_1.default.allowFullQueryInReadonly)) {
-        logger.info(misc_js_1.inspect `serverpin is incorrect! ${pkg.data.serverpin} != ${config_js_1.default.serverPin} ending client connection!`); //TODO: remove pin logging
+        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to perform a FullQuery with an invalid serverpin`);
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "Ip": client.ipAddress,
@@ -229,9 +225,9 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
-            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
     }
-    logger.info(misc_js_1.inspect `serverpin is correct!`);
+    logger.log('debug', misc_js_1.inspect `serverpin is correct!`);
     misc_js_2.SqlQuery("SELECT  * FROM teilnehmer;")
         .then((result) => {
         if (!result || result.length === 0)
@@ -240,18 +236,18 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             }), () => resolve());
         client.writebuffer = result;
         client.state = constants.states.RESPONDING;
-        return ITelexCom.handlePackage({
+        return handlePackage({
             type: 8
         }, client);
     })
         .then(() => resolve())
-        .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
 });
 handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
     if (pkg.data.serverpin != config_js_1.default.serverPin && !(readonly && config_js_1.default.allowLoginInReadonly)) {
-        logger.info(misc_js_1.inspect `serverpin is incorrect! ${pkg.data.serverpin} != ${config_js_1.default.serverPin} ending client.connection!`);
+        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to perform a Login with an invalid serverpin`);
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "Ip": client.ipAddress,
@@ -259,9 +255,9 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
-            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
     }
-    logger.info(misc_js_1.inspect `serverpin is correct!`);
+    logger.log('debug', misc_js_1.inspect `serverpin is correct!`);
     client.state = constants.states.LOGIN;
     client.connection.write(ITelexCom.encPackage({
         type: 8
@@ -270,7 +266,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
 handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
-    logger.info(misc_js_1.inspect `entrys to transmit: ${client.writebuffer.length}`);
+    logger.log('debug', misc_js_1.inspect `entrys to transmit: ${client.writebuffer.length}`);
     if (client.writebuffer.length === 0) {
         client.state = constants.states.STANDBY;
         return void client.connection.write(ITelexCom.encPackage({
@@ -278,7 +274,7 @@ handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve,
         }), () => resolve());
     }
     let data = client.writebuffer.shift();
-    logger.info(misc_js_1.inspect `sent dataset for ${data.name} (${data.number})`);
+    logger.log('verbose network', misc_js_1.inspect `sent dataset for ${data.name} (${data.number})`);
     client.connection.write(ITelexCom.encPackage({
         type: 5,
         data
@@ -314,12 +310,12 @@ handles[10][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, r
             x.pin = "0";
             return x;
         });
-        return ITelexCom.handlePackage({
+        return handlePackage({
             type: 8
         }, client);
     })
         .then(() => resolve())
-        .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
 });
 handles[255][constants.states.RESPONDING] =
     handles[255][constants.states.FULLQUERY] =
@@ -328,6 +324,40 @@ handles[255][constants.states.RESPONDING] =
                 (pkg, client) => new Promise((resolve, reject) => {
                     if (!client)
                         return void resolve();
-                    logger.error(misc_js_1.inspect `server sent error message: ${pkg}`);
+                    logger.log('error', misc_js_1.inspect `server sent error message: ${pkg}`);
                 });
-exports.default = handles;
+function handlePackage(obj, client) {
+    return new Promise((resolve, reject) => {
+        if (!obj) {
+            logger.log('warning', misc_js_1.inspect `no package to handle`);
+            resolve();
+        }
+        else {
+            logger.log('debug', misc_js_1.inspect `state: ${misc_js_1.symbolName(client.state)}`);
+            try {
+                logger.log('network', misc_js_1.inspect `handling package of type ${constants.PackageNames[obj.type]} (${obj.type}) for ${client.name} in state ${misc_js_1.symbolName(client.state)}`);
+                logger.log('verbose network', misc_js_1.inspect `handling package: ${obj}`);
+                if (typeof handles[obj.type][client.state] == "function") {
+                    try {
+                        handles[obj.type][client.state](obj, client)
+                            .then(resolve)
+                            .catch(reject);
+                    }
+                    catch (e) {
+                        logger.log('error', misc_js_1.inspect `${e}`);
+                        resolve();
+                    }
+                }
+                else {
+                    logger.log('warning', misc_js_1.inspect `client ${client.name} sent a package of type ${constants.PackageNames[obj.type]} (${obj.type}) which is not supported in state ${misc_js_1.symbolName(client.state)}`);
+                    resolve();
+                }
+            }
+            catch (e) {
+                logger.log('error', misc_js_1.inspect `${e}`);
+                resolve();
+            }
+        }
+    });
+}
+exports.handlePackage = handlePackage;

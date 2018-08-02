@@ -2,7 +2,6 @@
     "binaryserverLoggingLevel":2,
     "webserverLoggingLevel":2,
 
-    "logITelexCom":false,
     "logFullBuffer": false,
     "highlightSqlQueries": true,
     "explainBuffers":1,

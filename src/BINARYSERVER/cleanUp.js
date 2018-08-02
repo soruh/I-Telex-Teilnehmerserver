@@ -2,11 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const misc_1 = require("../SHARED/misc");
 const config_1 = require("../SHARED/config");
-const logger = global.logger;
 function cleanUp() {
     return new Promise((resolve, reject) => {
         if (config_1.default.keepDeletedFor != null) {
-            logger.info(misc_1.inspect `cleaning up`);
+            logger.log('debug', misc_1.inspect `cleaning up`);
             let expiredAfter = Math.floor(Date.now() / 1000) - config_1.default.keepDeletedFor * 86400;
             misc_1.SqlQuery("DELETE FROM teilnehmer WHERE type=0 AND timestamp<=?", [expiredAfter])
                 .then(res => {
@@ -14,10 +13,10 @@ function cleanUp() {
                     console.log(misc_1.inspect `removed ${res.affectedRows} expired entries`);
                 resolve();
             })
-                .catch(err => { logger.error(misc_1.inspect `${err}`); });
+                .catch(err => { logger.log('error', misc_1.inspect `${err}`); });
         }
         else {
-            logger.verbose(misc_1.inspect `config.keepDeletedFor not set, not cleaning up`);
+            logger.log('warning', misc_1.inspect `config.keepDeletedFor not set, not cleaning up`);
             reject();
         }
     });

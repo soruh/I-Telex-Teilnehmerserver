@@ -1,32 +1,21 @@
-function serialEachPromise<T,U>(iterable:Iterable<T>, promiseFunction:(value:T, key:number)=>Promise<U>){
-  let promiseGenerator = function*(/*iterable:Iterable<T>, promiseFunction:(value:T, key:number)=>any*/){
-    for(let i in iterable) yield(promiseFunction(iterable[i],+i));
-  };
-  let consumePromiseGenerator = (generator:Generator):Promise<U[]>=>new Promise((resolve,reject)=>{
-    let results:U[] = [];
-    let consumeNextPromise = (/*generator:Generator*/):void=>{
-      let next:IteratorResult<Promise<U>> = generator.next();
-      if(next.done){
-        resolve(results);
-      }else{
-        next.value
-        .then(res=>{
-          results.push(res);
-          consumeNextPromise(/*generator*/);
-        })
-        .catch(err=>{
-          generator.return();
-          reject(err);
-        });
-      }
+import { inspect } from "./misc";
+
+
+
+"use strict";
+async function serialEachPromise<T,U>(iterable:Iterable<T>, promiseFunction:(value:T, key:string)=>Promise<U>){
+  let results = [];
+  for(let key in iterable){
+    try{
+      logger.log('silly', inspect`starting promiseFunction ${promiseFunction.name?promiseFunction.name+" ":""}called with key: ${key} value: ${iterable[key]} `);
+      results.push(await promiseFunction(iterable[key], key));
+      logger.log('silly', inspect`finished promiseFunction ${promiseFunction.name?promiseFunction.name+" ":""}called with key: ${key} value: ${iterable[key]}`);
+    }catch(e){
+      logger.log('silly', inspect`error in promiseFunction ${promiseFunction.name?promiseFunction.name+" ":""}called with key: ${key} value: ${iterable[key]}`);
+      logger.log('error', inspect`${e}`);
     }
-    consumeNextPromise(/*generator*/);
-  });
-  return consumePromiseGenerator(promiseGenerator(/*iterable, promiseFunction*/));
+  }
+  return results;
 }
 
 export default serialEachPromise;
-
-// serialEachPromise([8,7,6,5,4,3,2,1,0,-1,-2,-3,-4,-5,-6,-7,-8], (value,key)=>new Promise((resolve,reject)=>setTimeout(resolve,100,value*key)))
-//     .then(res=>console.log("results:\n",res))
-//     .catch(err=>{console.error("serialAllPromises caught:",err);});

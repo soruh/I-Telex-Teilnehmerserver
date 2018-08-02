@@ -9,15 +9,15 @@ import {SqlQuery, inspect} from '../SHARED/misc.js';
 //#endregion
 
 
-const logger = global.logger;
+
 
 async function updateQueue() {
 	return new Promise((resolve, reject) => {
-		logger.verbose(inspect`updating Queue`);
+		logger.log('debug', inspect`updating Queue`);
 		SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;")
 			.then(function (changed: ITelexCom.peerList) {
 				if (changed.length > 0) {
-					logger.info(inspect`${changed.length} numbers to enqueue`);
+					logger.log('queue', inspect`${changed.length} numbers to enqueue`);
 
 					SqlQuery("SELECT * FROM servers;")
 						.then(function (servers: ITelexCom.serverList) {
@@ -31,61 +31,61 @@ async function updateQueue() {
 														.then(function () {
 															//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 															//.then(function(){
-															logger.verbose(inspect`enqueued: ${message.number}`);
+															logger.log('queue', inspect`enqueued: ${message.number}`);
 															//})
-															//.catch(err=>{logger.error(inspect`${err}`)});
+															//.catch(err=>{logger.log('error', inspect`${err}`)}); 
 														})
-														.catch(err=>{logger.error(inspect`${err}`)});
+														.catch(err=>{logger.log('error', inspect`${err}`)}); 
 												} else if (qentry.length == 0) {
 													SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)])
 														.then(function () {
 															//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 															//.then(function(){
-															logger.verbose(inspect`enqueued: ${message.number}`);
+															logger.log('queue', inspect`enqueued: ${message.number}`);
 															//})
-															//.catch(err=>{logger.error(inspect`${err}`)});
+															//.catch(err=>{logger.log('error', inspect`${err}`)}); 
 														})
-														.catch(err=>{logger.error(inspect`${err}`)});
+														.catch(err=>{logger.log('error', inspect`${err}`)}); 
 												} else {
-													logger.error(inspect`duplicate queue entry!`);
+													logger.log('error', inspect`duplicate queue entry!`);
 													SqlQuery("DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
 														.then(() => SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)]))
 														.then(() => {
 															//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 															//.then(function(){
-															logger.verbose(inspect`enqueued: message.number`);
+															logger.log('queue', inspect`enqueued: message.number`);
 															//})
-															//.catch(err=>{logger.error(inspect`${err}`)});
+															//.catch(err=>{logger.log('error', inspect`${err}`)}); 
 														})
-														.catch(err=>{logger.error(inspect`${err}`)});
+														.catch(err=>{logger.log('error', inspect`${err}`)}); 
 												}
 											})
-											.catch(err=>{logger.error(inspect`${err}`)})
+											.catch(err=>{logger.log('error', inspect`${err}`)})
 										)
 									)
 									.then(() => {
-										logger.info(inspect`finished enqueueing`);
-										logger.verbose(inspect`reseting changed flags...`);
+										logger.log('queue', inspect`finished enqueueing`)
+										logger.log('queue', inspect`reseting changed flags...`)
 										return SqlQuery(`UPDATE teilnehmer SET changed = 0 WHERE uid=?${" or uid=?".repeat(changed.length-1)};`, changed.map(entry => entry.uid));
 									})
 									.then(() => {
-										logger.verbose(inspect`reset ${changed.length} changed flags.`);
+										logger.log('queue', inspect`reset ${changed.length} changed flags.`);
 										//sendQueue();
 										resolve();
 									})
-									.catch(err=>{logger.error(inspect`${err}`)});
+									.catch(err=>{logger.log('error', inspect`${err}`)}); 
 							} else {
-								logger.warn(inspect`No configured servers -> aborting updateQueue`);
+								logger.log('warning', inspect`No configured servers -> aborting updateQueue`);
 								resolve();
 							}
 						})
-						.catch(err=>{logger.error(inspect`${err}`)});
+						.catch(err=>{logger.log('error', inspect`${err}`)}); 
 				} else {
-					logger.verbose(inspect`no numbers to enqueue`);
+					logger.log('queue', inspect`no numbers to enqueue`);
 					resolve();
 				}
 			})
-			.catch(err=>{logger.error(inspect`${err}`)});
+			.catch(err=>{logger.log('error', inspect`${err}`)}); 
 	});
 }
 export default updateQueue;

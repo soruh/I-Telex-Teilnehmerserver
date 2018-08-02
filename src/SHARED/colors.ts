@@ -2,7 +2,7 @@
 
 const COLORS = {
 	Reset: "\x1b[000m",
-	Bright: "\x1b[001m",
+	Bold: "\x1b[001m",
 	Dim: "\x1b[002m",
 	Underscore: "\x1b[004m",
 	Blink: "\x1b[005m",

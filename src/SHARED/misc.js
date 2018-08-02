@@ -1,42 +1,32 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const util = require("util");
 const mysql = require("mysql");
 const ip = require("ip");
+const net = require("net");
 const nodemailer = require("nodemailer");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
-const dns_1 = require("dns");
-const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 // import * as winston from "winston";
 //#endregion
-const logger = global.logger;
 function isAnyError(error) {
     if (error instanceof Error)
         return true;
     return false;
 }
+const textColor = colors_js_1.default.FgBlack;
+const stringColor = colors_js_1.default.FgBlue;
+const errorColor = colors_js_1.default.FgRed;
+const sqlColor = colors_js_1.default.Reverse;
 function inspect(substrings, ...values) {
-    var substringArray = Array.from(substrings);
-    substringArray = substringArray.map(substring => colors_js_1.default.FgGreen + substring + colors_js_1.default.Reset);
+    var substringArray = Array.from(substrings).map(substring => textColor + substring + colors_js_1.default.Reset);
     values = values.map(value => {
         if (typeof value === "string")
-            return colors_js_1.default.FgCyan + value + colors_js_1.default.Reset;
+            return stringColor + value + colors_js_1.default.Reset;
         if (isAnyError(value))
-            return colors_js_1.default.FgRed + util.inspect(value) + colors_js_1.default.Reset;
-        let inspected = util.inspect(value, {
-            colors: !config_js_1.default.disableColors,
-            depth: 2,
-        });
+            return errorColor + util.inspect(value) + colors_js_1.default.Reset;
+        let inspected = util.inspect(value, { colors: !config_js_1.default.disableColors });
         if (!config_js_1.default.disableColors)
             inspected = inspected.replace(/\u0001b\[39m/g, colors_js_1.default.Reset);
         return inspected;
@@ -54,7 +44,7 @@ exports.inspect = inspect;
 function getTimezone(date) {
     let offset = -1 * date.getTimezoneOffset();
     let offsetStr = (Math.floor(offset / 60)).toString().padStart(2, "0") + ":" + (offset % 60).toString().padStart(2, "0");
-    return "UTC" + (offset < 0 ? "" : "+") + offsetStr;
+    return `UTC${(offset < 0 ? "" : "+")}${offsetStr}`;
 }
 exports.getTimezone = getTimezone;
 var errorCounters = {};
@@ -66,8 +56,9 @@ function increaseErrorCounter(serverkey, error, code) {
     else {
         errorCounters[serverkey] = 1;
     }
-    let warn = config_js_1.default.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
-    logger.warn(inspect `increased errorCounter for server ${serverkey} to ${(warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan) + errorCounters[serverkey] + colors_js_1.default.Reset}`);
+    var warn = config_js_1.default.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
+    var counterColor = warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan;
+    logger.log('warning', inspect `increased errorCounter for server ${serverkey} to ${counterColor + errorCounters[serverkey] + colors_js_1.default.Reset}`);
     if (warn)
         sendEmail("ServerError", {
             "host": serverkey.split(":")[0],
@@ -81,122 +72,67 @@ function increaseErrorCounter(serverkey, error, code) {
 exports.increaseErrorCounter = increaseErrorCounter;
 function resetErrorCounter(serverkey) {
     delete errorCounters[serverkey];
-    logger.verbose(inspect `reset error counter for: ${serverkey}`);
+    logger.log('debug', inspect `reset error counter for: ${serverkey}`);
 }
 exports.resetErrorCounter = resetErrorCounter;
-function highlightSql(str, color) {
-    if (config_js_1.default.highlightSqlQueries)
-        return `${color}${str}${colors_js_1.default.Reset}`;
-    return str;
-}
 function SqlQuery(query, options) {
     return new Promise((resolve, reject) => {
         query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-        logger.debug(inspect `${highlightSql(query, colors_js_1.default.Reverse)} ${options || []}`);
+        logger.log('debug', inspect `${query} ${options || []}`);
         {
             let formatted = mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
-            if (/(update)|(insert)/gi.test(query)) {
-                logger.info(inspect `${highlightSql(formatted, colors_js_1.default.Reverse)}`);
+            if (query.indexOf("teilnehmer") > -1) {
+                logger.log('sql', inspect `${(config_js_1.default.highlightSqlQueries ? sqlColor : "") + formatted + colors_js_1.default.Reset}`);
             }
             else {
-                logger.verbose(inspect `${highlightSql(formatted, colors_js_1.default.Reverse)}`);
+                logger.log('verbose sql', inspect `${(config_js_1.default.highlightSqlQueries ? sqlColor : "") + formatted + colors_js_1.default.Reset}`);
             }
         }
         if (global.sqlPool) {
             global.sqlPool.query(query, options, function (err, res) {
                 if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
-                    logger.debug(inspect `number of open connections: ${global.sqlPool["_allConnections"].length}`);
+                    logger.log('silly', inspect `number of open connections: ${global.sqlPool["_allConnections"].length}`);
                 if (err) {
-                    logger.error(inspect `${err}`);
+                    logger.log('error', inspect `${err}`);
                     reject(err);
                 }
                 else {
-                    // logger.debug(inspect`result:\n${res}`);
+                    // logger.log('debug', inspect`result:\n${res}`);
                     resolve(res);
                 }
             });
         }
         else {
-            logger.error(inspect `sql pool is not set!`);
+            logger.log('error', inspect `sql pool is not set!`);
         }
     });
 }
 exports.SqlQuery = SqlQuery;
-function checkIp(data, client) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (config_js_1.default.doDnsLookups) {
-            var arg = data.slice(1).toString().split("\n")[0].split("\r")[0];
-            logger.info(inspect `checking if  belongs to any participant`);
-            let ipAddr = "";
-            if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
-                ipAddr = arg;
-            }
-            else {
-                try {
-                    let { address, family } = yield util.promisify(dns_1.lookup)(arg);
-                    ipAddr = address;
-                    logger.verbose(inspect ` resolved to `);
-                }
-                catch (e) {
-                    client.connection.end("ERROR\r\nnot a valid host or ip\r\n");
-                    logger.error(inspect `${e}`);
-                    return;
-                }
-            }
-            if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
-                SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
-                    .then((peers) => {
-                    var ipPeers = [];
-                    serialEachPromise_js_1.default(peers, peer => new Promise((resolve, reject) => {
-                        if ((!peer.ipaddress) && peer.hostname) {
-                            // logger.debug(inspect`hostname: ${peer.hostname}`)
-                            dns_1.lookup(peer.hostname, {}, function (err, address, family) {
-                                // if (err) logger.debug(inspect`${err}`);
-                                if (address) {
-                                    ipPeers.push({
-                                        peer,
-                                        ipaddress: address
-                                    });
-                                    // logger.debug(inspect`${peer.hostname} resolved to ${address}`);
-                                }
-                                resolve();
-                            });
-                        }
-                        else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
-                            // logger.debug(inspect`ip: ${peer.ipaddress}`);
-                            ipPeers.push({
-                                peer,
-                                ipaddress: peer.ipaddress
-                            });
-                            resolve();
-                        }
-                        else {
-                            resolve();
-                        }
-                    }))
-                        .then(() => {
-                        let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
-                        logger.debug(inspect `matching peers: ${matches}`);
-                        if (matches.length > 0) {
-                            client.connection.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
-                        }
-                        else {
-                            client.connection.end("fail\r\n+++\r\n");
-                        }
-                    })
-                        .catch(err => { logger.error(inspect `${err}`); });
-                });
-            }
-            else {
-                client.connection.end("error\r\nnot a valid host or ip\r\n");
-            }
+function normalizeIp(ipAddr) {
+    if (ip.isV4Format(ipAddr)) {
+        return ipAddr;
+    }
+    else if (ip.isV6Format(ipAddr)) {
+        let buffer = ip.toBuffer(ipAddr);
+        for (let i = 0; i < 10; i++)
+            if (buffer[i] !== 0)
+                return ipAddr;
+        for (let i = 10; i < 12; i++)
+            if (buffer[i] !== 255)
+                return ipAddr;
+        let ipv4 = ip.toString(buffer, 12, 4);
+        if (net.isIPv4(ipv4)) {
+            return ipv4;
         }
         else {
-            client.connection.end("error\r\nthis server does not support this function\r\n");
+            return ipAddr;
         }
-    });
+    }
+    else {
+        return '0.0.0.0';
+    }
 }
-exports.checkIp = checkIp;
+exports.normalizeIp = normalizeIp;
 function sendEmail(messageName, values) {
     return new Promise((resolve, reject) => {
         let message = config_js_1.default.eMail.messages[messageName];
@@ -222,18 +158,17 @@ function sendEmail(messageName, values) {
             else {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            logger.info(inspect `sending email of type ${messageName || "config error"}`);
-            logger.debug(inspect `mail values: ${values}`);
-            logger.verbose(inspect `sending mail:\n${mailOptions}\nto server ${global.transporter.options["host"]}`);
+            logger.log('debug', inspect `sending email of type ${messageName || "config error"}`);
+            logger.log('debug', inspect `mail values: ${values}`);
+            logger.log('debug', inspect `sending mail:\n${mailOptions}\nto server ${global.transporter.options["host"]}`);
             global.transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
-                    //logger.debug(inspect`${error}`);
                     reject(error);
                 }
                 else {
-                    logger.info(inspect `Message sent: ${info.messageId}`);
+                    logger.log('debug', inspect `Message sent: ${info.messageId}`);
                     if (config_js_1.default.eMail.useTestAccount)
-                        logger.warn(inspect `Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+                        logger.log('warning', inspect `Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
                     resolve();
                 }
             });
@@ -410,7 +345,7 @@ if (config_js_1.default.scientistNames) {
         "Henry Moseley",
         "Steven Weinberg",
         "Meghnad Saha",
-        "Lev Landau ",
+        "Lev Landau",
         "Henri Becquerel",
         "Hans Bethe",
         "Philipp Lenard",
@@ -418,7 +353,7 @@ if (config_js_1.default.scientistNames) {
         "Luis Walter Alvarez",
         "Gustav Kirchhoff",
         "Arthur Eddington",
-        "Eugene Paul ",
+        "Eugene Paul",
         "Evangelista Torricelli",
         "Anders Celsius",
         "Ernst Mach",
@@ -436,7 +371,7 @@ if (config_js_1.default.scientistNames) {
         "John Stewart Bell",
         "Frédéric Joliot-Curie",
         "Augustin-Jean Fresnel",
-        "Isidor Isaac Rabi ",
+        "Isidor Isaac Rabi",
         "Maria Goeppert Mayer",
         "Arthur Compton",
         "Sir George Stokes, 1st Baronet",

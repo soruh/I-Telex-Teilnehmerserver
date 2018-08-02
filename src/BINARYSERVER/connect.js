@@ -7,12 +7,12 @@ const config_js_1 = require("../SHARED/config.js");
 const constants = require("../BINARYSERVER/constants.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const misc_js_1 = require("../SHARED/misc.js");
+const handles_js_1 = require("./handles.js");
 //#endregion
-const logger = global.logger;
 function connect(onClose, options) {
     return new Promise((resolve, reject) => {
         let serverkey = options.host + ":" + options.port;
-        logger.info(misc_js_1.inspect `trying to connect to: ${serverkey}`);
+        logger.log('verbose network', misc_js_1.inspect `trying to connect to server at ${serverkey}`);
         var socket = new net.Socket();
         var chunker = new ITelexCom.ChunkPackages();
         socket.pipe(chunker);
@@ -25,40 +25,39 @@ function connect(onClose, options) {
         };
         chunker.on('data', (pkg) => {
             if (client) {
-                logger.verbose(misc_js_1.inspect `recieved package: ${pkg}`);
-                logger.verbose(misc_js_1.inspect `${pkg.toString().replace(/[^ -~]/g, "·")}`);
-                ITelexCom.handlePackage(ITelexCom.decPackage(pkg), client)
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                logger.log('verbose network', misc_js_1.inspect `recieved package: ${pkg}`);
+                logger.log('verbose network', misc_js_1.inspect `${pkg.toString().replace(/[^ -~]/g, "·")}`);
+                handles_js_1.handlePackage(ITelexCom.decPackage(pkg), client)
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
         });
         socket.on('close', () => {
             if (client.newEntries != null)
-                logger.info(misc_js_1.inspect `recieved ${client.newEntries} new entries`);
-            logger.info(misc_js_1.inspect `server ${client.name} disconnected!`);
-            // logger.info(inspect`deleted connection `);
+                logger.log('verbose network', misc_js_1.inspect `recieved ${client.newEntries} new entries`);
+            logger.log('network', misc_js_1.inspect `server ${client.name} disconnected!`);
             client = null;
             onClose();
         });
         socket.on('timeout', () => {
-            logger.warn(misc_js_1.inspect `server: ${serverkey} timed out`);
+            logger.log('warning', misc_js_1.inspect `server: ${client.name} timed out`);
             // socket.emit("end");
             // socket.emit("error",new Error("timeout"));
             misc_js_1.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
             socket.end();
         });
         socket.on('error', error => {
-            if (error["code"] != "ECONNRESET") { //TODO:  alert on ECONNRESET?
-                logger.info(misc_js_1.inspect `server ${options} had an error`);
+            if (error["code"] != "ECONNRESET") {
+                logger.log('debug', misc_js_1.inspect `${error}`);
+                logger.log('network', misc_js_1.inspect `server ${client.name} had an error`);
                 misc_js_1.increaseErrorCounter(serverkey, error, error["code"]);
-                logger.info(misc_js_1.inspect `server ${serverkey} could not be reached; errorCounter: ${misc_js_1.errorCounters[serverkey]}`);
             }
             else {
-                logger.debug(misc_js_1.inspect `${error}`);
+                logger.log('silly', misc_js_1.inspect `${error}`);
             }
         });
         socket.once('connect', () => {
-            client.ipAddress = socket.remoteAddress.replace(/^.*:/, '');
-            logger.info(misc_js_1.inspect `connected to: ${options} as server ${client.name}`);
+            client.ipAddress = misc_js_1.normalizeIp(socket.remoteAddress);
+            logger.log('network', misc_js_1.inspect `connected to server at ${serverkey} as ${client.name}`);
             misc_js_1.resetErrorCounter(serverkey);
             resolve(client);
         });

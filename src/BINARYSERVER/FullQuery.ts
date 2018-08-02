@@ -10,18 +10,18 @@ import serialEachPromise from '../SHARED/serialEachPromise.js';
 import connect from './connect.js';
 
 //#endregion
-const logger = global.logger;
+
 
 
 const readonly = (config.serverPin == null);
 
 function getFullQuery() {
 	return new Promise((resolve, reject) => {
-		logger.verbose(inspect`geting FullQuery`);
+		logger.log('debug', inspect`getting FullQuery`);
 		SqlQuery("SELECT  * FROM servers;")
 			.then((servers: ITelexCom.serverList) => {
 				if (servers.length == 0) {
-					logger.warn(inspect`No configured servers -> aborting FullQuery`);
+					logger.log('warning', inspect`No configured servers -> aborting FullQuery`);
 					return void resolve();
 				}
 				// for (let i in servers) {
@@ -65,11 +65,11 @@ function getFullQuery() {
 							client.cb = resolveLoop;
 						});
 					})
-					.catch(err=>{logger.error(inspect`${err}`)})
+					.catch(err=>{logger.log('error', inspect`${err}`)})
 				}))
 			})
 			.then(() => resolve())
-			.catch(err=>{logger.error(inspect`${err}`)});
+			.catch(err=>{logger.log('error', inspect`${err}`)});
 		//}
 	});
 }

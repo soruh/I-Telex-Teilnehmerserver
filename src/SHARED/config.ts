@@ -20,7 +20,6 @@ interface configFile {
     highlightSqlQueries:boolean,
     bufferLogWithWhitespace: boolean,
     repairPm2Colors: boolean,
-    logITelexCom: boolean,
     logFullBuffer: boolean,
     explainBuffers: number,
 

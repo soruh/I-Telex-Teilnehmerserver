@@ -11,13 +11,12 @@ const misc_js_1 = require("../SHARED/misc.js");
 const updateQueue_js_1 = require("./updateQueue.js");
 //#endregion
 const readonly = (config_js_1.default.serverPin == null);
-const logger = global.logger;
 function sendQueue() {
     return updateQueue_js_1.default()
         .then(() => new Promise((resolve, reject) => {
-        logger.verbose(misc_js_1.inspect `sending Queue`);
+        logger.log('debug', misc_js_1.inspect `sending Queue`);
         if (readonly) {
-            logger.verbose(misc_js_1.inspect `Read-only mode -> aborting sendQueue`);
+            logger.log('warning', misc_js_1.inspect `Read-only mode -> aborting sendQueue`);
             return void resolve();
         }
         misc_js_1.SqlQuery("SELECT * FROM teilnehmer;")
@@ -25,7 +24,7 @@ function sendQueue() {
             misc_js_1.SqlQuery("SELECT * FROM queue;")
                 .then(function (queue) {
                 if (queue.length === 0) {
-                    logger.verbose(misc_js_1.inspect `No queue!`);
+                    logger.log('debug', misc_js_1.inspect `No queue!`);
                     return void resolve();
                 }
                 var servers = {};
@@ -39,29 +38,17 @@ function sendQueue() {
                         .then(function (result2) {
                         if (result2.length == 1) {
                             var serverinf = result2[0];
-                            logger.verbose(misc_js_1.inspect `${serverinf}`);
+                            logger.log('debug', misc_js_1.inspect `sending queue for ${serverinf}`);
                             try {
-                                // var isConnected = false;
-                                // for (let key in connections) {
-                                // 	if (connections.has(key)) {
-                                // 		var c = connections[key];
-                                // 	}
-                                // 	if (c.servernum == server[0].server) {
-                                // 		var isConnected = true;
-                                // 	}
-                                // }
-                                // let isConnected:client = connections.find(connection=>connection.servernum == server[0].server);
-                                // if (!isConnected) {
                                 connect_js_1.default(resolve, {
                                     host: serverinf.addresse,
                                     port: +serverinf.port
                                 })
                                     .then(client => {
                                     client.servernum = server[0].server;
-                                    logger.info(misc_js_1.inspect `connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
+                                    logger.log('verbose network', misc_js_1.inspect `connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
                                     client.writebuffer = [];
                                     serialEachPromise_js_1.default(server, serverdata => new Promise((resolve, reject) => {
-                                        logger.verbose(misc_js_1.inspect `${serverdata}`);
                                         var existing = null;
                                         for (let t of teilnehmer) {
                                             if (t.uid == serverdata.message) {
@@ -74,18 +61,18 @@ function sendQueue() {
                                                 .then(function (res) {
                                                 if (res.affectedRows > 0) {
                                                     client.writebuffer.push(existing);
-                                                    logger.info(misc_js_1.inspect `deleted queue entry ${existing.name} from queue`);
+                                                    logger.log('debug', misc_js_1.inspect `deleted queue entry ${existing.name} from queue`);
                                                     resolve();
                                                 }
                                                 else {
-                                                    logger.warn(misc_js_1.inspect `could not delete queue entry ${existing.name} from queue`);
+                                                    logger.log('warning', misc_js_1.inspect `could not delete queue entry ${existing.name} from queue`);
                                                     resolve();
                                                 }
                                             })
-                                                .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                                                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                         }
                                         else {
-                                            logger.verbose(misc_js_1.inspect `entry does not exist`);
+                                            logger.log('debug', misc_js_1.inspect `entry does not exist`);
                                             resolve();
                                         }
                                     }))
@@ -101,35 +88,31 @@ function sendQueue() {
                                             resolve();
                                         });
                                     })
-                                        .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                                        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                 })
-                                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
-                                // } else {
-                                // 	logger.warn(inspect`already connected to server ${server[0].server}`);
-                                // 	resolve();
-                                // }
+                                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                             }
                             catch (e) {
-                                logger.error(misc_js_1.inspect `${e}`);
+                                logger.log('error', misc_js_1.inspect `${e}`);
                                 resolve();
                             }
                         }
                         else {
                             misc_js_1.SqlQuery("DELETE FROM queue WHERE server=?;", [server[0].server])
                                 .then(resolve)
-                                .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                         }
                     })
-                        .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                 }))
                     .then(() => {
                     resolve();
                 })
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             })
-                .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         })
-            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
     }));
 }
 exports.default = sendQueue;

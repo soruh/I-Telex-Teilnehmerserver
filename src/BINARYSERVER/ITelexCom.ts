@@ -5,21 +5,14 @@ import * as ip from "ip";
 import config from '../SHARED/config.js';
 import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import handles from "../BINARYSERVER/handles.js";
-import {SqlQuery, symbolName, client, inspect} from "../SHARED/misc.js";
+import { inspect, normalizeIp } from "../SHARED/misc.js";
 import { Transform } from "stream";
 
 //#endregion
 
 
-const logger = global.logger;
 
 
-declare global {
-    interface Buffer {
-        readNullTermString:(string?, start?, end?)=>string;
-    }
-}
 
 Buffer.prototype.readNullTermString =  function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length):string {
     let firstZero = this.indexOf(0, start);
@@ -28,7 +21,7 @@ Buffer.prototype.readNullTermString =  function readNullTermString(encoding: str
 };
 
 // function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
-// 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+(<any>x).toString(16));
+// 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+x.toString(16));
 // 	if(from in array&&length>0){
 // 		array[from] = "\x1b[046m"+"\x1b[030m"+array[from];
 // 		array[from+length-1] += "\x1b[000m";
@@ -58,7 +51,7 @@ Buffer.prototype.readNullTermString =  function readNullTermString(encoding: str
 // }
 
 function inspectBuffer(buffer: Buffer): string {
-	return Array.from(buffer).map(x => (<any>x.toString(16)).padStart(2, "0")).join(" ");
+	return Array.from(buffer).map(x => x.toString(16).padStart(2, "0")).join(" ");
 }
 
 function explainPackagePart(buffer: Buffer, name: string, color: string) {
@@ -311,39 +304,6 @@ type queue = queueEntry[];
 
 //#endregion
 
-function handlePackage(obj: Package_decoded, client: client) {
-	return new Promise((resolve, reject) => {
-		if (!obj) {
-			logger.warn(inspect`no package to handle`);
-			resolve();
-		} else {
-			logger.verbose(inspect`state: ${symbolName(client.state)}`);
-			try {
-				logger.info(inspect`handling type: ${obj.type} for: ${client.name}`);
-				logger.verbose(inspect`handling package: ${obj} for: ${client.name}`);
-
-				if (typeof handles[obj.type][client.state] == "function") {
-					logger.verbose(inspect`calling handler for type ${constants.PackageNames[obj.type]} (${obj.type}) in state ${symbolName(client.state)}`);
-					try {
-						handles[obj.type][client.state](obj, client)
-							.then(resolve)
-							.catch(reject);
-					} catch (e) {
-						logger.error(inspect`${e}`);
-						resolve();
-					}
-				} else {
-					logger.warn(inspect`type ${constants.PackageNames[obj.type]} (${obj.type}) not supported in state ${symbolName(client.state)}`);
-					resolve();
-				}
-			} catch (e) {
-				logger.error(inspect`${e}`);
-				resolve();
-			}
-		}
-	});
-}
-
 class ChunkPackages extends Transform {
     public buffer = Buffer.alloc(0);
     constructor(options?){
@@ -362,22 +322,8 @@ class ChunkPackages extends Transform {
     }
 }
 
-function unmapIpV4fromIpV6(ipaddress: string): string {
-	if (ip.isV4Format(ipaddress)) {
-		return ipaddress;
-	}
-	if (ip.isV6Format(ipaddress)) {
-		if (ip.isV4Format(ipaddress.toLowerCase().split("::ffff:")[1])) {
-			return ipaddress.toLowerCase().split("::ffff:")[1]
-		} else {
-			return "0.0.0.0";
-		}
-	}
-	return "0.0.0.0";
-}
-
 function encPackage(pkg: Package_decoded): Buffer {
-	if (config.logITelexCom) logger.verbose(inspect`encoding: ${pkg}`);
+	logger.log('iTelexCom', inspect`encoding package : ${pkg}`);
 	
 	if (pkg.datalength == null){
 		if (pkg.type == 255){
@@ -398,7 +344,8 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.writeUIntLE(+pkg.data.port || 0, 8, 2);
 			break;
 		case 2:
-			ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), (<any>buffer), 2);
+			var normalizedIp = normalizeIp(pkg.data.ipaddress);
+			if(ip.isV4Format(normalizedIp)) ip.toBuffer(normalizedIp, (<any>buffer), 2);
 			break;
 		case 3:
 			buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
@@ -426,12 +373,14 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.writeUIntLE(flags || 0, 46, 2);
 			buffer.writeUIntLE(pkg.data.type || 0, 48, 1);
 			buffer.write(pkg.data.hostname || "", 49, 40);
-			ip.toBuffer(unmapIpV4fromIpV6(pkg.data.ipaddress), (<any>buffer), 89);
+
+			var normalizedIp = normalizeIp(pkg.data.ipaddress);
+			if(ip.isV4Format(normalizedIp)) ip.toBuffer(normalizedIp, (<any>buffer), 89);
+
 			buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
 			buffer.writeUIntLE(ext || 0, 95, 1);
 			buffer.writeUIntLE(+pkg.data.pin || 0, 96, 2);
 			buffer.writeUIntLE((+pkg.data.timestamp || 0) + 2208988800, 98, 4);
-
 			break;
 		case 6:
 			buffer.writeUIntLE(pkg.data.version || 0, 2, 1);
@@ -453,7 +402,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.write(pkg.data.message || "", 2, pkg.datalength);
 			break;
 	}
-	if (config.logITelexCom) logger.verbose(inspect`encoded: ${buffer}`);
+	logger.log('iTelexCom', inspect`encoded: ${buffer}`);
 	return buffer;
 }
 
@@ -464,7 +413,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 		datalength: < any > buffer[1],
 		data: null
 	};
-	if (config.logITelexCom) logger.verbose(inspect`decoding package: ${(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
+	logger.log('iTelexCom', inspect`decoding package: ${(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
 	switch (pkg.type) {
 		case 1:
 			pkg.data = {
@@ -566,7 +515,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 			};
 			break;
 		default:
-			logger.error(inspect`invalid/unsupported type: ${(<any>pkg).type}`);
+			logger.log('warning', inspect`recieved a package of invalid/unsupported type: ${(<any>pkg).type}`);
 			return null;
 	}
 	return pkg;
@@ -574,7 +523,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 
 function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 	if (!(buffer instanceof Buffer)) buffer = Buffer.from(buffer);
-	if (config.logITelexCom) logger.verbose(inspect`decoding data: ${buffer}`);
+	logger.log('iTelexCom', inspect`decoding data: ${buffer}`);
 	var out: Package_decoded[] = [];
 
 	for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
@@ -582,76 +531,22 @@ function decPackages(buffer: number[] | Buffer): Package_decoded[] {
 		var datalength: number = +buffer[typepos + 1];
 
 		if (type in constants.PackageSizes && constants.PackageSizes[type] != datalength) {
-			if (config.logITelexCom) logger.info(inspect`size missmatch: ${constants.PackageSizes[type]} != ${datalength}`);
+			logger.log('warning', inspect`size missmatch: ${constants.PackageSizes[type]} != ${datalength}`);
 			if (config.allowInvalidPackageSizes) {
-				if (config.logITelexCom) logger.info(inspect`using package of invalid size!`);
+				logger.log('warning', inspect`using package of invalid size!`);
 			} else {
-				if (config.logITelexCom) logger.verbose(inspect`ignoring package, because it is of invalid size!`);
+				logger.log('debug', inspect`ignoring package, because it is of invalid size!`);
 				continue;
 			}
 		}
 		let pkg = decPackage(buffer.slice(typepos, typepos + datalength + 2));
 		if (pkg) out.push(pkg);
 	}
-	if (config.logITelexCom) logger.verbose(inspect`decoded: ${out}`);
+	logger.log('iTelexCom', inspect`decoded: ${out}`);
 	return out;
 }
 
 
-function ascii(data: number[] | Buffer, client: client): void {
-	var number: string = "";
-	for (let byte of data) {
-		//if (config.logITelexCom) logger.debug(inspect`${String.fromCharCode(byte)}`);
-		let char = String.fromCharCode(byte);
-		if (/([0-9])/.test(char)) number += char;
-	}
-	if (number != ""&&(!isNaN(parseInt(number)))) {
-		if (config.logITelexCom) logger.info(inspect`starting lookup for: ${number}`);
-		SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
-		.then(function (result: peerList) {
-			if (!result || result.length == 0) {
-				let send: string = "";
-				send += "fail\r\n";
-				send += number + "\r\n";
-				send += "unknown\r\n";
-				send += "+++\r\n";
-				client.connection.end/*.write*/(send, function () {
-					if (config.logITelexCom) logger.info(inspect`Entry not found/visible`);
-					if (config.logITelexCom) logger.verbose(inspect`sent:\n${send}`);
-				});
-			} else {
-				let send: string = "";
-				let res = result[0];
-				send += "ok\r\n";
-				send += res.number + "\r\n";
-				send += res.name + "\r\n";
-				send += res.type + "\r\n";
-				if ([2, 4, 5].indexOf(res.type) > -1) {
-					send += res.ipaddress + "\r\n";
-				} else if ([1, 3, 6].indexOf(res.type) > -1) {
-					send += res.hostname + "\r\n";
-				}
-				/* else if (res.type == 6) {
-										send += res.hostname + "\r\n";
-									}*/
-				else {
-					send += "ERROR\r\n";
-				}
-				send += res.port + "\r\n";
-				send += (res.extension || "-") + "\r\n";
-				send += "+++\r\n";
-				client.connection.end(send, function () {
-					if (config.logITelexCom) logger.info(inspect`Entry found`);
-					if (config.logITelexCom) logger.verbose(inspect`sent:\n${send}`);
-
-				});
-			}
-		})
-		.catch(err=>{logger.error(inspect`${err}`)});
-	} else {
-		client.connection.end();
-	}
-}
 
 
 
@@ -661,11 +556,9 @@ export {
 	//#region functions
 	// getCompletePackages,
 	ChunkPackages,
-	handlePackage,
 	decPackage,
 	encPackage,
 	decPackages,
-	ascii,
 
 	explainPackage,
 	//#endregion

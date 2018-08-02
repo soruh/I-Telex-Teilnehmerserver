@@ -9,15 +9,14 @@ const misc_js_1 = require("../SHARED/misc.js");
 const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");
 //#endregion
-const logger = global.logger;
 const readonly = (config_js_1.default.serverPin == null);
 function getFullQuery() {
     return new Promise((resolve, reject) => {
-        logger.verbose(misc_js_1.inspect `geting FullQuery`);
+        logger.log('debug', misc_js_1.inspect `getting FullQuery`);
         misc_js_1.SqlQuery("SELECT  * FROM servers;")
             .then((servers) => {
             if (servers.length == 0) {
-                logger.warn(misc_js_1.inspect `No configured servers -> aborting FullQuery`);
+                logger.log('warning', misc_js_1.inspect `No configured servers -> aborting FullQuery`);
                 return void resolve();
             }
             // for (let i in servers) {
@@ -59,11 +58,11 @@ function getFullQuery() {
                         client.cb = resolveLoop;
                     });
                 })
-                    .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+                    .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }));
         })
             .then(() => resolve())
-            .catch(err => { logger.error(misc_js_1.inspect `${err}`); });
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         //}
     });
 }

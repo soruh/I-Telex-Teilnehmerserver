@@ -14,14 +14,14 @@ import updateQueue from './updateQueue.js';
 
 
 const readonly = (config.serverPin == null);
-const logger = global.logger;
+
 
 function sendQueue() {
 	return updateQueue()
 	.then(() => new Promise((resolve, reject) => {
-		logger.verbose(inspect`sending Queue`);
+		logger.log('debug', inspect`sending Queue`);
 		if (readonly) {
-			logger.verbose(inspect`Read-only mode -> aborting sendQueue`);
+			logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 			return void resolve();
 		}
 		SqlQuery("SELECT * FROM teilnehmer;")
@@ -29,7 +29,7 @@ function sendQueue() {
 			SqlQuery("SELECT * FROM queue;")
 			.then(function (queue: ITelexCom.queue) {
 				if (queue.length === 0) {
-					logger.verbose(inspect`No queue!`);
+					logger.log('debug', inspect`No queue!`);
 					return void resolve();
 				}
 
@@ -46,31 +46,18 @@ function sendQueue() {
 					.then(function (result2: ITelexCom.serverList) {
 						if (result2.length == 1) {
 							var serverinf = result2[0];
-							logger.verbose(inspect`${serverinf}`);
+							logger.log('debug', inspect`sending queue for ${serverinf}`);
 							try {
-								// var isConnected = false;
-								// for (let key in connections) {
-								// 	if (connections.has(key)) {
-								// 		var c = connections[key];
-								// 	}
-								// 	if (c.servernum == server[0].server) {
-								// 		var isConnected = true;
-								// 	}
-								// }
-								// let isConnected:client = connections.find(connection=>connection.servernum == server[0].server);
-
-								// if (!isConnected) {
 								connect(resolve, {
 									host: serverinf.addresse,
 									port: +serverinf.port
 								})
 								.then(client => {
 									client.servernum = server[0].server;
-									logger.info(inspect`connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
+									logger.log('verbose network', inspect`connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
 									client.writebuffer = [];
 									serialEachPromise(server, serverdata =>
 									new Promise((resolve, reject) => {
-										logger.verbose(inspect`${serverdata}`);
 										var existing: ITelexCom.peer = null;
 										for (let t of teilnehmer) {
 											if (t.uid == serverdata.message) {
@@ -83,16 +70,16 @@ function sendQueue() {
 											.then(function (res) {
 												if (res.affectedRows > 0) {
 													client.writebuffer.push(existing);
-													logger.info(inspect`deleted queue entry ${existing.name} from queue`);
+													logger.log('debug', inspect`deleted queue entry ${existing.name} from queue`);
 													resolve();
 												} else {
-													logger.warn(inspect`could not delete queue entry ${existing.name} from queue`);
+													logger.log('warning', inspect`could not delete queue entry ${existing.name} from queue`);
 													resolve();
 												}
 											})
-											.catch(err=>{logger.error(inspect`${err}`)});
+											.catch(err=>{logger.log('error', inspect`${err}`)});
 										} else {
-											logger.verbose(inspect`entry does not exist`);
+											logger.log('debug', inspect`entry does not exist`);
 											resolve();
 										}
 									})
@@ -109,34 +96,30 @@ function sendQueue() {
 											resolve();
 										});
 									})
-									.catch(err=>{logger.error(inspect`${err}`)});
+									.catch(err=>{logger.log('error', inspect`${err}`)}); 
 								})
-								.catch(err=>{logger.error(inspect`${err}`)});
-							// } else {
-							// 	logger.warn(inspect`already connected to server ${server[0].server}`);
-							// 	resolve();
-							// }
+								.catch(err=>{logger.log('error', inspect`${err}`)}); 
 							} catch (e) {
-								logger.error(inspect`${e}`);
+								logger.log('error', inspect`${e}`);
 								resolve();
 							}
 						} else {
 							SqlQuery("DELETE FROM queue WHERE server=?;", [server[0].server])
 							.then(resolve)
-							.catch(err=>{logger.error(inspect`${err}`)});
+							.catch(err=>{logger.log('error', inspect`${err}`)}); 
 						}
 					})
-					.catch(err=>{logger.error(inspect`${err}`)});
+					.catch(err=>{logger.log('error', inspect`${err}`)}); 
 				})
 				)
 				.then(() => {
 					resolve();
 				})
-				.catch(err=>{logger.error(inspect`${err}`)});
+				.catch(err=>{logger.log('error', inspect`${err}`)}); 
 			})
-			.catch(err=>{logger.error(inspect`${err}`)});
+			.catch(err=>{logger.log('error', inspect`${err}`)}); 
 		})
-		.catch(err=>{logger.error(inspect`${err}`)});
+		.catch(err=>{logger.log('error', inspect`${err}`)}); 
 	}));
 }
 

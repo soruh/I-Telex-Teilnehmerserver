@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import colors from "../SHARED/colors.js";
 const misc_js_1 = require("../SHARED/misc.js");
 //#endregion
-const logger = global.logger;
 var timeouts = new Map();
 exports.timeouts = timeouts;
 class Timer {
@@ -41,7 +40,7 @@ class Timer {
         this.complete = this.total_time_run >= this.duration;
         this.remaining = this.duration - this.total_time_run;
         if (this.complete) {
-            logger.debug(misc_js_1.inspect `restarted timeout ${this.name || ''}`);
+            logger.log('silly', misc_js_1.inspect `restarted timeout ${this.name || ''}`);
             this.start_time = Date.now();
             this.resume();
         }
@@ -54,13 +53,13 @@ exports.Timer = Timer;
 function pauseAll() {
     for (var [name, timeout] of timeouts) {
         timeout.pause();
-        logger.debug(misc_js_1.inspect `paused timeout: ${misc_js_1.symbolName(name)} remaining: ${timeout.remaining}`);
+        logger.log('silly', misc_js_1.inspect `paused timeout: ${misc_js_1.symbolName(name)} remaining: ${timeout.remaining}`);
     }
 }
 function resumeAll() {
     for (var [name, timeout] of timeouts) {
         timeout.resume();
-        logger.debug(misc_js_1.inspect `resumed timeout: ${misc_js_1.symbolName(name)} remaining: ${timeout.remaining}`);
+        logger.log('silly', misc_js_1.inspect `resumed timeout: ${misc_js_1.symbolName(name)} remaining: ${timeout.remaining}`);
     }
 }
 function TimeoutWrapper(fn, duration, ...args) {
@@ -68,17 +67,17 @@ function TimeoutWrapper(fn, duration, ...args) {
         .toString()
         .split("(")[0]
         .split(" ")[1];
-    logger.info(misc_js_1.inspect `set timeout for: ${fnName} to ${duration}ms`);
+    logger.log('warning', misc_js_1.inspect `set timeout for: ${fnName} to ${duration}ms`);
     timeouts.set(Symbol(fnName), new Timer(function () {
         pauseAll();
-        logger.debug(misc_js_1.inspect `called: ${fnName} with: ${args.slice(1)}`);
+        logger.log('silly', misc_js_1.inspect `called: ${fnName} with: ${args.slice(1)}`);
         fn.apply(null, args)
             .then(() => {
-            logger.debug(misc_js_1.inspect `finished callback for timeout: ${fnName}`);
+            logger.log('silly', misc_js_1.inspect `finished callback for timeout: ${fnName}`);
             resumeAll();
         })
             .catch(err => {
-            logger.error(misc_js_1.inspect `error in timeout: ${fnName} error: ${err}`);
+            logger.log('error', misc_js_1.inspect `error in timeout: ${fnName} error: ${err}`);
             resumeAll();
         });
     }, duration, fn.name));
