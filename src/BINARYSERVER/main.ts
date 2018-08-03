@@ -1,10 +1,12 @@
 "use strict";
+import colors from "../SHARED/colors.js";
+import config from '../SHARED/config.js';
+colors.disable(config.disableColors);
 
 import * as path from "path";
 import * as intl from "intl";
 import * as mysql from "mysql";
 import * as winston from "winston";
-import config from '../SHARED/config.js';
 
 type MailTransporter = nodemailer.Transporter | {
 	sendMail: (...rest: any[]) => void,
@@ -147,7 +149,6 @@ declare global {
 }
 
 import * as timers from "../BINARYSERVER/timers.js";
-import colors from "../SHARED/colors.js";
 import * as nodemailer from "nodemailer";
 import {inspect, errorCounters} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
@@ -160,7 +161,7 @@ import cleanUp from "./cleanUp.js";
 
 const readonly = (config.serverPin == null);
 if (readonly) logger.log('warning', inspect`Starting in read-only mode!`);
-colors.disable(config.disableColors);
+
 
 const mySqlConnectionOptions = config.mySqlConnectionOptions;
 

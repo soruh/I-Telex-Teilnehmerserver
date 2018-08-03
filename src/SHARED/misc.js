@@ -10,15 +10,15 @@ const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
 // import * as winston from "winston";
 //#endregion
+const textColor = colors_js_1.default.Reset;
+const stringColor = colors_js_1.default.FgGreen;
+const errorColor = colors_js_1.default.FgRed;
+const sqlColor = colors_js_1.default.Reverse;
 function isAnyError(error) {
     if (error instanceof Error)
         return true;
     return false;
 }
-const textColor = colors_js_1.default.FgBlack;
-const stringColor = colors_js_1.default.FgBlue;
-const errorColor = colors_js_1.default.FgRed;
-const sqlColor = colors_js_1.default.Reverse;
 function inspect(substrings, ...values) {
     var substringArray = Array.from(substrings).map(substring => textColor + substring + colors_js_1.default.Reset);
     values = values.map(value => {

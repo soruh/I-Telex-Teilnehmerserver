@@ -4,7 +4,6 @@ import * as mysql from "mysql";
 import * as express from "express";
 
 import config from '../../SHARED/config.js';
-import colors from '../../SHARED/colors.js';
 import { SqlQuery, inspect } from "../../SHARED/misc.js";
 
 var mySqlConnectionOptions = config['mySqlConnectionOptions'];
@@ -15,10 +14,10 @@ const sqlPool = global.sqlPool;
 
 sqlPool.getConnection(function (err, connection) {
   if (err) {
-    logger.error(inspect`could not connect to database!`);
+    logger.log('error', inspect`could not connect to database!`);
     throw err;
   } else {
-    logger.warn(inspect`connected to database!`);
+    logger.log('warning', inspect`connected to database!`);
     connection.release();
   }
 });
@@ -62,7 +61,7 @@ router.post('/list', function (req, res) {
     });
   })
   .catch(err=>{
-    logger.error(inspect`${err}`);
+    logger.log('error', inspect`${err}`);
     res.json({
       successful: false,
       message: err
@@ -73,10 +72,10 @@ router.post('/list', function (req, res) {
 router.post('/edit', function (req, res) {
   // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
-  logger.debug(inspect`request body: ${req.body}`);
-  logger.verbose(inspect`typekey: ${req.body.typekey}`);
+  logger.log('debug', inspect`request body: ${req.body}`);
+  logger.log('debug', inspect`typekey: ${req.body.typekey}`);
   if (req.body.password !== config.webInterfacePassword){
-    logger.warn(inspect`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
+    logger.log('warning', inspect`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
     return void res.json({
       successful: false,
       message: {
@@ -92,12 +91,12 @@ router.post('/edit', function (req, res) {
         if (entries===void 0) return void 0;
         let [entry] = entries;
         if (entry===void 0) return void 0;
-        logger.debug(inspect`exising entry: ${entry}`);
+        logger.log('debug', inspect`exising entry: ${entry}`);
         
 
         if(entry.number == req.body.number){
-          logger.debug(inspect`number wasn't changed updating`);
-          logger.debug(inspect`${entry.number} == ${req.body.number}`);
+          logger.log('debug', inspect`number wasn't changed updating`);
+          logger.log('debug', inspect`${entry.number} == ${req.body.number}`);
           SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;",
           [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, Math.floor(Date.now() / 1000), entry.pin, req.body.uid
           ])
@@ -110,15 +109,15 @@ router.post('/edit', function (req, res) {
             });
           })
           .catch(err=>{
-            logger.error(inspect`${err}`);
+            logger.log('error', inspect`${err}`);
             res.json({
               successful: false,
               message: err
             })
           });
         }else{
-          logger.debug(inspect`number was changed inserting`);
-          logger.debug(inspect`${entry.number} != ${req.body.number}`);
+          logger.log('debug', inspect`number was changed inserting`);
+          logger.log('debug', inspect`${entry.number} != ${req.body.number}`);
           SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid])
           .then(result=>{
             if (result===void 0) return void 0;
@@ -134,7 +133,7 @@ router.post('/edit', function (req, res) {
               });
             })
             .catch(err=>{
-              logger.error(inspect`${err}`);
+              logger.log('error', inspect`${err}`);
               res.json({
                 successful: false,
                 message: err
@@ -142,7 +141,7 @@ router.post('/edit', function (req, res) {
             });
           })
           .catch(err=>{
-            logger.error(inspect`${err}`);
+            logger.log('error', inspect`${err}`);
             res.json({
               successful: false,
               message: err
@@ -151,7 +150,7 @@ router.post('/edit', function (req, res) {
         }
       })
       .catch(err=>{
-        logger.error(inspect`${err}`);
+        logger.log('error', inspect`${err}`);
         res.json({
           successful: false,
           message: err
@@ -161,7 +160,7 @@ router.post('/edit', function (req, res) {
     case "new":
       SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number])
       .then(existing=>{
-        logger.debug(inspect`${existing}`);
+        logger.log('debug', inspect`${existing}`);
         if (existing===void 0) return void 0;
 
         if(existing&&existing.length==1&&existing[0].type !== 0) return res.json({
@@ -185,7 +184,7 @@ router.post('/edit', function (req, res) {
               });
             })
             .catch(err=>{
-              logger.error(inspect`${err}`);
+              logger.log('error', inspect`${err}`);
               res.json({
                 successful: false,
                 message: err
@@ -193,7 +192,7 @@ router.post('/edit', function (req, res) {
             });
         })
         .catch(err=>{
-          logger.error(inspect`${err}`);
+          logger.log('error', inspect`${err}`);
           res.json({
             successful: false,
             message: err
@@ -201,7 +200,7 @@ router.post('/edit', function (req, res) {
         });
       })
       .catch(err=>{
-        logger.error(inspect`${err}`);
+        logger.log('error', inspect`${err}`);
         res.json({
           successful: false,
           message: err
@@ -220,7 +219,7 @@ router.post('/edit', function (req, res) {
         });
       })
       .catch(err=>{
-        logger.error(inspect`${err}`);
+        logger.log('error', inspect`${err}`);
         res.json({
           successful: false,
           message: err

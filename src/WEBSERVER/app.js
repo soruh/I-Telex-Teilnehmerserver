@@ -4,18 +4,40 @@ const winston = require("winston");
 const config_js_1 = require("../SHARED/config.js");
 const path = require("path");
 {
+    let customLevels = {
+        levels: {
+            "error": 0,
+            "warning": 1,
+            "sql": 2,
+            "http": 3,
+            "verbose sql": 4,
+            "verbose http": 5,
+            "debug": 6,
+            "silly": 7,
+        },
+        colors: {
+            "error": "red",
+            "warning": "yellow",
+            "sql": "green",
+            "http": "cyan",
+            "verbose sql": "green",
+            "verbose http": "blue",
+            "debug": "magenta",
+            "silly": "bold",
+        }
+    };
     let getLoggingLevel = function getLoggingLevel() {
         if (typeof config_js_1.default.webserverLoggingLevel === "number") {
-            let level = Object.entries(winston.config.npm.levels).find(([, value]) => value == config_js_1.default.webserverLoggingLevel);
+            let level = Object.entries(customLevels.levels).find(([, value]) => value == config_js_1.default.webserverLoggingLevel);
             if (level)
                 return level[0];
         }
         if (typeof config_js_1.default.webserverLoggingLevel === "string") {
-            if (winston.config.npm.levels.hasOwnProperty(config_js_1.default.webserverLoggingLevel))
+            if (customLevels.levels.hasOwnProperty(config_js_1.default.webserverLoggingLevel))
                 return config_js_1.default.webserverLoggingLevel;
         }
         console.log("valid logging levels are:");
-        console.log(Object.entries(winston.config.npm.levels)
+        console.log(Object.entries(customLevels.levels)
             .map(([key, value]) => `${value}/${key}${value == 3 ? " - not used" : ""}`)
             .join("\n"));
         throw "invalid logging level";
@@ -57,8 +79,10 @@ const path = require("path");
     let logPadding = config_js_1.default.disableColors ? 7 : 17;
     formats.push(winston.format.printf(info => `${config_js_1.default.logDate ? (info.timestamp.replace("T", " ").slice(0, -1) + " ") : ""}${info.level.padStart(logPadding)}: ${info.message}`));
     // formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
+    winston.addColors(customLevels.colors);
     global.logger = winston.createLogger({
         level: getLoggingLevel(),
+        levels: customLevels.levels,
         format: winston.format.combine(...formats),
         exitOnError: false,
         transports //: transports
@@ -146,10 +170,10 @@ app.use((req, res, next) => {
         req.url.replace(/\//g, colors_js_1.default.FgLightBlack + "/" + colors_js_1.default.Reset)
     ].join(' ');
     if (req.url == "/") {
-        logger.info(misc_js_1.inspect `${message}`);
+        logger.log('info', misc_js_1.inspect `${message}`);
     }
     else {
-        logger.verbose(misc_js_1.inspect `${message}`);
+        logger.log('debug', misc_js_1.inspect `${message}`);
     }
     next();
 });
@@ -169,7 +193,7 @@ app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = err;
-    logger.error(misc_js_1.inspect `${err}`);
+    logger.log('error', misc_js_1.inspect `${err}`);
     // render the error page
     res.status(err.status || 500);
     res.render('error');

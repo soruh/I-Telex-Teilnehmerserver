@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const colors_js_1 = require("../SHARED/colors.js");
+const config_js_1 = require("../SHARED/config.js");
+colors_js_1.default.disable(config_js_1.default.disableColors);
 const path = require("path");
 const mysql = require("mysql");
 const winston = require("winston");
-const config_js_1 = require("../SHARED/config.js");
 {
     let customLevels = {
         levels: {
@@ -95,7 +97,6 @@ const config_js_1 = require("../SHARED/config.js");
     });
 }
 const timers = require("../BINARYSERVER/timers.js");
-const colors_js_1 = require("../SHARED/colors.js");
 const nodemailer = require("nodemailer");
 const misc_js_1 = require("../SHARED/misc.js");
 const FullQuery_js_1 = require("./FullQuery.js");
@@ -106,7 +107,6 @@ const cleanUp_js_1 = require("./cleanUp.js");
 const readonly = (config_js_1.default.serverPin == null);
 if (readonly)
     logger.log('warning', misc_js_1.inspect `Starting in read-only mode!`);
-colors_js_1.default.disable(config_js_1.default.disableColors);
 const mySqlConnectionOptions = config_js_1.default.mySqlConnectionOptions;
 function init() {
     logger.log('warning', misc_js_1.inspect `Initialising!`);

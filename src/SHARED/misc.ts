@@ -15,15 +15,16 @@ import serialEachPromise from "../SHARED/serialEachPromise.js";
 //#endregion
 
 
+const textColor = colors.Reset;
+const stringColor = colors.FgGreen;
+const errorColor = colors.FgRed;
+const sqlColor = colors.Reverse;
+
 function isAnyError(error){
 	if(error instanceof Error) return true;
 	
 	return false;
 }
-const textColor = colors.FgBlack;
-const stringColor = colors.FgBlue;
-const errorColor = colors.FgRed;
-const sqlColor = colors.Reverse;
 
 function inspect(substrings:TemplateStringsArray, ...values:any[]):string{
 	var substringArray = Array.from(substrings).map(substring=>textColor+substring+colors.Reset);
