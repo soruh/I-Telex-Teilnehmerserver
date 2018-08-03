@@ -4,47 +4,52 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import colors from "../SHARED/colors.js";
 const misc_js_1 = require("../SHARED/misc.js");
 //#endregion
+function timeDiff(date1, date2 = Date.now()) {
+    return date2 - date1;
+}
 var timeouts = new Map();
 exports.timeouts = timeouts;
 class Timer {
     constructor(fn, duration, name) {
+        this.paused = false;
+        this.startTime = Date.now();
         this.complete = false;
-        this.fn = fn;
+        this.fn = () => {
+            fn();
+            this.remaining = 0;
+            this.complete = true;
+        };
         this.name = name;
         this.duration = duration;
-        this.start_time = Date.now();
-        this.timeout = global.setTimeout(fn, duration);
-    }
-    _time_diff(date1, date2) {
-        return date2 ? date2 - date1 : Date.now() - date1;
+        this.remaining = this.duration;
+        this.timeout = global.setTimeout(this.fn, this.remaining);
+        logger.log('silly', misc_js_1.inspect `started timeout ${this.name || ''} with duration ${this.duration}`);
     }
     cancel() {
+        logger.log('silly', misc_js_1.inspect `canceled timeout ${this.name || ''}`);
+        this.complete = true;
         clearTimeout(this.timeout);
-        this.remaining = 0;
-    }
-    getRemaining() {
-        this.total_time_run = this._time_diff(this.start_time);
-        this.remaining = this.duration - this.total_time_run;
-        return this.remaining;
     }
     pause() {
-        this.paused = true;
-        clearTimeout(this.timeout);
-        this.total_time_run = this._time_diff(this.start_time);
-        this.complete = this.total_time_run >= this.duration;
-        this.remaining = this.duration - this.total_time_run;
+        logger.log('silly', misc_js_1.inspect `paused timeout ${this.name || ''}`);
+        if (!this.paused) {
+            this.paused = true;
+            clearTimeout(this.timeout);
+            this.remaining -= timeDiff(this.startTime);
+            this.complete = this.remaining <= 0;
+        }
     }
     resume() {
         this.paused = false;
-        this.total_time_run = this._time_diff(this.start_time);
-        this.complete = this.total_time_run >= this.duration;
-        this.remaining = this.duration - this.total_time_run;
+        this.startTime = Date.now();
         if (this.complete) {
             logger.log('silly', misc_js_1.inspect `restarted timeout ${this.name || ''}`);
-            this.start_time = Date.now();
-            this.resume();
+            this.remaining = this.duration;
+            this.complete = false;
+            this.timeout = global.setTimeout(this.fn, this.remaining);
         }
         else {
+            logger.log('silly', misc_js_1.inspect `resumed timeout ${this.name || ''}`);
             this.timeout = global.setTimeout(this.fn, this.remaining);
         }
     }
@@ -63,12 +68,9 @@ function resumeAll() {
     }
 }
 function TimeoutWrapper(fn, duration, ...args) {
-    var fnName = fn
-        .toString()
-        .split("(")[0]
-        .split(" ")[1];
+    var fnName = fn.name;
     logger.log('warning', misc_js_1.inspect `set timeout for: ${fnName} to ${duration}ms`);
-    timeouts.set(Symbol(fnName), new Timer(function () {
+    timeouts.set(Symbol(fnName), new Timer(() => {
         pauseAll();
         logger.log('silly', misc_js_1.inspect `called: ${fnName} with: ${args.slice(1)}`);
         fn.apply(null, args)

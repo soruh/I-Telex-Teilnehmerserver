@@ -6,58 +6,59 @@ import {inspect, symbolName} from "../SHARED/misc.js";
 //#endregion
 
 
+function timeDiff(date1: number, date2=Date.now()) {
+  return date2 - date1;
+}
 
 var timeouts: Map < symbol, Timer > = new Map();
 class Timer {
   public name: string;
-  public paused: boolean;
+  public paused = false;
   public duration: number;
   public remaining: number;
-  public start_time: number;
+  public startTime = Date.now();
   public timeout: NodeJS.Timer;
-  public total_time_run: number;
   public fn: (...args: any[]) => any;
 
   public complete: boolean = false;
 
   constructor(fn: (...args: any[]) => any, duration: number, name ? : string) {
-    this.fn = fn;
+    this.fn = ()=>{
+      fn();
+      this.remaining = 0;
+      this.complete = true;
+    };
     this.name = name;
+
     this.duration = duration;
-
-    this.start_time = Date.now();
-    this.timeout = global.setTimeout(fn, duration);
-  }
-
-  _time_diff(date1: number, date2 ? : number) {
-    return date2 ? date2 - date1 : Date.now() - date1;
+    this.remaining = this.duration;
+    this.timeout = global.setTimeout(this.fn, this.remaining);
+    logger.log('silly', inspect`started timeout ${this.name||''} with duration ${this.duration}`);
   }
   cancel() {
+    logger.log('silly', inspect`canceled timeout ${this.name||''}`);
+    this.complete = true;
     clearTimeout(this.timeout);
-    this.remaining = 0;
-  }
-  getRemaining() {
-    this.total_time_run = this._time_diff(this.start_time);
-    this.remaining = this.duration - this.total_time_run;
-    return this.remaining;
   }
   pause() {
-    this.paused = true;
-    clearTimeout(this.timeout);
-    this.total_time_run = this._time_diff(this.start_time);
-    this.complete = this.total_time_run >= this.duration;
-    this.remaining = this.duration - this.total_time_run;
+    logger.log('silly', inspect`paused timeout ${this.name||''}`);
+    if(!this.paused){
+      this.paused = true;
+      clearTimeout(this.timeout);
+      this.remaining -= timeDiff(this.startTime);
+      this.complete = this.remaining <= 0;
+    }
   }
   resume() {
     this.paused = false;
-    this.total_time_run = this._time_diff(this.start_time);
-    this.complete = this.total_time_run >= this.duration;
-    this.remaining = this.duration - this.total_time_run;
+    this.startTime = Date.now();
     if (this.complete) {
       logger.log('silly', inspect`restarted timeout ${this.name||''}`);
-      this.start_time = Date.now();
-      this.resume();
+      this.remaining = this.duration;
+      this.complete = false;
+      this.timeout = global.setTimeout(this.fn, this.remaining);
     } else {
+      logger.log('silly', inspect`resumed timeout ${this.name||''}`);
       this.timeout = global.setTimeout(this.fn, this.remaining);
     }
   }
@@ -75,33 +76,31 @@ function resumeAll() {
     timeout.resume();
     logger.log('silly', inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
   }
+  
 }
 
-function TimeoutWrapper < T > (
-  fn: (...args: any[]) => any,
+function TimeoutWrapper(
+  fn: (...args: any[]) => Promise<any>,
   duration: number,
   ...args
 ) {
-  var fnName = fn
-    .toString()
-    .split("(")[0]
-    .split(" ")[1];
+  var fnName = fn.name;
   logger.log('warning', inspect`set timeout for: ${fnName} to ${duration}ms`);
   timeouts.set(
     Symbol(fnName),
     new Timer(
-      function () {
+      ()=>{
         pauseAll();
         logger.log('silly', inspect`called: ${fnName} with: ${args.slice(1)}`);
         fn.apply(null, args)
-          .then(() => {
-            logger.log('silly', inspect`finished callback for timeout: ${fnName}`);
-            resumeAll();
-          })
-          .catch(err => {
-            logger.log('error', inspect`error in timeout: ${fnName} error: ${err}`);
-            resumeAll();
-          });
+        .then(() => {
+          logger.log('silly', inspect`finished callback for timeout: ${fnName}`);
+          resumeAll();
+        })
+        .catch(err => {
+          logger.log('error', inspect`error in timeout: ${fnName} error: ${err}`);
+          resumeAll();
+        });
       },
       duration,
       fn.name
