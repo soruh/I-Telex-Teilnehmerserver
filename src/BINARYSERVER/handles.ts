@@ -7,6 +7,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import {client, sendEmail, getTimezone, inspect, symbolName} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
+import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
 
 //#endregion
@@ -60,97 +61,96 @@ new Promise((resolve, reject) => {
 			.catch(err=>{logger.log('error', inspect`${err}`)});
 	}
 	SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
-		.then((entries: ITelexCom.peerList) => {
-			if (!entries) return void resolve();
+	.then((entries: ITelexCom.peerList) => {
+		if (!entries) return void resolve();
 
-			let [entry] = entries.filter(x => x.type != 0);
-			if (entry) {
-				if (entry.type != 5) {
-					logger.log('warning', inspect`client ${client.name} tried to update ${number} which is not of DynIp type`);
-					client.connection.end();
-					return void sendEmail("wrongDynIpType", {
-							"type": entry.type.toString(),
-							"Ip": ipaddress,
-							"number": entry.number.toString(),
-							"name": entry.name,
-							"date": new Date().toLocaleString(),
-							"timeZone": getTimezone(new Date())
-						})
-						.then(resolve)
-						.catch(err=>{logger.log('error', inspect`${err}`)}); 
-				}
-				if (entry.pin != pin) {
-					logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
-					client.connection.end();
-					return void sendEmail("wrongDynIpPin", {
-							"Ip": ipaddress,
-							"number": entry.number.toString(),
-							"name": entry.name,
-							"date": new Date().toLocaleString(),
-							"timeZone": getTimezone(new Date())
-						})
-						.then(resolve)
-						.catch(err=>{logger.log('error', inspect`${err}`)}); 
-				}
-				if (ipaddress == entry.ipaddress && port == entry.port) {
-					logger.log('debug', inspect`not UPDATING, nothing to update`);
-					return void client.connection.write(ITelexCom.encPackage({
-						type: 2,
-						data: {
-							ipaddress
-						}
-					}), () => resolve());
-				}
-				SqlQuery(`UPDATE teilnehmer SET 
-			port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE
-			number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
-						port, ipaddress, Math.floor(Date.now() / 1000), number,
-						config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin
-					])
-					// .then(()=>SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number]))
-					// .then((result_c:ITelexCom.peerList)=>{
-					// 	ipaddress = result_c[0].ipaddress;
-					// 	client.connection.write(ITelexCom.encPackage({type: 2, data: {ipaddress}}), ()=>resolve());
-					// })
-					.then(() => {
-						client.connection.write(ITelexCom.encPackage({
-							type: 2,
-							data: {
-								ipaddress
-							}
-						}), () => resolve());
+		let [entry] = entries.filter(x => x.type != 0);
+		if (entry) {
+			if (entry.type != 5) {
+				logger.log('warning', inspect`client ${client.name} tried to update ${number} which is not of DynIp type`);
+				client.connection.end();
+				return void sendEmail("wrongDynIpType", {
+						"type": entry.type.toString(),
+						"Ip": ipaddress,
+						"number": entry.number.toString(),
+						"name": entry.name,
+						"date": new Date().toLocaleString(),
+						"timeZone": getTimezone(new Date())
 					})
-					.catch(err=>{logger.log('error', inspect`${err}`)}); 
-			} else {
-				SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
-					.then(() => SqlQuery(
-						`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed)
-			VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]
-					))
-					.then(function (result) {
-						if (!(result && result.affectedRows)) {
-							logger.log('error', inspect`could not create entry`);
-							return void resolve();
-						}
-						sendEmail("new", {
-								"Ip": ipaddress,
-								"number": number.toString(),
-								"date": new Date().toLocaleString(),
-								"timeZone": getTimezone(new Date())
-							})
-							.catch(err=>{logger.log('error', inspect`${err}`)}); 
-
-						client.connection.write(ITelexCom.encPackage({
-							type: 2,
-							data: {
-								ipaddress
-							}
-						}), () => resolve());
-					})
+					.then(resolve)
 					.catch(err=>{logger.log('error', inspect`${err}`)}); 
 			}
-		})
-		.catch(err=>{logger.log('error', inspect`${err}`)}); 
+			if (entry.pin != pin) {
+				logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
+				client.connection.end();
+				return void sendEmail("wrongDynIpPin", {
+						"Ip": ipaddress,
+						"number": entry.number.toString(),
+						"name": entry.name,
+						"date": new Date().toLocaleString(),
+						"timeZone": getTimezone(new Date())
+					})
+					.then(resolve)
+					.catch(err=>{logger.log('error', inspect`${err}`)}); 
+			}
+			if (ipaddress == entry.ipaddress && port == entry.port) {
+				logger.log('debug', inspect`not UPDATING, nothing to update`);
+				return void client.connection.write(ITelexCom.encPackage({
+					type: 2,
+					data: {
+						ipaddress
+					}
+				}), () => resolve());
+			}
+			SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+				port, ipaddress, Math.floor(Date.now() / 1000), number,
+				config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin
+			])
+			// .then(()=>SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number]))
+			// .then((result_c:ITelexCom.peerList)=>{
+			// 	ipaddress = result_c[0].ipaddress;
+			// 	client.connection.write(ITelexCom.encPackage({type: 2, data: {ipaddress}}), ()=>resolve());
+			// })
+			.then(() => {
+				client.connection.write(ITelexCom.encPackage({
+					type: 2,
+					data: {
+						ipaddress
+					}
+				}), () => {
+					sendQueue()
+					.then(()=>resolve())
+					.catch((err)=>reject(err));
+				});
+			})
+			.catch(err=>{logger.log('error', inspect`${err}`)}); 
+		} else {
+			SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
+			.then(() => SqlQuery(
+				`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]
+			))
+			.then(function (result) {
+				if (!(result && result.affectedRows)) {
+					logger.log('error', inspect`could not create entry`);
+					return void resolve();
+				}
+				sendEmail("new", {
+					"Ip": ipaddress,
+					"number": number.toString(),
+					"date": new Date().toLocaleString(),
+					"timeZone": getTimezone(new Date())
+				})
+				.catch(err=>{logger.log('error', inspect`${err}`)}); 
+
+				client.connection.write(ITelexCom.encPackage({
+					type: 2,
+					data: {ipaddress}
+				}), () => resolve());
+			})
+			.catch(err=>{logger.log('error', inspect`${err}`)}); 
+		}
+	})
+	.catch(err=>{logger.log('error', inspect`${err}`)}); 
 });
 handles[3][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_3, client: client) =>
 new Promise((resolve, reject) => {
@@ -316,7 +316,9 @@ new Promise((resolve, reject) => {
 	client.state = constants.states.STANDBY;
 	if (typeof client.cb === "function") client.cb();
 	client.connection.end();
-	resolve();
+	sendQueue()
+	.then(()=>resolve())
+	.catch((err)=>reject(err));
 });
 handles[10][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_10, client: client) =>
 new Promise((resolve, reject) => {

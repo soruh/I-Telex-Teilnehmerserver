@@ -6,6 +6,7 @@ const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const misc_js_2 = require("../SHARED/misc.js");
+const sendQueue_js_1 = require("./sendQueue.js");
 // import { lookup } from "dns";
 //#endregion
 const readonly = (config_js_1.default.serverPin == null);
@@ -89,9 +90,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     }
                 }), () => resolve());
             }
-            misc_js_2.SqlQuery(`UPDATE teilnehmer SET 
-			port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE
-			number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+            misc_js_2.SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
                 port, ipaddress, Math.floor(Date.now() / 1000), number,
                 config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin
             ])
@@ -106,14 +105,17 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     data: {
                         ipaddress
                     }
-                }), () => resolve());
+                }), () => {
+                    sendQueue_js_1.default()
+                        .then(() => resolve())
+                        .catch((err) => reject(err));
+                });
             })
                 .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         }
         else {
             misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
-                .then(() => misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed)
-			VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
+                .then(() => misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
                 .then(function (result) {
                 if (!(result && result.affectedRows)) {
                     logger.log('error', misc_js_1.inspect `could not create entry`);
@@ -128,9 +130,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                 client.connection.write(ITelexCom.encPackage({
                     type: 2,
-                    data: {
-                        ipaddress
-                    }
+                    data: { ipaddress }
                 }), () => resolve());
             })
                 .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
@@ -288,7 +288,9 @@ handles[9][constants.states.FULLQUERY] =
         if (typeof client.cb === "function")
             client.cb();
         client.connection.end();
-        resolve();
+        sendQueue_js_1.default()
+            .then(() => resolve())
+            .catch((err) => reject(err));
     });
 handles[10][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)

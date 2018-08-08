@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const net = require("net");
+const util = require("util");
 const config_js_1 = require("../SHARED/config.js");
 // import colors from "../SHARED/colors.js";
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
@@ -21,14 +22,16 @@ var binaryServer = net.createServer(function (socket) {
     socket.pipe(chunker);
     var asciiListener = (data) => {
         if (client) {
-            logger.log('verbose network', misc_js_1.inspect `recieved data: ${data}`);
-            logger.log('verbose network', misc_js_1.inspect `${data.toString().replace(/[^ -~]/g, "·")}`);
-            if (String.fromCharCode(data[0]) == 'q' && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/) {
-                logger.log('verbose network', misc_js_1.inspect `serving ascii request`);
-                ascii_js_1.asciiLookup(data, client);
-            }
-            else if (String.fromCharCode(data[0]) == 'c') {
-                ascii_js_1.checkIp(data, client);
+            let command = String.fromCharCode(data[0]);
+            if (command == 'q' || command == 'c') {
+                logger.log('network', misc_js_1.inspect `serving ascii request of type ${command}`);
+                logger.log('verbose network', misc_js_1.inspect `request: ${util.inspect(data.toString())}`);
+                if (command == 'q') {
+                    ascii_js_1.asciiLookup(data, client);
+                }
+                else if (command == 'c') {
+                    ascii_js_1.checkIp(data, client);
+                }
             }
         }
     };

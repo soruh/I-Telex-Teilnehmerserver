@@ -1,5 +1,6 @@
 "use strict";
 import * as net from 'net';
+import * as util from 'util';
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
@@ -28,14 +29,15 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 	
 	var asciiListener = (data: Buffer): void => {
 		if(client){
-			logger.log('verbose network', inspect`recieved data: ${data}`);
-			logger.log('verbose network', inspect`${data.toString().replace(/[^ -~]/g, "·")}`);
-			
-			if (String.fromCharCode(data[0]) == 'q' && /[0-9]/.test(String.fromCharCode(data[1])) /*&&(data[data.length-2] == 0x0D&&data[data.length-1] == 0x0A)*/ ) {
-				logger.log('verbose network', inspect`serving ascii request`);
-				asciiLookup(data, client);
-			} else if (String.fromCharCode(data[0]) == 'c') {
-				checkIp(data, client);
+			let command = String.fromCharCode(data[0]);
+			if(command=='q'||command=='c'){
+				logger.log('network', inspect`serving ascii request of type ${command}`);
+				logger.log('verbose network', inspect`request: ${util.inspect(data.toString())}`);
+				if (command == 'q') {
+					asciiLookup(data, client);
+				} else if (command == 'c') {
+					checkIp(data, client);
+				}
 			}
 		}
 	}
