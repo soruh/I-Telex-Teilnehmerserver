@@ -78,7 +78,7 @@ function resetErrorCounter(serverkey: string) {
 	logger.log('debug', inspect`reset error counter for: ${serverkey}`);
 }
 
-function SqlQuery(query: string, options ? : any[]): Promise < any > {
+function SqlQuery(query: string, options ? : any[], verbose?:boolean): Promise < any > {
 	return new Promise((resolve, reject) => {
 		query = query.replace(/\n/g, "").replace(/\s+/g, " ");
 
@@ -86,10 +86,16 @@ function SqlQuery(query: string, options ? : any[]): Promise < any > {
 		
 		{
 			let formatted = mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
-			if (query.indexOf("teilnehmer") > -1) {
-				logger.log('sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-			} else {
+			if(verbose === undefined){
+				if (query.indexOf("teilnehmer") > -1) {
+					logger.log('sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
+				} else {
+					logger.log('verbose sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
+				}
+			}else if(verbose === true){
 				logger.log('verbose sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
+			}else if(verbose === false){
+				logger.log('sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
 			}
 		}
 

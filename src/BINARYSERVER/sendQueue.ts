@@ -24,7 +24,7 @@ function sendQueue() {
 			logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 			return void resolve();
 		}
-		SqlQuery("SELECT * FROM teilnehmer;")
+		SqlQuery("SELECT * FROM teilnehmer;", [], false)
 		.then(function (teilnehmer: ITelexCom.peerList) {
 			SqlQuery("SELECT * FROM queue;")
 			.then(function (queue: ITelexCom.queue) {

@@ -15,7 +15,7 @@ function updateQueue() {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
             logger.log('debug', misc_js_1.inspect `updating Queue`);
-            misc_js_1.SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;")
+            misc_js_1.SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;", [], false)
                 .then(function (changed) {
                 if (changed.length > 0) {
                     logger.log('queue', misc_js_1.inspect `${changed.length} numbers to enqueue`);

@@ -19,7 +19,7 @@ function sendQueue() {
             logger.log('warning', misc_js_1.inspect `Read-only mode -> aborting sendQueue`);
             return void resolve();
         }
-        misc_js_1.SqlQuery("SELECT * FROM teilnehmer;")
+        misc_js_1.SqlQuery("SELECT * FROM teilnehmer;", [], false)
             .then(function (teilnehmer) {
             misc_js_1.SqlQuery("SELECT * FROM queue;")
                 .then(function (queue) {
