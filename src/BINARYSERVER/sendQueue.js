@@ -19,7 +19,7 @@ function sendQueue() {
             logger.log('warning', misc_js_1.inspect `Read-only mode -> aborting sendQueue`);
             return void resolve();
         }
-        misc_js_1.SqlQuery("SELECT * FROM teilnehmer;", [], false)
+        misc_js_1.SqlQuery("SELECT * FROM teilnehmer;", [], true)
             .then(function (teilnehmer) {
             misc_js_1.SqlQuery("SELECT * FROM queue;")
                 .then(function (queue) {
@@ -49,23 +49,23 @@ function sendQueue() {
                                     logger.log('verbose network', misc_js_1.inspect `connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
                                     client.writebuffer = [];
                                     serialEachPromise_js_1.default(server, serverdata => new Promise((resolve, reject) => {
-                                        var existing = null;
+                                        var message = null;
                                         for (let t of teilnehmer) {
                                             if (t.uid == serverdata.message) {
-                                                existing = t;
+                                                message = t;
                                                 break;
                                             }
                                         }
-                                        if (existing) {
+                                        if (message) {
                                             misc_js_1.SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
                                                 .then(function (res) {
                                                 if (res.affectedRows > 0) {
-                                                    client.writebuffer.push(existing);
-                                                    logger.log('debug', misc_js_1.inspect `deleted queue entry ${existing.name} from queue`);
+                                                    client.writebuffer.push(message);
+                                                    logger.log('debug', misc_js_1.inspect `deleted queue entry ${message.name} from queue`);
                                                     resolve();
                                                 }
                                                 else {
-                                                    logger.log('warning', misc_js_1.inspect `could not delete queue entry ${existing.name} from queue`);
+                                                    logger.log('warning', misc_js_1.inspect `could not delete queue entry ${serverdata.uid} from queue`);
                                                     resolve();
                                                 }
                                             })

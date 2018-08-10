@@ -24,7 +24,7 @@ function sendQueue() {
 			logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 			return void resolve();
 		}
-		SqlQuery("SELECT * FROM teilnehmer;", [], false)
+		SqlQuery("SELECT * FROM teilnehmer;", [], true)
 		.then(function (teilnehmer: ITelexCom.peerList) {
 			SqlQuery("SELECT * FROM queue;")
 			.then(function (queue: ITelexCom.queue) {
@@ -58,22 +58,22 @@ function sendQueue() {
 									client.writebuffer = [];
 									serialEachPromise(server, serverdata =>
 									new Promise((resolve, reject) => {
-										var existing: ITelexCom.peer = null;
+										var message: ITelexCom.peer = null;
 										for (let t of teilnehmer) {
 											if (t.uid == serverdata.message) {
-												existing = t;
+												message = t;
 												break;
 											}
 										}
-										if (existing) {
+										if (message) {
 											SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
 											.then(function (res) {
 												if (res.affectedRows > 0) {
-													client.writebuffer.push(existing);
-													logger.log('debug', inspect`deleted queue entry ${existing.name} from queue`);
+													client.writebuffer.push(message);
+													logger.log('debug', inspect`deleted queue entry ${message.name} from queue`);
 													resolve();
 												} else {
-													logger.log('warning', inspect`could not delete queue entry ${existing.name} from queue`);
+													logger.log('warning', inspect`could not delete queue entry ${serverdata.uid} from queue`);
 													resolve();
 												}
 											})

@@ -14,7 +14,7 @@ import {SqlQuery, inspect} from '../SHARED/misc.js';
 async function updateQueue() {
 	return new Promise((resolve, reject) => {
 		logger.log('debug', inspect`updating Queue`);
-		SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;", [], false)
+		SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;", [], true)
 		.then(function (changed: ITelexCom.peerList) {
 			if (changed.length > 0) {
 				logger.log('queue', inspect`${changed.length} numbers to enqueue`);
