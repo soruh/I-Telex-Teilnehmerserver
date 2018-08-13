@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util = require("util");
 const mysql = require("mysql");
 const ip = require("ip");
-const net = require("net");
 const nodemailer = require("nodemailer");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
@@ -118,26 +117,26 @@ function SqlQuery(query, options, verbose) {
 exports.SqlQuery = SqlQuery;
 function normalizeIp(ipAddr) {
     if (ip.isV4Format(ipAddr)) {
-        return ipAddr;
+        return { family: 4, address: ipAddr };
     }
     else if (ip.isV6Format(ipAddr)) {
         let buffer = ip.toBuffer(ipAddr);
         for (let i = 0; i < 10; i++)
             if (buffer[i] !== 0)
-                return ipAddr;
+                return { family: 6, address: ipAddr };
         for (let i = 10; i < 12; i++)
             if (buffer[i] !== 255)
-                return ipAddr;
+                return { family: 6, address: ipAddr };
         let ipv4 = ip.toString(buffer, 12, 4);
-        if (net.isIPv4(ipv4)) {
-            return ipv4;
+        if (ip.isV4Format(ipv4)) {
+            return { family: 4, address: ipv4 };
         }
         else {
-            return ipAddr;
+            return { family: 6, address: ipAddr };
         }
     }
     else {
-        return '0.0.0.0';
+        return null;
     }
 }
 exports.normalizeIp = normalizeIp;

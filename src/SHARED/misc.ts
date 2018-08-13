@@ -119,19 +119,19 @@ function SqlQuery(query: string, options ? : any[], verbose?:boolean): Promise <
 }
 function normalizeIp(ipAddr:string){
 	if(ip.isV4Format(ipAddr)){
-		return ipAddr;
+		return {family: 4, address: ipAddr};
 	}else if(ip.isV6Format(ipAddr)){
 		let buffer = ip.toBuffer(ipAddr);
-		for(let i=0;i<10;i++) if(buffer[i] !== 0) return ipAddr;
-		for(let i=10;i<12;i++) if(buffer[i] !== 255) return ipAddr;
+		for(let i=0;i<10;i++) if(buffer[i] !== 0) return {family: 6, address: ipAddr};
+		for(let i=10;i<12;i++) if(buffer[i] !== 255) return {family: 6, address: ipAddr};
 		let ipv4 = ip.toString(buffer, 12, 4);
-		if(net.isIPv4(ipv4)){
-			return ipv4;
+		if(ip.isV4Format(ipv4)){
+			return {family: 4, address: ipv4};
 		}else{
-			return ipAddr;
+			return {family: 6, address: ipAddr};
 		}
 	}else{
-		return '0.0.0.0';
+		return null;
 	}
 }
 
@@ -195,6 +195,7 @@ interface client {
 	connection: connection;
 	state: symbol,
 	ipAddress:string,
+	ipFamily:number,
 	writebuffer: ITelexCom.peer[];
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;

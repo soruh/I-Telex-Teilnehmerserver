@@ -67,14 +67,14 @@ class Timer {
 function pauseAll() {
   for (var [name, timeout] of timeouts) {
     timeout.pause();
-    logger.log('silly', inspect`paused timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
+    // logger.log('silly', inspect`paused timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
   }
 }
 
 function resumeAll() {
   for (var [name, timeout] of timeouts) {
     timeout.resume();
-    logger.log('silly', inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
+    // logger.log('silly', inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
   }
   
 }
@@ -85,7 +85,7 @@ function TimeoutWrapper(
   ...args
 ) {
   var fnName = fn.name;
-  logger.log('warning', inspect`set timeout for: ${fnName} to ${duration}ms`);
+  // logger.log('warning', inspect`set timeout for: ${fnName} to ${duration}ms`);
   timeouts.set(
     Symbol(fnName),
     new Timer(

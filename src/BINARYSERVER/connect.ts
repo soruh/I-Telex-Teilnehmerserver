@@ -12,13 +12,7 @@ import { handlePackage } from "./handles.js";
 
 
 
-function connect(
-	onClose: () => void,
-	options: {
-		host: string,
-		port: number
-	}
-): Promise < client > {
+function connect(options:{host: string, port: number}, onClose=()=>{}): Promise < client > {
 	return new Promise((resolve, reject) => {
 		let serverkey = options.host + ":" + options.port;
 		logger.log('verbose network', inspect`trying to connect to server at ${serverkey}`);
@@ -31,7 +25,8 @@ function connect(
 		var client: client = {
 			name: clientName(),
 			connection: socket,
-			ipAddress: "",
+			ipAddress: null,
+			ipFamily: null,
 			state: constants.states.STANDBY,
 			writebuffer: [],
 		};
@@ -68,7 +63,15 @@ function connect(
 			}
 		});
 		socket.once('connect', ()=>{
-			client.ipAddress = normalizeIp(socket.remoteAddress);
+			let ipAddress = normalizeIp(socket.remoteAddress);
+			if(ipAddress){
+				client.ipAddress = ipAddress.address;
+				client.ipFamily = ipAddress.family;
+			}else{
+				logger.log('error', inspect`client: ${client.name} had no ipAddress and was disconected`);
+				logger.log('debug', inspect`client: ${client}`);
+				client.connection.destroy();
+			}
 			logger.log('network', inspect`connected to server at ${serverkey} as ${client.name}`);
 			resetErrorCounter(serverkey);
 			resolve(client);

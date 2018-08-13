@@ -58,18 +58,18 @@ exports.Timer = Timer;
 function pauseAll() {
     for (var [name, timeout] of timeouts) {
         timeout.pause();
-        logger.log('silly', misc_js_1.inspect `paused timeout: ${misc_js_1.symbolName(name)} remaining: ${timeout.remaining}`);
+        // logger.log('silly', inspect`paused timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
     }
 }
 function resumeAll() {
     for (var [name, timeout] of timeouts) {
         timeout.resume();
-        logger.log('silly', misc_js_1.inspect `resumed timeout: ${misc_js_1.symbolName(name)} remaining: ${timeout.remaining}`);
+        // logger.log('silly', inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
     }
 }
 function TimeoutWrapper(fn, duration, ...args) {
     var fnName = fn.name;
-    logger.log('warning', misc_js_1.inspect `set timeout for: ${fnName} to ${duration}ms`);
+    // logger.log('warning', inspect`set timeout for: ${fnName} to ${duration}ms`);
     timeouts.set(Symbol(fnName), new Timer(() => {
         pauseAll();
         logger.log('silly', misc_js_1.inspect `called: ${fnName} with: ${args.slice(1)}`);

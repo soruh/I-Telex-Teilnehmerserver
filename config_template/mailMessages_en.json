@@ -20,6 +20,10 @@
       "subject":"wrong Server pin",
       "html":"<font color=\"blue\">[Ip]</font> tried to syncronize with the server with a wrong pin on <font color=\"blue\">[date] [timeZone]</font>"
     },
+    "ipV6DynIpUpdate":{
+      "subject":"ipv6 DynIp update",
+      "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with an ipv6 address on <font color=\"blue\">[date] [timeZone]</font>"
+    },
     "ServerError":{
       "subject":"Could not connect to server",
       "html":"Could not connect to server: <font color=\"blue\">[host]:[port]</font>. Error counter: <font color=\"blue\">[errorCounter]</font> Error code: <font color=\"blue\">[lastError]</font> on <font color=\"blue\">[date] [timeZone]</font>"

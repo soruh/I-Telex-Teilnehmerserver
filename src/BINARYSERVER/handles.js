@@ -33,11 +33,22 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     if (!client)
         return void resolve();
     var { number, pin, port } = pkg.data;
-    var ipaddress = client.ipAddress;
+    if (client.ipFamily == 6) {
+        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an ipv6 address`);
+        client.connection.end();
+        return void misc_js_1.sendEmail("ipV6DynIpUpdate", {
+            "Ip": client.ipAddress,
+            "number": number.toString(),
+            "date": new Date().toLocaleString(),
+            "timeZone": misc_js_1.getTimezone(new Date())
+        })
+            .then(resolve)
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
+    }
     if (number < 10000) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is too small(<10000)`);
         return void misc_js_1.sendEmail("invalidNumber", {
-            "Ip": ipaddress,
+            "Ip": client.ipAddress,
             "number": number.toString(),
             "date": new Date().toLocaleString(),
             "timeZone": misc_js_1.getTimezone(new Date())
@@ -48,18 +59,18 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         })
             .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
     }
-    misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number])
+    misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number])
         .then((entries) => {
         if (!entries)
             return void resolve();
-        let [entry] = entries.filter(x => x.type != 0);
+        let [entry] = entries;
         if (entry) {
             if (entry.type != 5) {
                 logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is not of DynIp type`);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpType", {
                     "type": entry.type.toString(),
-                    "Ip": ipaddress,
+                    "Ip": client.ipAddress,
                     "number": entry.number.toString(),
                     "name": entry.name,
                     "date": new Date().toLocaleString(),
@@ -72,7 +83,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
                 client.connection.end();
                 return void misc_js_1.sendEmail("wrongDynIpPin", {
-                    "Ip": ipaddress,
+                    "Ip": client.ipAddress,
                     "number": entry.number.toString(),
                     "name": entry.name,
                     "date": new Date().toLocaleString(),
@@ -81,17 +92,17 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     .then(resolve)
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
-            if (ipaddress == entry.ipaddress && port == entry.port) {
+            if (client.ipAddress == entry.ipaddress && port == entry.port) {
                 logger.log('debug', misc_js_1.inspect `not UPDATING, nothing to update`);
                 return void client.connection.write(ITelexCom.encPackage({
                     type: 2,
                     data: {
-                        ipaddress
+                        ipaddress: client.ipAddress
                     }
                 }), () => resolve());
             }
             misc_js_2.SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
-                port, ipaddress, Math.floor(Date.now() / 1000), number,
+                port, client.ipAddress, Math.floor(Date.now() / 1000), number,
                 config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin
             ])
                 // .then(()=>SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number]))
@@ -103,7 +114,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 client.connection.write(ITelexCom.encPackage({
                     type: 2,
                     data: {
-                        ipaddress
+                        ipaddress: client.ipAddress
                     }
                 }), () => {
                     sendQueue_js_1.default()
@@ -115,14 +126,14 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         }
         else {
             misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number])
-                .then(() => misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", ipaddress, 1, 1]))
+                .then(() => misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", client.ipAddress, 1, 1]))
                 .then(function (result) {
                 if (!(result && result.affectedRows)) {
                     logger.log('error', misc_js_1.inspect `could not create entry`);
                     return void resolve();
                 }
                 misc_js_1.sendEmail("new", {
-                    "Ip": ipaddress,
+                    "Ip": client.ipAddress,
                     "number": number.toString(),
                     "date": new Date().toLocaleString(),
                     "timeZone": misc_js_1.getTimezone(new Date())
@@ -130,7 +141,9 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                 client.connection.write(ITelexCom.encPackage({
                     type: 2,
-                    data: { ipaddress }
+                    data: {
+                        ipaddress: client.ipAddress
+                    }
                 }), () => resolve());
             })
                 .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });

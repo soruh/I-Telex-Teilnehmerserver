@@ -9,7 +9,7 @@ const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const handles_js_1 = require("./handles.js");
 //#endregion
-function connect(onClose, options) {
+function connect(options, onClose = () => { }) {
     return new Promise((resolve, reject) => {
         let serverkey = options.host + ":" + options.port;
         logger.log('verbose network', misc_js_1.inspect `trying to connect to server at ${serverkey}`);
@@ -19,7 +19,8 @@ function connect(onClose, options) {
         var client = {
             name: misc_js_1.clientName(),
             connection: socket,
-            ipAddress: "",
+            ipAddress: null,
+            ipFamily: null,
             state: constants.states.STANDBY,
             writebuffer: [],
         };
@@ -56,7 +57,16 @@ function connect(onClose, options) {
             }
         });
         socket.once('connect', () => {
-            client.ipAddress = misc_js_1.normalizeIp(socket.remoteAddress);
+            let ipAddress = misc_js_1.normalizeIp(socket.remoteAddress);
+            if (ipAddress) {
+                client.ipAddress = ipAddress.address;
+                client.ipFamily = ipAddress.family;
+            }
+            else {
+                logger.log('error', misc_js_1.inspect `client: ${client.name} had no ipAddress and was disconected`);
+                logger.log('debug', misc_js_1.inspect `client: ${client}`);
+                client.connection.destroy();
+            }
             logger.log('network', misc_js_1.inspect `connected to server at ${serverkey} as ${client.name}`);
             misc_js_1.resetErrorCounter(serverkey);
             resolve(client);

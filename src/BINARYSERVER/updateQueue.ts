@@ -28,36 +28,36 @@ async function updateQueue() {
 									.then(function (qentry: ITelexCom.queue) {
 										if (qentry.length == 1) {
 											SqlQuery("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [Math.floor(Date.now() / 1000), server.uid, message.uid])
-												.then(function () {
-													//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-													//.then(function(){
-													logger.log('queue', inspect`enqueued: ${message.number}`);
-													//})
-													//.catch(err=>{logger.log('error', inspect`${err}`)}); 
-												})
-												.catch(err=>{logger.log('error', inspect`${err}`)}); 
+											.then(function () {
+												//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+												//.then(function(){
+												logger.log('queue', inspect`enqueued: ${message.number}`);
+												//})
+												//.catch(err=>{logger.log('error', inspect`${err}`)}); 
+											})
+											.catch(err=>{logger.log('error', inspect`${err}`)}); 
 										} else if (qentry.length == 0) {
 											SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)])
-												.then(function () {
-													//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-													//.then(function(){
-													logger.log('queue', inspect`enqueued: ${message.number}`);
-													//})
-													//.catch(err=>{logger.log('error', inspect`${err}`)}); 
-												})
-												.catch(err=>{logger.log('error', inspect`${err}`)}); 
+											.then(function () {
+												//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+												//.then(function(){
+												logger.log('queue', inspect`enqueued: ${message.number}`);
+												//})
+												//.catch(err=>{logger.log('error', inspect`${err}`)}); 
+											})
+											.catch(err=>{logger.log('error', inspect`${err}`)}); 
 										} else {
 											logger.log('error', inspect`duplicate queue entry!`);
 											SqlQuery("DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
-												.then(() => SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)]))
-												.then(() => {
-													//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-													//.then(function(){
-													logger.log('queue', inspect`enqueued: message.number`);
-													//})
-													//.catch(err=>{logger.log('error', inspect`${err}`)}); 
-												})
-												.catch(err=>{logger.log('error', inspect`${err}`)}); 
+											.then(() => SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)]))
+											.then(() => {
+												//SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+												//.then(function(){
+												logger.log('queue', inspect`enqueued: message.number`);
+												//})
+												//.catch(err=>{logger.log('error', inspect`${err}`)}); 
+											})
+											.catch(err=>{logger.log('error', inspect`${err}`)}); 
 										}
 									})
 									.catch(err=>{logger.log('error', inspect`${err}`)})

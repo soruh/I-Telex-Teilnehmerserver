@@ -344,8 +344,12 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.writeUIntLE(+pkg.data.port || 0, 8, 2);
 			break;
 		case 2:
-			var normalizedIp = normalizeIp(pkg.data.ipaddress);
-			if(ip.isV4Format(normalizedIp)) ip.toBuffer(normalizedIp, (<any>buffer), 2);
+			{
+				let normalizedIp = normalizeIp(pkg.data.ipaddress);
+				if(normalizedIp&&normalizedIp.family === 4){
+					ip.toBuffer(normalizedIp.address, (<any>buffer), 2);
+				}
+			}
 			break;
 		case 3:
 			buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
@@ -374,8 +378,12 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.writeUIntLE(pkg.data.type || 0, 48, 1);
 			buffer.write(pkg.data.hostname || "", 49, 40);
 
-			var normalizedIp = normalizeIp(pkg.data.ipaddress);
-			if(ip.isV4Format(normalizedIp)) ip.toBuffer(normalizedIp, (<any>buffer), 89);
+			{
+				let normalizedIp = normalizeIp(pkg.data.ipaddress);
+				if(normalizedIp&&normalizedIp.family === 4){
+					ip.toBuffer(normalizedIp.address, (<any>buffer), 89);
+				}
+			}
 
 			buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
 			buffer.writeUIntLE(ext || 0, 95, 1);
@@ -402,7 +410,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			buffer.write(pkg.data.message || "", 2, pkg.datalength);
 			break;
 	}
-	logger.log('iTelexCom', inspect`encoded: ${buffer}`);
+	logger.log('iTelexCom', inspect`encoded: ${(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
 	return buffer;
 }
 

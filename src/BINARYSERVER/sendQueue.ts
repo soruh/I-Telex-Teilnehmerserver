@@ -48,10 +48,10 @@ function sendQueue() {
 							var serverinf = result2[0];
 							logger.log('debug', inspect`sending queue for ${serverinf}`);
 							try {
-								connect(resolve, {
+								connect({
 									host: serverinf.addresse,
 									port: +serverinf.port
-								})
+								}, resolve)
 								.then(client => {
 									client.servernum = server[0].server;
 									logger.log('verbose network', inspect`connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);

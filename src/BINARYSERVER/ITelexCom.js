@@ -150,9 +150,12 @@ function encPackage(pkg) {
             buffer.writeUIntLE(+pkg.data.port || 0, 8, 2);
             break;
         case 2:
-            var normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
-            if (ip.isV4Format(normalizedIp))
-                ip.toBuffer(normalizedIp, buffer, 2);
+            {
+                let normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
+                if (normalizedIp && normalizedIp.family === 4) {
+                    ip.toBuffer(normalizedIp.address, buffer, 2);
+                }
+            }
             break;
         case 3:
             buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
@@ -183,9 +186,12 @@ function encPackage(pkg) {
             buffer.writeUIntLE(flags || 0, 46, 2);
             buffer.writeUIntLE(pkg.data.type || 0, 48, 1);
             buffer.write(pkg.data.hostname || "", 49, 40);
-            var normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
-            if (ip.isV4Format(normalizedIp))
-                ip.toBuffer(normalizedIp, buffer, 89);
+            {
+                let normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
+                if (normalizedIp && normalizedIp.family === 4) {
+                    ip.toBuffer(normalizedIp.address, buffer, 89);
+                }
+            }
             buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
             buffer.writeUIntLE(ext || 0, 95, 1);
             buffer.writeUIntLE(+pkg.data.pin || 0, 96, 2);
@@ -211,7 +217,7 @@ function encPackage(pkg) {
             buffer.write(pkg.data.message || "", 2, pkg.datalength);
             break;
     }
-    logger.log('iTelexCom', misc_js_1.inspect `encoded: ${buffer}`);
+    logger.log('iTelexCom', misc_js_1.inspect `encoded: ${(config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
     return buffer;
 }
 exports.encPackage = encPackage;

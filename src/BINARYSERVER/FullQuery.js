@@ -29,10 +29,7 @@ function getFullQuery() {
                 servers = servers.filter(server => server.port == config_js_1.default.fullQueryServer.split(":")[1] &&
                     server.addresse == config_js_1.default.fullQueryServer.split(":")[0]);
             return serialEachPromise_js_1.default(servers, server => new Promise((resolveLoop, reject) => {
-                connect_js_1.default(resolveLoop, {
-                    host: server.addresse,
-                    port: +server.port
-                })
+                connect_js_1.default({ host: server.addresse, port: +server.port }, resolveLoop)
                     .then(client => {
                     let request;
                     if (readonly) {

@@ -16,6 +16,10 @@
       "subject":"Falscher DynIp Typ",
       "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern, welcher keine DynIp unterstützt (Typ: <font color=\"blue\">[typ]</font>)"
     },
+    "ipV6DynIpUpdate":{
+      "subject":"ipv6 DynIp Änderung",
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) mit einer ipv6 zu ändern"
+    },
     "wrongServerPin":{
       "subject":"Falscher Serverpin",
       "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht mit einem falschen Serverpin den Server zu syncronisieren"

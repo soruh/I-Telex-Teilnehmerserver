@@ -17,10 +17,22 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 	var client: client = {
 		name: clientName(),
 		connection: socket,
-		ipAddress: normalizeIp(socket.remoteAddress),
+		ipAddress: null,
+		ipFamily: null,
 		state: constants.states.STANDBY,
 		writebuffer: [],
 	};
+	{
+		let ipAddress = normalizeIp(socket.remoteAddress);
+		if(ipAddress){
+			client.ipAddress = ipAddress.address;
+			client.ipFamily = ipAddress.family;
+		}else{
+			logger.log('error', inspect`client: ${client.name} had no ipAddress and was disconected`);
+			logger.log('debug', inspect`client: ${client}`);
+			client.connection.destroy();
+		}
+	}
 	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 	
 	var chunker = new ITelexCom.ChunkPackages();
