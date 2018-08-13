@@ -1,0 +1,28 @@
+{
+  "messages":{
+    "new":{
+      "subject":"Neuer Teilnehmer",
+      "html":"Ein neuer Teilnehmer hat sich am <font color=\"blue\">[date] [timeZone]</font> mit Nummer <font color=\"blue\">[number]</font> und Ipaddresse <font color=\"blue\">[Ip]</font> angemeldet"
+    },
+    "invalidNumber":{
+      "subject":"Ungültige Nummer",
+      "html":"Ein Teilnehmer hat am <font color=\"blue\">[date] [timeZone]</font> versucht sich mit der ungültigen Nummer <font color=\"blue\">[number]</font> und IpAddresse <font color=\"blue\">[Ip]</font> anzumelden"
+    },
+    "wrongDynIpPin":{
+      "subject":"Falscher DynIp Pin",
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> mit einem falschen pin versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern"
+    },
+    "wrongDynIpType":{
+      "subject":"Falscher DynIp Typ",
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern, welcher keine DynIp unterstützt (Typ: <font color=\"blue\">[typ]</font>)"
+    },
+    "wrongServerPin":{
+      "subject":"Falscher Serverpin",
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht mit einem falschen Serverpin den Server zu syncronisieren"
+    },
+    "ServerError":{
+      "subject":"Verbindung zum Server fehlgeschlagen",
+      "html":"DerServer <font color=\"blue\">[host]:[port]</font> is am <font color=\"blue\">[date] [timeZone]</font> nicht erreicht werden. Fehlerzähler: <font color=\"blue\">[errorCounter]</font> Fehlercode: <font color=\"blue\">[lastError]</font>"
+    }
+  }
+}
