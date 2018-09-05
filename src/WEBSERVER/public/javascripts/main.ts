@@ -1,6 +1,3 @@
-/* jshint -W097 */
-/* jshint -W083 */
-/* jshint -W040 */
 "use strict";
 const UNIXTIMEDATE = false;
 const SHOWALLDATEINFO = false;
@@ -100,7 +97,8 @@ $(document).ready(function () {
     login("", () => {
         initloc();
     });
-    $("input,select,textarea").bind("checkval", function () {
+    $("input,select,textarea")
+    .bind("checkval", function () {
         if ($(this).val() !== "" /*||$(this).next("label.validate_error").length==1*/) {
             $(this).prev("label").addClass("gl_label_filled");
         }
@@ -109,16 +107,16 @@ $(document).ready(function () {
             $(this).parents(".field--wrapper").removeClass("gl_missing");
         }
     })
-        .on("change", function () {
+    .on("change", function () {
         $(this).trigger("checkval");
     })
-        .on("keyup", function () {
+    .on("keyup", function () {
         $(this).trigger("checkval");
     })
-        .on("focus", function () {
+    .on("focus", function () {
         $(this).prev("label").addClass("gl_label_focus");
     })
-        .on("blur", function () {
+    .on("blur", function () {
         $(this).prev("label").removeClass("gl_label_focus");
         if ($(this).val() !== "" && $(this).parents(".field--wrapper").hasClass("gl_required")) {
             $(this).parents(".field--wrapper").addClass("gl_missing");
@@ -127,16 +125,20 @@ $(document).ready(function () {
             $(this).parents(".field--wrapper").removeClass("gl_missing");
         }
     })
-        .trigger("checkval");
+    .trigger("checkval");
+
     $("#search-box").val("");
     $("#search-box").bind("search", function () {
         updateContent(global_list);
     });
-    $("#search-box").on("change", function () {
+    $("#search-box")
+    .on("change", function () {
         $(this).trigger("search");
-    }).on("keyup", function () {
+    })
+    .on("keyup", function () {
         $(this).trigger("search");
-    }).on("focus", function () {
+    })
+    .on("focus", function () {
         getList();
     });
     $("#refresh-button").click(function () {
@@ -603,6 +605,7 @@ function getList(callback?:(list:list)=>void) {
         },
         error: function (error) {
             console.log(error);
+            callback(null);
         }
     });
 }
@@ -748,22 +751,29 @@ function editButtonClick() {
     $("#type_edit_dialog").trigger('change');
     $("#edit_dialog").data("uid", $(this).data("uid"));
     var uid = $(this).data("uid");
-    let entry = findByUid(uid)
-    $("#number_edit_dialog").val(entry.number).trigger('change');
-    $("#name_edit_dialog").val(entry.name).trigger('change');
-    $("#type_edit_dialog").val(entry.type).trigger('change');
-    if (entry.type == 6) {
-        $("#email_edit_dialog").val(entry.hostname).trigger('change');
-    }
-    else {
-        $("#hostname_edit_dialog").val(entry.hostname).trigger('change');
-    }
-    $("#ipaddress_edit_dialog").val(entry.ipaddress).trigger('change');
-    $("#port_edit_dialog").val(entry.port).trigger('change');
-    $("#extension_edit_dialog").val(entry.extension).trigger('change');
-    // $("#pin_edit_dialog").val(entry.pin).trigger('change');
-    $("#disabled_edit_dialog").prop('checked', entry.disabled).trigger('change');
-    showpopup("edit_dialog");
+
+    getList(list=>{
+        updateTable(list);
+
+        let entry = findByUid(uid);
+        if(!entry) return console.error('uid '+uid+' not found');
+
+        $("#number_edit_dialog").val(entry.number).trigger('change');
+        $("#name_edit_dialog").val(entry.name).trigger('change');
+        $("#type_edit_dialog").val(entry.type).trigger('change');
+        if (entry.type == 6) {
+            $("#email_edit_dialog").val(entry.hostname).trigger('change');
+        }
+        else {
+            $("#hostname_edit_dialog").val(entry.hostname).trigger('change');
+        }
+        $("#ipaddress_edit_dialog").val(entry.ipaddress).trigger('change');
+        $("#port_edit_dialog").val(entry.port).trigger('change');
+        $("#extension_edit_dialog").val(entry.extension).trigger('change');
+        // $("#pin_edit_dialog").val(entry.pin).trigger('change');
+        $("#disabled_edit_dialog").prop('checked', entry.disabled).trigger('change');
+        showpopup("edit_dialog");
+    });
 }
 function removeButtonClick() {
     $("#delete_dialog_label_container div").remove();
@@ -775,22 +785,30 @@ function removeButtonClick() {
         text: languages[language].delete_message
     };
     $('<div/>', deleteMessage).appendTo("#delete_dialog_label_container");
-    let entry = findByUid(uid);
-    for (let k in entry) {
-        var deleteDialogLabel = {
-            id: k + "_delete_dialog_label",
-            class: "delete_dialog_label",
-            text: null
-        };
-        if (k === "timestamp" && (!UNIXTIMEDATE)) {
-            deleteDialogLabel.text = k + ": " + UNIXTIMEToString(entry[k]);
+
+
+    getList(list=>{
+        updateTable(list);
+        
+        let entry = findByUid(uid);
+        if(!entry) return console.error('uid '+uid+' not found');
+        
+        for (let k in entry) {
+            var deleteDialogLabel = {
+                id: k + "_delete_dialog_label",
+                class: "delete_dialog_label",
+                text: null
+            };
+            if (k === "timestamp" && (!UNIXTIMEDATE)) {
+                deleteDialogLabel.text = k + ": " + UNIXTIMEToString(entry[k]);
+            }
+            else if (k !== "uid") {
+                deleteDialogLabel.text = k + ": " + entry[k];
+            }
+            $('<div/>', deleteDialogLabel).appendTo("#delete_dialog_label_container");
         }
-        else if (k !== "uid") {
-            deleteDialogLabel.text = k + ": " + entry[k];
-        }
-        $('<div/>', deleteDialogLabel).appendTo("#delete_dialog_label_container");
-    }
-    showpopup("delete_dialog");
+        showpopup("delete_dialog");
+    });
 }
 function refresh() {
     getList(updateTable);
