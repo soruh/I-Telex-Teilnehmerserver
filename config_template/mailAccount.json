@@ -9,7 +9,7 @@
       "pass":""
     },
     "tls":{
-    "rejectUnauthorized":true
+      "rejectUnauthorized":true
     }
   },
   "to":"ab@cd.ef, gh@ij.kl",

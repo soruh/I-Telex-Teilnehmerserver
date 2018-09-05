@@ -18,21 +18,6 @@ var binaryServer = net.createServer(function (socket) {
         state: constants.states.STANDBY,
         writebuffer: [],
     };
-    {
-        let ipAddress = misc_js_1.normalizeIp(socket.remoteAddress);
-        if (ipAddress) {
-            client.ipAddress = ipAddress.address;
-            client.ipFamily = ipAddress.family;
-        }
-        else {
-            logger.log('error', misc_js_1.inspect `client: ${client.name} had no ipAddress and was disconected`);
-            logger.log('debug', misc_js_1.inspect `client: ${client}`);
-            client.connection.destroy();
-        }
-    }
-    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
-    var chunker = new ITelexCom.ChunkPackages();
-    socket.pipe(chunker);
     var asciiListener = (data) => {
         if (client) {
             let command = String.fromCharCode(data[0]);
@@ -56,8 +41,6 @@ var binaryServer = net.createServer(function (socket) {
                 .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         }
     };
-    socket.once('data', asciiListener);
-    chunker.on('data', binaryListener);
     socket.on('close', function () {
         if (client) {
             if (client.newEntries != null)
@@ -71,11 +54,36 @@ var binaryServer = net.createServer(function (socket) {
         logger.log('network', misc_js_1.inspect `client ${client.name} timed out`);
         socket.end();
     });
-    socket.setTimeout(config_js_1.default.connectionTimeout);
     socket.on('error', function (err) {
         logger.log('error', misc_js_1.inspect `${err}`);
         socket.end();
     });
+    var chunker = new ITelexCom.ChunkPackages();
+    socket.once('data', asciiListener);
+    socket.pipe(chunker);
+    chunker.on('data', binaryListener);
+    socket.setTimeout(config_js_1.default.connectionTimeout);
+    {
+        let ipA = socket.remoteAddress;
+        let ipB = socket._getpeername();
+        ipB = ipB ? ipB.address : null;
+        if (ipA) {
+            logger.log('debug', misc_js_1.inspect `socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
+        }
+        else {
+            logger.log('error', misc_js_1.inspect `socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
+        }
+        let ipAddress = misc_js_1.normalizeIp(ipA || ipB);
+        if (ipAddress) {
+            client.ipAddress = ipAddress.address;
+            client.ipFamily = ipAddress.family;
+        }
+        else {
+            logger.log('error', misc_js_1.inspect `client: ${client.name} had no ipAddress and was disconected`);
+            client.connection.destroy();
+        }
+    }
+    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', misc_js_1.inspect `server error: ${err}`));
 exports.default = binaryServer;
