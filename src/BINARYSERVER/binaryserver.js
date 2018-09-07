@@ -542,7 +542,7 @@ if (ITelexCom_js_1.cv(3)) {
     let exitHandler = function exitHandler(options, err) {
         if (options.cleanup) {
             logWithLineNumbers_js_1.lle("exited with code: " + err);
-            logWithLineNumbers_js_1.lle(`serverErrors:\n${util.inspect(misc.errorCounters, { depth: null })}`);
+            logWithLineNumbers_js_1.lle(`serverErrors:\n${util.inspect(misc.serverErrors, { depth: null })}`);
         }
         else {
             logWithLineNumbers_js_1.lle(err);

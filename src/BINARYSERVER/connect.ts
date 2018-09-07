@@ -118,7 +118,7 @@ function connect(
 					if (cv(1)) ll(`${colors.FgRed}server ${colors.FgCyan+util.inspect(options)+colors.FgRed} had an error${colors.Reset}`);
 					
 					misc.increaseErrorCounter(serverkey, error, error["code"]);
-					if (cv(0)) lle(colors.FgRed + "server " + colors.FgCyan+ serverkey+ colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan, misc.errorCounters[serverkey], colors.Reset);
+					if (cv(0)) lle(colors.FgRed + "server " + colors.FgCyan+ serverkey+ colors.FgRed + " could not be reached; errorCounter:" + colors.FgCyan, misc.serverErrors[serverkey].errorCounter, colors.Reset);
 				}
 				// } else {
 				// 	if (cv(0)) lle(colors.FgRed, error, colors.Reset);

@@ -26,8 +26,8 @@ function getTimezone(date) {
     let offsetStr = ("0" + Math.floor(offset / 60)).slice(-2) + ":" + ("0" + offset % 60).slice(-2);
     return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
 }
-var errorCounters = {};
-exports.errorCounters = errorCounters;
+var serverErrors = {};
+exports.serverErrors = serverErrors;
 const cv = config_js_1.default.cv;
 const mySqlConnectionOptions = config_js_1.default['mySqlConnectionOptions'];
 mySqlConnectionOptions["multipleStatements"] = true;
@@ -37,29 +37,37 @@ function increaseErrorCounter(serverkey, error, code) {
         code: code,
         timeStamp: Date.now()
     };
-    if (errorCounters.hasOwnProperty(serverkey)) {
-        errorCounters[serverkey]++;
+    if (serverErrors.hasOwnProperty(serverkey)) {
+        serverErrors[serverkey].errors.push(newError);
+        serverErrors[serverkey].errorCounter++;
     }
     else {
-        errorCounters[serverkey] = 1;
+        serverErrors[serverkey] = {
+            errors: [newError],
+            errorCounter: 1
+        };
     }
-    let warn = config_js_1.default.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
+    let warn = config_js_1.default.warnAtErrorCounts.indexOf(serverErrors[serverkey].errorCounter) > -1;
     if (cv(1))
-        logWithLineNumbers_js_1.lle(`${colors_js_1.default.FgYellow}increased errorCounter for server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgYellow} to ${warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan}${errorCounters[serverkey]}${colors_js_1.default.Reset}`);
+        logWithLineNumbers_js_1.lle(`${colors_js_1.default.FgYellow}increased errorCounter for server ${colors_js_1.default.FgCyan}${serverkey}${colors_js_1.default.FgYellow} to ${warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan}${serverErrors[serverkey].errorCounter}${colors_js_1.default.Reset}`);
     if (warn)
         sendEmail("ServerError", {
             "[server]": serverkey,
-            "[errorCounter]": errorCounters[serverkey],
-            "[lastError]": error.code,
+            "[errorCounter]": serverErrors[serverkey].errorCounter,
+            "[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
             "[date]": new Date().toLocaleString(),
             "[timeZone]": getTimezone(new Date())
         }, () => { });
 }
 exports.increaseErrorCounter = increaseErrorCounter;
 function resetErrorCounter(serverkey) {
-    delete errorCounters[serverkey];
-    if (cv(2))
-        logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset error counter for: " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.Reset);
+    if (serverErrors.hasOwnProperty(serverkey) && serverErrors[serverkey].errorCounter > 0) {
+        serverErrors[serverkey].errorCounter = 0;
+        if (config_js_1.default.deleteErrorsOnReconnect)
+            serverErrors[serverkey].errors = [];
+        if (cv(2))
+            logWithLineNumbers_js_1.ll(colors_js_1.default.FgGreen + "reset error counter for: " + colors_js_1.default.FgCyan + serverkey + colors_js_1.default.Reset);
+    }
 }
 exports.resetErrorCounter = resetErrorCounter;
 function SqlQuery(query, options) {

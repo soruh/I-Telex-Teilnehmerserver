@@ -23,8 +23,15 @@ function getTimezone(date) { //TODO: figure out way to not have this in all file
 	return ("UTC" + (offsetStr[0] == "-" ? "" : "+") + offsetStr);
 }
 
-var errorCounters:{
-	[index:string]:number
+var serverErrors:{
+	[index:string]:{
+		errors:{
+			error: Error,
+			code: string,
+			timeStamp: number,
+		}[],
+		errorCounter: number,
+	}
 } = {};
 const cv = config.cv;
 
@@ -37,26 +44,33 @@ function increaseErrorCounter(serverkey:string, error:Error, code:string):void {
 		code: code,
 		timeStamp: Date.now()
 	};
-	if (errorCounters.hasOwnProperty(serverkey)) {
-		errorCounters[serverkey]++;
+	if (serverErrors.hasOwnProperty(serverkey)) {
+		serverErrors[serverkey].errors.push(newError);
+		serverErrors[serverkey].errorCounter++;
 	} else {
-		errorCounters[serverkey] = 1;
+		serverErrors[serverkey] = {
+			errors: [newError],
+			errorCounter: 1
+		};
 	}
-	let warn:boolean = config.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
-	if (cv(1)) lle(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${errorCounters[serverkey]}${colors.Reset}`);
+	let warn:boolean = config.warnAtErrorCounts.indexOf(serverErrors[serverkey].errorCounter) > -1;
+	if (cv(1)) lle(`${colors.FgYellow}increased errorCounter for server ${colors.FgCyan}${serverkey}${colors.FgYellow} to ${warn?colors.FgRed:colors.FgCyan}${serverErrors[serverkey].errorCounter}${colors.Reset}`);
 	if (warn)
 	sendEmail("ServerError", {
 		"[server]": serverkey,
-		"[errorCounter]": errorCounters[serverkey],
-		"[lastError]": (<any>error).code,
+		"[errorCounter]": serverErrors[serverkey].errorCounter,
+		"[lastError]": serverErrors[serverkey].errors.slice(-1)[0].code,
 		"[date]": new Date().toLocaleString(),
 		"[timeZone]": getTimezone(new Date())
 	},()=>{});
 }
 
 function resetErrorCounter(serverkey:string){
-	delete errorCounters[serverkey];
-	if (cv(2)) ll(colors.FgGreen + "reset error counter for: " + colors.FgCyan+serverkey+colors.Reset);
+	if (serverErrors.hasOwnProperty(serverkey) && serverErrors[serverkey].errorCounter > 0) {
+		serverErrors[serverkey].errorCounter = 0;
+		if(config.deleteErrorsOnReconnect) serverErrors[serverkey].errors = [];
+		if (cv(2)) ll(colors.FgGreen + "reset error counter for: " + colors.FgCyan+serverkey+colors.Reset);
+	}
 }
 
 function SqlQuery(query:string, options?:any[]):Promise<any> { //TODO: Promise<any>-> real type
@@ -250,5 +264,5 @@ export {
     MailTransporter,
 	increaseErrorCounter,
 	resetErrorCounter,
-	errorCounters,
+	serverErrors,
 }

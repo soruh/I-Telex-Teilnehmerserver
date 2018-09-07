@@ -494,7 +494,7 @@ if (cv(3)) {
 	let exitHandler = function exitHandler(options, err) {
 		if (options.cleanup){
 			lle("exited with code: "+err);
-			lle(`serverErrors:\n${util.inspect(misc.errorCounters,{depth:null})}`);
+			lle(`serverErrors:\n${util.inspect(misc.serverErrors,{depth:null})}`);
 		}else{
 			lle(err);
 		}
