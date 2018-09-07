@@ -2,7 +2,7 @@ module.exports = {
   apps : [
     {
       name: "binaryserver",
-      script: "src/BINARYSERVER/binaryserver.js",
+      script: "src/BINARYSERVER/main.js",
 /*
       interpreter: "0x",
       interpreter_args:" -D flamegraph_binaryserver",

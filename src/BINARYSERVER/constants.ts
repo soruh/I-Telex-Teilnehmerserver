@@ -1,9 +1,3 @@
-const stateNames = {
-	0: "standby",
-	1: "responding",
-	2: "performing fullquery",
-	3: "performing login"
-};
 const PackageNames = {
 	1: "Client_update",
 	2: "Address_confirm",
@@ -30,14 +24,13 @@ const PackageSizes = {
 	10: 41
 };
 const states = {
-	STANDBY: 0,
-	RESPONDING: 1,
-	FULLQUERY: 2,
-	LOGIN: 3
+	STANDBY: Symbol("STANDBY"),
+	RESPONDING: Symbol("RESPONDING"),
+	FULLQUERY: Symbol("FULLQUERY"),
+	LOGIN: Symbol("LOGIN")
 };
-export{
-    stateNames,
-    PackageNames,
-    PackageSizes,
-    states
+export {
+	PackageNames,
+	PackageSizes,
+	states
 }

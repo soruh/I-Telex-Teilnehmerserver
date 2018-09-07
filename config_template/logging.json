@@ -1,18 +1,21 @@
 {
-    "loggingVerbosity":1,
+    "binaryserverLoggingLevel":2,
+    "webserverLoggingLevel":2,
 
-    "logITelexCom":false,
-    "logConnectionChanges":false,
     "logFullBuffer": false,
-    "explainBuffers":2,
+    "highlightSqlQueries": true,
+    "explainBuffers":1,
 
     "logDate":true,
-    "logLineNumbers":false,
-    "bufferLogWithWhitespace":true,
-
-    "repairPm2Colors":false,
     "disableColors":false,
 
-    "stdoutLog":null,
-    "stderrLog":null
+    "binaryserverLog": null,
+    "binaryserverErrorLog": null,
+    "logBinaryserverToConsole": true,
+
+    "webserverLog": null,
+    "webserverErrorLog": null,
+    "logWebserverToConsole": true,
+
+    "scientistNames":true
 }

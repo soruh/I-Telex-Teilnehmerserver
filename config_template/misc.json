@@ -1,11 +1,12 @@
 {
   "DynIpUpdateNameDifference": 20,
 
+  "keepDeletedFor":200,
+
   "setChangedOnNewerEntry":true,
   "allowInvalidPackageSizes":true,
 
   "warnAtErrorCounts":[1,10],
-  "serverPin":null,
   "allowFullQueryInReadonly":true,
   "allowLoginInReadonly": false,
   "doDnsLookups":true,
@@ -14,7 +15,5 @@
   "binaryPort":11811,
 
   "webServerPort":3030,
-  "webInterfacePassword":"XXX",
-
-  "deleteErrorsOnReconnect": true
+  "webInterfacePassword":"XXX"
 }
