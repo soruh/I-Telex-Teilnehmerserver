@@ -1,18 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = require("fs");
-const path = require("path");
-const heapdump = require("heapdump");
-var heapdumpCounter = 0;
-var heapdumpPath = path.join(__dirname, "../../heapdumps/");
-try {
-    fs.mkdirSync(heapdumpPath);
-}
-catch (e) { }
-setInterval(() => {
-    console.error("creating heapdump #" + heapdumpCounter);
-    heapdump.writeSnapshot(path.join(heapdumpPath, `heapdump_${heapdumpCounter++}.heapsnapshot`));
-}, 60 * 60 * 1000);
 //#region imports
 const util = require("util");
 const net = require("net");
