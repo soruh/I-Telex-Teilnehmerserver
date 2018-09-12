@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+//#region imports
 const config_js_1 = require("../SHARED/config.js");
 // import colors from "../SHARED/colors.js";
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
@@ -243,10 +244,8 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     logger.log('debug', misc_js_1.inspect `serverpin is correct!`);
     misc_js_2.SqlQuery("SELECT  * FROM teilnehmer;")
         .then((result) => {
-        if (!result || result.length === 0)
-            return void client.connection.write(ITelexCom.encPackage({
-                type: 9
-            }), () => resolve());
+        if (!result)
+            result = [];
         client.writebuffer = result;
         client.state = constants.states.RESPONDING;
         return handlePackage({
@@ -287,7 +286,7 @@ handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve,
         }), () => resolve());
     }
     let data = client.writebuffer.shift();
-    logger.log('verbose network', misc_js_1.inspect `sent dataset for ${data.name} (${data.number})`);
+    logger.log('network', misc_js_1.inspect `sent dataset for ${data.name} (${data.number})`);
     client.connection.write(ITelexCom.encPackage({
         type: 5,
         data
@@ -314,10 +313,8 @@ handles[10][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, r
     var searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(searchWords.length)};`;
     misc_js_2.SqlQuery(searchstring, searchWords)
         .then(function (result) {
-        if (!result || result.length == 0)
-            return void client.connection.write(ITelexCom.encPackage({
-                type: 9
-            }), () => resolve());
+        if (!result)
+            result = [];
         client.state = constants.states.RESPONDING;
         client.writebuffer = result
             .filter(x => x.disabled != 1 && x.type != 0)

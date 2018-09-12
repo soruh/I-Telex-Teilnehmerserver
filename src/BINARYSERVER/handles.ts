@@ -1,6 +1,5 @@
 "use strict";
 //#region imports
-import * as ip from "ip";
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
@@ -263,9 +262,7 @@ new Promise((resolve, reject) => {
 
 	SqlQuery("SELECT  * FROM teilnehmer;")
 		.then((result: ITelexCom.peerList) => {
-			if (!result || result.length === 0) return void client.connection.write(ITelexCom.encPackage({
-				type: 9
-			}), () => resolve());
+			if (!result) result = [];
 
 			client.writebuffer = result;
 			client.state = constants.states.RESPONDING;
@@ -312,7 +309,7 @@ new Promise((resolve, reject) => {
 		}), () => resolve());
 	}
 	let data = client.writebuffer.shift();
-	logger.log('verbose network', inspect`sent dataset for ${data.name} (${data.number})`);
+	logger.log('network', inspect`sent dataset for ${data.name} (${data.number})`);
 	client.connection.write(ITelexCom.encPackage({
 		type: 5,
 		data
@@ -334,18 +331,14 @@ handles[10][constants.states.STANDBY] = (pkg: ITelexCom.Package_decoded_10, clie
 new Promise((resolve, reject) => {
 	if (!client) return void resolve();
 
-	var {
-		pattern,
-		version
-	} = pkg.data;
+	var {pattern, version} = pkg.data;
+
 	var searchWords = pattern.split(" ");
 	searchWords = searchWords.map(q => `%${q}%`);
 	var searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(searchWords.length)};`;
 	SqlQuery(searchstring, searchWords)
 		.then(function (result: ITelexCom.peerList) {
-			if (!result || result.length == 0) return void client.connection.write(ITelexCom.encPackage({
-				type: 9
-			}), () => resolve());
+			if (!result) result = [];
 
 			client.state = constants.states.RESPONDING;
 			client.writebuffer = result
