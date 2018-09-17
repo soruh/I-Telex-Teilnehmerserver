@@ -63,17 +63,9 @@ var binaryServer = net.createServer(function (socket) {
     socket.pipe(chunker);
     chunker.on('data', binaryListener);
     socket.setTimeout(config_js_1.default.connectionTimeout);
+    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
     {
-        let ipA = socket.remoteAddress;
-        let ipB = socket._getpeername();
-        ipB = ipB ? ipB.address : null;
-        if (ipA) {
-            logger.log('debug', misc_js_1.inspect `socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
-        }
-        else {
-            logger.log('error', misc_js_1.inspect `socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
-        }
-        let ipAddress = misc_js_1.normalizeIp(ipA || ipB);
+        let ipAddress = misc_js_1.normalizeIp(socket.remoteAddress);
         if (ipAddress) {
             client.ipAddress = ipAddress.address;
             client.ipFamily = ipAddress.family;
@@ -83,7 +75,6 @@ var binaryServer = net.createServer(function (socket) {
             client.connection.destroy();
         }
     }
-    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', misc_js_1.inspect `server error: ${err}`));
 exports.default = binaryServer;

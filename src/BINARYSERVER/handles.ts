@@ -333,24 +333,29 @@ new Promise((resolve, reject) => {
 
 	var {pattern, version} = pkg.data;
 
+	if (pkg.data.version != 1) {
+		logger.log('warning', inspect`client ${client.name} sent a package with version ${pkg.data.version} which is not supported by this server`);
+		client.writebuffer = [];
+
+		return void handlePackage({type: 8}, client)
+			.then(() => resolve())
+			.catch(err=>{logger.log('error', inspect`${err}`)}); 
+	}
+
 	var searchWords = pattern.split(" ");
 	searchWords = searchWords.map(q => `%${q}%`);
-	var searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(searchWords.length)};`;
+	var searchstring = `SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`;
 	SqlQuery(searchstring, searchWords)
 		.then(function (result: ITelexCom.peerList) {
 			if (!result) result = [];
 
-			client.state = constants.states.RESPONDING;
-			client.writebuffer = result
-				.filter(x => x.disabled != 1 && x.type != 0)
-				.map(x => {
-					x.pin = "0";
-					return x
-				});
+			logger.log('network', inspect`found ${result.length} public entries matching pattern ${pattern}`);
+			logger.log('debug', inspect`entries matching pattern ${pattern}:\n${result}`);
 
-			return handlePackage({
-				type: 8
-			}, client)
+			client.state = constants.states.RESPONDING;
+			client.writebuffer = result;
+
+			return handlePackage({type: 8}, client);
 		})
 		.then(() => resolve())
 		.catch(err=>{logger.log('error', inspect`${err}`)}); 

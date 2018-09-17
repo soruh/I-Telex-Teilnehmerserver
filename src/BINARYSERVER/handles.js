@@ -308,23 +308,25 @@ handles[10][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, r
     if (!client)
         return void resolve();
     var { pattern, version } = pkg.data;
+    if (pkg.data.version != 1) {
+        logger.log('warning', misc_js_1.inspect `client ${client.name} sent a package with version ${pkg.data.version} which is not supported by this server`);
+        client.writebuffer = [];
+        return void handlePackage({ type: 8 }, client)
+            .then(() => resolve())
+            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
+    }
     var searchWords = pattern.split(" ");
     searchWords = searchWords.map(q => `%${q}%`);
-    var searchstring = `SELECT * FROM teilnehmer WHERE true${" AND name LIKE ?".repeat(searchWords.length)};`;
+    var searchstring = `SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`;
     misc_js_2.SqlQuery(searchstring, searchWords)
         .then(function (result) {
         if (!result)
             result = [];
+        logger.log('network', misc_js_1.inspect `found ${result.length} public entries matching pattern ${pattern}`);
+        logger.log('debug', misc_js_1.inspect `entries matching pattern ${pattern}:\n${result}`);
         client.state = constants.states.RESPONDING;
-        client.writebuffer = result
-            .filter(x => x.disabled != 1 && x.type != 0)
-            .map(x => {
-            x.pin = "0";
-            return x;
-        });
-        return handlePackage({
-            type: 8
-        }, client);
+        client.writebuffer = result;
+        return handlePackage({ type: 8 }, client);
     })
         .then(() => resolve())
         .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });

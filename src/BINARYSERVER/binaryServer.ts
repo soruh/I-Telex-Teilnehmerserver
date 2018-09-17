@@ -72,18 +72,9 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 
 	socket.setTimeout(config.connectionTimeout);
 
+	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 	{
-		let ipA = socket.remoteAddress;
-		let ipB = (<any>socket)._getpeername();
-			ipB = ipB?ipB.address:null;
-
-		if(ipA){
-			logger.log('debug', inspect`socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
-		}else{
-			logger.log('error', inspect`socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
-		}
-
-		let ipAddress = normalizeIp(ipA||ipB);
+		let ipAddress = normalizeIp(socket.remoteAddress);
 
 		if(ipAddress){
 			client.ipAddress = ipAddress.address;
@@ -93,8 +84,6 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 			client.connection.destroy();
 		}
 	}
-
-	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', inspect`server error: ${err}`));
 
