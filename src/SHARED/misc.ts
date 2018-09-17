@@ -187,6 +187,7 @@ function sendPackage(pkg:ITelexCom.Package_decoded, callback?:()=>void):void {
 	let client = (this as Client);
 
 	logger.log('network', inspect`sending package of type ${pkg.type} to ${client.name}`);
+	logger.log('debug', inspect`sending package ${pkg} to ${client.name}`);
 	let encodeded = ITelexCom.encPackage(pkg);
 	client.connection.write(encodeded, callback);
 }
