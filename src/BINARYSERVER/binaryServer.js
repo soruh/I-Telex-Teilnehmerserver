@@ -63,7 +63,6 @@ var binaryServer = net.createServer(function (socket) {
     socket.pipe(chunker);
     chunker.on('data', binaryListener);
     socket.setTimeout(config_js_1.default.connectionTimeout);
-    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
     {
         let ipAddress = misc_js_1.normalizeIp(socket.remoteAddress);
         if (ipAddress) {
@@ -75,6 +74,7 @@ var binaryServer = net.createServer(function (socket) {
             client.connection.destroy();
         }
     }
+    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', misc_js_1.inspect `server error: ${err}`));
 exports.default = binaryServer;

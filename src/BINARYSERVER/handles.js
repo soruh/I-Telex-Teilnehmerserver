@@ -280,6 +280,7 @@ handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve,
         return void resolve();
     logger.log('debug', misc_js_1.inspect `entrys to transmit: ${client.writebuffer.length}`);
     if (client.writebuffer.length === 0) {
+        logger.log('network', misc_js_1.inspect `transmited all entries for: ${client.name} (sending 0x09)`);
         client.state = constants.states.STANDBY;
         return void client.connection.write(ITelexCom.encPackage({
             type: 9

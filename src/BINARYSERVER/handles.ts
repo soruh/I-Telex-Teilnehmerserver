@@ -303,6 +303,7 @@ new Promise((resolve, reject) => {
 	logger.log('debug', inspect`entrys to transmit: ${client.writebuffer.length}`);
 
 	if (client.writebuffer.length === 0) {
+		logger.log('network', inspect`transmited all entries for: ${client.name} (sending 0x09)`);
 		client.state = constants.states.STANDBY;
 		return void client.connection.write(ITelexCom.encPackage({
 			type: 9

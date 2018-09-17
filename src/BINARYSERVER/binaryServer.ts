@@ -72,7 +72,6 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 
 	socket.setTimeout(config.connectionTimeout);
 
-	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 	{
 		let ipAddress = normalizeIp(socket.remoteAddress);
 
@@ -84,6 +83,7 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 			client.connection.destroy();
 		}
 	}
+	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', inspect`server error: ${err}`));
 
