@@ -23,6 +23,7 @@ function connect(options, onClose = () => { }) {
             ipFamily: null,
             state: constants.states.STANDBY,
             writebuffer: [],
+            sendPackage: misc_js_1.sendPackage,
         };
         chunker.on('data', (pkg) => {
             if (client) {

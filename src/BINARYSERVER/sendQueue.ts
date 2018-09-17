@@ -85,13 +85,13 @@ function sendQueue() {
 									})
 									)
 									.then(() => {
-										client.connection.write(ITelexCom.encPackage({
+										client.sendPackage({
 											type: 7,
 											data: {
 												serverpin: config.serverPin,
 												version: 1
 											}
-										}), () => {
+										}, () => {
 											client.state = constants.states.RESPONDING;
 											resolve();
 										});

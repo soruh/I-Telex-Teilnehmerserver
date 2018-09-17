@@ -7,6 +7,7 @@ const ip = require("ip");
 const nodemailer = require("nodemailer");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
+const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 // import * as winston from "winston";
 //#endregion
 const textColor = colors_js_1.default.Reset;
@@ -183,6 +184,13 @@ function sendEmail(messageName, values) {
     });
 }
 exports.sendEmail = sendEmail;
+function sendPackage(pkg, callback) {
+    let client = this;
+    logger.log('network', inspect `sending package of type ${pkg.type} to ${client.name}`);
+    let encodeded = ITelexCom.encPackage(pkg);
+    client.connection.write(encodeded, callback);
+}
+exports.sendPackage = sendPackage;
 const symbolName = (s) => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
 exports.symbolName = symbolName;
 let clientName;

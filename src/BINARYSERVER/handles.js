@@ -2,8 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../SHARED/config.js");
-// import colors from "../SHARED/colors.js";
-const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const misc_js_2 = require("../SHARED/misc.js");
@@ -95,12 +93,12 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
             }
             if (client.ipAddress == entry.ipaddress && port == entry.port) {
                 logger.log('debug', misc_js_1.inspect `not UPDATING, nothing to update`);
-                return void client.connection.write(ITelexCom.encPackage({
+                return void client.sendPackage({
                     type: 2,
                     data: {
                         ipaddress: client.ipAddress
                     }
-                }), () => resolve());
+                }, () => resolve());
             }
             misc_js_2.SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
                 port, client.ipAddress, Math.floor(Date.now() / 1000), number,
@@ -109,15 +107,15 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 // .then(()=>SqlQuery(`SELECT * FROM teilnehmer WHERE number = ?;`, [number]))
                 // .then((result_c:ITelexCom.peerList)=>{
                 // 	ipaddress = result_c[0].ipaddress;
-                // 	client.connection.write(ITelexCom.encPackage({type: 2, data: {ipaddress}}), ()=>resolve());
+                // 	client.sendPackage({type: 2, data: {ipaddress}}, ()=>resolve());
                 // })
                 .then(() => {
-                client.connection.write(ITelexCom.encPackage({
+                client.sendPackage({
                     type: 2,
                     data: {
                         ipaddress: client.ipAddress
                     }
-                }), () => {
+                }, () => {
                     sendQueue_js_1.default()
                         .then(() => resolve())
                         .catch((err) => reject(err));
@@ -140,12 +138,12 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
-                client.connection.write(ITelexCom.encPackage({
+                client.sendPackage({
                     type: 2,
                     data: {
                         ipaddress: client.ipAddress
                     }
-                }), () => resolve());
+                }, () => resolve());
             })
                 .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         }
@@ -157,22 +155,22 @@ handles[3][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         return void resolve();
     if (pkg.data.version != 1) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} sent a package with version ${pkg.data.version} which is not supported by this server`);
-        return void client.connection.write(ITelexCom.encPackage({ type: 4 }), () => resolve());
+        return void client.sendPackage({ type: 4 }, () => resolve());
     }
     misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number])
         .then(function (result) {
         if (result && result.length == 1) {
             let [data] = result;
             data.pin = "0";
-            client.connection.write(ITelexCom.encPackage({
+            client.sendPackage({
                 type: 5,
                 data
-            }), () => resolve());
+            }, () => resolve());
         }
         else {
-            client.connection.write(ITelexCom.encPackage({
+            client.sendPackage({
                 type: 4
-            }), () => resolve());
+            }, () => resolve());
         }
     })
         .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
@@ -195,33 +193,29 @@ handles[5][constants.states.FULLQUERY] =
                     client.newEntries = 0;
                 if (pkg.data.timestamp <= entry.timestamp) {
                     logger.log('debug', misc_js_1.inspect `recieved entry is ${+entry.timestamp - pkg.data.timestamp} seconds older and was ignored`);
-                    return void client.connection.write(ITelexCom.encPackage({
+                    return void client.sendPackage({
                         type: 8
-                    }), () => resolve());
+                    }, () => resolve());
                 }
                 client.newEntries++;
                 logger.log('network', misc_js_1.inspect `got new dataset for: ${pkg.data.name}`);
                 logger.log('debug', misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
                 misc_js_2.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]))
-                    .then(() => client.connection.write(ITelexCom.encPackage({
+                    .then(() => client.sendPackage({
                     type: 8
-                }), () => resolve()))
+                }, () => resolve()))
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
             else if (pkg.data.type == 0) {
                 logger.log('debug', misc_js_1.inspect `not inserting deleted entry: ${pkg.data}`);
             }
             else {
-                misc_js_2.SqlQuery(`
-			INSERT INTO teilnehmer (
-				${names.join(",") + (names.length > 0 ? "," : "")} changed
-			) VALUES(
-			${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([
+                misc_js_2.SqlQuery(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES(${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([
                     config_js_1.default.setChangedOnNewerEntry ? 1 : 0
                 ]))
-                    .then(() => client.connection.write(ITelexCom.encPackage({
+                    .then(() => client.sendPackage({
                     type: 8
-                }), () => resolve()))
+                }, () => resolve()))
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }
         })
@@ -271,27 +265,27 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
     }
     logger.log('debug', misc_js_1.inspect `serverpin is correct!`);
     client.state = constants.states.LOGIN;
-    client.connection.write(ITelexCom.encPackage({
+    client.sendPackage({
         type: 8
-    }), () => resolve());
+    }, () => resolve());
 });
 handles[8][constants.states.RESPONDING] = (pkg, client) => new Promise((resolve, reject) => {
     if (!client)
         return void resolve();
     logger.log('debug', misc_js_1.inspect `entrys to transmit: ${client.writebuffer.length}`);
     if (client.writebuffer.length === 0) {
-        logger.log('network', misc_js_1.inspect `transmited all entries for: ${client.name} (sending 0x09)`);
+        logger.log('network', misc_js_1.inspect `transmited all entries for: ${client.name}`);
         client.state = constants.states.STANDBY;
-        return void client.connection.write(ITelexCom.encPackage({
+        return void client.sendPackage({
             type: 9
-        }), () => resolve());
+        }, () => resolve());
     }
     let data = client.writebuffer.shift();
     logger.log('network', misc_js_1.inspect `sent dataset for ${data.name} (${data.number})`);
-    client.connection.write(ITelexCom.encPackage({
+    client.sendPackage({
         type: 5,
         data
-    }), () => resolve());
+    }, () => resolve());
 });
 handles[9][constants.states.FULLQUERY] =
     handles[9][constants.states.LOGIN] = (pkg, client) => new Promise((resolve, reject) => {

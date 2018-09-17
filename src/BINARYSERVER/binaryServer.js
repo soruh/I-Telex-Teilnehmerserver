@@ -17,6 +17,7 @@ var binaryServer = net.createServer(function (socket) {
         ipFamily: null,
         state: constants.states.STANDBY,
         writebuffer: [],
+        sendPackage: misc_js_1.sendPackage,
     };
     var asciiListener = (data) => {
         if (client) {

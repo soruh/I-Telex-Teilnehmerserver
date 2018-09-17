@@ -6,7 +6,7 @@ import config from '../SHARED/config.js';
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
 
-import { client, clientName, inspect, normalizeIp} from '../SHARED/misc.js';
+import { Client, clientName, inspect, normalizeIp, sendPackage} from '../SHARED/misc.js';
 import { asciiLookup, checkIp } from './ascii.js';
 import { handlePackage } from './handles.js';
 
@@ -14,13 +14,14 @@ import { handlePackage } from './handles.js';
 
 
 var binaryServer = net.createServer(function (socket: net.Socket) {
-	var client: client = {
+	var client: Client = {
 		name: clientName(),
 		connection: socket,
 		ipAddress: null,
 		ipFamily: null,
 		state: constants.states.STANDBY,
 		writebuffer: [],
+		sendPackage:sendPackage,
 	};
 	
 	var asciiListener = (data: Buffer): void => {

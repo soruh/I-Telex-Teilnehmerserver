@@ -57,7 +57,7 @@ function getFullQuery() {
 							}
 						};
 					}
-					client.connection.write(ITelexCom.encPackage(request), () => {
+					client.sendPackage(request, () => {
 						client.state = constants.states.FULLQUERY;
 						client.cb = resolveLoop;
 					});

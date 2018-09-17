@@ -183,6 +183,14 @@ function sendEmail(messageName: string, values: {
 	});
 }
 
+function sendPackage(pkg:ITelexCom.Package_decoded, callback?:()=>void):void {
+	let client = (this as Client);
+
+	logger.log('network', inspect`sending package of type ${pkg.type} to ${client.name}`);
+	let encodeded = ITelexCom.encPackage(pkg);
+	client.connection.write(encodeded, callback);
+}
+
 const symbolName = (s: symbol): string => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
 
 // interface connection extends net.Socket {
@@ -190,7 +198,8 @@ const symbolName = (s: symbol): string => (s && typeof s.toString === "function"
 // }
 type connection = net.Socket;
 
-interface client {
+
+interface Client {
 	name: string;
 	connection: connection;
 	state: symbol,
@@ -201,6 +210,7 @@ interface client {
 	cb ? : () => void;
 	servernum ? : number;
 	newEntries ? : number;
+	sendPackage: typeof sendPackage;
 }
 
 let clientName;
@@ -440,9 +450,10 @@ export {
 	resetErrorCounter,
 	errorCounters,
 	symbolName,
-	client,
+	Client,
 	clientName,
 	getTimezone,
 	inspect,
-	normalizeIp
+	normalizeIp,
+	sendPackage
 }

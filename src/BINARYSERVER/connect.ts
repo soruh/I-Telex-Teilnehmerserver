@@ -6,13 +6,13 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import {increaseErrorCounter, errorCounters, resetErrorCounter, client, clientName, inspect, normalizeIp} from "../SHARED/misc.js";
+import {increaseErrorCounter, errorCounters, resetErrorCounter, Client, clientName, inspect, normalizeIp, sendPackage} from "../SHARED/misc.js";
 import { handlePackage } from "./handles.js";
 //#endregion
 
 
 
-function connect(options:{host: string, port: number}, onClose=()=>{}): Promise < client > {
+function connect(options:{host: string, port: number}, onClose=()=>{}): Promise < Client > {
 	return new Promise((resolve, reject) => {
 		let serverkey = options.host + ":" + options.port;
 		logger.log('verbose network', inspect`trying to connect to server at ${serverkey}`);
@@ -22,13 +22,14 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 		var chunker = new ITelexCom.ChunkPackages();
 		socket.pipe(chunker);
 		
-		var client: client = {
+		var client: Client = {
 			name: clientName(),
 			connection: socket,
 			ipAddress: null,
 			ipFamily: null,
 			state: constants.states.STANDBY,
 			writebuffer: [],
+			sendPackage:sendPackage,
 		};
 		chunker.on('data', (pkg: Buffer) => {
 			if(client){

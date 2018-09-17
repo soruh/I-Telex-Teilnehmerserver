@@ -2,8 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../SHARED/config.js");
-// import colors from "../SHARED/colors.js";
-const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const constants = require("../BINARYSERVER/constants.js");
 const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");
@@ -77,13 +75,13 @@ function sendQueue() {
                                         }
                                     }))
                                         .then(() => {
-                                        client.connection.write(ITelexCom.encPackage({
+                                        client.sendPackage({
                                             type: 7,
                                             data: {
                                                 serverpin: config_js_1.default.serverPin,
                                                 version: 1
                                             }
-                                        }), () => {
+                                        }, () => {
                                             client.state = constants.states.RESPONDING;
                                             resolve();
                                         });

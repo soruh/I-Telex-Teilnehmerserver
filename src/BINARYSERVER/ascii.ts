@@ -4,11 +4,11 @@ import config from '../SHARED/config';
 import * as util from 'util';
 import * as dns from 'dns';
 import * as ip from 'ip';
-import { SqlQuery, inspect, client } from '../SHARED/misc';
+import { SqlQuery, inspect, Client } from '../SHARED/misc';
 import { peerList, peer } from './ITelexCom';
 import serialEachPromise from '../SHARED/serialEachPromise';
 
-function asciiLookup(data: number[] | Buffer, client: client): void {
+function asciiLookup(data: number[] | Buffer, client: Client): void {
 	var number: string = "";
 	for (let byte of data) {
 		let char = String.fromCharCode(byte);
@@ -62,7 +62,7 @@ function asciiLookup(data: number[] | Buffer, client: client): void {
 	}
 }
 
-async function checkIp(data: number[] | Buffer, client: client) {
+async function checkIp(data: number[] | Buffer, client: Client) {
 	if (config.doDnsLookups) {
 		var arg: string = data.slice(1).toString().split("\n")[0].split("\r")[0];
 		logger.log('debug', inspect`checking if belongs to any participant`);
