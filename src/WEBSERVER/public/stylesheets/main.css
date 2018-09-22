@@ -9,7 +9,7 @@ label{
 	font-weight: normal;
 }
 .link:link, .link:visited {
-  color: #000;
+  color: #343434;
   text-decoration: none;
   cursor: pointer;
 }
