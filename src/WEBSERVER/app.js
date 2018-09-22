@@ -170,7 +170,7 @@ app.use((req, res, next) => {
         req.url.replace(/\//g, colors_js_1.default.FgLightBlack + "/" + colors_js_1.default.Reset)
     ].join(' ');
     if (req.url == "/") {
-        logger.log('info', misc_js_1.inspect `${message}`);
+        logger.log('http', misc_js_1.inspect `${message}`);
     }
     else {
         logger.log('debug', misc_js_1.inspect `${message}`);

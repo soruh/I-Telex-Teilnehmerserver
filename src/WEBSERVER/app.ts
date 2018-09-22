@@ -200,7 +200,7 @@ app.use((req, res, next)=>{
   ].join(' ');
   
   if (req.url == "/") {
-    logger.log('info', inspect`${message}`);
+    logger.log('http', inspect`${message}`);
   }else{
     logger.log('debug', inspect`${message}`);
   }
