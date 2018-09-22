@@ -75,7 +75,7 @@ router.post('/edit', function (req, res) {
   logger.log('debug', inspect`request body: ${req.body}`);
   logger.log('debug', inspect`typekey: ${req.body.typekey}`);
   if (req.body.password !== config.webInterfacePassword){
-    logger.log('warning', inspect`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
+    if(req.body.password != "") logger.log('warning', inspect`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
     return void res.json({
       successful: false,
       message: {
