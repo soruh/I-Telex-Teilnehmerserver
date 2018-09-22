@@ -667,6 +667,14 @@ function updateContent(unSortedList) {
                             cell.text(entry[key]);
                         }
                         break;
+                    case "hostname":
+                    case "ipaddress":
+                        var link = $("<a></a>");
+                        link.text(entry[key]);
+                        link.addClass('link');
+                        link.attr('href', 'http://' + entry[key]);
+                        cell.append(link);
+                        break;
                     default:
                         cell.text(entry[key]);
                 }
