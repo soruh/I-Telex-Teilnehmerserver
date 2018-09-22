@@ -3,20 +3,14 @@ module.exports = {
     {
       name: "binaryserver",
       script: "src/BINARYSERVER/main.js",
-/*
-      interpreter: "0x",
-      interpreter_args:" -D flamegraph_binaryserver",
-      kill_timeout: 30000
-*/
+      output: 'logs/binaryserver/out.log',
+      error: 'logs/binaryserver/error.log',
     },
     {
       name: "webserver",
       script: "src/WEBSERVER/bin/webserver.js",
-/*
-      interpreter: "0x",
-      interpreter_args:" -D flamegraph_webserver",
-      kill_timeout: 30000
-*/
+      output: 'logs/webserver/out.log',
+      error: 'logs/webserver/error.log',
     }
   ]
 };
