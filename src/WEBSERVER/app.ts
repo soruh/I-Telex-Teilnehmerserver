@@ -202,7 +202,7 @@ app.use((req, res, next)=>{
   if (req.url == "/") {
     logger.log('http', inspect`${message}`);
   }else{
-    logger.log('debug', inspect`${message}`);
+    logger.log('verbose http', inspect`${message}`);
   }
   next();
 });

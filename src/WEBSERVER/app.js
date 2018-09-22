@@ -173,7 +173,7 @@ app.use((req, res, next) => {
         logger.log('http', misc_js_1.inspect `${message}`);
     }
     else {
-        logger.log('debug', misc_js_1.inspect `${message}`);
+        logger.log('verbose http', misc_js_1.inspect `${message}`);
     }
     next();
 });
