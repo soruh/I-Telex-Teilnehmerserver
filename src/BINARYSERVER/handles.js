@@ -208,6 +208,7 @@ handles[5][constants.states.FULLQUERY] =
             }
             else if (pkg.data.type == 0) {
                 logger.log('debug', misc_js_1.inspect `not inserting deleted entry: ${pkg.data}`);
+                resolve();
             }
             else {
                 misc_js_2.SqlQuery(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES(${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([

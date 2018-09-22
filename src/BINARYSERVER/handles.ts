@@ -224,6 +224,7 @@ new Promise((resolve, reject) => {
 					.catch(err=>{logger.log('error', inspect`${err}`)}); 
 			} else if(pkg.data.type == 0) {
 				logger.log('debug', inspect`not inserting deleted entry: ${pkg.data}`)
+				resolve();
 			}else{
 				SqlQuery(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES(${"?,".repeat(names.length+1).slice(0,-1)});`,
 						values.concat([
