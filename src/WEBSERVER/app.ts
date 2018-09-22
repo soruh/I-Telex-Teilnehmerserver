@@ -48,7 +48,7 @@ declare global {
 		console.log("valid logging levels are:");
 		console.log(
 			(<any>Object).entries(customLevels.levels)
-			.map(([key, value])=>`${value}/${key}${value==3?" - not used":""}`)
+			.map(([key, value])=>`${value}/${key}`)
 			.join("\n")
 		);
 		
