@@ -9,8 +9,6 @@ import colors from "../SHARED/colors.js";
 
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import {lookup} from "dns";
-import serialEachPromise from "../SHARED/serialEachPromise.js";
 // import * as winston from "winston";
 //#endregion
 
@@ -19,6 +17,20 @@ const textColor = colors.Reset;
 const stringColor = colors.FgGreen;
 const errorColor = colors.FgRed;
 const sqlColor = colors.Reverse;
+
+function printDate(date:Date):string{
+	return date.toJSON().replace('Z', ' ').replace('T', ' ');
+}
+
+function getTimestamp():string {
+	let gmtDate = new Date();
+	let gmtTime = gmtDate.getTime();
+	let timezoneOffsetMillis = gmtDate.getTimezoneOffset()*-60*1000;
+	
+	let adjustedDate = new Date(gmtTime+timezoneOffsetMillis);
+
+	return printDate(adjustedDate);
+}
 
 function isAnyError(error){
 	if(error instanceof Error) return true;
@@ -68,7 +80,7 @@ function increaseErrorCounter(serverkey: string, error: Error, code: string): vo
 			"port": serverkey.split(":")[1],
 			"errorCounter": errorCounters[serverkey].toString(),
 			"lastError": code,
-			"date": new Date().toLocaleString(),
+			"date": getTimestamp(),
 			"timeZone": getTimezone(new Date())
 		});
 }
@@ -456,5 +468,6 @@ export {
 	getTimezone,
 	inspect,
 	normalizeIp,
-	sendPackage
+	sendPackage,
+	getTimestamp
 }

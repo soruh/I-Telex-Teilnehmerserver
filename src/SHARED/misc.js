@@ -14,6 +14,17 @@ const textColor = colors_js_1.default.Reset;
 const stringColor = colors_js_1.default.FgGreen;
 const errorColor = colors_js_1.default.FgRed;
 const sqlColor = colors_js_1.default.Reverse;
+function printDate(date) {
+    return date.toJSON().replace('Z', ' ').replace('T', ' ');
+}
+function getTimestamp() {
+    let gmtDate = new Date();
+    let gmtTime = gmtDate.getTime();
+    let timezoneOffsetMillis = gmtDate.getTimezoneOffset() * -60 * 1000;
+    let adjustedDate = new Date(gmtTime + timezoneOffsetMillis);
+    return printDate(adjustedDate);
+}
+exports.getTimestamp = getTimestamp;
 function isAnyError(error) {
     if (error instanceof Error)
         return true;
@@ -65,7 +76,7 @@ function increaseErrorCounter(serverkey, error, code) {
             "port": serverkey.split(":")[1],
             "errorCounter": errorCounters[serverkey].toString(),
             "lastError": code,
-            "date": new Date().toLocaleString(),
+            "date": getTimestamp(),
             "timeZone": getTimezone(new Date())
         });
 }

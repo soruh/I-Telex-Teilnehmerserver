@@ -4,7 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import {Client, sendEmail, getTimezone, inspect, symbolName} from '../SHARED/misc.js';
+import {Client, sendEmail, getTimezone, inspect, symbolName, getTimestamp} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
@@ -47,7 +47,7 @@ new Promise((resolve, reject) => {
 		return void sendEmail("ipV6DynIpUpdate", {
 			"Ip": client.ipAddress,
 			"number": number.toString(),
-			"date": new Date().toLocaleString(),
+			"date": getTimestamp(),
 			"timeZone": getTimezone(new Date())
 		})
 		.then(resolve)
@@ -59,7 +59,7 @@ new Promise((resolve, reject) => {
 		return void sendEmail("invalidNumber", {
 			"Ip": client.ipAddress,
 			"number": number.toString(),
-			"date": new Date().toLocaleString(),
+			"date": getTimestamp(),
 			"timeZone": getTimezone(new Date())
 		})
 		.then(() => {
@@ -81,7 +81,7 @@ new Promise((resolve, reject) => {
 					"Ip": client.ipAddress,
 					"number": entry.number.toString(),
 					"name": entry.name,
-					"date": new Date().toLocaleString(),
+					"date": getTimestamp(),
 					"timeZone": getTimezone(new Date())
 				})
 				.then(resolve)
@@ -94,7 +94,7 @@ new Promise((resolve, reject) => {
 					"Ip": client.ipAddress,
 					"number": entry.number.toString(),
 					"name": entry.name,
-					"date": new Date().toLocaleString(),
+					"date": getTimestamp(),
 					"timeZone": getTimezone(new Date())
 				})
 				.then(resolve)
@@ -144,7 +144,7 @@ new Promise((resolve, reject) => {
 				sendEmail("new", {
 					"Ip": client.ipAddress,
 					"number": number.toString(),
-					"date": new Date().toLocaleString(),
+					"date": getTimestamp(),
 					"timeZone": getTimezone(new Date())
 				})
 				.catch(err=>{logger.log('error', inspect`${err}`)}); 
@@ -250,7 +250,7 @@ new Promise((resolve, reject) => {
 		client.connection.end();
 		return void sendEmail("wrongServerPin", {
 				"Ip": client.ipAddress,
-				"date": new Date().toLocaleString(),
+				"date": getTimestamp(),
 				"timeZone": getTimezone(new Date())
 			})
 			.then(() => resolve())
@@ -281,7 +281,7 @@ new Promise((resolve, reject) => {
 		client.connection.end();
 		return void sendEmail("wrongServerPin", {
 				"Ip": client.ipAddress,
-				"date": new Date().toLocaleString(),
+				"date": getTimestamp(),
 				"timeZone": getTimezone(new Date())
 			})
 			.then(() => resolve())

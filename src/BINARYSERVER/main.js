@@ -93,7 +93,9 @@ function createLogger() {
         // })();
         var formats = [];
         if (config_js_1.default.logDate)
-            formats.push(winston.format.timestamp());
+            formats.push(winston.format.timestamp({
+                format: () => misc_js_1.getTimestamp()
+            }));
         if (!config_js_1.default.disableColors)
             formats.push(winston.format.colorize());
         // formats.push(getLine),

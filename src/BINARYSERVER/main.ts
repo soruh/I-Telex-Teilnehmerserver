@@ -2,12 +2,11 @@
 import colors from "../SHARED/colors.js";
 import config from '../SHARED/config.js';
 import * as path from "path";
-import * as intl from "intl";
 import * as mysql from "mysql";
 import * as winston from "winston";
 import * as timers from "../BINARYSERVER/timers.js";
 import * as nodemailer from "nodemailer";
-import {inspect, errorCounters} from "../SHARED/misc.js";
+import {inspect, errorCounters, getTimestamp} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 // import updateQueue from './updateQueue.js';
@@ -133,7 +132,11 @@ function createLogger(){
 
 		var formats = [];
 
-		if(config.logDate) formats.push(winston.format.timestamp());
+		if(config.logDate) formats.push(
+			winston.format.timestamp({
+				format:()=>getTimestamp()
+			})
+		);
 		if(!config.disableColors) formats.push(winston.format.colorize())
 		// formats.push(getLine),
 		var levelPadding = Math.max(...Object.keys(customLevels.colors).map(x=>x.length));

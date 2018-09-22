@@ -38,7 +38,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         return void misc_js_1.sendEmail("ipV6DynIpUpdate", {
             "Ip": client.ipAddress,
             "number": number.toString(),
-            "date": new Date().toLocaleString(),
+            "date": misc_js_1.getTimestamp(),
             "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(resolve)
@@ -49,7 +49,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         return void misc_js_1.sendEmail("invalidNumber", {
             "Ip": client.ipAddress,
             "number": number.toString(),
-            "date": new Date().toLocaleString(),
+            "date": misc_js_1.getTimestamp(),
             "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => {
@@ -72,7 +72,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "Ip": client.ipAddress,
                     "number": entry.number.toString(),
                     "name": entry.name,
-                    "date": new Date().toLocaleString(),
+                    "date": misc_js_1.getTimestamp(),
                     "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
@@ -85,7 +85,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                     "Ip": client.ipAddress,
                     "number": entry.number.toString(),
                     "name": entry.name,
-                    "date": new Date().toLocaleString(),
+                    "date": misc_js_1.getTimestamp(),
                     "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .then(resolve)
@@ -134,7 +134,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
                 misc_js_1.sendEmail("new", {
                     "Ip": client.ipAddress,
                     "number": number.toString(),
-                    "date": new Date().toLocaleString(),
+                    "date": misc_js_1.getTimestamp(),
                     "timeZone": misc_js_1.getTimezone(new Date())
                 })
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
@@ -232,7 +232,7 @@ handles[6][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "Ip": client.ipAddress,
-            "date": new Date().toLocaleString(),
+            "date": misc_js_1.getTimestamp(),
             "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
@@ -260,7 +260,7 @@ handles[7][constants.states.STANDBY] = (pkg, client) => new Promise((resolve, re
         client.connection.end();
         return void misc_js_1.sendEmail("wrongServerPin", {
             "Ip": client.ipAddress,
-            "date": new Date().toLocaleString(),
+            "date": misc_js_1.getTimestamp(),
             "timeZone": misc_js_1.getTimezone(new Date())
         })
             .then(() => resolve())
