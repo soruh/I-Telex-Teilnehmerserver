@@ -10,7 +10,7 @@
     },
     "wrongDynIpPin":{
       "subject":"Falscher DynIp Pin",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> mit einem falschen pin versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern"
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> mit einer falschen pin versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern"
     },
     "wrongDynIpType":{
       "subject":"Falscher DynIp Typ",
@@ -22,7 +22,7 @@
     },
     "wrongServerPin":{
       "subject":"Falscher Serverpin",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht mit einem falschen Serverpin den Server zu syncronisieren"
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht mit einer falschen Serverpin den Server zu syncronisieren"
     },
     "ServerError":{
       "subject":"Verbindung zum Server fehlgeschlagen",
