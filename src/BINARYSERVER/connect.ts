@@ -65,17 +65,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 		});
 		socket.once('connect', ()=>{
 			{
-				let ipA = socket.remoteAddress;
-				let ipB = (<any>socket)._getpeername();
-					ipB = ipB?ipB.address:null;
-
-				if(ipA){
-					logger.log('debug', inspect`socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
-				}else{
-					logger.log('error', inspect`socket.remoteAddress: ${ipA} socket._getpeername(): ${ipB}`);
-				}
-
-				let ipAddress = normalizeIp(ipA||ipB);
+				let ipAddress = normalizeIp(socket.remoteAddress);
 				
 				if(ipAddress){
 					client.ipAddress = ipAddress.address;
