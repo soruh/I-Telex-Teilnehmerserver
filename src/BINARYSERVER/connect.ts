@@ -43,7 +43,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 		socket.on('close', () => {
 			if (client.newEntries != null) logger.log('verbose network', inspect`recieved ${client.newEntries} new entries`);
 			logger.log('network', inspect`server ${client.name} disconnected!`);
-			client = null;
+			// client = null;
 			onClose();
 		});
 		socket.on('timeout', () => {

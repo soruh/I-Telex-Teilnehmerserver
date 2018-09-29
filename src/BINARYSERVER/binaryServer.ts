@@ -53,7 +53,7 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 			if (client.newEntries != null) logger.log('network', inspect`recieved ${client.newEntries} new entries`);
 			logger.log('network', inspect`client ${client.name} disconnected!`);
 			// clearTimeout(client.timeout);
-			client = null;
+			// client = null;
 		}
 	});
 	socket.on('timeout', function (): void {
