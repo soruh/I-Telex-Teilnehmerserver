@@ -186,7 +186,7 @@ function sendEmail(messageName, values) {
             else {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            logger.log('debug', inspect `sending email of type ${messageName || "config error"}`);
+            logger.log('network', inspect `sending email of type ${messageName || "config error"}`);
             logger.log('debug', inspect `mail values: ${values}`);
             logger.log('debug', inspect `sending mail:\n${mailOptions}\nto server ${global.transporter.options["host"]}`);
             global.transporter.sendMail(mailOptions, function (error, info) {
