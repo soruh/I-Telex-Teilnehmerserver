@@ -8,7 +8,6 @@ const nodemailer = require("nodemailer");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-const constants_js_1 = require("../BINARYSERVER/constants.js");
 // import * as winston from "winston";
 //#endregion
 const textColor = colors_js_1.default.Reset;
@@ -61,7 +60,7 @@ function getTimezone(date) {
 exports.getTimezone = getTimezone;
 var errorCounters = {};
 exports.errorCounters = errorCounters;
-function increaseErrorCounter(serverkey, state, code) {
+function increaseErrorCounter(serverkey, code) {
     if (errorCounters.hasOwnProperty(serverkey)) {
         errorCounters[serverkey]++;
     }
@@ -77,7 +76,6 @@ function increaseErrorCounter(serverkey, state, code) {
             "port": serverkey.split(":")[1],
             "errorCounter": errorCounters[serverkey].toString(),
             "lastError": code,
-            "state": state ? constants_js_1.states[state] : 'NULL',
             "date": getTimestamp(),
             "timeZone": getTimezone(new Date())
         });

@@ -66,7 +66,7 @@ var errorCounters: {
 	[index: string]:number;
 } = {};
 
-function increaseErrorCounter(serverkey: string, state:symbol, code: string): void {
+function increaseErrorCounter(serverkey: string, code: string): void {
 	if (errorCounters.hasOwnProperty(serverkey)) {
 		errorCounters[serverkey]++;
 	} else {
@@ -81,7 +81,6 @@ function increaseErrorCounter(serverkey: string, state:symbol, code: string): vo
 			"port": serverkey.split(":")[1],
 			"errorCounter": errorCounters[serverkey].toString(),
 			"lastError": code,
-			"state":state?states[state]:'NULL',
 			"date": getTimestamp(),
 			"timeZone": getTimezone(new Date())
 		});
