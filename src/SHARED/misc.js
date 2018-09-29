@@ -82,8 +82,17 @@ function increaseErrorCounter(serverkey, error, code) {
 }
 exports.increaseErrorCounter = increaseErrorCounter;
 function resetErrorCounter(serverkey) {
-    delete errorCounters[serverkey];
-    logger.log('debug', inspect `reset error counter for: ${serverkey}`);
+    if (errorCounters.hasOwnProperty(serverkey)) {
+        sendEmail("ServerErrorOver", {
+            "host": serverkey.split(":")[0],
+            "port": serverkey.split(":")[1],
+            "errorCounter": errorCounters[serverkey].toString(),
+            "date": getTimestamp(),
+            "timeZone": getTimezone(new Date())
+        });
+        logger.log('debug', inspect `reset error counter for: ${serverkey}. Counter was at: ${errorCounters[serverkey]}`);
+        delete errorCounters[serverkey];
+    }
 }
 exports.resetErrorCounter = resetErrorCounter;
 function SqlQuery(query, options, verbose) {

@@ -26,7 +26,11 @@
     },
     "ServerError":{
       "subject":"Verbindung zum Server fehlgeschlagen",
-      "html":"DerServer <font color=\"blue\">[host]:[port]</font> is am <font color=\"blue\">[date] [timeZone]</font> nicht erreicht werden. Fehlerzähler: <font color=\"blue\">[errorCounter]</font> Fehlercode: <font color=\"blue\">[lastError]</font>"
+      "html":"Der Server <font color=\"blue\">[host]:[port]</font> konnte am <font color=\"blue\">[date] [timeZone]</font> nicht erreicht werden. Fehlerzähler: <font color=\"blue\">[errorCounter]</font> Fehlercode: <font color=\"blue\">[lastError]</font>"
+    },
+    "ServerErrorOver":{
+      "subject":"Störung Ende",
+      "html":"Der Server: <font color=\"blue\">[host]:[port]</font> konnte am <font color=\"blue\">[date] [timeZone]</font> wieder erreicht werden. Fehlerzähler war: <font color=\"blue\">[errorCounter]</font>"
     }
   }
 }
