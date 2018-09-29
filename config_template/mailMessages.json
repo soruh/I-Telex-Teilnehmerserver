@@ -1,36 +1,36 @@
 {
   "messages":{
     "new":{
-      "subject":"new participant",
-      "html":"A new participant joined with number:<font color=\"blue\">[number]</font> and ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
+      "subject":"Neuer Teilnehmer",
+      "text":"Ein neuer Teilnehmer hat sich am [date] [timeZone] mit Nummer [number] und Ipaddresse [Ip] angemeldet"
     },
     "invalidNumber":{
-      "subject":"invalid Number",
-      "html":"A new participant tried to register with an invalid number:<font color=\"blue\">[number]</font> from ip:<font color=\"blue\">[Ip]</font> on <font color=\"blue\">[date] [timeZone]</font>"
+      "subject":"Ungültige Nummer",
+      "text":"Ein Teilnehmer hat am [date] [timeZone] versucht sich mit der ungültigen Nummer [number] und IpAddresse [Ip] anzumelden"
     },
     "wrongDynIpPin":{
-      "subject":"wrong dynIp pin",
-      "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with a wrong pin on <font color=\"blue\">[date] [timeZone]</font>"
+      "subject":"Falscher DynIp Pin",
+      "text":"[Ip] hat am [date] [timeZone] mit einer falschen pin versucht die DynIp für [number]([name]) zu ändern"
     },
     "wrongDynIpType":{
-      "subject":"wrong dynIp type",
-      "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>), which does not support dynIp(is type <font color=\"blue\">[typ]</font>) on <font color=\"blue\">[date] [timeZone]</font>"
-    },
-    "wrongServerPin":{
-      "subject":"wrong Server pin",
-      "html":"<font color=\"blue\">[Ip]</font> tried to syncronize with the server with a wrong pin on <font color=\"blue\">[date] [timeZone]</font>"
+      "subject":"Falscher DynIp Typ",
+      "text":"[Ip] hat am [date] [timeZone] versucht die DynIp für [number]([name]) zu ändern, welcher keine DynIp unterstützt (Typ: [typ])"
     },
     "ipV6DynIpUpdate":{
-      "subject":"ipv6 DynIp update",
-      "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with an ipv6 address on <font color=\"blue\">[date] [timeZone]</font>"
+      "subject":"ipv6 DynIp Änderung",
+      "text":"[Ip] hat am [date] [timeZone] versucht die DynIp für [number]([name]) mit einer ipv6 zu ändern"
+    },
+    "wrongServerPin":{
+      "subject":"Falscher Serverpin",
+      "text":"[Ip] hat am [date] [timeZone] versucht mit einer falschen Serverpin den Server zu syncronisieren"
     },
     "ServerError":{
-      "subject":"Could not connect to server",
-      "html":"Could not connect to server: <font color=\"blue\">[host]:[port]</font>. Error counter: <font color=\"blue\">[errorCounter]</font> Error code: <font color=\"blue\">[lastError]</font> on <font color=\"blue\">[date] [timeZone]</font>"
+      "subject":"Verbindung zum Server fehlgeschlagen",
+      "text":"Der Server [host]:[port] konnte am [date] [timeZone] nicht erreicht werden. Fehlerzähler: [errorCounter] Fehlercode: [lastError]"
     },
     "ServerErrorOver":{
-      "subject":"Server could be reached again",
-      "html":"Could connect to server: <font color=\"blue\">[host]:[port]</font> again on <font color=\"blue\">[date] [timeZone]</font>. Error counter was at: <font color=\"blue\">[errorCounter]</font>"
+      "subject":"Störung Ende",
+      "text":"Der Server: [host]:[port] konnte am [date] [timeZone] wieder erreicht werden. Fehlerzähler war: [errorCounter]"
     }
   }
 }
