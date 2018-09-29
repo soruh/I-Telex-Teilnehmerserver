@@ -353,7 +353,7 @@ new Promise((resolve, reject) => {
 			logger.log('debug', inspect`entries matching pattern ${pattern}:\n${result}`);
 
 			client.state = constants.states.RESPONDING;
-			client.writebuffer = result;
+			client.writebuffer = result.map(peer=>{peer.pin="0";return peer});
 
 			return handlePackage({type: 8}, client);
 		})
