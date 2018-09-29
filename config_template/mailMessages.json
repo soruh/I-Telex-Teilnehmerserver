@@ -26,7 +26,7 @@
     },
     "ServerError":{
       "subject":"Could not connect to server",
-      "html":"Could not connect to server: <font color=\"blue\">[host]:[port]</font>. Error counter: <font color=\"blue\">[errorCounter]</font> Error code: <font color=\"blue\">[lastError]</font> on <font color=\"blue\">[date] [timeZone]</font>"
+      "html":"Could not connect to server: <font color=\"blue\">[host]:[port]</font>. Error counter: <font color=\"blue\">[errorCounter]</font> Error code: <font color=\"blue\">[lastError]</font> in state: <font color=\"blue\">[state]</font> on <font color=\"blue\">[date] [timeZone]</font>"
     },
     "ServerErrorOver":{
       "subject":"Server could be reached again",

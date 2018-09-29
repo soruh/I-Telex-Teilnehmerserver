@@ -44,14 +44,14 @@ function connect(options, onClose = () => { }) {
             logger.log('warning', misc_js_1.inspect `server: ${client.name} timed out`);
             // socket.emit("end");
             // socket.emit("error",new Error("timeout"));
-            misc_js_1.increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
+            misc_js_1.increaseErrorCounter(serverkey, client ? client.state : null, "TIMEOUT");
             socket.end();
         });
         socket.on('error', error => {
             if (error["code"] != "ECONNRESET") {
                 logger.log('debug', misc_js_1.inspect `${error}`);
                 logger.log('network', misc_js_1.inspect `server ${client.name} had an error`);
-                misc_js_1.increaseErrorCounter(serverkey, error, error["code"]);
+                misc_js_1.increaseErrorCounter(serverkey, client ? client.state : null, error["code"]);
             }
             else {
                 logger.log('silly', misc_js_1.inspect `${error}`);

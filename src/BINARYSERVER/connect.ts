@@ -50,7 +50,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 			logger.log('warning', inspect`server: ${client.name} timed out`);
 			// socket.emit("end");
 			// socket.emit("error",new Error("timeout"));
-			increaseErrorCounter(serverkey, new Error("timed out"), "TIMEOUT");
+			increaseErrorCounter(serverkey, client?client.state:null, "TIMEOUT");
 			socket.end();
 		});
 		socket.on('error', error => {
@@ -58,7 +58,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 				logger.log('debug', inspect`${error}`);
 
 				logger.log('network', inspect`server ${client.name} had an error`);
-				increaseErrorCounter(serverkey, error, error["code"]);
+				increaseErrorCounter(serverkey, client?client.state:null, error["code"]);
 			}else{
 				logger.log('silly', inspect`${error}`);
 			}

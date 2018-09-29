@@ -9,6 +9,7 @@ import colors from "../SHARED/colors.js";
 
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
+import { states } from "../BINARYSERVER/constants.js";
 // import * as winston from "winston";
 //#endregion
 
@@ -65,7 +66,7 @@ var errorCounters: {
 	[index: string]:number;
 } = {};
 
-function increaseErrorCounter(serverkey: string, error: Error, code: string): void {
+function increaseErrorCounter(serverkey: string, state:symbol, code: string): void {
 	if (errorCounters.hasOwnProperty(serverkey)) {
 		errorCounters[serverkey]++;
 	} else {
@@ -80,6 +81,7 @@ function increaseErrorCounter(serverkey: string, error: Error, code: string): vo
 			"port": serverkey.split(":")[1],
 			"errorCounter": errorCounters[serverkey].toString(),
 			"lastError": code,
+			"state":state?states[state]:'NULL',
 			"date": getTimestamp(),
 			"timeZone": getTimezone(new Date())
 		});
