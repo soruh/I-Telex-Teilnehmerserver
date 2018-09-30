@@ -434,8 +434,6 @@ if (config_js_1.default.scientistNames) {
 }
 else {
     exports.clientName = clientName = function clientName() {
-        let date = new Date();
-        let d = date.getTime() + date.getTimezoneOffset() * -60000;
-        return `${((Math.floor(d / 3600000) % 24).toString()).padStart(2, "0")}: ${((Math.floor(d / 60000) % 60).toString()).padStart(2, "0")}: ${((Math.floor(d / 1000) % 60) + "").padStart(2, "0")},${((d % 1000) + "").padStart(3, "0")}`;
+        return new Date().toJSON();
     };
 }
