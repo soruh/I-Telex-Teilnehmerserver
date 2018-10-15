@@ -21,7 +21,7 @@ function download(req, res, next) {
                     res.write(header.join('\t') + '\n');
                     for (let row of data) {
                         for (let field of header) {
-                            res.write((row[field] || '').toString());
+                            res.write(`"${(row[field] || '').toString()}"`);
                             if (field !== header[header.length - 1])
                                 res.write('\t');
                         }
