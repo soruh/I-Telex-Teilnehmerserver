@@ -560,9 +560,15 @@ function getList(callback) {
             "password": getPasswordCookie(),
         },
         success: function (response) {
-            console.log(response);
             if (response.successful) {
-                global_list = response.result;
+                let { result } = response;
+                for (let row of result) { //combine hostname and ipaddress into address
+                    let address = row.hostname || row.ipaddress;
+                    row.address = address;
+                    delete row.hostname;
+                    delete row.ipaddress;
+                }
+                global_list = result;
             }
             else {
                 console.error(response.message);
@@ -827,7 +833,9 @@ function search(list, pattern) {
     return result;
 }
 function sortFunction(x, y) {
-    return (x[sortby] || '').toString().localeCompare((y[sortby] || '').toString(), 'de', {
+    x = (x[sortby] || '').toString();
+    y = (y[sortby] || '').toString();
+    return x.localeCompare(y, 'de', {
         numeric: SORTNUMERIC
     });
 }
@@ -835,7 +843,7 @@ function sort(unSortedList) {
     if (sortby == '')
         return unSortedList;
     console.log(`sorting by ${sortby}`);
-    if (sortby in unSortedList[0]) {
+    if (!(sortby in unSortedList[0])) {
         console.error(`${sortby} is not a collumn name!`);
         sortby = '';
         return unSortedList;

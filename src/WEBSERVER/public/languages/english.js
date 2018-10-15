@@ -18,12 +18,15 @@ var english = {
   "#table_th_label_type": {
     text: "type"
   },
-  "#table_th_label_hostname": {
-    text: "hostname"
+  "#table_th_label_address": {
+    text: "address"
   },
-  "#table_th_label_ipaddress": {
-    text: "ipaddress"
-  },
+  // "#table_th_label_hostname": {
+  //   text: "hostname"
+  // },
+  // "#table_th_label_ipaddress": {
+  //   text: "ipaddress"
+  // },
   "#table_th_label_port": {
     text: "port"
   },

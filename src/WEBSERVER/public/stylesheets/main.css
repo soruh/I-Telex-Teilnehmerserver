@@ -224,11 +224,16 @@ h2{
 .cell.cell_type{
 	width: 106px;
 }
+/*
 .cell.cell_hostname{
 	width: 200px;
 }
 .cell.cell_ipaddress{
 	width: 131px;
+}
+*/
+.cell.cell_address{
+	width: 200px;
 }
 .cell.cell_port{
 	width: 55px;
