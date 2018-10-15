@@ -24,15 +24,15 @@ sqlPool.getConnection(function(err, connection) {
 	}
 });
 
-const index = express.Router();
-index.get('/', function(req, res, next) {
+const router = express.Router();
+router.get('/', function(req, res, next) {
 	res.render('index');
 });
 
-index.post('/list', list);
+router.post('/list', list);
 
-index.post('/edit', edit);
+router.post('/edit', edit);
 
-index.get('/download', download);
+router.get('/download', download);
 
-export default index;
+export default router;

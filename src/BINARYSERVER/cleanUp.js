@@ -10,7 +10,7 @@ function cleanUp() {
             misc_1.SqlQuery("DELETE FROM teilnehmer WHERE type=0 AND timestamp<=?", [expiredAfter])
                 .then(res => {
                 if (res && res.affectedRows > 0)
-                    console.log(misc_1.inspect `removed ${res.affectedRows} expired entries`);
+                    logger.log('debug', misc_1.inspect `removed ${res.affectedRows} expired entries`);
                 resolve();
             })
                 .catch(err => { logger.log('error', misc_1.inspect `${err}`); });

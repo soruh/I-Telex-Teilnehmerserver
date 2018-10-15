@@ -3,16 +3,16 @@ const UNIXTIMEDATE = false;
 const SHOWALLDATEINFO = false;
 const DEFAULTLANGUAGE = "german";
 const SORTNUMERIC = false;
-var english;
-var german;
-var global_list = [];
-var pwdcorrect = false;
-var sortby = "";
-var reverseSort = false;
-var language;
+let english;
+let german;
+let global_list = [];
+let pwdcorrect = false;
+let sortby = "";
+let reverseSort = false;
+let language;
 const languages = {
     german,
-    english
+    english,
 };
 $(document).ready(function () {
     setLanguage(getCookie("language") || DEFAULTLANGUAGE);
@@ -27,33 +27,33 @@ $(document).ready(function () {
     $.validator.methods.hostname = matchHn;
     $.validator.methods.unique = checkUnique;
     $(function () {
-        var keyStop = {
+        const keyStop = {
             //  8: ":not(input:text, textarea, input:file, input:password)", // stop backspace = back
             13: "input:text, input:password",
-            end: null
+            end: null,
         };
         $(".popup").bind("keydown", function (event) {
-            var selector = keyStop[event.which];
+            const selector = keyStop[event.which];
             if (selector !== undefined && $(event.target).is(selector)) {
-                event.preventDefault(); //stop event
+                event.preventDefault(); // stop event
                 $(event.target).parent().parent().find(".submit_dialog")[0].click();
             }
             return true;
         });
     });
     $.fn.extend({
-        center: function () {
+        center: () => {
             return this.each(function () {
-                var top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2); //(($(window).height() - $(this).outerHeight()) / 2);
-                var left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
+                let top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2); // (($(window).height() - $(this).outerHeight()) / 2);
+                let left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
                 $(this).css({
                     position: 'absolute',
                     margin: 0,
                     top: (top > 0 ? top : 0) + 'px',
-                    left: (left > 0 ? left : 0) + 'px'
+                    left: (left > 0 ? left : 0) + 'px',
                 });
             });
-        }
+        },
     });
     $.ajaxSetup({ /*async: false*/});
     $(document).ajaxStart(() => {
@@ -126,49 +126,49 @@ $(document).ready(function () {
         showpopup("newentry_dialog");
     });
     $("#type_newentry_dialog").on('change', function () {
-        var type = optionType(this);
-        if (type == "hostname") {
+        let type = optionType(this);
+        if (type === "hostname") {
             $("#hostname_newentry_dialog").parent().show();
             $("#ipaddress_newentry_dialog").parent().hide();
             $("#email_newentry_dialog").parent().hide();
         }
-        else if (type == "ipaddress") {
+        else if (type === "ipaddress") {
             $("#hostname_newentry_dialog").parent().hide();
             $("#ipaddress_newentry_dialog").parent().show();
             $("#email_newentry_dialog").parent().hide();
         }
-        else if (type == "email") {
+        else if (type === "email") {
             $("#hostname_newentry_dialog").parent().hide();
             $("#ipaddress_newentry_dialog").parent().hide();
             $("#email_newentry_dialog").parent().show();
         }
     });
     $("#type_edit_dialog").on('change', function () {
-        var type = optionType(this);
-        if (type == "hostname") {
+        let type = optionType(this);
+        if (type === "hostname") {
             $("#hostname_edit_dialog").parent().show();
             $("#ipaddress_edit_dialog").parent().hide();
             $("#email_edit_dialog").parent().hide();
         }
-        else if (type == "ipaddress") {
+        else if (type === "ipaddress") {
             $("#hostname_edit_dialog").parent().hide();
             $("#ipaddress_edit_dialog").parent().show();
             $("#email_edit_dialog").parent().hide();
         }
-        else if (type == "email") {
+        else if (type === "email") {
             $("#hostname_edit_dialog").parent().hide();
             $("#ipaddress_edit_dialog").parent().hide();
             $("#email_edit_dialog").parent().show();
         }
     });
     $("#submit_password_dialog").click(function () {
-        var formId = "#password_form";
+        let formId = "#password_form";
         $(formId).validate({
-            highlight: function (element, errorClass, validClass) {
+            highlight(element, errorClass, validClass) {
                 $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
                 $(element).addClass("bg-danger field_error");
             },
-            unhighlight: function (element, errorClass, validClass) {
+            unhighlight(element, errorClass, validClass) {
                 $(element).parents(".error").removeClass(errorClass).addClass(validClass);
                 $(element).removeClass("bg-danger field_error");
             },
@@ -176,9 +176,9 @@ $(document).ready(function () {
             validClass: "validate_valid",
             rules: {
                 password: {
-                    required: true
-                }
-            }
+                    required: true,
+                },
+            },
         });
         if ($(formId).valid()) {
             login($("#passwordfield").val().toString(), function (successful) {
@@ -192,17 +192,17 @@ $(document).ready(function () {
         }
         $("#passwordfield").val("");
         $("#passwordfield").trigger('change');
-        //getList(updateTable);
+        // getList(updateTable);
     });
     $("#submit_newentry_dialog").click(function () {
-        var formId = "#newentry_form";
+        let formId = "#newentry_form";
         $(formId).validate({
-            highlight: function (element, errorClass, validClass) {
+            highlight(element, errorClass, validClass) {
                 $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
                 $(element).addClass("bg-danger field_error");
                 // $("#newentry_dialog").center();
             },
-            unhighlight: function (element, errorClass, validClass) {
+            unhighlight(element, errorClass, validClass) {
                 $(element).parents(".error").removeClass(errorClass).addClass(validClass);
                 $(element).removeClass("bg-danger field_error");
                 // $("#newentry_dialog").center();
@@ -212,68 +212,68 @@ $(document).ready(function () {
             rules: {
                 pin: {
                     required: true,
-                    max: 65536
+                    max: 65536,
                 },
                 extension: {
                     digits: true,
-                    max: 100
+                    max: 100,
                 },
                 port: {
                     required: {
-                        depends: function (element) {
-                            var type = optionType(formId + " select[name=type]");
-                            return (type != "email");
-                        }
+                        depends(element) {
+                            let type = optionType(formId + " select[name=type]");
+                            return (type !== "email");
+                        },
                     },
                     max: 65536,
-                    digits: true
+                    digits: true,
                 },
                 name: {
                     required: true,
-                    maxlength: 40
+                    maxlength: 40,
                 },
                 number: {
                     unique: true,
                     required: true,
                     digits: true,
-                    max: 4294967296
+                    max: 4294967296,
                 },
                 email: {
                     email: true,
                     maxlength: 40,
                     required: {
-                        depends: function (element) {
-                            var type = optionType(formId + " select[name=type]");
-                            return (type == "email");
-                        }
-                    }
+                        depends(element) {
+                            let type = optionType(formId + " select[name=type]");
+                            return (type === "email");
+                        },
+                    },
                 },
                 hostname: {
                     hostname: true,
                     maxlength: 40,
                     required: {
-                        depends: function (element) {
-                            var type = optionType(formId + " select[name=type]");
-                            return (type == "hostname");
-                        }
-                    }
+                        depends(element) {
+                            let type = optionType(formId + " select[name=type]");
+                            return (type === "hostname");
+                        },
+                    },
                 },
                 ipaddress: {
                     ipaddress: true,
                     required: {
-                        depends: function (element) {
-                            var type = optionType(formId + " select[name=type]");
-                            return (type == "ipaddress");
-                        }
-                    }
-                }
-            }
+                        depends(element) {
+                            let type = optionType(formId + " select[name=type]");
+                            return (type === "ipaddress");
+                        },
+                    },
+                },
+            },
         });
         $("#type_newentry_dialog").on('change', function () {
             $(formId).valid();
         });
         if ($(formId).valid()) {
-            var editParams = {
+            let editParams = {
                 typekey: "new",
                 number: $("#number_newentry_dialog").val(),
                 name: $("#name_newentry_dialog").val(),
@@ -284,7 +284,7 @@ $(document).ready(function () {
                 extension: $("#extension_newentry_dialog").val(),
                 timestamp: $("#timestamp_newentry_dialog").val(),
                 pin: $("#pin_newentry_dialog").val(),
-                disabled: $("#disabled_newentry_dialog").prop('checked') ? 1 : 0
+                disabled: $("#disabled_newentry_dialog").prop('checked') ? 1 : 0,
             };
             switch (optionType(formId + " select[name=type]")) {
                 case "ipaddress":
@@ -306,17 +306,17 @@ $(document).ready(function () {
                     resetforms();
                 }
             });
-            //getList(updateTable);
+            // getList(updateTable);
         }
     });
     $("#submit_edit_dialog").click(function () {
-        var formId = "#edit_form";
+        let formId = "#edit_form";
         $(formId).validate({
-            highlight: function (element, errorClass, validClass) {
+            highlight(element, errorClass, validClass) {
                 $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
                 $(element).trigger("checkval");
             },
-            unhighlight: function (element, errorClass, validClass) {
+            unhighlight(element, errorClass, validClass) {
                 $(element).parents(".error").removeClass(errorClass).addClass(validClass);
                 $(element).trigger("checkval");
             },
@@ -326,72 +326,72 @@ $(document).ready(function () {
                 type: {
                     required: true,
                     digits: true,
-                    min: 1
+                    min: 1,
                 },
                 pin: {
                     required: true,
-                    max: 65536
+                    max: 65536,
                 },
                 extension: {
                     digits: true,
-                    max: 100
+                    max: 100,
                 },
                 port: {
                     required: {
-                        depends: function (element) {
+                        depends(element) {
                             let type = optionType(formId + " select[name=type]");
-                            return type != "email";
-                        }
+                            return type !== "email";
+                        },
                     },
                     max: 65536,
-                    digits: true
+                    digits: true,
                 },
                 name: {
                     required: true,
-                    maxlength: 40
+                    maxlength: 40,
                 },
                 number: {
                     unique: true,
                     required: true,
                     digits: true,
-                    max: 4294967296
+                    max: 4294967296,
                 },
                 email: {
                     email: true,
                     maxlength: 40,
                     required: {
-                        depends: function (element) {
+                        depends(element) {
                             let type = optionType(formId + " select[name=type]");
-                            return type == "email";
-                        }
-                    }
+                            return type === "email";
+                        },
+                    },
                 },
                 hostname: {
                     hostname: true,
                     maxlength: 40,
                     required: {
-                        depends: function (element) {
-                            var type = optionType(formId + " select[name=type]");
-                            return (type == "hostname");
-                        }
-                    }
+                        depends(element) {
+                            let type = optionType(formId + " select[name=type]");
+                            return (type === "hostname");
+                        },
+                    },
                 },
                 ipaddress: {
                     ipaddress: true,
                     required: {
-                        depends: function (element) {
-                            var type = optionType(formId + " select[name=type]");
-                            return (type == "ipaddress");
-                        }
-                    }
-                }
-            }
+                        depends(element) {
+                            let type = optionType(formId + " select[name=type]");
+                            return (type === "ipaddress");
+                        },
+                    },
+                },
+            },
         });
         $("#type_edit_dialog").on('change', function () {
             $(formId).valid();
         });
         if ($(formId).valid()) {
-            var editParams = {
+            let editParams = {
                 typekey: "edit",
                 uid: $("#edit_dialog").data("uid"),
                 number: $("#number_edit_dialog").val(),
@@ -403,7 +403,7 @@ $(document).ready(function () {
                 extension: $("#extension_edit_dialog").val(),
                 timestamp: $("#timestamp_edit_dialog").val(),
                 pin: $("#pin_edit_dialog").val(),
-                disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0
+                disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0,
             };
             switch (optionType(formId + " select[name=type]")) {
                 case "ipaddress":
@@ -425,7 +425,7 @@ $(document).ready(function () {
                     resetforms();
                 }
             });
-            //getList(updateTable);
+            // getList(updateTable);
         }
     });
     $("#submit_delete_dialog").click(function () {
@@ -441,31 +441,31 @@ $(document).ready(function () {
                 resetforms();
             }
         });
-        //getList(updateTable);
+        // getList(updateTable);
     });
     $(".abort_dialog").click(function () {
         resetforms();
-        //getList(updateTable);
+        // getList(updateTable);
     });
 });
 function checkUnique(number, element /*|HTMLElement*/) {
     console.log("checking if " + number + "is unique");
-    var uid = $($(element).parents()[2]).data("uid");
+    let uid = $($(element).parents()[2]).data("uid");
     for (let k in global_list) {
-        if (global_list[k].type != 0 &&
-            global_list[k].number == number &&
-            global_list[k].uid != uid)
+        if (global_list[k].type !== 0 &&
+            global_list[k].number === number &&
+            global_list[k].uid !== uid)
             return false;
     }
     return true;
 }
 function optionType(select) {
-    var val = +$(select).val();
-    if (val == 1 || val == 3)
+    let val = +$(select).val();
+    if (val === 1 || val === 3)
         return "hostname";
-    if (val == 2 || val == 4 || val == 5)
+    if (val === 2 || val === 4 || val === 5)
         return "ipaddress";
-    if (val == 6)
+    if (val === 6)
         return "email";
 }
 /*
@@ -493,7 +493,7 @@ function showpopup(id, callback) {
     $("#edit_dialog").hide();
     $("#delete_dialog").hide();
     $("#password_dialog").hide();
-    if (id == "") {
+    if (id === "") {
         $("#edit_dialog").data("uid", "");
         $("#delete_dialog").data("uid", "");
     }
@@ -520,11 +520,11 @@ function login(pwd, callback) {
     if (pwd)
         setCookie("pwd", btoa(pwd));
     edit({
-        typekey: "confirm password"
+        typekey: "confirm password",
     }, function (err, res) {
-        pwdcorrect = (res.code == 1);
+        pwdcorrect = (res.code === 1);
         if (typeof callback === "function")
-            callback(res.code == 1);
+            callback(res.code === 1);
     });
 }
 function logout() {
@@ -538,12 +538,12 @@ function twodigit(n) {
     return n.toString().padStart(2, 0);
 }
 function UNIXTIMEToString(UNIXTIME) {
-    var d = new Date(parseInt(UNIXTIME) * 1000);
+    let d = new Date(parseInt(UNIXTIME) * 1000);
     if (SHOWALLDATEINFO) {
         return (d.toString());
     }
     else {
-        if (language == "english") //TODO remove?
+        if (language === "english") // TODO remove?
             return (twodigit(d.getMonth() + 1) + "." + twodigit(d.getDate()) + "." + d.getFullYear() + " " +
                 twodigit(((d.getHours() > 12) ? (d.getHours() - 12) : d.getHours())) +
                 ":" + twodigit(d.getMinutes()) +
@@ -557,12 +557,12 @@ function getList(callback) {
         type: "POST",
         dataType: "json",
         data: {
-            "password": getPasswordCookie(),
+            password: getPasswordCookie(),
         },
-        success: function (response) {
+        success(response) {
             if (response.successful) {
                 let { result } = response;
-                for (let row of result) { //combine hostname and ipaddress into address
+                for (let row of result) { // combine hostname and ipaddress into address
                     let address = row.hostname || row.ipaddress;
                     row.address = address;
                     delete row.hostname;
@@ -576,28 +576,28 @@ function getList(callback) {
             if (typeof callback === "function")
                 callback(global_list);
         },
-        error: function (error) {
+        error(error) {
             console.log(error);
             callback(null);
-        }
+        },
     });
 }
 function findByUid(uid, list = global_list) {
-    return list.find((value) => value.uid == uid);
+    return list.find((value) => value.uid === uid);
 }
 function updateTable(list) {
-    var table = $("#table");
+    let table = $("#table");
     table.children().filter(".tr.hr").remove();
-    var headerRow = $("<div></div>");
+    let headerRow = $("<div></div>");
     $(headerRow).addClass("tr hr");
     for (let key in list[0] || {}) {
-        if (key != "uid") {
+        if (key !== "uid") {
             let headerCell = $("<div></div>");
             headerCell.addClass("th cell cell_" + key);
             let label = $("<div></div>");
             label.addClass("table-th-label locale_" + key);
             label.attr("id", "table_th_label_" + key);
-            if (key == "disabled") {
+            if (key === "disabled") {
                 let icon_ban_circle = $("<div></div>");
                 $(icon_ban_circle).addClass("glyphicon glyphicon-ban-circle disabled");
                 label.append(icon_ban_circle);
@@ -609,7 +609,7 @@ function updateTable(list) {
             arrow.click(function () {
                 let clicked = $(this);
                 let [, , , name] = clicked.attr('id').split('_');
-                if (sortby != name) {
+                if (sortby !== name) {
                     $(".table_th_arrow").removeClass("selected rotated");
                     clicked.addClass("selected");
                     sortby = name;
@@ -636,14 +636,14 @@ function updateTable(list) {
     updateContent(list);
 }
 function updateContent(unSortedList) {
-    var list = search(sort(unSortedList), $("#search-box").val().toString());
-    var table = $("#table");
+    let list = search(sort(unSortedList), $("#search-box").val().toString());
+    let table = $("#table");
     table.children().filter(".tr").not(".hr").remove();
     for (let entry of list) {
-        var row = $("<div></div>");
+        let row = $("<div></div>");
         row.addClass("tr");
         for (let key in entry) {
-            if (key != "uid") {
+            if (key !== "uid") {
                 let cell = $("<div></div>");
                 cell.addClass("td cell cell_" + key);
                 switch (key) {
@@ -656,14 +656,14 @@ function updateContent(unSortedList) {
                         }
                         break;
                     case "disabled":
-                        if (entry[key] == 1) {
-                            var div = $("<div></div>");
+                        if (entry[key] === 1) {
+                            let div = $("<div></div>");
                             div.addClass("glyphicon glyphicon-ban-circle disabled");
                             cell.append(div);
-                            //$(cell).addClass("glyphicon glyphicon-ok-circle");
+                            // $(cell).addClass("glyphicon glyphicon-ok-circle");
                         }
                         else {
-                            //$(cell).addClass("glyphicon glyphicon-remove-circle");
+                            // $(cell).addClass("glyphicon glyphicon-remove-circle");
                         }
                         break;
                     case "type":
@@ -676,7 +676,7 @@ function updateContent(unSortedList) {
                         break;
                     case "hostname":
                     case "ipaddress":
-                        var link = $("<a></a>");
+                        let link = $("<a></a>");
                         link.text(entry[key]);
                         link.addClass('link');
                         link.attr('href', 'http://' + entry[key]);
@@ -688,6 +688,7 @@ function updateContent(unSortedList) {
                 row.append(cell);
             }
         }
+        // tslint:disable:align
         let modify_container = $("<div></div>");
         modify_container.addClass("td cell admin_only");
         let edit = $("<div></div>");
@@ -710,6 +711,7 @@ function updateContent(unSortedList) {
         modify_container.append(remove);
         row.append(modify_container);
         table.append(row);
+        // tslint:enable:align
     }
     $(".edit").click(editButtonClick);
     $(".remove").click(removeButtonClick);
@@ -726,7 +728,7 @@ function updateContent(unSortedList) {
 function editButtonClick() {
     $("#type_edit_dialog").trigger('change');
     $("#edit_dialog").data("uid", $(this).data("uid"));
-    var uid = $(this).data("uid");
+    let uid = $(this).data("uid");
     getList(list => {
         updateTable(list);
         let entry = findByUid(uid);
@@ -735,7 +737,7 @@ function editButtonClick() {
         $("#number_edit_dialog").val(entry.number).trigger('change');
         $("#name_edit_dialog").val(entry.name).trigger('change');
         $("#type_edit_dialog").val(entry.type).trigger('change');
-        if (entry.type == 6) {
+        if (entry.type === 6) {
             $("#email_edit_dialog").val(entry.hostname).trigger('change');
         }
         else {
@@ -751,12 +753,12 @@ function editButtonClick() {
 }
 function removeButtonClick() {
     $("#delete_dialog_label_container div").remove();
-    var uid = $(this).data("uid");
+    let uid = $(this).data("uid");
     $("#delete_dialog").data("uid", uid);
-    var deleteMessage = {
+    let deleteMessage = {
         id: "message_delete_dialog_label",
         class: "delete_dialog_label",
-        text: languages[language].delete_message
+        text: languages[language].delete_message,
     };
     $('<div/>', deleteMessage).appendTo("#delete_dialog_label_container");
     getList(list => {
@@ -765,10 +767,10 @@ function removeButtonClick() {
         if (!entry)
             return console.error('uid ' + uid + ' not found');
         for (let k in entry) {
-            var deleteDialogLabel = {
+            let deleteDialogLabel = {
                 id: k + "_delete_dialog_label",
                 class: "delete_dialog_label",
-                text: null
+                text: null,
             };
             if (k === "timestamp" && (!UNIXTIMEDATE)) {
                 deleteDialogLabel.text = k + ": " + UNIXTIMEToString(entry[k]);
@@ -792,27 +794,27 @@ function edit(vals, callback) {
         type: "POST",
         dataType: "json",
         data: vals,
-        success: function (response) {
+        success(response) {
             refresh();
             if (callback)
                 callback(null, response.message);
-            if ((response.message.code != 1) && (response.message.code != -1) && ($("#log").length == 1))
+            if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
                 $("#log").text(JSON.stringify(response.message));
             if (!response.successful) {
                 console.log(response.message);
             }
         },
-        error: function (error) {
+        error(error) {
             console.error(error);
-            if ($("#log").length == 1)
+            if ($("#log").length === 1)
                 $("#log").text(JSON.stringify(error));
             if (callback)
                 callback(error, null);
-        }
+        },
     });
 }
 function search(list, pattern) {
-    if (pattern == "")
+    if (pattern === "")
         return list;
     console.log(`searching for: '${pattern}'`);
     let result = list
@@ -836,11 +838,11 @@ function sortFunction(x, y) {
     x = (x[sortby] || '').toString();
     y = (y[sortby] || '').toString();
     return x.localeCompare(y, 'de', {
-        numeric: SORTNUMERIC
+        numeric: SORTNUMERIC,
     });
 }
 function sort(unSortedList) {
-    if (sortby == '')
+    if (sortby === '')
         return unSortedList;
     console.log(`sorting by ${sortby}`);
     if (!(sortby in unSortedList[0])) {
@@ -861,7 +863,7 @@ function initloc() {
         $("#loc-dropdown-children").fadeToggle(300);
     });
     for (let languageName in languages) {
-        var child = $("<div></div>");
+        let child = $("<div></div>");
         child.attr("id", `loc-dropdown-child-${languageName}`);
         child.css("background-image", `url(/images/${languageName}.svg)`);
         child.click(function () {
@@ -933,16 +935,16 @@ function getCookie(c_name:string):string {
 }
 */
 function setCookie(c_name, value, exdays) {
-    var exdate = new Date();
+    let exdate = new Date();
     exdate.setDate(exdate.getDate() + exdays);
-    var c_value = escape(value) + (exdays == null ? "" : "; expires=" + exdate.toUTCString());
+    let c_value = escape(value) + (exdays == null ? "" : "; expires=" + exdate.toUTCString());
     document.cookie = c_name + "=" + c_value;
 }
 function getCookie(c_name) {
-    var cookies = document.cookie.split(";");
+    let cookies = document.cookie.split(";");
     for (let cookie of cookies) {
         let [name, value] = cookie.split("=");
-        if (name.trim() == c_name)
+        if (name.trim() === c_name)
             return unescape(value);
     }
     return "";

@@ -117,7 +117,7 @@ import * as bodyParser from "body-parser";
 import colors from "../SHARED/colors.js";
 
 import { inspect } from "../SHARED/misc.js";
-import index from "./routes/index.js";
+import router from "./routes/index.js";
 
 const logger = global.logger;
 
@@ -215,7 +215,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../WEBSERVER/public')));
 
-app.use('/', index);
+app.use('/', router);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

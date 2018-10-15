@@ -9,14 +9,15 @@ const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const handles_js_1 = require("./handles.js");
 //#endregion
+// tslint:disable-next-line:no-empty
 function connect(options, onClose = () => { }) {
     return new Promise((resolve, reject) => {
-        let serverkey = options.host + ":" + options.port;
+        const serverkey = options.host + ":" + options.port;
         logger.log('verbose network', misc_js_1.inspect `trying to connect to server at ${serverkey}`);
-        var socket = new net.Socket();
-        var chunker = new ITelexCom.ChunkPackages();
+        const socket = new net.Socket();
+        const chunker = new ITelexCom.ChunkPackages();
         socket.pipe(chunker);
-        var client = {
+        let client = {
             name: misc_js_1.clientName(),
             connection: socket,
             ipAddress: null,
@@ -48,7 +49,7 @@ function connect(options, onClose = () => { }) {
             socket.end();
         });
         socket.on('error', error => {
-            if (error["code"] != "ECONNRESET") {
+            if (error["code"] !== "ECONNRESET") {
                 logger.log('debug', misc_js_1.inspect `${error}`);
                 logger.log('network', misc_js_1.inspect `server ${client.name} had an error`);
                 misc_js_1.increaseErrorCounter(serverkey, error["code"]);

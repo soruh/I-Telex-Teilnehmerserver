@@ -24,25 +24,25 @@ function updateQueue() {
                         if (servers.length > 0) {
                             serialEachPromise_js_1.default(servers, server => serialEachPromise_js_1.default(changed, (message) => misc_js_1.SqlQuery("SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
                                 .then(function (qentry) {
-                                if (qentry.length == 1) {
+                                if (qentry.length === 1) {
                                     misc_js_1.SqlQuery("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [Math.floor(Date.now() / 1000), server.uid, message.uid])
                                         .then(function () {
-                                        //SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-                                        //.then(function(){
+                                        // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+                                        // .then(function(){
                                         logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
-                                        //})
-                                        //.catch(err=>{logger.log('error', inspect`${err}`)}); 
+                                        // })
+                                        // .catch(err=>{logger.log('error', inspect`${err}`)}); 
                                     })
                                         .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                 }
-                                else if (qentry.length == 0) {
+                                else if (qentry.length === 0) {
                                     misc_js_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)])
                                         .then(function () {
-                                        //SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-                                        //.then(function(){
+                                        // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+                                        // .then(function(){
                                         logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
-                                        //})
-                                        //.catch(err=>{logger.log('error', inspect`${err}`)}); 
+                                        // })
+                                        // .catch(err=>{logger.log('error', inspect`${err}`)}); 
                                     })
                                         .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                 }
@@ -51,11 +51,11 @@ function updateQueue() {
                                     misc_js_1.SqlQuery("DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
                                         .then(() => misc_js_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)]))
                                         .then(() => {
-                                        //SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-                                        //.then(function(){
+                                        // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
+                                        // .then(function(){
                                         logger.log('queue', misc_js_1.inspect `enqueued: message.number`);
-                                        //})
-                                        //.catch(err=>{logger.log('error', inspect`${err}`)}); 
+                                        // })
+                                        // .catch(err=>{logger.log('error', inspect`${err}`)}); 
                                     })
                                         .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                 }
@@ -68,7 +68,7 @@ function updateQueue() {
                             })
                                 .then(() => {
                                 logger.log('queue', misc_js_1.inspect `reset ${changed.length} changed flags.`);
-                                //sendQueue();
+                                // sendQueue();
                                 resolve();
                             })
                                 .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });

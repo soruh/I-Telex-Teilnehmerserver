@@ -24,11 +24,11 @@ const path = require("path");
             "verbose http": "blue",
             "debug": "magenta",
             "silly": "bold",
-        }
+        },
     };
-    let getLoggingLevel = function getLoggingLevel() {
+    let getLoggingLevel = () => {
         if (typeof config_js_1.default.webserverLoggingLevel === "number") {
-            let level = Object.entries(customLevels.levels).find(([, value]) => value == config_js_1.default.webserverLoggingLevel);
+            let level = Object.entries(customLevels.levels).find(([, value]) => value === config_js_1.default.webserverLoggingLevel);
             if (level)
                 return level[0];
         }
@@ -36,13 +36,15 @@ const path = require("path");
             if (customLevels.levels.hasOwnProperty(config_js_1.default.webserverLoggingLevel))
                 return config_js_1.default.webserverLoggingLevel;
         }
+        // tslint:disable:no-console
         console.log("valid logging levels are:");
         console.log(Object.entries(customLevels.levels)
             .map(([key, value]) => `${value}/${key}`)
             .join("\n"));
-        throw "invalid logging level";
+        // tslint:enable:no-console
+        throw new Error("invalid logging level");
     };
-    let resolvePath = function resolvePath(pathToResolve) {
+    let resolvePath = (pathToResolve) => {
         if (path.isAbsolute(pathToResolve))
             return pathToResolve;
         return path.join(path.join(__dirname, "../.."), pathToResolve);
@@ -50,12 +52,12 @@ const path = require("path");
     let transports = [];
     if (config_js_1.default.webserverLog)
         transports.push(new winston.transports.File({
-            filename: resolvePath(config_js_1.default.webserverLog)
+            filename: resolvePath(config_js_1.default.webserverLog),
         }));
     if (config_js_1.default.webserverErrorLog)
         transports.push(new winston.transports.File({
             filename: resolvePath(config_js_1.default.webserverErrorLog),
-            level: 'error'
+            level: 'error',
         }));
     if (config_js_1.default.logWebserverToConsole)
         transports.push(new winston.transports.Console({}));
@@ -85,7 +87,7 @@ const path = require("path");
         levels: customLevels.levels,
         format: winston.format.combine(...formats),
         exitOnError: false,
-        transports //: transports
+        transports,
     });
 }
 const express = require("express");
@@ -94,8 +96,9 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const colors_js_1 = require("../SHARED/colors.js");
 const misc_js_1 = require("../SHARED/misc.js");
+const index_js_1 = require("./routes/index.js");
 const logger = global.logger;
-var app = express();
+let app = express();
 // view engine setup
 app.set('views', path.join(__dirname, '../WEBSERVER/views'));
 app.set('view engine', 'pug');
@@ -106,39 +109,39 @@ app.use(favicon(path.join(__dirname, 'public/images', 'favicon.ico')));
 // app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
 /*
 app.use(morgan(function (tokens, req, res) {
-  if (config.cv(2) || tokens.url(req, res) == "/") {
-    let status = tokens.status(req, res)||"500";
-    let color;
-    switch (+status[0]) {
-      case 1:
-        color = colors.FgYellow;
-        break;
-      case 2:
-        color = colors.FgGreen;
-        break;
-      case 3:
-        color = colors.FgCyan;
-        break;
-      case 4:
-      case 5:
-      default:
-        color = colors.FgRed;
-    }
-    let method = tokens.method(req, res);
-    return [
-      req["_remoteAddress"].padEnd(16),
-      (
-        method == "GET" ?
-        colors.FgGreen:
-        colors.FgCyan
-      )+
-      (<any>method).padEnd(4)+
-      colors.Reset,
+    if (config.cv(2) || tokens.url(req, res) == "/") {
+        let status = tokens.status(req, res)||"500";
+        let color;
+        switch (+status[0]) {
+            case 1:
+                color = colors.FgYellow;
+                break;
+            case 2:
+                color = colors.FgGreen;
+                break;
+            case 3:
+                color = colors.FgCyan;
+                break;
+            case 4:
+            case 5:
+            default:
+                color = colors.FgRed;
+        }
+        let method = tokens.method(req, res);
+        return [
+            req["_remoteAddress"].padEnd(16),
+            (
+                method == "GET" ?
+                colors.FgGreen:
+                colors.FgCyan
+            )+
+            (<any>method).padEnd(4)+
+            colors.Reset,
 
-      color + (<any>status).padEnd(3) + colors.Reset,
-      tokens.url(req, res).replace(/\//g, colors.FgLightBlack + "/" + colors.Reset)
-    ].join(' ');
-  }
+            color + (<any>status).padEnd(3) + colors.Reset,
+            tokens.url(req, res).replace(/\//g, colors.FgLightBlack + "/" + colors.Reset)
+        ].join(' ');
+    }
 }));
 */
 app.use((req, res, next) => {
@@ -161,15 +164,15 @@ app.use((req, res, next) => {
     }
     let message = [
         (req.connection.remoteAddress.replace("::ffff:", "") || "UNKNOWN").padEnd(16),
-        (req.method == "GET" ?
+        (req.method === "GET" ?
             colors_js_1.default.FgGreen :
             colors_js_1.default.FgCyan) +
             req.method.padEnd(4) +
             colors_js_1.default.Reset,
         color + status.padEnd(3) + colors_js_1.default.Reset,
-        req.url.replace(/\//g, colors_js_1.default.FgLightBlack + "/" + colors_js_1.default.Reset)
+        req.url.replace(/\//g, colors_js_1.default.FgLightBlack + "/" + colors_js_1.default.Reset),
     ].join(' ');
-    if (req.url == "/") {
+    if (req.url === "/") {
         logger.log('http', misc_js_1.inspect `${message}`);
     }
     else {
@@ -181,10 +184,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../WEBSERVER/public')));
-app.use('/', require(path.join(__dirname, '../WEBSERVER/routes/index')));
+app.use('/', index_js_1.default);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    var err = new Error('Not Found');
+    let err = new Error('Not Found');
     err["status"] = 404;
     next(err);
 });
