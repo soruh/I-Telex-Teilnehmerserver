@@ -7,7 +7,7 @@ async function download(req, res, next) {
 				res.setHeader('Content-disposition', 'attachment; filename=list.xls');
 				res.setHeader('Content-type', 'application/xls');
 	
-				let data:peerList = await SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1;');
+				let data:peerList = await SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1 and type!=0;');
 				if(data&&data.length>0){
 					let header = Object.keys(data[0]);
 					res.write(header.join('\t')+'\n');
