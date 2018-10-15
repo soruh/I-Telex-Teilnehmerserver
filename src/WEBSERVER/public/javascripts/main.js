@@ -3,8 +3,10 @@ const UNIXTIMEDATE = false;
 const SHOWALLDATEINFO = false;
 const DEFAULTLANGUAGE = "german";
 const SORTNUMERIC = false;
-let english;
-let german;
+// tslint:disable:no-var-keyword
+var english;
+var german;
+// tslint:enable:no-var-keyword
 let global_list = [];
 let pwdcorrect = false;
 let sortby = "";
@@ -42,7 +44,8 @@ $(document).ready(function () {
         });
     });
     $.fn.extend({
-        center: () => {
+        // tslint:disable-next-line:object-literal-shorthand
+        center: function () {
             return this.each(function () {
                 let top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2); // (($(window).height() - $(this).outerHeight()) / 2);
                 let left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);

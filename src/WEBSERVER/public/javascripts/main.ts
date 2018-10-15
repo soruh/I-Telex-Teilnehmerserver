@@ -14,8 +14,10 @@ interface language {
 	};
 }
 
-let english:language;
-let german:language;
+// tslint:disable:no-var-keyword
+var english:language;
+var german:language;
+// tslint:enable:no-var-keyword
 let global_list:list = [];
 let pwdcorrect:boolean = false;
 let sortby:string = "";
@@ -74,7 +76,8 @@ $(document).ready(function() {
 		});
 	});
 	$.fn.extend({
-		center: ()=>{
+		// tslint:disable-next-line:object-literal-shorthand
+		center: function(){
 			return this.each(function() {
 				let top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2); // (($(window).height() - $(this).outerHeight()) / 2);
 				let left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
