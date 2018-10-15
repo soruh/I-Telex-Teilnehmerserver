@@ -9,7 +9,7 @@ const PackageNames = {
 	8: "Acknowledge",
 	9: "End_of_List",
 	10: "Peer_search",
-	255: "Error"
+	255: "Error",
 };
 const PackageSizes = {
 	1: 8,
@@ -21,16 +21,16 @@ const PackageSizes = {
 	7: 5,
 	8: 0,
 	9: 0,
-	10: 41
+	10: 41,
 };
 const states = {
 	STANDBY: Symbol("STANDBY"),
 	RESPONDING: Symbol("RESPONDING"),
 	FULLQUERY: Symbol("FULLQUERY"),
-	LOGIN: Symbol("LOGIN")
+	LOGIN: Symbol("LOGIN"),
 };
 export {
 	PackageNames,
 	PackageSizes,
 	states
-}
+};

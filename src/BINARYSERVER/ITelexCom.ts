@@ -15,40 +15,10 @@ import { Transform } from "stream";
 
 
 Buffer.prototype.readNullTermString =  function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length):string {
-    let firstZero = this.indexOf(0, start);
-    let stop = firstZero >= start && firstZero <= end ? firstZero : end;
-    return this.toString(encoding, start, stop);
+	let firstZero = this.indexOf(0, start);
+	let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+	return this.toString(encoding, start, stop);
 };
-
-// function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
-// 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+x.toString(16));
-// 	if(from in array&&length>0){
-// 		array[from] = "\x1b[046m"+"\x1b[030m"+array[from];
-// 		array[from+length-1] += "\x1b[000m";
-// 	}	
-// 	return "<Buffer "+array.join(" ")+">\x1b[000m"
-// }
-// function explainData(data: Buffer): string {
-// 	let str = "<Buffer";
-// 	var type: number;
-// 	var datalength: number;
-// 	for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
-// 		type = +data[typepos];
-// 		datalength = +data[typepos + 1];
-// 		let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
-
-// 		array = array.map((value, index) =>
-// 			index == 0 ?
-// 			"\x1b[036m" + value + "\x1b[000m" :
-// 			index == 1 ?
-// 			"\x1b[032m" + value + "\x1b[000m" :
-// 			"\x1b[000m" + value + "\x1b[000m"
-// 		);
-// 		str += " " + array.join(" ");
-// 	}
-// 	str += ">";
-// 	return str;
-// }
 
 function inspectBuffer(buffer: Buffer): string {
 	return Array.from(buffer).map(x => x.toString(16).padStart(2, "0")).join(" ");
@@ -153,94 +123,94 @@ type PackageData_decoded =
 
 
 interface Package_decoded_1 {
-	type: 1,
-		datalength ? : 8,
-		data: PackageData_decoded_1
+	type: 1;
+	datalength ? : 8;
+	data: PackageData_decoded_1;
 }
 interface Package_decoded_2 {
-	type: 2,
-		datalength ? : 4,
-		data: PackageData_decoded_2
+	type: 2;
+	datalength ? : 4;
+	data: PackageData_decoded_2;
 }
 interface Package_decoded_3 {
-	type: 3,
-		datalength ? : 5,
-		data: PackageData_decoded_3
+	type: 3;
+	datalength ? : 5;
+	data: PackageData_decoded_3;
 }
 interface Package_decoded_4 {
-	type: 4,
-		datalength ? : 0,
-		data ? : PackageData_decoded_4
+	type: 4;
+	datalength ? : 0;
+	data ? : PackageData_decoded_4;
 }
 interface Package_decoded_5 {
-	type: 5,
-		datalength ? : 100,
-		data: PackageData_decoded_5
+	type: 5;
+	datalength ? : 100;
+	data: PackageData_decoded_5;
 }
 interface Package_decoded_6 {
-	type: 6,
-		datalength ? : 5,
-		data: PackageData_decoded_6
+	type: 6;
+	datalength ? : 5;
+	data: PackageData_decoded_6;
 }
 interface Package_decoded_7 {
-	type: 7,
-		datalength ? : 5,
-		data: PackageData_decoded_7
+	type: 7;
+	datalength ? : 5;
+	data: PackageData_decoded_7;
 }
 interface Package_decoded_8 {
-	type: 8,
-		datalength ? : 0,
-		data ? : PackageData_decoded_8
+	type: 8;
+	datalength ? : 0;
+	data ? : PackageData_decoded_8;
 }
 interface Package_decoded_9 {
-	type: 9,
-		datalength ? : 0,
-		data ? : PackageData_decoded_9
+	type: 9;
+	datalength ? : 0;
+	data ? : PackageData_decoded_9;
 }
 interface Package_decoded_10 {
-	type: 10,
-		datalength ? : 41,
-		data: PackageData_decoded_10
+	type: 10;
+	datalength ? : 41;
+	data: PackageData_decoded_10;
 }
 interface Package_decoded_255 {
-	type: 255,
-	datalength ? : number,
-	data: PackageData_decoded_255
+	type: 255;
+	datalength ? : number;
+	data: PackageData_decoded_255;
 }
 interface PackageData_decoded_1 {
-	number: number,
-		pin: string,
-		port: string
+	number: number;
+		pin: string;
+		port: string;
 }
 interface PackageData_decoded_2 {
-	ipaddress: string,
+	ipaddress: string;
 }
 interface PackageData_decoded_3 {
-	number: number,
-		version: number,
+	number: number;
+		version: number;
 }
 interface PackageData_decoded_4 {
 
 }
 interface PackageData_decoded_5 {
-	number: number,
-		name: string,
-		disabled: number,
-		type: number,
-		hostname: string,
-		ipaddress: string,
-		port: string,
-		extension: string,
-		pin: string,
-		timestamp: number,
+	number: number;
+		name: string;
+		disabled: number;
+		type: number;
+		hostname: string;
+		ipaddress: string;
+		port: string;
+		extension: string;
+		pin: string;
+		timestamp: number;
 }
 interface PackageData_decoded_6 {
-	version: number,
-		serverpin: number,
+	version: number;
+		serverpin: number;
 }
 interface PackageData_decoded_7 {
-	version: number,
-		serverpin: number,
+	version: number;
+		serverpin: number;
 }
 interface PackageData_decoded_8 {
 
@@ -249,29 +219,29 @@ interface PackageData_decoded_9 {
 
 }
 interface PackageData_decoded_10 {
-	version: number,
-		pattern: string
+	version: number;
+		pattern: string;
 }
 interface PackageData_decoded_255 {
-	message: string
+	message: string;
 }
 
 
 type PackageData_encoded = number[] | Buffer;
 
 interface Package_encoded {
-	data ? : PackageData_encoded
+	data ? : PackageData_encoded;
 	type ? : number;
 	datalength ? : number;
 }
 
 interface rawPackage {
-	type: number,
-		datalength: number,
-		data: PackageData_encoded
+	type: number;
+		datalength: number;
+		data: PackageData_encoded;
 }
 
-interface peer {
+interface Peer {
 	uid: number;
 	number: number;
 	name: string;
@@ -285,7 +255,7 @@ interface peer {
 	timestamp: number;
 	changed: number;
 }
-type peerList = peer[];
+type peerList = Peer[];
 
 interface server {
 	uid: number;
@@ -305,34 +275,34 @@ type queue = queueEntry[];
 //#endregion
 
 class ChunkPackages extends Transform {
-    public buffer = Buffer.alloc(0);
-    constructor(options?){
-        super(options);
-    }
-    _transform(chunk:Buffer, encoding:string, callback:(err?:Error, data?:Buffer)=>void) {
+	public buffer = Buffer.alloc(0);
+	constructor(options?){
+		super(options);
+	}
+	public _transform(chunk:Buffer, encoding:string, callback:(err?:Error, data?:Buffer)=>void) {
 		this.buffer = Buffer.concat([this.buffer, chunk]);
 		
 		let packageLength = (this.buffer[1]+2)||Infinity;
-        while(packageLength <= this.buffer.length){
-            this.push(this.buffer.slice(0,packageLength));
-            this.buffer = this.buffer.slice(packageLength);
-            packageLength = (this.buffer[1]+2)||Infinity;
-        }
-        callback();
-    }
+		while(packageLength <= this.buffer.length){
+			this.push(this.buffer.slice(0,packageLength));
+			this.buffer = this.buffer.slice(packageLength);
+			packageLength = (this.buffer[1]+2)||Infinity;
+		}
+		callback();
+	}
 }
 
 function encPackage(pkg: Package_decoded): Buffer {
 	logger.log('iTelexCom', inspect`encoding package : ${pkg}`);
 	
 	if (pkg.datalength == null){
-		if (pkg.type == 255){
+		if (pkg.type === 255){
 			if(pkg.data.message!=null) pkg.datalength = pkg.data.message.length;
 		}else{
-			pkg.datalength = <any>constants.PackageSizes[pkg.type];
+			pkg.datalength = constants.PackageSizes[pkg.type] as any;
 		}
 	}
-	var buffer: PackageData_encoded = Buffer.alloc(pkg.datalength + 2);
+	let buffer: PackageData_encoded = Buffer.alloc(pkg.datalength + 2);
 
 	buffer[0] = pkg.type;
 	buffer[1] = pkg.datalength;
@@ -347,7 +317,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			{
 				let normalizedIp = normalizeIp(pkg.data.ipaddress);
 				if(normalizedIp&&normalizedIp.family === 4){
-					ip.toBuffer(normalizedIp.address, (<any>buffer), 2);
+					ip.toBuffer(normalizedIp.address, (buffer as any), 2);
 				}
 			}
 			break;
@@ -364,11 +334,11 @@ function encPackage(pkg: Package_decoded): Buffer {
 			let ext = 0;
 			if (!pkg.data.extension) {
 				ext = 0;
-			} else if (pkg.data.extension == "0") {
+			} else if (pkg.data.extension === "0") {
 				ext = 110;
-			} else if (pkg.data.extension == "00") {
+			} else if (pkg.data.extension === "00") {
 				ext = 100;
-			} else if (pkg.data.extension.toString().length == 1) {
+			} else if (pkg.data.extension.toString().length === 1) {
 				ext = parseInt(pkg.data.extension) + 100;
 			} else {
 				ext = parseInt(pkg.data.extension);
@@ -383,7 +353,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			{
 				let normalizedIp = normalizeIp(pkg.data.ipaddress);
 				if(normalizedIp&&normalizedIp.family === 4){
-					ip.toBuffer(normalizedIp.address, (<any>buffer), 89);
+					ip.toBuffer(normalizedIp.address, (buffer as any), 89);
 				}
 			}
 
@@ -419,9 +389,9 @@ function encPackage(pkg: Package_decoded): Buffer {
 
 function decPackage(buffer: Buffer): Package_decoded {
 	let pkg: Package_decoded = {
-		type: < any > buffer[0],
-		datalength: < any > buffer[1],
-		data: null
+		type: buffer[0] as any,
+		datalength: buffer[1] as any,
+		data: null,
 	};
 	logger.log('iTelexCom', inspect`decoding package: ${(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
 	switch (pkg.type) {
@@ -429,20 +399,20 @@ function decPackage(buffer: Buffer): Package_decoded {
 			pkg.data = {
 				number: buffer.readUIntLE(2, 4),
 				pin: buffer.readUIntLE(6, 2).toString(),
-				port: buffer.readUIntLE(8, 2).toString()
+				port: buffer.readUIntLE(8, 2).toString(),
 			};
 			break;
 		case 2:
 			pkg.data = {
-				ipaddress: ip.toString(buffer, 2, 4)
+				ipaddress: ip.toString(buffer, 2, 4),
 			};
-			if (pkg.data.ipaddress == "0.0.0.0") pkg.data.ipaddress = "";
+			if (pkg.data.ipaddress === "0.0.0.0") pkg.data.ipaddress = "";
 			break;
 		case 3:
 			pkg.data = {
 				number: buffer.readUIntLE(2, 4),
-				version: buffer.slice(6, 7).length > 0 ? buffer.readUIntLE(6, 1) : 1 //some clients don't provide a version
-				//TODO: change package length accordingly
+				version: buffer.slice(6, 7).length > 0 ? buffer.readUIntLE(6, 1) : 1, // some clients don't provide a version
+				// TODO: change package length accordingly
 			};
 			break;
 		case 4:
@@ -465,25 +435,25 @@ function decPackage(buffer: Buffer): Package_decoded {
 			pkg.data = {
 				number: buffer.readUIntLE(2, 4),
 				name: buffer.readNullTermString("utf8", 6, 46),
-				disabled: (flags & 2) == 2 ? 1 : 0,
+				disabled: (flags & 2) === 2 ? 1 : 0,
 				type: buffer.readUIntLE(48, 1),
 				hostname: buffer.readNullTermString("utf8", 49, 89),
 				ipaddress: ip.toString(buffer, 89, 4),
 				port: buffer.readUIntLE(93, 2).toString(),
 				pin: buffer.readUIntLE(96, 2).toString(),
 				timestamp: buffer.readUIntLE(98, 4) - 2208988800,
-				extension: null
+				extension: null,
 			};
-			if (pkg.data.ipaddress == "0.0.0.0") pkg.data.ipaddress = "";
-			if (pkg.data.hostname == "") pkg.data.hostname = "";
+			if (pkg.data.ipaddress === "0.0.0.0") pkg.data.ipaddress = "";
+			if (pkg.data.hostname === "") pkg.data.hostname = "";
 
-			//TODO: extract into function
+			// TODO: extract into function
 			let extension: number = buffer.readUIntLE(95, 1);
-			if (extension == 0) {
+			if (extension === 0) {
 				pkg.data.extension = null;
-			} else if (extension == 110) {
+			} else if (extension === 110) {
 				pkg.data.extension = "0";
-			} else if (extension == 100) {
+			} else if (extension === 100) {
 				pkg.data.extension = "00";
 			} else if (extension > 110) {
 				pkg.data.extension = null;
@@ -499,13 +469,13 @@ function decPackage(buffer: Buffer): Package_decoded {
 		case 6:
 			pkg.data = {
 				version: buffer.readUIntLE(2, 1),
-				serverpin: buffer.readUIntLE(3, 4)
+				serverpin: buffer.readUIntLE(3, 4),
 			};
 			break;
 		case 7:
 			pkg.data = {
 				version: buffer.readUIntLE(2, 1),
-				serverpin: buffer.readUIntLE(3, 4)
+				serverpin: buffer.readUIntLE(3, 4),
 			};
 			break;
 		case 8:
@@ -517,7 +487,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 		case 10:
 			pkg.data = {
 				version: buffer.readUIntLE(2, 1),
-				pattern: buffer.readNullTermString("utf8", 3, 43)
+				pattern: buffer.readNullTermString("utf8", 3, 43),
 			};
 			break;
 		case 255:
@@ -526,35 +496,10 @@ function decPackage(buffer: Buffer): Package_decoded {
 			};
 			break;
 		default:
-			logger.log('warning', inspect`recieved a package of invalid/unsupported type: ${(<any>pkg).type}`);
+			logger.log('warning', inspect`recieved a package of invalid/unsupported type: ${(pkg as any).type}`);
 			return null;
 	}
 	return pkg;
-}
-
-function decPackages(buffer: number[] | Buffer): Package_decoded[] {
-	if (!(buffer instanceof Buffer)) buffer = Buffer.from(buffer);
-	logger.log('iTelexCom', inspect`decoding data: ${buffer}`);
-	var out: Package_decoded[] = [];
-
-	for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
-		var type: number = +buffer[typepos];
-		var datalength: number = +buffer[typepos + 1];
-
-		if (type in constants.PackageSizes && constants.PackageSizes[type] != datalength) {
-			logger.log('warning', inspect`size missmatch: ${constants.PackageSizes[type]} != ${datalength}`);
-			if (config.allowInvalidPackageSizes) {
-				logger.log('warning', inspect`using package of invalid size!`);
-			} else {
-				logger.log('debug', inspect`ignoring package, because it is of invalid size!`);
-				continue;
-			}
-		}
-		let pkg = decPackage(buffer.slice(typepos, typepos + datalength + 2));
-		if (pkg) out.push(pkg);
-	}
-	logger.log('iTelexCom', inspect`decoded: ${out}`);
-	return out;
 }
 
 
@@ -569,12 +514,11 @@ export {
 	ChunkPackages,
 	decPackage,
 	encPackage,
-	decPackages,
 
 	explainPackage,
 	//#endregion
 	//#region interfaces
-	peer,
+	Peer,
 	peerList,
 	serverList,
 	server,
@@ -608,5 +552,5 @@ export {
 	Package_decoded_10,
 	Package_decoded_255,
 	//#endregion
-}
+};
 //#endregion

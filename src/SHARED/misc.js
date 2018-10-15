@@ -31,7 +31,7 @@ function isAnyError(error) {
     return false;
 }
 function inspect(substrings, ...values) {
-    var substringArray = Array.from(substrings).map(substring => textColor + substring + colors_js_1.default.Reset);
+    let substringArray = Array.from(substrings).map(substring => textColor + substring + colors_js_1.default.Reset);
     values = values.map(value => {
         if (typeof value === "string")
             return stringColor + value + colors_js_1.default.Reset;
@@ -42,7 +42,7 @@ function inspect(substrings, ...values) {
             inspected = inspected.replace(/\u0001b\[39m/g, colors_js_1.default.Reset);
         return inspected;
     });
-    var combined = [];
+    let combined = [];
     while (values.length + substringArray.length > 0) {
         if (substringArray.length > 0)
             combined.push(substringArray.shift());
@@ -58,7 +58,7 @@ function getTimezone(date) {
     return `UTC${(offset < 0 ? "" : "+")}${offsetStr}`;
 }
 exports.getTimezone = getTimezone;
-var errorCounters = {};
+let errorCounters = {};
 exports.errorCounters = errorCounters;
 function increaseErrorCounter(serverkey, code) {
     if (errorCounters.hasOwnProperty(serverkey)) {
@@ -67,28 +67,29 @@ function increaseErrorCounter(serverkey, code) {
     else {
         errorCounters[serverkey] = 1;
     }
-    var warn = config_js_1.default.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
-    var counterColor = warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan;
+    const warn = config_js_1.default.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
+    const counterColor = warn ? colors_js_1.default.FgRed : colors_js_1.default.FgCyan;
     logger.log('warning', inspect `increased errorCounter for server ${serverkey} to ${counterColor + errorCounters[serverkey] + colors_js_1.default.Reset}`);
-    if (warn)
+    if (warn) {
         sendEmail("ServerError", {
-            "host": serverkey.split(":")[0],
-            "port": serverkey.split(":")[1],
-            "errorCounter": errorCounters[serverkey].toString(),
-            "lastError": code,
-            "date": getTimestamp(),
-            "timeZone": getTimezone(new Date())
+            host: serverkey.split(":")[0],
+            port: serverkey.split(":")[1],
+            errorCounter: errorCounters[serverkey].toString(),
+            lastError: code,
+            date: getTimestamp(),
+            timeZone: getTimezone(new Date()),
         });
+    }
 }
 exports.increaseErrorCounter = increaseErrorCounter;
 function resetErrorCounter(serverkey) {
     if (errorCounters.hasOwnProperty(serverkey)) {
         sendEmail("ServerErrorOver", {
-            "host": serverkey.split(":")[0],
-            "port": serverkey.split(":")[1],
-            "errorCounter": errorCounters[serverkey].toString(),
-            "date": getTimestamp(),
-            "timeZone": getTimezone(new Date())
+            host: serverkey.split(":")[0],
+            port: serverkey.split(":")[1],
+            errorCounter: errorCounters[serverkey].toString(),
+            date: getTimestamp(),
+            timeZone: getTimezone(new Date()),
         });
         logger.log('debug', inspect `reset error counter for: ${serverkey}. Counter was at: ${errorCounters[serverkey]}`);
         delete errorCounters[serverkey];
@@ -173,12 +174,12 @@ function sendEmail(messageName, values) {
                 to: config_js_1.default.eMail.to,
                 subject: message.subject,
                 text: "",
-                html: ""
+                html: "",
             };
             let type = message.html ? "html" : message.text ? "text" : null;
             // if(type){
-            //	 mailOptions[type] = message[type];
-            //	 for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
+            //     mailOptions[type] = message[type];
+            //     for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
             // }
             if (type) {
                 mailOptions[type] = message[type].replace(/\[([^\]]*)\]/g, (match, key) => values[key] || "NULL");
@@ -218,7 +219,7 @@ let clientName;
 exports.clientName = clientName;
 if (config_js_1.default.scientistNames) {
     const names = [
-        //mathematicians
+        // mathematicians
         "Isaac Newton",
         "Archimedes",
         "Carl F. Gauss",
@@ -318,7 +319,7 @@ if (config_js_1.default.scientistNames) {
         "Adrien M. Legendre",
         "Pappus",
         "Thales",
-        //pyhsicists
+        // pyhsicists
         "Stephen Hawking",
         "Albert Einstein",
         "Nikola Tesla",
@@ -419,11 +420,11 @@ if (config_js_1.default.scientistNames) {
         "Franklin Diaz",
         "Hideki Yukawa",
     ];
-    let randomName = function randomName() {
+    let randomName = function () {
         return names[Math.floor(Math.random() * names.length)];
     };
     let lastnames = [];
-    exports.clientName = clientName = function clientName() {
+    exports.clientName = clientName = function () {
         let name = randomName();
         while (lastnames.indexOf(name) > -1)
             name = randomName();
@@ -433,7 +434,7 @@ if (config_js_1.default.scientistNames) {
     };
 }
 else {
-    exports.clientName = clientName = function clientName() {
+    exports.clientName = clientName = function () {
         return new Date().toJSON();
     };
 }

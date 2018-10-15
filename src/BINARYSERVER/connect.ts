@@ -12,24 +12,25 @@ import { handlePackage } from "./handles.js";
 
 
 
+// tslint:disable-next-line:no-empty
 function connect(options:{host: string, port: number}, onClose=()=>{}): Promise < Client > {
 	return new Promise((resolve, reject) => {
-		let serverkey = options.host + ":" + options.port;
+		const serverkey = options.host + ":" + options.port;
 		logger.log('verbose network', inspect`trying to connect to server at ${serverkey}`);
 
 
-		var socket = new net.Socket();
-		var chunker = new ITelexCom.ChunkPackages();
+		const socket = new net.Socket();
+		const chunker = new ITelexCom.ChunkPackages();
 		socket.pipe(chunker);
 		
-		var client: Client = {
+		let client: Client = {
 			name: clientName(),
 			connection: socket,
 			ipAddress: null,
 			ipFamily: null,
 			state: constants.states.STANDBY,
 			writebuffer: [],
-			sendPackage:sendPackage,
+			sendPackage,
 		};
 		chunker.on('data', (pkg: Buffer) => {
 			if(client){
@@ -37,7 +38,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 				logger.log('verbose network', inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
 
 				handlePackage(ITelexCom.decPackage(pkg), client)
-				.catch(err=>{logger.log('error', inspect`${err}`)});
+				.catch(err=>{logger.log('error', inspect`${err}`);});
 			}
 		});
 		socket.on('close', () => {
@@ -54,7 +55,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 			socket.end();
 		});
 		socket.on('error', error => {
-			if (error["code"] != "ECONNRESET") {
+			if (error["code"] !== "ECONNRESET") {
 				logger.log('debug', inspect`${error}`);
 
 				logger.log('network', inspect`server ${client.name} had an error`);

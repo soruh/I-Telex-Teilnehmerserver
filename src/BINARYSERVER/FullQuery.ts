@@ -20,7 +20,7 @@ function getFullQuery() {
 		logger.log('debug', inspect`getting FullQuery`);
 		SqlQuery("SELECT  * FROM servers;")
 		.then((servers: ITelexCom.serverList) => {
-			if (servers.length == 0) {
+			if (servers.length === 0) {
 				logger.log('warning', inspect`No configured servers -> aborting FullQuery`);
 				return void resolve();
 			}
@@ -32,11 +32,11 @@ function getFullQuery() {
 			// }
 
 			if (config.fullQueryServer) servers = servers.filter(server =>
-				server.port == config.fullQueryServer.split(":")[1] &&
-				server.addresse == config.fullQueryServer.split(":")[0]);
+				server.port === config.fullQueryServer.split(":")[1] &&
+				server.addresse === config.fullQueryServer.split(":")[0]);
 
 
-			return serialEachPromise(servers, server => new Promise((resolveLoop, reject) => {
+			return serialEachPromise(servers, server => new Promise(resolveLoop => {
 				connect({host: server.addresse, port: +server.port}, resolveLoop)
 				.then(client => {
 					let request: ITelexCom.Package_decoded_10 | ITelexCom.Package_decoded_6;
@@ -45,16 +45,16 @@ function getFullQuery() {
 							type: 10,
 							data: {
 								pattern: '',
-								version: 1
-							}
+								version: 1,
+							},
 						};
 					} else {
 						request = {
 							type: 6,
 							data: {
 								serverpin: config.serverPin,
-								version: 1
-							}
+								version: 1,
+							},
 						};
 					}
 					client.sendPackage(request, () => {
@@ -62,12 +62,12 @@ function getFullQuery() {
 						client.cb = resolveLoop;
 					});
 				})
-				.catch(err=>{logger.log('error', inspect`${err}`)})
-			}))
+				.catch(err=>{logger.log('error', inspect`${err}`);});
+			}));
 		})
 		.then(() => resolve())
-		.catch(err=>{logger.log('error', inspect`${err}`)});
-		//}
+		.catch(err=>{logger.log('error', inspect`${err}`);});
+		// }
 	});
 }
 

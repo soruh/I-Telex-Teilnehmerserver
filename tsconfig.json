@@ -6,7 +6,7 @@
         "target": "ES6",
         //"OutDir": "compiled/",
         //"allowJs": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
     },
     "include": [
         "src/",

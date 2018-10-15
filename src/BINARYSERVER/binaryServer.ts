@@ -13,42 +13,42 @@ import { handlePackage } from './handles.js';
 
 
 
-var binaryServer = net.createServer(function (socket: net.Socket) {
-	var client: Client = {
+let binaryServer = net.createServer(function(socket: net.Socket) {
+	let client: Client = {
 		name: clientName(),
 		connection: socket,
 		ipAddress: null,
 		ipFamily: null,
 		state: constants.states.STANDBY,
 		writebuffer: [],
-		sendPackage:sendPackage,
+		sendPackage,
 	};
 	
-	var asciiListener = (data: Buffer): void => {
+	let asciiListener = (data: Buffer): void => {
 		if(client){
 			let command = String.fromCharCode(data[0]);
-			if(command=='q'||command=='c'){
+			if(command==='q'||command==='c'){
 				logger.log('network', inspect`serving ascii request of type ${command}`);
 				logger.log('verbose network', inspect`request: ${util.inspect(data.toString())}`);
-				if (command == 'q') {
+				if (command === 'q') {
 					asciiLookup(data, client);
-				} else if (command == 'c') {
+				} else if (command === 'c') {
 					checkIp(data, client);
 				}
 			}
 		}
-	}
-	var binaryListener = (pkg: Buffer): void => {
+	};
+	let binaryListener = (pkg: Buffer): void => {
 		if(client){
 			logger.log('verbose network', inspect`recieved package: ${pkg}`);
 			logger.log('verbose network', inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
 			
 			handlePackage(ITelexCom.decPackage(pkg), client)
-			.catch(err=>{logger.log('error', inspect`${err}`)}); 
+			.catch(err=>{logger.log('error', inspect`${err}`);}); 
 		}
-	}
+	};
 	
-	socket.on('close', function (): void {
+	socket.on('close', function(): void {
 		if (client) {
 			if (client.newEntries != null) logger.log('network', inspect`recieved ${client.newEntries} new entries`);
 			logger.log('network', inspect`client ${client.name} disconnected!`);
@@ -56,16 +56,16 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 			// client = null;
 		}
 	});
-	socket.on('timeout', function (): void {
+	socket.on('timeout', function(): void {
 		logger.log('network', inspect`client ${client.name} timed out`);
 		socket.end();
 	});
-	socket.on('error', function (err: Error): void {
+	socket.on('error', function(err: Error): void {
 		logger.log('error', inspect`${err}`);
 		socket.end();
 	});
 
-	var chunker = new ITelexCom.ChunkPackages();
+	let chunker = new ITelexCom.ChunkPackages();
 
 	socket.once('data', asciiListener);
 	socket.pipe(chunker);
@@ -84,7 +84,7 @@ var binaryServer = net.createServer(function (socket: net.Socket) {
 			client.connection.destroy();
 		}
 	}
-	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
+	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); // .replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', inspect`server error: ${err}`));
 

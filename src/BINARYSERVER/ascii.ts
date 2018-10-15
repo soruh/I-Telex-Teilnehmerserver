@@ -5,26 +5,26 @@ import * as util from 'util';
 import * as dns from 'dns';
 import * as ip from 'ip';
 import { SqlQuery, inspect, Client } from '../SHARED/misc';
-import { peerList, peer } from './ITelexCom';
+import { peerList, Peer } from './ITelexCom';
 import serialEachPromise from '../SHARED/serialEachPromise';
 
 function asciiLookup(data: number[] | Buffer, client: Client): void {
-	var number: string = "";
+	let number: string = "";
 	for (let byte of data) {
 		let char = String.fromCharCode(byte);
 		if (/([0-9])/.test(char)) number += char;
 	}
-	if (number != ""&&(!isNaN(parseInt(number)))) {
+	if (number !== ""&&(!isNaN(parseInt(number)))) {
 		logger.log('debug', inspect`starting lookup for: ${number}`);
 		SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
-		.then(function (result: peerList) {
-			if (!result || result.length == 0) {
+		.then(function(result: peerList) {
+			if (!result || result.length === 0) {
 				let send: string = "";
 				send += "fail\r\n";
 				send += number + "\r\n";
 				send += "unknown\r\n";
 				send += "+++\r\n";
-				client.connection.end(send, function () {
+				client.connection.end(send, function() {
 					logger.log('debug', inspect`Entry not found/visible`);
 					logger.log('debug', inspect`sent:\n${send}`);
 				});
@@ -49,14 +49,14 @@ function asciiLookup(data: number[] | Buffer, client: Client): void {
 				send += res.port + "\r\n";
 				send += (res.extension || "-") + "\r\n";
 				send += "+++\r\n";
-				client.connection.end(send, function () {
+				client.connection.end(send, function() {
 					logger.log('debug', inspect`Entry found`);
 					logger.log('debug', inspect`sent:\n${send}`);
 
 				});
 			}
 		})
-		.catch(err=>{logger.log('error', inspect`${err}`)}); 
+		.catch(err=>{logger.log('error', inspect`${err}`);}); 
 	} else {
 		client.connection.end();
 	}
@@ -64,7 +64,7 @@ function asciiLookup(data: number[] | Buffer, client: Client): void {
 
 async function checkIp(data: number[] | Buffer, client: Client) {
 	if (config.doDnsLookups) {
-		var arg: string = data.slice(1).toString().split("\n")[0].split("\r")[0];
+		const arg:string = data.slice(1).toString().split("\n")[0].split("\r")[0];
 		logger.log('debug', inspect`checking if belongs to any participant`);
 
 		let ipAddr = "";
@@ -74,7 +74,7 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 			try {
 				let {
 					address,
-					family
+					family,
 				} = await util.promisify(dns.lookup)(arg);
 				ipAddr = address;
 				logger.log('debug', inspect` resolved to ${ipAddr}`);
@@ -88,20 +88,20 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
 			SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
 				.then((peers: peerList) => {
-					var ipPeers: {
-						peer: peer,
+					let ipPeers: Array<{
+						peer: Peer,
 						ipaddress: string
-					}[] = [];
+					}> = [];
 					serialEachPromise(peers, peer =>
 						new Promise((resolve, reject) => {
 							if ((!peer.ipaddress) && peer.hostname) {
 								// logger.log('debug', inspect`hostname: ${peer.hostname}`)
-								dns.lookup(peer.hostname, {}, function (err, address, family) {
+								dns.lookup(peer.hostname, {}, function(err, address, family) {
 									// if (err) logger.log('debug', inspect`${err}`);
 									if (address) {
 										ipPeers.push({
 											peer,
-											ipaddress: address
+											ipaddress: address,
 										});
 										// logger.log('debug', inspect`${peer.hostname} resolved to ${address}`);
 									}
@@ -111,7 +111,7 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 								// logger.log('debug', inspect`ip: ${peer.ipaddress}`);
 								ipPeers.push({
 									peer,
-									ipaddress: peer.ipaddress
+									ipaddress: peer.ipaddress,
 								});
 								resolve();
 							} else {
@@ -128,7 +128,7 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 							client.connection.end("fail\r\n+++\r\n");
 						}
 					})
-					.catch(err=>{logger.log('error', inspect`${err}`)}); 
+					.catch(err=>{logger.log('error', inspect`${err}`);}); 
 				});
 		} else {
 			client.connection.end("error\r\nnot a valid host or ip\r\n");
@@ -139,6 +139,6 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 }
 
 export{
-    asciiLookup,
-    checkIp
-}
+	asciiLookup,
+	checkIp
+};
