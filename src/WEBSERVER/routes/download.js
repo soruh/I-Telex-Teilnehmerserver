@@ -30,7 +30,7 @@ function download(req, res, next) {
                     for (let row of data) {
                         let values = Object.values(row);
                         for (let i in values) {
-                            res.write(values[i].toString());
+                            res.write((values[i] || '').toString());
                             if (+i === values.length - 1) {
                                 res.write('\n');
                             }
