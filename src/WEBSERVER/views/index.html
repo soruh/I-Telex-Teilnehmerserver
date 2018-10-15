@@ -40,8 +40,14 @@
         <ul class="nav navbar-nav navbar-right">
           <li>
             <div id="search-container" class="panel">
-              <input id="search-box" style="display:none;"></input>
-              <button id="search-button" class="glyphicon glyphicon-search btn btn-primary btn-sm"></button>
+              <input id="search-box"></input>
+              <!--style="display:none;"-->
+              <!--<button id="search-button" class="glyphicon glyphicon-search btn btn-primary btn-sm"></button>-->
+            </div>
+          </li>
+          <li>
+            <div id="download-container" class="panel">
+              <button id="download-button" onclick="window.location.href='/download?type=xls'" class="glyphicon glyphicon glyphicon-download-alt btn btn-primary btn-sm"></button>
             </div>
           </li>
           <li>

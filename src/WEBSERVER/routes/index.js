@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql = require("mysql");
 const express = require("express");
@@ -23,38 +31,69 @@ router.get('/', function (req, res, next) {
     res.render('index');
 });
 router.post('/list', function (req, res) {
-    // ll(req.body);
-    res.header("Content-Type", "application/json; charset=utf-8");
-    misc_js_1.SqlQuery("SELECT * FROM teilnehmer")
-        .then((privateList) => {
-        if (privateList === void 0)
-            return void 0;
-        let publicList = privateList
-            .filter(privateEntry => 
-        // filter out private entries if the password is wrong or not set
-        req.body.password === config_js_1.default.webInterfacePassword ||
-            (privateEntry.type != 0 &&
-                privateEntry.disabled === 0))
-            .map(publicEntry => {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (req.body.password === config_js_1.default.webInterfacePassword) {
+            var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,disabled,timestamp FROM teilnehmer";
+        }
+        else {
+            var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,timestamp FROM teilnehmer where type!=0 and disabled=0;";
+        }
+        // ll(req.body);
+        res.header("Content-Type", "application/json; charset=utf-8");
+        try {
+            let data = yield misc_js_1.SqlQuery(query);
+            if (!data)
+                throw ('no data');
+            res.json({
+                successful: true,
+                result: data
+            });
+        }
+        catch (error) {
+            res.json({
+                successful: false,
+                error
+            });
+        }
+        /*
+        SqlQuery("SELECT * FROM teilnehmer")
+        .then((privateList:any[])=>{
+          if (privateList===void 0) return void 0;
+      
+          let publicList =
+          privateList
+          .filter(privateEntry=>
+          // filter out private entries if the password is wrong or not set
+            req.body.password === config.webInterfacePassword||
+            (
+              privateEntry.type != 0 &&
+              privateEntry.disabled === 0
+            )
+          )
+          .map(publicEntry=>{
             //remove private values if the password is wrong or not set
-            if (req.body.password != config_js_1.default.webInterfacePassword) {
-                delete publicEntry.disabled;
+            if(req.body.password != config.webInterfacePassword){
+              delete publicEntry.disabled;
             }
             delete publicEntry.pin; // never send pin
             delete publicEntry.changed; // never send changed
+      
             return publicEntry;
-        });
-        res.json({
+          });
+       
+          res.json({
             successful: true,
             result: publicList
-        });
-    })
-        .catch(err => {
-        logger.log('error', misc_js_1.inspect `${err}`);
-        res.json({
+          });
+        })
+        .catch(err=>{
+          logger.log('error', inspect`${err}`);
+          res.json({
             successful: false,
             message: err
+          })
         });
+        */
     });
 });
 router.post('/edit', function (req, res) {
@@ -231,5 +270,47 @@ router.post('/edit', function (req, res) {
             });
             break;
     }
+});
+router.get('/download', function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (req.query.type) {
+            case "xls":
+                res.setHeader('Content-disposition', 'attachment; filename=list.xls');
+                res.setHeader('Content-type', 'application/xls');
+                let data = yield misc_js_1.SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1;');
+                if (data && data.length > 0) {
+                    let header = Object.keys(data[0]);
+                    for (let i in header) {
+                        res.write(header[i]);
+                        if (+i == header.length - 1) {
+                            res.write('\n');
+                        }
+                        else {
+                            res.write('\t');
+                        }
+                    }
+                    for (let row of data) {
+                        let values = Object.values(row);
+                        for (let i in values) {
+                            res.write(values[i].toString());
+                            if (+i == values.length - 1) {
+                                res.write('\n');
+                            }
+                            else {
+                                res.write('\t');
+                            }
+                        }
+                    }
+                    res.end();
+                }
+                else {
+                    res.end("no data");
+                }
+                break;
+            default:
+                res.end("requested an invalid file type");
+                break;
+        }
+    });
 });
 module.exports = router;

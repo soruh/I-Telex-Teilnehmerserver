@@ -6,6 +6,9 @@ var english = {
   "#refresh-button":{
     title: "refresh"
   },
+  "#download-button":{
+    title: "download"
+  },
   "#table_th_label_number": {
     text: "telex-number"
   },

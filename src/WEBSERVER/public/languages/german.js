@@ -6,6 +6,9 @@ var german = {
   "#refresh-button":{
     title: "Aktualisieren"
   },
+  "#download-button":{
+    title: "Herunterladen"
+  },
   "#table_th_label_number": {
     text: "telex-nummer"
   },

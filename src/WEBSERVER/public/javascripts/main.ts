@@ -144,9 +144,10 @@ $(document).ready(function () {
     $("#refresh-button").click(function () {
         refresh();
     });
-    $("#search-button").on("click", function () {
-        $("#search-box").fadeToggle();
-    });
+    // $("#search-button").on("click", function () {
+    //     $("#search-box").fadeToggle();
+    //     $("#search-box").focus();
+    // });
     $("#login").click(function () {
         showpopup("password_dialog", function () {
             $("#passwordfield").focus();
@@ -849,6 +850,8 @@ function edit(vals, callback) {
     });
 }
 function search(list:list, pattern:string) {
+    if(pattern == "") return list;
+
     console.log(`searching for: '${pattern}'`);
     let result = list
     .filter(row =>{
@@ -869,34 +872,32 @@ function search(list:list, pattern:string) {
     return result;
 }
 function sortFunction(x, y) {
-    return (x[sortby]||"").toString().localeCompare(
-        (y[sortby]||"").toString(),
+    return (x[sortby]||'').toString().localeCompare(
+        (y[sortby]||'').toString(),
         'de',
-        {numeric: SORTNUMERIC}
+        {
+            numeric: SORTNUMERIC
+        }
     );
 }
+
 function sort(unSortedList) {
-    console.log("sorting");
-    
-    if (sortby == "") return unSortedList;
+    if (sortby == '') return unSortedList;
 
-    var isKey = 
-    Object.keys(unSortedList[0])
-    .reduce((accumulator, value, index) => accumulator || value === sortby, false);
+    console.log(`sorting by ${sortby}`);
 
-    if (isKey) {
-        let sortedList = unSortedList.sort(sortFunction);
-        
-        if (reverseSort) {
-            return sortedList.reverse();
-        }
-        else {
-            return sortedList;
-        }
-    }else {
-        console.error(sortby + " is not a collumn name!");
-        sortby = "";
+    if (sortby in unSortedList[0]) {
+        console.error(`${sortby} is not a collumn name!`);
+        sortby = '';
         return unSortedList;
+    }
+
+    let sortedList = unSortedList.sort(sortFunction);
+    
+    if (reverseSort) {
+        return sortedList.reverse();
+    } else {
+        return sortedList;
     }
 }
 function initloc() {

@@ -165,6 +165,7 @@ function encPackage(pkg) {
             break;
         case 5:
             let flags = pkg.data.disabled ? 2 : 0;
+            // TODO:extract into function
             let ext = 0;
             if (!pkg.data.extension) {
                 ext = 0;
@@ -281,6 +282,7 @@ function decPackage(buffer) {
                 pkg.data.ipaddress = "";
             if (pkg.data.hostname == "")
                 pkg.data.hostname = "";
+            //TODO: extract into function
             let extension = buffer.readUIntLE(95, 1);
             if (extension == 0) {
                 pkg.data.extension = null;

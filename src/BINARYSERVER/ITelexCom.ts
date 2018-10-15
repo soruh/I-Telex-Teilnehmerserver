@@ -360,6 +360,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 		case 5:
 			let flags = pkg.data.disabled ? 2 : 0;
 
+			// TODO:extract into function
 			let ext = 0;
 			if (!pkg.data.extension) {
 				ext = 0;
@@ -372,6 +373,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			} else {
 				ext = parseInt(pkg.data.extension);
 			}
+
 			buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
 			buffer.write(pkg.data.name || "", 6, 40);
 			buffer.writeUIntLE(flags || 0, 46, 2);
@@ -475,6 +477,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 			if (pkg.data.ipaddress == "0.0.0.0") pkg.data.ipaddress = "";
 			if (pkg.data.hostname == "") pkg.data.hostname = "";
 
+			//TODO: extract into function
 			let extension: number = buffer.readUIntLE(95, 1);
 			if (extension == 0) {
 				pkg.data.extension = null;
