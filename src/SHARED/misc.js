@@ -8,7 +8,6 @@ const nodemailer = require("nodemailer");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-const constants_js_1 = require("../BINARYSERVER/constants.js");
 // import * as winston from "winston";
 //#endregion
 const textColor = colors_js_1.default.Reset;
@@ -61,7 +60,7 @@ function getTimezone(date) {
 exports.getTimezone = getTimezone;
 var errorCounters = {};
 exports.errorCounters = errorCounters;
-function increaseErrorCounter(serverkey, state, code) {
+function increaseErrorCounter(serverkey, code) {
     if (errorCounters.hasOwnProperty(serverkey)) {
         errorCounters[serverkey]++;
     }
@@ -77,7 +76,6 @@ function increaseErrorCounter(serverkey, state, code) {
             "port": serverkey.split(":")[1],
             "errorCounter": errorCounters[serverkey].toString(),
             "lastError": code,
-            "state": state ? constants_js_1.states[state] : 'NULL',
             "date": getTimestamp(),
             "timeZone": getTimezone(new Date())
         });
@@ -188,7 +186,7 @@ function sendEmail(messageName, values) {
             else {
                 mailOptions.text = "configuration error in config/mailMessages.json";
             }
-            logger.log('debug', inspect `sending email of type ${messageName || "config error"}`);
+            logger.log('network', inspect `sending email of type ${messageName || "config error"}`);
             logger.log('debug', inspect `mail values: ${values}`);
             logger.log('debug', inspect `sending mail:\n${mailOptions}\nto server ${global.transporter.options["host"]}`);
             global.transporter.sendMail(mailOptions, function (error, info) {
@@ -436,8 +434,6 @@ if (config_js_1.default.scientistNames) {
 }
 else {
     exports.clientName = clientName = function clientName() {
-        let date = new Date();
-        let d = date.getTime() + date.getTimezoneOffset() * -60000;
-        return `${((Math.floor(d / 3600000) % 24).toString()).padStart(2, "0")}: ${((Math.floor(d / 60000) % 60).toString()).padStart(2, "0")}: ${((Math.floor(d / 1000) % 60) + "").padStart(2, "0")},${((d % 1000) + "").padStart(3, "0")}`;
+        return new Date().toJSON();
     };
 }

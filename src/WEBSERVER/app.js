@@ -76,7 +76,7 @@ const path = require("path");
     if (!config_js_1.default.disableColors)
         formats.push(winston.format.colorize());
     // formats.push(getLine),
-    let logPadding = config_js_1.default.disableColors ? 7 : 17;
+    let logPadding = config_js_1.default.disableColors ? 12 : 22;
     formats.push(winston.format.printf(info => `${config_js_1.default.logDate ? (info.timestamp.replace("T", " ").slice(0, -1) + " ") : ""}${info.level.padStart(logPadding)}: ${info.message}`));
     // formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
     winston.addColors(customLevels.colors);

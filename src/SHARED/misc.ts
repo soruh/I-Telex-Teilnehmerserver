@@ -66,7 +66,7 @@ var errorCounters: {
 	[index: string]:number;
 } = {};
 
-function increaseErrorCounter(serverkey: string, state:symbol, code: string): void {
+function increaseErrorCounter(serverkey: string, code: string): void {
 	if (errorCounters.hasOwnProperty(serverkey)) {
 		errorCounters[serverkey]++;
 	} else {
@@ -81,7 +81,6 @@ function increaseErrorCounter(serverkey: string, state:symbol, code: string): vo
 			"port": serverkey.split(":")[1],
 			"errorCounter": errorCounters[serverkey].toString(),
 			"lastError": code,
-			"state":state?states[state]:'NULL',
 			"date": getTimestamp(),
 			"timeZone": getTimezone(new Date())
 		});
@@ -188,7 +187,7 @@ function sendEmail(messageName: string, values: {
 			} else {
 				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
-			logger.log('debug', inspect`sending email of type ${messageName||"config error"}`);
+			logger.log('network', inspect`sending email of type ${messageName||"config error"}`);
 			logger.log('debug', inspect`mail values: ${values}`);
 			logger.log('debug', inspect`sending mail:\n${mailOptions}\nto server ${global.transporter.options["host"]}`);
 
@@ -460,9 +459,7 @@ if(config.scientistNames){
 	}
 }else{
 	clientName = function clientName(){
-	  let date = new Date()
-	  let d = date.getTime()+date.getTimezoneOffset()*-60000;
-	  return `${(<any>((Math.floor(d/3600000)%24).toString())).padStart(2,"0")}: ${(<any>((Math.floor(d/60000)%60).toString())).padStart(2,"0")}: ${(<any>((Math.floor(d/1000)%60)+"")).padStart(2,"0")},${(<any>((d%1000)+"")).padStart(3,"0")}`;
+		return new Date().toJSON();
 	}
 }
 

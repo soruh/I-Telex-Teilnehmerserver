@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
-const options = require(__dirname + "/src/SHARED/config.js").default.mySqlConnectionOptions;const async = require("async");
+const options = require(__dirname + "/src/SHARED/config.js").default.mySqlConnectionOptions;
+const async = require("async");
 const mysql = require("mysql");
 
 var SQL = {
@@ -20,7 +21,7 @@ var SQL = {
     tables: {
       queue: 'CREATE TABLE queue ( uid int(11) NOT NULL AUTO_INCREMENT, server int(11) DEFAULT NULL, message int(11) DEFAULT NULL, timestamp double unsigned DEFAULT NULL, PRIMARY KEY (uid), UNIQUE KEY uid_UNIQUE (uid) ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;',
       server: 'CREATE TABLE servers ( uid int(11) NOT NULL AUTO_INCREMENT, addresse tinytext, port tinytext, PRIMARY KEY (uid) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8',
-      teilnehmer: 'CREATE TABLE teilnehmer ( uid int(11) NOT NULL AUTO_INCREMENT, number int(10) NOT NULL, name tinytext CHARACTER SET utf8, type int(8) DEFAULT 0, hostname tinytext CHARACTER SET utf8 DEFAULT "", ipaddress tinytext CHARACTER SET utf8 DEFAULT "", port tinytext CHARACTER SET utf8, extension tinytext CHARACTER SET utf8 DEFAULT "", pin tinytext CHARACTER SET utf8, disabled tinyint(4) DEFAULT 1, timestamp int DEFAULT 0, changed tinyint(4) DEFAULT \'1\', PRIMARY KEY (uid), UNIQUE KEY uid_UNIQUE (uid), UNIQUE KEY number_UNIQUE (number) ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'
+      teilnehmer: 'CREATE TABLE teilnehmer ( uid int(11) NOT NULL AUTO_INCREMENT, number int(10) NOT NULL, name tinytext CHARACTER SET utf8, type int(8) DEFAULT 0, hostname tinytext CHARACTER SET utf8 DEFAULT "", ipaddress tinytext CHARACTER SET utf8 DEFAULT "", port tinytext CHARACTER SET utf8, extension tinytext CHARACTER SET utf8 DEFAULT "", pin tinytext CHARACTER SET utf8, disabled tinyint(4) DEFAULT 1, timestamp int DEFAULT 0, changed tinyint(4) DEFAULT \'1\', PRIMARY KEY (uid), UNIQUE KEY uid_UNIQUE (uid), UNIQUE KEY number_UNIQUE (number) ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8'
       /*,
             deleted: 'CREATE TABLE deleted ( uid int(11) NOT NULL AUTO_INCREMENT, number int(10) NOT NULL, name tinytext CHARACTER SET utf8, type int(8) DEFAULT NULL, hostname tinytext CHARACTER SET utf8, ipaddress tinytext CHARACTER SET utf8, port tinytext CHARACTER SET utf8, extension tinytext CHARACTER SET utf8, pin tinytext CHARACTER SET utf8, disabled tinyint(4) DEFAULT NULL, timestamp tinytext CHARACTER SET utf8, PRIMARY KEY (uid), UNIQUE KEY uid_UNIQUE (uid)) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_danish_ci'*/
     },
@@ -120,19 +121,19 @@ function parseCommands(commands) {
 function create(creates) {
   if (Object.keys(creates).length > 0) {
     async.eachSeries(creates, function (funct, cb) {
-      process.stdout.write("creating: " + funct.toString().split("(")[0].split(" ")[1] + " ...");
+      process.stdout.write("creating: " + funct.name + " ...");
       funct(cb);
     }, function () {
       var toCreate = "";
       if (Object.keys(existing).length > 0) {
-        for (let k of Object.keys(creates)) {
-          let ex = false;
+        for (let k in creates) {
+          let exists = false;
           for (let i in existing) {
-            if (existing[i] === creates[k].toString().split(" ")[1].split("(")[0]) ex = true;
+            if (existing[i] === creates[k].name) exists = true;
           }
-          if (ex) {
+          if (exists) {
             if (toCreate.length > 0) toCreate += ", ";
-            toCreate += creates[k].toString().split(" ")[1].split("(")[0];
+            toCreate += creates[k].name;
           }
         }
         if (toCreate.length > 0) console.log("created: " + toCreate);

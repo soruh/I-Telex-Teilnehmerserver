@@ -27,9 +27,31 @@ router.get('/', function (req, res, next) {
   res.render('index');
 });
 
-router.post('/list', function (req, res) {
+router.post('/list', async function (req, res) {
+  if(req.body.password === config.webInterfacePassword){
+    var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,disabled,timestamp FROM teilnehmer";
+  }else{
+    var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,timestamp FROM teilnehmer where type!=0 and disabled=0;";
+  }
   // ll(req.body);
   res.header("Content-Type", "application/json; charset=utf-8");
+  
+  try{
+    let data = await SqlQuery(query);
+    
+    if(!data) throw('no data');
+    res.json({
+      successful: true,
+      result: data
+    });
+  }catch(error){
+    res.json({
+      successful: false,
+      error
+    });
+  }
+  
+  /*
   SqlQuery("SELECT * FROM teilnehmer")
   .then((privateList:any[])=>{
     if (privateList===void 0) return void 0;
@@ -67,6 +89,7 @@ router.post('/list', function (req, res) {
       message: err
     })
   });
+  */
 });
 
 router.post('/edit', function (req, res) {
@@ -243,6 +266,47 @@ router.post('/edit', function (req, res) {
           text: "unknown typekey"
         }
       });
+      break;
+  }
+});
+
+router.get('/download', async function (req, res, next) {
+  switch(req.query.type){
+    case "xls":
+      res.setHeader('Content-disposition', 'attachment; filename=list.xls');
+      res.setHeader('Content-type', 'application/xls');
+
+      let data = await SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1;');
+      if(data&&data.length>0){
+        let header = Object.keys(data[0]);
+        for(let i in header){
+          res.write(header[i]);
+          if(+i == header.length-1){
+            res.write('\n');
+          }else{
+            res.write('\t');
+          }
+        }
+
+        for(let row of data){
+          let values = Object.values(row);
+          for(let i in values){
+            res.write(values[i].toString());
+            if(+i == values.length-1){
+              res.write('\n');
+            }else{
+              res.write('\t');
+            }
+          }
+        }
+
+        res.end();
+      }else{
+        res.end("no data");  
+      }
+      break;
+    default:
+      res.end("requested an invalid file type");
       break;
   }
 });

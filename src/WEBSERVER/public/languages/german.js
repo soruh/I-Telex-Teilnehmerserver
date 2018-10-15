@@ -6,29 +6,35 @@ var german = {
   "#refresh-button":{
     title: "Aktualisieren"
   },
+  "#download-button":{
+    title: "Herunterladen"
+  },
   "#table_th_label_number": {
-    text: "telex-nummer"
+    text: "Telex-nummer"
   },
   "#table_th_label_name": {
-    text: "name"
+    text: "Name"
   },
   "#table_th_label_type": {
-    text: "typ"
+    text: "Typ"
   },
-  "#table_th_label_hostname": {
-    text: "hostname"
+  "#table_th_label_address": {
+    text: "Addresse"
   },
-  "#table_th_label_ipaddress": {
-    text: "ipaddresse"
-  },
+  // "#table_th_label_hostname": {
+  //   text: "hostname"
+  // },
+  // "#table_th_label_ipaddress": {
+  //   text: "ipaddresse"
+  // },
   "#table_th_label_port": {
-    text: "port"
+    text: "Port"
   },
   "#table_th_label_extension": {
-    text: "durchwahl"
+    text: "Durchwahl"
   },
   "#table_th_label_pin": {
-    text: "pin"
+    text: "Pin"
   },
   "#table_th_label_disabled": {
     title: "gesperrt"

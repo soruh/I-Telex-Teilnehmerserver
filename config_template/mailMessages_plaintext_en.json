@@ -1,0 +1,36 @@
+{
+  "messages":{
+    "new":{
+      "subject":"new participant",
+      "text":"A new participant joined with number:[number] and ip:[Ip] on [date] [timeZone]"
+    },
+    "invalidNumber":{
+      "subject":"invalid Number",
+      "text":"A new participant tried to register with an invalid number:[number] from ip:[Ip] on [date] [timeZone]"
+    },
+    "wrongDynIpPin":{
+      "subject":"wrong dynIp pin",
+      "text":"[Ip] tried to update the dynIp for [number]([name]) with a wrong pin on [date] [timeZone]"
+    },
+    "wrongDynIpType":{
+      "subject":"wrong dynIp type",
+      "text":"[Ip] tried to update the dynIp for [number]([name]), which does not support dynIp(is type [typ]) on [date] [timeZone]"
+    },
+    "wrongServerPin":{
+      "subject":"wrong Server pin",
+      "text":"[Ip] tried to syncronize with the server with a wrong pin on [date] [timeZone]"
+    },
+    "ipV6DynIpUpdate":{
+      "subject":"ipv6 DynIp update",
+      "text":"[Ip] tried to update the dynIp for [number]([name]) with an ipv6 address on [date] [timeZone]"
+    },
+    "ServerError":{
+      "subject":"Could not connect to server",
+      "text":"Could not connect to server: [host]:[port]. Error counter: [errorCounter] Error code: [lastError] on [date] [timeZone]"
+    },
+    "ServerErrorOver":{
+      "subject":"Server could be reached again",
+      "text":"Could connect to server: [host]:[port] again on [date] [timeZone]. Error counter was at: [errorCounter]"
+    }
+  }
+}

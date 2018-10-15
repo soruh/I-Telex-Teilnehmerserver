@@ -112,9 +112,10 @@ $(document).ready(function () {
     $("#refresh-button").click(function () {
         refresh();
     });
-    $("#search-button").on("click", function () {
-        $("#search-box").fadeToggle();
-    });
+    // $("#search-button").on("click", function () {
+    //     $("#search-box").fadeToggle();
+    //     $("#search-box").focus();
+    // });
     $("#login").click(function () {
         showpopup("password_dialog", function () {
             $("#passwordfield").focus();
@@ -559,9 +560,15 @@ function getList(callback) {
             "password": getPasswordCookie(),
         },
         success: function (response) {
-            console.log(response);
             if (response.successful) {
-                global_list = response.result;
+                let { result } = response;
+                for (let row of result) { //combine hostname and ipaddress into address
+                    let address = row.hostname || row.ipaddress;
+                    row.address = address;
+                    delete row.hostname;
+                    delete row.ipaddress;
+                }
+                global_list = result;
             }
             else {
                 console.error(response.message);
@@ -805,6 +812,8 @@ function edit(vals, callback) {
     });
 }
 function search(list, pattern) {
+    if (pattern == "")
+        return list;
     console.log(`searching for: '${pattern}'`);
     let result = list
         .filter(row => {
@@ -824,27 +833,27 @@ function search(list, pattern) {
     return result;
 }
 function sortFunction(x, y) {
-    return (x[sortby] || "").toString().localeCompare((y[sortby] || "").toString(), 'de', { numeric: SORTNUMERIC });
+    x = (x[sortby] || '').toString();
+    y = (y[sortby] || '').toString();
+    return x.localeCompare(y, 'de', {
+        numeric: SORTNUMERIC
+    });
 }
 function sort(unSortedList) {
-    console.log("sorting");
-    if (sortby == "")
+    if (sortby == '')
         return unSortedList;
-    var isKey = Object.keys(unSortedList[0])
-        .reduce((accumulator, value, index) => accumulator || value === sortby, false);
-    if (isKey) {
-        let sortedList = unSortedList.sort(sortFunction);
-        if (reverseSort) {
-            return sortedList.reverse();
-        }
-        else {
-            return sortedList;
-        }
+    console.log(`sorting by ${sortby}`);
+    if (!(sortby in unSortedList[0])) {
+        console.error(`${sortby} is not a collumn name!`);
+        sortby = '';
+        return unSortedList;
+    }
+    let sortedList = unSortedList.sort(sortFunction);
+    if (reverseSort) {
+        return sortedList.reverse();
     }
     else {
-        console.error(sortby + " is not a collumn name!");
-        sortby = "";
-        return unSortedList;
+        return sortedList;
     }
 }
 function initloc() {
