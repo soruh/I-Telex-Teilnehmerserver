@@ -1,4 +1,5 @@
 import { SqlQuery } from "../../SHARED/misc";
+import { peerList } from "../../BINARYSERVER/ITelexCom";
 
 async function download(req, res, next) {
 		switch(req.query.type){
@@ -6,14 +7,17 @@ async function download(req, res, next) {
 				res.setHeader('Content-disposition', 'attachment; filename=list.xls');
 				res.setHeader('Content-type', 'application/xls');
 	
-				let data = await SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1;');
+				let data:peerList = await SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1;');
 				if(data&&data.length>0){
 					let header = Object.keys(data[0]);
 					res.write(header.join('\t')+'\n');
 	
 					for(let row of data){
-						let values = Object.values(row);
-						res.write(values.join('\t')+'\n');
+						for(let field of header){
+							res.write((row[field]||'').toString());
+							if(field !== header[header.length-1]) res.write('\t');
+						}
+						res.write('\n');
 					}
 	
 					res.end();

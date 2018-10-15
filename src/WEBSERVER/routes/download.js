@@ -20,8 +20,12 @@ function download(req, res, next) {
                     let header = Object.keys(data[0]);
                     res.write(header.join('\t') + '\n');
                     for (let row of data) {
-                        let values = Object.values(row);
-                        res.write(values.join('\t') + '\n');
+                        for (let field of header) {
+                            res.write((row[field] || '').toString());
+                            if (field !== header[header.length - 1])
+                                res.write('\t');
+                        }
+                        res.write('\n');
                     }
                     res.end();
                 }
