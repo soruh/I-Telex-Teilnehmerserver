@@ -9,25 +9,11 @@ async function download(req, res, next) {
 				let data = await SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1;');
 				if(data&&data.length>0){
 					let header = Object.keys(data[0]);
-					for(let i in header){
-						res.write(header[i]);
-						if(+i === header.length-1){
-							res.write('\n');
-						}else{
-							res.write('\t');
-						}
-					}
+					res.write(header.join('\t')+'\n');
 	
 					for(let row of data){
 						let values = Object.values(row);
-						for(let i in values){
-							res.write((values[i]||'').toString());
-							if(+i === values.length-1){
-								res.write('\n');
-							}else{
-								res.write('\t');
-							}
-						}
+						res.write(values.join('\t')+'\n');
 					}
 	
 					res.end();
