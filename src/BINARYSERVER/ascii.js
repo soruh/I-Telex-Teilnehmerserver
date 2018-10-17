@@ -15,17 +15,17 @@ const ip = require("ip");
 const misc_1 = require("../SHARED/misc");
 const serialEachPromise_1 = require("../SHARED/serialEachPromise");
 function asciiLookup(data, client) {
-    var number = "";
+    let number = "";
     for (let byte of data) {
         let char = String.fromCharCode(byte);
         if (/([0-9])/.test(char))
             number += char;
     }
-    if (number != "" && (!isNaN(parseInt(number)))) {
+    if (number !== "" && (!isNaN(parseInt(number)))) {
         logger.log('debug', misc_1.inspect `starting lookup for: ${number}`);
         misc_1.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
             .then(function (result) {
-            if (!result || result.length == 0) {
+            if (!result || result.length === 0) {
                 let send = "";
                 send += "fail\r\n";
                 send += number + "\r\n";
@@ -74,7 +74,7 @@ exports.asciiLookup = asciiLookup;
 function checkIp(data, client) {
     return __awaiter(this, void 0, void 0, function* () {
         if (config_1.default.doDnsLookups) {
-            var arg = data.slice(1).toString().split("\n")[0].split("\r")[0];
+            const arg = data.slice(1).toString().split("\n")[0].split("\r")[0];
             logger.log('debug', misc_1.inspect `checking if belongs to any participant`);
             let ipAddr = "";
             if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
@@ -82,7 +82,7 @@ function checkIp(data, client) {
             }
             else {
                 try {
-                    let { address, family } = yield util.promisify(dns.lookup)(arg);
+                    let { address, family, } = yield util.promisify(dns.lookup)(arg);
                     ipAddr = address;
                     logger.log('debug', misc_1.inspect ` resolved to ${ipAddr}`);
                 }
@@ -95,7 +95,7 @@ function checkIp(data, client) {
             if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
                 misc_1.SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
                     .then((peers) => {
-                    var ipPeers = [];
+                    let ipPeers = [];
                     serialEachPromise_1.default(peers, peer => new Promise((resolve, reject) => {
                         if ((!peer.ipaddress) && peer.hostname) {
                             // logger.log('debug', inspect`hostname: ${peer.hostname}`)
@@ -104,7 +104,7 @@ function checkIp(data, client) {
                                 if (address) {
                                     ipPeers.push({
                                         peer,
-                                        ipaddress: address
+                                        ipaddress: address,
                                     });
                                     // logger.log('debug', inspect`${peer.hostname} resolved to ${address}`);
                                 }
@@ -115,7 +115,7 @@ function checkIp(data, client) {
                             // logger.log('debug', inspect`ip: ${peer.ipaddress}`);
                             ipPeers.push({
                                 peer,
-                                ipaddress: peer.ipaddress
+                                ipaddress: peer.ipaddress,
                             });
                             resolve();
                         }

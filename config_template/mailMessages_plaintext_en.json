@@ -14,7 +14,7 @@
     },
     "wrongDynIpType":{
       "subject":"wrong dynIp type",
-      "text":"[Ip] tried to update the dynIp for [number]([name]), which does not support dynIp(is type [typ]) on [date] [timeZone]"
+      "text":"[Ip] tried to update the dynIp for [number]([name]), which does not support dynIp(is type [type]) on [date] [timeZone]"
     },
     "wrongServerPin":{
       "subject":"wrong Server pin",

@@ -25,32 +25,32 @@ function sendQueue() {
 			return void resolve();
 		}
 		SqlQuery("SELECT * FROM teilnehmer;", [], true)
-		.then(function (teilnehmer: ITelexCom.peerList) {
+		.then(function(teilnehmer: ITelexCom.peerList) {
 			SqlQuery("SELECT * FROM queue;")
-			.then(function (queue: ITelexCom.queue) {
+			.then(function(queue: ITelexCom.queue) {
 				if (queue.length === 0) {
 					logger.log('debug', inspect`No queue!`);
 					return void resolve();
 				}
 
-				var servers: {
+				let servers: {
 					[index: number]: ITelexCom.queueEntry[]
 				} = {};
 				for (let q of queue) {
 					if (!servers[q.server]) servers[q.server] = [];
 					servers[q.server].push(q);
 				}
-				serialEachPromise(( < any > Object).values(servers), (server: ITelexCom.queueEntry[]) =>
+				serialEachPromise((Object as any).values(servers), (server: ITelexCom.queueEntry[]) =>
 				new Promise((resolve, reject) => {
 					SqlQuery("SELECT  * FROM servers WHERE uid=?;", [server[0].server])
-					.then(function (result2: ITelexCom.serverList) {
-						if (result2.length == 1) {
-							var serverinf = result2[0];
+					.then(function(result2: ITelexCom.serverList) {
+						if (result2.length === 1) {
+							const serverinf = result2[0];
 							logger.log('debug', inspect`sending queue for ${serverinf}`);
 							try {
 								connect({
 									host: serverinf.addresse,
-									port: +serverinf.port
+									port: +serverinf.port,
 								}, resolve)
 								.then(client => {
 									client.servernum = server[0].server;
@@ -58,16 +58,10 @@ function sendQueue() {
 									client.writebuffer = [];
 									serialEachPromise(server, serverdata =>
 									new Promise((resolve, reject) => {
-										var message: ITelexCom.peer = null;
-										for (let t of teilnehmer) {
-											if (t.uid == serverdata.message) {
-												message = t;
-												break;
-											}
-										}
+										const message: ITelexCom.Peer = teilnehmer.find((t)=>t.uid === serverdata.message);
 										if (message) {
 											SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
-											.then(function (res) {
+											.then(function(res) {
 												if (res.affectedRows > 0) {
 													client.writebuffer.push(message);
 													logger.log('debug', inspect`deleted queue entry ${message.name} from queue`);
@@ -77,7 +71,7 @@ function sendQueue() {
 													resolve();
 												}
 											})
-											.catch(err=>{logger.log('error', inspect`${err}`)});
+											.catch(err=>{logger.log('error', inspect`${err}`);});
 										} else {
 											logger.log('debug', inspect`entry does not exist`);
 											resolve();
@@ -89,16 +83,16 @@ function sendQueue() {
 											type: 7,
 											data: {
 												serverpin: config.serverPin,
-												version: 1
-											}
+												version: 1,
+											},
 										}, () => {
 											client.state = constants.states.RESPONDING;
 											resolve();
 										});
 									})
-									.catch(err=>{logger.log('error', inspect`${err}`)}); 
+									.catch(err=>{logger.log('error', inspect`${err}`);}); 
 								})
-								.catch(err=>{logger.log('error', inspect`${err}`)}); 
+								.catch(err=>{logger.log('error', inspect`${err}`);}); 
 							} catch (e) {
 								logger.log('error', inspect`${e}`);
 								resolve();
@@ -106,20 +100,20 @@ function sendQueue() {
 						} else {
 							SqlQuery("DELETE FROM queue WHERE server=?;", [server[0].server])
 							.then(resolve)
-							.catch(err=>{logger.log('error', inspect`${err}`)}); 
+							.catch(err=>{logger.log('error', inspect`${err}`);}); 
 						}
 					})
-					.catch(err=>{logger.log('error', inspect`${err}`)}); 
+					.catch(err=>{logger.log('error', inspect`${err}`);}); 
 				})
 				)
 				.then(() => {
 					resolve();
 				})
-				.catch(err=>{logger.log('error', inspect`${err}`)}); 
+				.catch(err=>{logger.log('error', inspect`${err}`);}); 
 			})
-			.catch(err=>{logger.log('error', inspect`${err}`)}); 
+			.catch(err=>{logger.log('error', inspect`${err}`);}); 
 		})
-		.catch(err=>{logger.log('error', inspect`${err}`)}); 
+		.catch(err=>{logger.log('error', inspect`${err}`);}); 
 	}));
 }
 

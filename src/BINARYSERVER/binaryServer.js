@@ -9,8 +9,8 @@ const constants = require("../BINARYSERVER/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const ascii_js_1 = require("./ascii.js");
 const handles_js_1 = require("./handles.js");
-var binaryServer = net.createServer(function (socket) {
-    var client = {
+let binaryServer = net.createServer(function (socket) {
+    let client = {
         name: misc_js_1.clientName(),
         connection: socket,
         ipAddress: null,
@@ -19,22 +19,22 @@ var binaryServer = net.createServer(function (socket) {
         writebuffer: [],
         sendPackage: misc_js_1.sendPackage,
     };
-    var asciiListener = (data) => {
+    let asciiListener = (data) => {
         if (client) {
             let command = String.fromCharCode(data[0]);
-            if (command == 'q' || command == 'c') {
+            if (command === 'q' || command === 'c') {
                 logger.log('network', misc_js_1.inspect `serving ascii request of type ${command}`);
                 logger.log('verbose network', misc_js_1.inspect `request: ${util.inspect(data.toString())}`);
-                if (command == 'q') {
+                if (command === 'q') {
                     ascii_js_1.asciiLookup(data, client);
                 }
-                else if (command == 'c') {
+                else if (command === 'c') {
                     ascii_js_1.checkIp(data, client);
                 }
             }
         }
     };
-    var binaryListener = (pkg) => {
+    let binaryListener = (pkg) => {
         if (client) {
             logger.log('verbose network', misc_js_1.inspect `recieved package: ${pkg}`);
             logger.log('verbose network', misc_js_1.inspect `${pkg.toString().replace(/[^ -~]/g, "·")}`);
@@ -59,7 +59,7 @@ var binaryServer = net.createServer(function (socket) {
         logger.log('error', misc_js_1.inspect `${err}`);
         socket.end();
     });
-    var chunker = new ITelexCom.ChunkPackages();
+    let chunker = new ITelexCom.ChunkPackages();
     socket.once('data', asciiListener);
     socket.pipe(chunker);
     chunker.on('data', binaryListener);
@@ -75,7 +75,7 @@ var binaryServer = net.createServer(function (socket) {
             client.connection.destroy();
         }
     }
-    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); //.replace(/^.*:/,'')
+    logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); // .replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', misc_js_1.inspect `server error: ${err}`));
 exports.default = binaryServer;

@@ -25,7 +25,7 @@ function sendQueue() {
                     logger.log('debug', misc_js_1.inspect `No queue!`);
                     return void resolve();
                 }
-                var servers = {};
+                let servers = {};
                 for (let q of queue) {
                     if (!servers[q.server])
                         servers[q.server] = [];
@@ -34,26 +34,20 @@ function sendQueue() {
                 serialEachPromise_js_1.default(Object.values(servers), (server) => new Promise((resolve, reject) => {
                     misc_js_1.SqlQuery("SELECT  * FROM servers WHERE uid=?;", [server[0].server])
                         .then(function (result2) {
-                        if (result2.length == 1) {
-                            var serverinf = result2[0];
+                        if (result2.length === 1) {
+                            const serverinf = result2[0];
                             logger.log('debug', misc_js_1.inspect `sending queue for ${serverinf}`);
                             try {
                                 connect_js_1.default({
                                     host: serverinf.addresse,
-                                    port: +serverinf.port
+                                    port: +serverinf.port,
                                 }, resolve)
                                     .then(client => {
                                     client.servernum = server[0].server;
                                     logger.log('verbose network', misc_js_1.inspect `connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
                                     client.writebuffer = [];
                                     serialEachPromise_js_1.default(server, serverdata => new Promise((resolve, reject) => {
-                                        var message = null;
-                                        for (let t of teilnehmer) {
-                                            if (t.uid == serverdata.message) {
-                                                message = t;
-                                                break;
-                                            }
-                                        }
+                                        const message = teilnehmer.find((t) => t.uid === serverdata.message);
                                         if (message) {
                                             misc_js_1.SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
                                                 .then(function (res) {
@@ -79,8 +73,8 @@ function sendQueue() {
                                             type: 7,
                                             data: {
                                                 serverpin: config_js_1.default.serverPin,
-                                                version: 1
-                                            }
+                                                version: 1,
+                                            },
                                         }, () => {
                                             client.state = constants.states.RESPONDING;
                                             resolve();

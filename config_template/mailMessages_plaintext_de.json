@@ -14,7 +14,7 @@
     },
     "wrongDynIpType":{
       "subject":"Falscher DynIp Typ",
-      "text":"[Ip] hat am [date] [timeZone] versucht die DynIp für [number]([name]) zu ändern, welcher keine DynIp unterstützt (Typ: [typ])"
+      "text":"[Ip] hat am [date] [timeZone] versucht die DynIp für [number]([name]) zu ändern, welcher keine DynIp unterstützt (Typ: [type])"
     },
     "ipV6DynIpUpdate":{
       "subject":"ipv6 DynIp Änderung",

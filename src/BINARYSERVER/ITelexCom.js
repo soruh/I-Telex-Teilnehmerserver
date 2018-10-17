@@ -13,34 +13,6 @@ Buffer.prototype.readNullTermString = function readNullTermString(encoding = "ut
     let stop = firstZero >= start && firstZero <= end ? firstZero : end;
     return this.toString(encoding, start, stop);
 };
-// function highlightBuffer(buffer:Buffer,from:number=0,length:number=0){
-// 	let array = Array.from(buffer).map(x=>(x<16?"0":"")+x.toString(16));
-// 	if(from in array&&length>0){
-// 		array[from] = "\x1b[046m"+"\x1b[030m"+array[from];
-// 		array[from+length-1] += "\x1b[000m";
-// 	}	
-// 	return "<Buffer "+array.join(" ")+">\x1b[000m"
-// }
-// function explainData(data: Buffer): string {
-// 	let str = "<Buffer";
-// 	var type: number;
-// 	var datalength: number;
-// 	for (let typepos = 0; typepos < data.length - 1; typepos += datalength + 2) {
-// 		type = +data[typepos];
-// 		datalength = +data[typepos + 1];
-// 		let array = Array.from(data.slice(typepos, typepos + datalength + 2)).map(x => (x < 16 ? "0" : "") + x.toString(16));
-// 		array = array.map((value, index) =>
-// 			index == 0 ?
-// 			"\x1b[036m" + value + "\x1b[000m" :
-// 			index == 1 ?
-// 			"\x1b[032m" + value + "\x1b[000m" :
-// 			"\x1b[000m" + value + "\x1b[000m"
-// 		);
-// 		str += " " + array.join(" ");
-// 	}
-// 	str += ">";
-// 	return str;
-// }
 function inspectBuffer(buffer) {
     return Array.from(buffer).map(x => x.toString(16).padStart(2, "0")).join(" ");
 }
@@ -132,7 +104,7 @@ exports.ChunkPackages = ChunkPackages;
 function encPackage(pkg) {
     logger.log('iTelexCom', misc_js_1.inspect `encoding package : ${pkg}`);
     if (pkg.datalength == null) {
-        if (pkg.type == 255) {
+        if (pkg.type === 255) {
             if (pkg.data.message != null)
                 pkg.datalength = pkg.data.message.length;
         }
@@ -140,7 +112,7 @@ function encPackage(pkg) {
             pkg.datalength = constants.PackageSizes[pkg.type];
         }
     }
-    var buffer = Buffer.alloc(pkg.datalength + 2);
+    let buffer = Buffer.alloc(pkg.datalength + 2);
     buffer[0] = pkg.type;
     buffer[1] = pkg.datalength;
     switch (pkg.type) {
@@ -170,13 +142,13 @@ function encPackage(pkg) {
             if (!pkg.data.extension) {
                 ext = 0;
             }
-            else if (pkg.data.extension == "0") {
+            else if (pkg.data.extension === "0") {
                 ext = 110;
             }
-            else if (pkg.data.extension == "00") {
+            else if (pkg.data.extension === "00") {
                 ext = 100;
             }
-            else if (pkg.data.extension.toString().length == 1) {
+            else if (pkg.data.extension.toString().length === 1) {
                 ext = parseInt(pkg.data.extension) + 100;
             }
             else {
@@ -226,7 +198,7 @@ function decPackage(buffer) {
     let pkg = {
         type: buffer[0],
         datalength: buffer[1],
-        data: null
+        data: null,
     };
     logger.log('iTelexCom', misc_js_1.inspect `decoding package: ${(config_js_1.default.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
     switch (pkg.type) {
@@ -234,21 +206,20 @@ function decPackage(buffer) {
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
                 pin: buffer.readUIntLE(6, 2).toString(),
-                port: buffer.readUIntLE(8, 2).toString()
+                port: buffer.readUIntLE(8, 2).toString(),
             };
             break;
         case 2:
             pkg.data = {
-                ipaddress: ip.toString(buffer, 2, 4)
+                ipaddress: ip.toString(buffer, 2, 4),
             };
-            if (pkg.data.ipaddress == "0.0.0.0")
+            if (pkg.data.ipaddress === "0.0.0.0")
                 pkg.data.ipaddress = "";
             break;
         case 3:
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
-                version: buffer.slice(6, 7).length > 0 ? buffer.readUIntLE(6, 1) : 1 //some clients don't provide a version
-                //TODO: change package length accordingly
+                version: buffer.slice(6, 7).length > 0 ? buffer.readUIntLE(6, 1) : 1,
             };
             break;
         case 4:
@@ -269,28 +240,28 @@ function decPackage(buffer) {
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
                 name: buffer.readNullTermString("utf8", 6, 46),
-                disabled: (flags & 2) == 2 ? 1 : 0,
+                disabled: (flags & 2) === 2 ? 1 : 0,
                 type: buffer.readUIntLE(48, 1),
                 hostname: buffer.readNullTermString("utf8", 49, 89),
                 ipaddress: ip.toString(buffer, 89, 4),
                 port: buffer.readUIntLE(93, 2).toString(),
                 pin: buffer.readUIntLE(96, 2).toString(),
                 timestamp: buffer.readUIntLE(98, 4) - 2208988800,
-                extension: null
+                extension: null,
             };
-            if (pkg.data.ipaddress == "0.0.0.0")
+            if (pkg.data.ipaddress === "0.0.0.0")
                 pkg.data.ipaddress = "";
-            if (pkg.data.hostname == "")
+            if (pkg.data.hostname === "")
                 pkg.data.hostname = "";
-            //TODO: extract into function
+            // TODO: extract into function
             let extension = buffer.readUIntLE(95, 1);
-            if (extension == 0) {
+            if (extension === 0) {
                 pkg.data.extension = null;
             }
-            else if (extension == 110) {
+            else if (extension === 110) {
                 pkg.data.extension = "0";
             }
-            else if (extension == 100) {
+            else if (extension === 100) {
                 pkg.data.extension = "00";
             }
             else if (extension > 110) {
@@ -309,13 +280,13 @@ function decPackage(buffer) {
         case 6:
             pkg.data = {
                 version: buffer.readUIntLE(2, 1),
-                serverpin: buffer.readUIntLE(3, 4)
+                serverpin: buffer.readUIntLE(3, 4),
             };
             break;
         case 7:
             pkg.data = {
                 version: buffer.readUIntLE(2, 1),
-                serverpin: buffer.readUIntLE(3, 4)
+                serverpin: buffer.readUIntLE(3, 4),
             };
             break;
         case 8:
@@ -327,7 +298,7 @@ function decPackage(buffer) {
         case 10:
             pkg.data = {
                 version: buffer.readUIntLE(2, 1),
-                pattern: buffer.readNullTermString("utf8", 3, 43)
+                pattern: buffer.readNullTermString("utf8", 3, 43),
             };
             break;
         case 255:
@@ -342,29 +313,3 @@ function decPackage(buffer) {
     return pkg;
 }
 exports.decPackage = decPackage;
-function decPackages(buffer) {
-    if (!(buffer instanceof Buffer))
-        buffer = Buffer.from(buffer);
-    logger.log('iTelexCom', misc_js_1.inspect `decoding data: ${buffer}`);
-    var out = [];
-    for (let typepos = 0; typepos < buffer.length - 1; typepos += datalength + 2) {
-        var type = +buffer[typepos];
-        var datalength = +buffer[typepos + 1];
-        if (type in constants.PackageSizes && constants.PackageSizes[type] != datalength) {
-            logger.log('warning', misc_js_1.inspect `size missmatch: ${constants.PackageSizes[type]} != ${datalength}`);
-            if (config_js_1.default.allowInvalidPackageSizes) {
-                logger.log('warning', misc_js_1.inspect `using package of invalid size!`);
-            }
-            else {
-                logger.log('debug', misc_js_1.inspect `ignoring package, because it is of invalid size!`);
-                continue;
-            }
-        }
-        let pkg = decPackage(buffer.slice(typepos, typepos + datalength + 2));
-        if (pkg)
-            out.push(pkg);
-    }
-    logger.log('iTelexCom', misc_js_1.inspect `decoded: ${out}`);
-    return out;
-}
-exports.decPackages = decPackages;

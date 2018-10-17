@@ -20,7 +20,7 @@ if (readonly)
 global.sqlPool = mysql.createPool(config_js_1.default.mySqlConnectionOptions);
 function createLogger() {
     return new Promise((resolve, reject) => {
-        var customLevels = {
+        const customLevels = {
             levels: {
                 "error": 0,
                 "warning": 1,
@@ -44,12 +44,12 @@ function createLogger() {
                 "queue": "gray",
                 "iTelexCom": "underline",
                 "silly": "bold",
-            }
+            },
         };
         // let customLevels = winston.config.npm;
-        var getLoggingLevel = function getLoggingLevel() {
+        const getLoggingLevel = function s() {
             if (typeof config_js_1.default.binaryserverLoggingLevel === "number") {
-                let level = Object.entries(customLevels.levels).find(([, value]) => value == config_js_1.default.binaryserverLoggingLevel);
+                let level = Object.entries(customLevels.levels).find(([, value]) => value === config_js_1.default.binaryserverLoggingLevel);
                 if (level)
                     return level[0];
             }
@@ -57,26 +57,28 @@ function createLogger() {
                 if (customLevels.levels.hasOwnProperty(config_js_1.default.binaryserverLoggingLevel))
                     return config_js_1.default.binaryserverLoggingLevel;
             }
+            // tslint:disable:no-console
             console.log("valid logging levels are:");
             console.log(Object.entries(customLevels.levels)
                 .map(([key, value]) => `${value}/${key}`)
                 .join("\n"));
-            throw "invalid logging level";
+            // tslint:enable:no-console
+            throw new Error("invalid logging level");
         };
-        var resolvePath = function resolvePath(pathToResolve) {
+        const resolvePath = function (pathToResolve) {
             if (path.isAbsolute(pathToResolve))
                 return pathToResolve;
             return path.join(path.join(__dirname, "../.."), pathToResolve);
         };
-        var transports = [];
+        let transports = [];
         if (config_js_1.default.binaryserverLog)
             transports.push(new winston.transports.File({
-                filename: resolvePath(config_js_1.default.binaryserverLog)
+                filename: resolvePath(config_js_1.default.binaryserverLog),
             }));
         if (config_js_1.default.binaryserverErrorLog)
             transports.push(new winston.transports.File({
                 filename: resolvePath(config_js_1.default.binaryserverErrorLog),
-                level: 'error'
+                level: 'error',
             }));
         if (config_js_1.default.logBinaryserverToConsole)
             transports.push(new winston.transports.Console({}));
@@ -91,15 +93,15 @@ function createLogger() {
         // 	info.line = info.line||""
         // 	return info;
         // })();
-        var formats = [];
+        let formats = [];
         if (config_js_1.default.logDate)
             formats.push(winston.format.timestamp({
-                format: () => misc_js_1.getTimestamp()
+                format: () => misc_js_1.getTimestamp(),
             }));
         if (!config_js_1.default.disableColors)
             formats.push(winston.format.colorize());
         // formats.push(getLine),
-        var levelPadding = Math.max(...Object.keys(customLevels.colors).map(x => x.length));
+        const levelPadding = Math.max(...Object.keys(customLevels.colors).map(x => x.length));
         formats.push(winston.format.printf(info => `${config_js_1.default.logDate ? (info.timestamp.replace("T", " ").replace("Z", " ")) : ""}${" ".repeat(levelPadding - info.level.replace(/\u001b\[\d{1,3}m/g, "").length)}${info.level}: ${info.message}`));
         // formats.push(winston.format.printf(info => `${info.timestamp} ${info.level.padStart(17)} ${info.line}: ${info.message}`));
         winston.addColors(customLevels.colors);
@@ -108,7 +110,7 @@ function createLogger() {
             level: getLoggingLevel(),
             levels: customLevels.levels,
             format: winston.format.combine(...formats),
-            transports //: transports
+            transports,
         });
         resolve();
     });
@@ -164,8 +166,8 @@ function setupEmailTransport() {
                             logger.log('error', misc_js_1.inspect `can't send mail after Mail error`);
                         },
                         options: {
-                            host: "Failed to get test Account"
-                        }
+                            host: "Failed to get test Account",
+                        },
                     };
                     reject(err);
                 }
@@ -178,8 +180,8 @@ function setupEmailTransport() {
                         secure: false,
                         auth: {
                             user: account.user,
-                            pass: account.pass // generated ethereal password
-                        }
+                            pass: account.pass,
+                        },
                     });
                     resolve();
                 }
@@ -201,7 +203,7 @@ createLogger()
     .catch(err => {
     logger.log('error', misc_js_1.inspect `error in initialisation: ${err}`);
 });
-//write uncaught exceptions to all logs
+// write uncaught exceptions to all logs
 process.on('uncaughtException', err => {
     logger.log('error', misc_js_1.inspect `uncaught exception ${err}`);
     process.exit();

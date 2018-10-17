@@ -13,7 +13,7 @@ function getFullQuery() {
         logger.log('debug', misc_js_1.inspect `getting FullQuery`);
         misc_js_1.SqlQuery("SELECT  * FROM servers;")
             .then((servers) => {
-            if (servers.length == 0) {
+            if (servers.length === 0) {
                 logger.log('warning', misc_js_1.inspect `No configured servers -> aborting FullQuery`);
                 return void resolve();
             }
@@ -24,9 +24,9 @@ function getFullQuery() {
             // 	}
             // }
             if (config_js_1.default.fullQueryServer)
-                servers = servers.filter(server => server.port == config_js_1.default.fullQueryServer.split(":")[1] &&
-                    server.addresse == config_js_1.default.fullQueryServer.split(":")[0]);
-            return serialEachPromise_js_1.default(servers, server => new Promise((resolveLoop, reject) => {
+                servers = servers.filter(server => server.port === config_js_1.default.fullQueryServer.split(":")[1] &&
+                    server.addresse === config_js_1.default.fullQueryServer.split(":")[0]);
+            return serialEachPromise_js_1.default(servers, server => new Promise(resolveLoop => {
                 connect_js_1.default({ host: server.addresse, port: +server.port }, resolveLoop)
                     .then(client => {
                     let request;
@@ -35,8 +35,8 @@ function getFullQuery() {
                             type: 10,
                             data: {
                                 pattern: '',
-                                version: 1
-                            }
+                                version: 1,
+                            },
                         };
                     }
                     else {
@@ -44,8 +44,8 @@ function getFullQuery() {
                             type: 6,
                             data: {
                                 serverpin: config_js_1.default.serverPin,
-                                version: 1
-                            }
+                                version: 1,
+                            },
                         };
                     }
                     client.sendPackage(request, () => {
@@ -58,7 +58,7 @@ function getFullQuery() {
         })
             .then(() => resolve())
             .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
-        //}
+        // }
     });
 }
 exports.default = getFullQuery;

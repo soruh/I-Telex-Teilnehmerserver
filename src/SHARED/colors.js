@@ -40,32 +40,30 @@ const COLORS = {
     BgLightBlue: "\x1b[104m",
     BgLightMagenta: "\x1b[105m",
     BgLightCyan: "\x1b[106m",
-    BgLightWhite: "\x1b[107m"
+    BgLightWhite: "\x1b[107m",
 };
 function disable(bool) {
     if (bool) {
-        for (let i in this) {
-            if (typeof this[i] === "string")
-                this[i] = "";
+        for (let i in COLORS) {
+            if (typeof COLORS[i] === "string")
+                COLORS[i] = "";
         }
     }
 }
-;
 function colorsAt(str) {
-    var colors = {};
+    let colors = {};
     for (let i in COLORS) {
         if (typeof COLORS[i] === "string") {
-            var index = str.indexOf(COLORS[i]);
-            if (index != -1) {
+            const index = str.indexOf(COLORS[i]);
+            if (index !== -1) {
                 colors[index] = COLORS[i];
             }
         }
     }
     return colors;
 }
-;
-var exp = Object.assign(COLORS, {
+const exp = Object.assign(COLORS, {
     disable,
-    colorsAt
+    colorsAt,
 });
 exports.default = exp;

@@ -40,7 +40,7 @@ function isAnyError(error){
 }
 
 function inspect(substrings:TemplateStringsArray, ...values:any[]):string{
-	var substringArray = Array.from(substrings).map(substring=>textColor+substring+colors.Reset);
+	let substringArray = Array.from(substrings).map(substring=>textColor+substring+colors.Reset);
 	values = values.map(value=>{
 		if(typeof value === "string") return stringColor+value+colors.Reset;
 		if(isAnyError(value)) return errorColor+util.inspect(value)+colors.Reset;
@@ -48,7 +48,7 @@ function inspect(substrings:TemplateStringsArray, ...values:any[]):string{
 		if(!config.disableColors) inspected = inspected.replace(/\u0001b\[39m/g,colors.Reset);
 		return inspected;
 	});
-	var combined = [];
+	let combined = [];
 	while(values.length+substringArray.length>0){
 		if(substringArray.length>0) combined.push(substringArray.shift());
 		if(values.length>0) combined.push(values.shift());
@@ -58,11 +58,11 @@ function inspect(substrings:TemplateStringsArray, ...values:any[]):string{
 
 function getTimezone(date: Date) {
 	let offset = -1 * date.getTimezoneOffset();
-	let offsetStr = ( < any > (Math.floor(offset / 60)).toString()).padStart(2, "0") + ":" + ( < any > (offset % 60).toString()).padStart(2, "0");
+	let offsetStr = ((Math.floor(offset / 60)).toString() as any).padStart(2, "0") + ":" + ( (offset % 60).toString() as any).padStart(2, "0");
 	return `UTC${(offset < 0 ? "" : "+")}${offsetStr}`;
 }
 
-var errorCounters: {
+let errorCounters: {
 	[index: string]:number;
 } = {};
 
@@ -72,28 +72,29 @@ function increaseErrorCounter(serverkey: string, code: string): void {
 	} else {
 		errorCounters[serverkey] = 1;
 	}
-	var warn: boolean = config.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
-	var counterColor = warn?colors.FgRed:colors.FgCyan;
+	const warn: boolean = config.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
+	const counterColor = warn?colors.FgRed:colors.FgCyan;
 	logger.log('warning', inspect`increased errorCounter for server ${serverkey} to ${counterColor+errorCounters[serverkey]+colors.Reset}`);
-	if (warn)
+	if (warn){
 		sendEmail("ServerError", {
-			"host": serverkey.split(":")[0],
-			"port": serverkey.split(":")[1],
-			"errorCounter": errorCounters[serverkey].toString(),
-			"lastError": code,
-			"date": getTimestamp(),
-			"timeZone": getTimezone(new Date())
+			host: serverkey.split(":")[0],
+			port: serverkey.split(":")[1],
+			errorCounter: errorCounters[serverkey].toString(),
+			lastError: code,
+			date: getTimestamp(),
+			timeZone: getTimezone(new Date()),
 		});
+	}
 }
 
 function resetErrorCounter(serverkey: string) {
 	if(errorCounters.hasOwnProperty(serverkey)){
 		sendEmail("ServerErrorOver", {
-			"host": serverkey.split(":")[0],
-			"port": serverkey.split(":")[1],
-			"errorCounter": errorCounters[serverkey].toString(),
-			"date": getTimestamp(),
-			"timeZone": getTimezone(new Date())
+			host: serverkey.split(":")[0],
+			port: serverkey.split(":")[1],
+			errorCounter: errorCounters[serverkey].toString(),
+			date: getTimestamp(),
+			timeZone: getTimezone(new Date()),
 		});
 		logger.log('debug', inspect`reset error counter for: ${serverkey}. Counter was at: ${errorCounters[serverkey]}`);
 		delete errorCounters[serverkey];
@@ -122,7 +123,7 @@ function SqlQuery(query: string, options ? : any[], verbose?:boolean): Promise <
 		}
 
 		if (global.sqlPool) {
-			global.sqlPool.query(query, options, function (err, res) {
+			global.sqlPool.query(query, options, function(err, res) {
 				if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
 					logger.log('silly', inspect`number of open connections: ${global.sqlPool["_allConnections"].length}`);
 
@@ -174,16 +175,16 @@ function sendEmail(messageName: string, values: {
 				to: config.eMail.to,
 				subject: message.subject,
 				text: "",
-				html: ""
+				html: "",
 			};
 
 			let type = message.html ? "html" : message.text ? "text" : null;
 			// if(type){
-			//	 mailOptions[type] = message[type];
-			//	 for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
+			//     mailOptions[type] = message[type];
+			//     for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
 			// }
 			if (type) {
-				mailOptions[type] = (<string>message[type]).replace(/\[([^\]]*)\]/g, (match, key) =>values[key] || "NULL");
+				mailOptions[type] = (message[type] as string).replace(/\[([^\]]*)\]/g, (match, key) =>values[key] || "NULL");
 			} else {
 				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
@@ -191,7 +192,7 @@ function sendEmail(messageName: string, values: {
 			logger.log('debug', inspect`mail values: ${values}`);
 			logger.log('debug', inspect`sending mail:\n${mailOptions}\nto server ${global.transporter.options["host"]}`);
 
-			( < nodemailer.Transporter > global.transporter).sendMail(mailOptions, function (error, info) {
+			( global.transporter as nodemailer.Transporter).sendMail(mailOptions, function(error, info) {
 				if (error) {
 					reject(error);
 				} else {
@@ -225,10 +226,10 @@ type connection = net.Socket;
 interface Client {
 	name: string;
 	connection: connection;
-	state: symbol,
-	ipAddress:string,
-	ipFamily:number,
-	writebuffer: ITelexCom.peer[];
+	state: symbol;
+	ipAddress:string;
+	ipFamily:number;
+	writebuffer: ITelexCom.Peer[];
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;
 	servernum ? : number;
@@ -240,7 +241,7 @@ let clientName;
 
 if(config.scientistNames){
 	const names = [
-		//mathematicians
+		// mathematicians
 		"Isaac Newton",
 		"Archimedes",
 		"Carl F. Gauss",
@@ -341,7 +342,7 @@ if(config.scientistNames){
 		"Pappus",
 		"Thales",
 	
-		//pyhsicists
+		// pyhsicists
 		"Stephen Hawking",
 		"Albert Einstein",
 		"Nikola Tesla",
@@ -443,24 +444,24 @@ if(config.scientistNames){
 		"Hideki Yukawa",
 	];
 	
-	let randomName = function randomName() {
+	let randomName = function() {
 		return names[Math.floor(Math.random() * names.length)];
-	}
+	};
 	
 	let lastnames = [];
 	
-	clientName = function clientName() {
+	clientName = function() {
 		let name = randomName();
 		while (lastnames.indexOf(name) > -1) name = randomName();
 		lastnames.unshift(name);
 		lastnames = lastnames.slice(0, 8);
 	
 		return name;
-	}
+	};
 }else{
-	clientName = function clientName(){
+	clientName = function(){
 		return new Date().toJSON();
-	}
+	};
 }
 
 
@@ -478,4 +479,4 @@ export {
 	normalizeIp,
 	sendPackage,
 	getTimestamp
-}
+};

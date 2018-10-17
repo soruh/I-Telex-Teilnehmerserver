@@ -7,7 +7,7 @@ const misc_js_1 = require("../SHARED/misc.js");
 function timeDiff(date1, date2 = Date.now()) {
     return date2 - date1;
 }
-var timeouts = new Map();
+let timeouts = new Map();
 exports.timeouts = timeouts;
 class Timer {
     constructor(fn, duration, name) {
@@ -56,30 +56,29 @@ class Timer {
 }
 exports.Timer = Timer;
 function pauseAll() {
-    for (var [name, timeout] of timeouts) {
+    for (let [name, timeout] of timeouts) {
         timeout.pause();
         // logger.log('silly', inspect`paused timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
     }
 }
 function resumeAll() {
-    for (var [name, timeout] of timeouts) {
+    for (let [name, timeout] of timeouts) {
         timeout.resume();
         // logger.log('silly', inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
     }
 }
 function TimeoutWrapper(fn, duration, ...args) {
-    var fnName = fn.name;
-    // logger.log('warning', inspect`set timeout for: ${fnName} to ${duration}ms`);
-    timeouts.set(Symbol(fnName), new Timer(() => {
+    // logger.log('warning', inspect`set timeout for: ${fn.name} to ${duration}ms`);
+    timeouts.set(Symbol(fn.name), new Timer(() => {
         pauseAll();
-        logger.log('silly', misc_js_1.inspect `called: ${fnName} with: ${args.slice(1)}`);
+        logger.log('silly', misc_js_1.inspect `called: ${fn.name} with: ${args.slice(1)}`);
         fn.apply(null, args)
             .then(() => {
-            logger.log('silly', misc_js_1.inspect `finished callback for timeout: ${fnName}`);
+            logger.log('silly', misc_js_1.inspect `finished callback for timeout: ${fn.name}`);
             resumeAll();
         })
             .catch(err => {
-            logger.log('error', misc_js_1.inspect `error in timeout: ${fnName} error: ${err}`);
+            logger.log('error', misc_js_1.inspect `error in timeout: ${fn.name} error: ${err}`);
             resumeAll();
         });
     }, duration, fn.name));
