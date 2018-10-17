@@ -66,56 +66,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
     if (!entries)
         return;
     const [entry] = entries;
-    if (entry) {
-        if (entry.type !== 5) {
-            logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is not of DynIp type`);
-            client.connection.end();
-            misc_js_1.sendEmail("wrongDynIpType", {
-                type: entry.type.toString(),
-                Ip: client.ipAddress,
-                number: entry.number.toString(),
-                name: entry.name,
-                date: misc_js_1.getTimestamp(),
-                timeZone: misc_js_1.getTimezone(new Date()),
-            });
-            return;
-        }
-        if (entry.pin !== pin) {
-            logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
-            client.connection.end();
-            misc_js_1.sendEmail("wrongDynIpPin", {
-                Ip: client.ipAddress,
-                number: entry.number.toString(),
-                name: entry.name,
-                date: misc_js_1.getTimestamp(),
-                timeZone: misc_js_1.getTimezone(new Date()),
-            });
-            return;
-        }
-        if (client.ipAddress === entry.ipaddress && port === entry.port) {
-            logger.log('debug', misc_js_1.inspect `not UPDATING, nothing to update`);
-            yield client.sendPackage({
-                type: 2,
-                data: {
-                    ipaddress: client.ipAddress,
-                },
-            });
-            return;
-        }
-        yield misc_js_2.SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
-            port, client.ipAddress, Math.floor(Date.now() / 1000), number,
-            config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin,
-        ]);
-        yield client.sendPackage({
-            type: 2,
-            data: {
-                ipaddress: client.ipAddress,
-            },
-        });
-        yield sendQueue_js_1.default();
-        return;
-    }
-    else {
+    if (!entry) {
         yield misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
         const result = yield misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
         if (!(result && result.affectedRows)) {
@@ -136,6 +87,57 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         });
         return;
     }
+    if (entry.type !== 5) {
+        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is not of DynIp type`);
+        client.connection.end();
+        misc_js_1.sendEmail("wrongDynIpType", {
+            type: entry.type.toString(),
+            Ip: client.ipAddress,
+            number: entry.number.toString(),
+            name: entry.name,
+            date: misc_js_1.getTimestamp(),
+            timeZone: misc_js_1.getTimezone(new Date()),
+        });
+        return;
+    }
+    if (entry.pin === '0') {
+        logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
+        yield misc_js_2.SqlQuery(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
+    }
+    else if (entry.pin !== pin) {
+        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
+        client.connection.end();
+        misc_js_1.sendEmail("wrongDynIpPin", {
+            Ip: client.ipAddress,
+            number: entry.number.toString(),
+            name: entry.name,
+            date: misc_js_1.getTimestamp(),
+            timeZone: misc_js_1.getTimezone(new Date()),
+        });
+        return;
+    }
+    if (client.ipAddress === entry.ipaddress && port === entry.port) {
+        logger.log('debug', misc_js_1.inspect `not UPDATING, nothing to update`);
+        yield client.sendPackage({
+            type: 2,
+            data: {
+                ipaddress: client.ipAddress,
+            },
+        });
+        return;
+    }
+    yield misc_js_2.SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+        port, client.ipAddress, Math.floor(Date.now() / 1000), number,
+        config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin,
+    ]);
+    yield client.sendPackage({
+        type: 2,
+        data: {
+            ipaddress: client.ipAddress,
+        },
+    });
+    yield sendQueue_js_1.default();
+    return;
 });
 handles[3][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, void 0, function* () {
     if (!client)

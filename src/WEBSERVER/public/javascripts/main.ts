@@ -32,8 +32,7 @@ const languages:{
 };
 interface listItem {
 	extension: string;
-	hostname: string;
-	ipaddress: string;
+	address:string;
 	name: string;
 	number: number;
 	port: string;
@@ -367,6 +366,7 @@ $(document).ready(function() {
 				pin: {
 					required: true,
 					max: 65536,
+
 				},
 				extension: {
 					digits: true,
@@ -786,12 +786,12 @@ function editButtonClick() {
 		$("#name_edit_dialog").val(entry.name).trigger('change');
 		$("#type_edit_dialog").val(entry.type).trigger('change');
 		if (entry.type === 6) {
-			$("#email_edit_dialog").val(entry.hostname).trigger('change');
+			$("#email_edit_dialog").val(entry.address).trigger('change');
 		}
 		else {
-			$("#hostname_edit_dialog").val(entry.hostname).trigger('change');
+			$("#hostname_edit_dialog").val(entry.address).trigger('change');
 		}
-		$("#ipaddress_edit_dialog").val(entry.ipaddress).trigger('change');
+		$("#ipaddress_edit_dialog").val(entry.address).trigger('change');
 		$("#port_edit_dialog").val(entry.port).trigger('change');
 		$("#extension_edit_dialog").val(entry.extension).trigger('change');
 		// $("#pin_edit_dialog").val(entry.pin).trigger('change');

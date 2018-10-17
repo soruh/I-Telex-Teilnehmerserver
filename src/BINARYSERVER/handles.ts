@@ -69,59 +69,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	if (!entries) return;
 
 	const [entry] = entries;
-	if (entry) {
-		if (entry.type !== 5) {
-			logger.log('warning', inspect`client ${client.name} tried to update ${number} which is not of DynIp type`);
-			client.connection.end();
-
-			sendEmail("wrongDynIpType", {
-				type: entry.type.toString(),
-				Ip: client.ipAddress,
-				number: entry.number.toString(),
-				name: entry.name,
-				date: getTimestamp(),
-				timeZone: getTimezone(new Date()),
-			});
-			return;
-		}
-		if (entry.pin !== pin) {
-			logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
-			client.connection.end();
-
-			sendEmail("wrongDynIpPin", {
-				Ip: client.ipAddress,
-				number: entry.number.toString(),
-				name: entry.name,
-				date: getTimestamp(),
-				timeZone: getTimezone(new Date()),
-			});
-			return;
-		}
-		if (client.ipAddress === entry.ipaddress && port === entry.port) {
-			logger.log('debug', inspect`not UPDATING, nothing to update`);
-
-			await client.sendPackage({
-				type: 2,
-				data: {
-					ipaddress: client.ipAddress,
-				},
-			});
-			return;
-		}
-		
-		await SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
-			port, client.ipAddress, Math.floor(Date.now() / 1000), number,
-			config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin,
-		]);
-		await client.sendPackage({
-			type: 2,
-			data: {
-				ipaddress: client.ipAddress,
-			},
-		});
-		await sendQueue();
-		return;	
-	} else {
+	if (!entry) {
 		await SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
 		const result = await SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
 		if (!(result && result.affectedRows)) {
@@ -145,6 +93,63 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 		return;
 	}
+
+	if (entry.type !== 5) {
+		logger.log('warning', inspect`client ${client.name} tried to update ${number} which is not of DynIp type`);
+		client.connection.end();
+
+		sendEmail("wrongDynIpType", {
+			type: entry.type.toString(),
+			Ip: client.ipAddress,
+			number: entry.number.toString(),
+			name: entry.name,
+			date: getTimestamp(),
+			timeZone: getTimezone(new Date()),
+		});
+		return;
+	}
+
+	if (entry.pin === '0') {
+		logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
+		await SqlQuery(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
+	}else if (entry.pin !== pin) {
+		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
+		client.connection.end();
+
+		sendEmail("wrongDynIpPin", {
+			Ip: client.ipAddress,
+			number: entry.number.toString(),
+			name: entry.name,
+			date: getTimestamp(),
+			timeZone: getTimezone(new Date()),
+		});
+		return;
+	}
+
+	if (client.ipAddress === entry.ipaddress && port === entry.port) {
+		logger.log('debug', inspect`not UPDATING, nothing to update`);
+
+		await client.sendPackage({
+			type: 2,
+			data: {
+				ipaddress: client.ipAddress,
+			},
+		});
+		return;
+	}
+	
+	await SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+		port, client.ipAddress, Math.floor(Date.now() / 1000), number,
+		config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin,
+	]);
+	await client.sendPackage({
+		type: 2,
+		data: {
+			ipaddress: client.ipAddress,
+		},
+	});
+	await sendQueue();
+	return;
 };
 handles[3][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_3, client: Client) => {
 	if (!client) return;
