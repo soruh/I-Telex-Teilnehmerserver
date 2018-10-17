@@ -49,6 +49,7 @@ interface configFile {
 		webserverLoggingLevel: number | string;
 		disableColors: boolean;
 
+		webServerTokenLifeTime: number;
 		webServerPort: number;
 		webInterfacePassword: string;
 		

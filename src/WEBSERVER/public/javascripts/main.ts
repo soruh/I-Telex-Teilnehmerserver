@@ -6,6 +6,7 @@ const SORTNUMERIC = false;
 
 // tslint:disable:no-console
 
+
 interface language {
 	[index:string]: {
 		html?:string
@@ -592,36 +593,39 @@ function UNIXTIMEToString(UNIXTIME) {
 	}
 }
 function getList(callback?:(list:list)=>void) {
-	$.ajax({
-		url: "/list",
-		type: "POST",
-		dataType: "json",
-		data: {
-			password: getPasswordCookie(),
-		},
-		success(response) {
-			if (response.successful) {
-				let {result} = response;
-
-				for(let row of result){ // combine hostname and ipaddress into address
-					let address = row.hostname||row.ipaddress;
-					
-					row.address = address;
-					delete row.hostname;
-					delete row.ipaddress;
+	console.log('getList');
+	getToken(token=>{
+		$.ajax({
+			url: "/list",
+			type: "POST",
+			dataType: "json",
+			data: {
+				token,
+			},
+			success(response) {
+				if (response.successful) {
+					let {result} = response;
+	
+					for(let row of result){ // combine hostname and ipaddress into address
+						let address = row.hostname||row.ipaddress;
+						
+						row.address = address;
+						delete row.hostname;
+						delete row.ipaddress;
+					}
+	
+					global_list = result;
+				} else {
+					console.error(response.message);
 				}
-
-				global_list = result;
-			} else {
-				console.error(response.message);
-			}
-			if (typeof callback === "function")
-				callback(global_list);
-		},
-		error(error) {
-			console.log(error);
-			callback(null);
-		},
+				if (typeof callback === "function")
+					callback(global_list);
+			},
+			error(error) {
+				console.log(error);
+				callback(null);
+			},
+		});
 	});
 }
 function findByUid(uid:number,list:list=global_list){
@@ -838,30 +842,32 @@ function refresh() {
 	getList(updateTable);
 }
 function edit(vals, callback) {
-	console.log(vals);
-	vals.password = getPasswordCookie();
-	$.ajax({
-		url: "/edit",
-		type: "POST",
-		dataType: "json",
-		data: vals,
-		success(response) {
-			refresh();
-			if (callback)
-				callback(null, response.message);
-			if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
-				$("#log").text(JSON.stringify(response.message));
-			if (!response.successful) {
-				console.log(response.message);
-			}
-		},
-		error(error) {
-			console.error(error);
-			if ($("#log").length === 1)
-				$("#log").text(JSON.stringify(error));
-			if (callback)
-				callback(error, null);
-		},
+	console.log('edit', vals);
+	getToken(token=>{
+		vals.token = token;
+		$.ajax({
+			url: "/edit",
+			type: "POST",
+			dataType: "json",
+			data: vals,
+			success(response) {
+				refresh();
+				if (callback)
+					callback(null, response.message);
+				if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
+					$("#log").text(JSON.stringify(response.message));
+				if (!response.successful) {
+					console.log(response.message);
+				}
+			},
+			error(error) {
+				console.error(error);
+				if ($("#log").length === 1)
+					$("#log").text(JSON.stringify(error));
+				if (callback)
+					callback(error, null);
+			},
+		});
 	});
 }
 function search(list:list, pattern:string) {
@@ -893,7 +899,6 @@ function sortFunction(x, y) {
 		numeric: SORTNUMERIC,
 	});
 }
-
 function sort(unSortedList) {
 	if (sortby === '') return unSortedList;
 
@@ -968,27 +973,32 @@ function getPasswordCookie() {
 	}
 	return password;
 }
-/*
-function setCookie(c_name:string, value:string, exdays?:number):void {
-  var exdate = new Date();
-  exdate.setDate(exdate.getDate() + exdays);
-  var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
-  document.cookie = c_name + "=" + c_value;
+function createHash(salt:string){
+	return window['forge_sha256'](salt+getPasswordCookie());
 }
-
-function getCookie(c_name:string):string {
-  var i, x, y, ARRcookies = document.cookie.split(";");
-  for (let i = 0; i < ARRcookies.length; i++) {
-	x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-	y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-	x = x.replace(/^\s+|\s+$/g, "");
-	if (x == c_name) {
-	  return unescape(y);
-	}
-  }
-  return ("");
+function getToken(callback:(token:string)=>void){
+	$.ajax({
+		url: "/getSalt",
+		type: "GET",
+		success(response) {
+			// console.log(response);
+			if (response.successful) {
+				const {salt} = response;
+				// console.log(`got salt: ${salt}`);
+				const hash = createHash(salt);
+				// console.log(`created hash: ${hash}`);
+				
+				callback(hash);
+			}else{
+				console.error(response.message);
+			}
+		},
+		error(error) {
+			console.error(error);
+			if ($("#log").length === 1) $("#log").text(JSON.stringify(error));
+		},
+	});
 }
-*/
 function setCookie(c_name:string, value:string, exdays?:number) {
 	let exdate = new Date();
 	exdate.setDate(exdate.getDate() + exdays);

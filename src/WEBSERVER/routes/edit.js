@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const misc_1 = require("../../SHARED/misc");
 const misc_2 = require("../../SHARED/misc");
-const config_1 = require("../../SHARED/config");
+const tokens_1 = require("./tokens");
 function editEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let entries = yield misc_2.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
@@ -82,9 +82,9 @@ function editEndpoint(req, res) {
     res.header("Content-Type", "application/json; charset=utf-8");
     logger.log('debug', misc_1.inspect `request body: ${req.body}`);
     logger.log('debug', misc_1.inspect `typekey: ${req.body.typekey}`);
-    if (req.body.password !== config_1.default.webInterfacePassword) {
+    if (!tokens_1.isValidToken(req.body.token)) {
         if (req.body.password !== "")
-            logger.log('warning', misc_1.inspect `${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
+            logger.log('warning', misc_1.inspect `${req.connection.remoteAddress} tried to login with a wrong password`);
         return void res.json({
             successful: false,
             message: {

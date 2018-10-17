@@ -1,10 +1,11 @@
 import { inspect } from "../../SHARED/misc";
 import { SqlQuery } from "../../SHARED/misc";
 import config from "../../SHARED/config";
+import { isValidToken } from "./tokens";
 
 
 async function editEntry(req, res){
-	let entries = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid])
+	let entries = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
 	if (!entries) return;
 
 	let [entry] = entries;
@@ -61,7 +62,7 @@ async function newEntry(req, res){
 }
 
 async function deleteEntry(req, res){
-	let result = await SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [Math.floor(Date.now() / 1000), req.body.uid])
+	let result = await SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [Math.floor(Date.now() / 1000), req.body.uid]);
 	if (!result) return;
 	
 	res.json({
@@ -75,8 +76,8 @@ function editEndpoint(req, res) {
 		res.header("Content-Type", "application/json; charset=utf-8");
 		logger.log('debug', inspect`request body: ${req.body}`);
 		logger.log('debug', inspect`typekey: ${req.body.typekey}`);
-		if (req.body.password !== config.webInterfacePassword){
-			if(req.body.password !== "") logger.log('warning', inspect`${req.connection.remoteAddress} tried to login with a wrong password: '${req.body.password}'`);
+		if (!isValidToken(req.body.token)){
+			if(req.body.password !== "") logger.log('warning', inspect`${req.connection.remoteAddress} tried to login with a wrong password`);
 			return void res.json({
 				successful: false,
 				message: {
