@@ -12,18 +12,18 @@ const misc_1 = require("../../SHARED/misc");
 function download(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (req.query.type) {
-            case "xls":
-                res.setHeader('Content-disposition', 'attachment; filename=list.xls');
-                res.setHeader('Content-type', 'application/xls');
+            case "csv":
+                res.setHeader('Content-disposition', 'attachment; filename=list.csv');
+                res.setHeader('Content-type', 'text/csv');
                 let data = yield misc_1.SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1 and type!=0;');
                 if (data && data.length > 0) {
                     let header = Object.keys(data[0]);
-                    res.write(header.join('\t') + '\n');
+                    res.write(header.join(',') + '\n');
                     for (let row of data) {
                         for (let field of header) {
                             res.write(`"${(row[field] || '').toString()}"`);
                             if (field !== header[header.length - 1])
-                                res.write('\t');
+                                res.write(',');
                         }
                         res.write('\n');
                     }
