@@ -14,7 +14,7 @@
     },
     "wrongDynIpType":{
       "subject":"Falscher DynIp Typ",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern, welcher keine DynIp unterstützt (Typ: <font color=\"blue\">[typ]</font>)"
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern, welcher keine DynIp unterstützt (Typ: <font color=\"blue\">[type]</font>)"
     },
     "ipV6DynIpUpdate":{
       "subject":"ipv6 DynIp Änderung",
