@@ -206,13 +206,15 @@ function sendEmail(messageName: string, values: {
 	});
 }
 
-function sendPackage(pkg:ITelexCom.Package_decoded, callback?:()=>void):void {
-	let client = (this as Client);
+function sendPackage(pkg:ITelexCom.Package_decoded) {
+	return new Promise((resolve, reject)=>{
+		let client = (this as Client);
 
-	logger.log('network', inspect`sending package of type ${pkg.type} to ${client.name}`);
-	logger.log('debug', inspect`sending package ${pkg} to ${client.name}`);
-	let encodeded = ITelexCom.encPackage(pkg);
-	client.connection.write(encodeded, callback);
+		logger.log('network', inspect`sending package of type ${pkg.type} to ${client.name}`);
+		logger.log('debug', inspect`sending package ${pkg} to ${client.name}`);
+		let encodeded = ITelexCom.encPackage(pkg);
+		client.connection.write(encodeded, resolve);
+	});
 }
 
 const symbolName = (s: symbol): string => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";

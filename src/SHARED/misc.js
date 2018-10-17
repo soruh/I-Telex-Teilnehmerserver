@@ -205,12 +205,14 @@ function sendEmail(messageName, values) {
     });
 }
 exports.sendEmail = sendEmail;
-function sendPackage(pkg, callback) {
-    let client = this;
-    logger.log('network', inspect `sending package of type ${pkg.type} to ${client.name}`);
-    logger.log('debug', inspect `sending package ${pkg} to ${client.name}`);
-    let encodeded = ITelexCom.encPackage(pkg);
-    client.connection.write(encodeded, callback);
+function sendPackage(pkg) {
+    return new Promise((resolve, reject) => {
+        let client = this;
+        logger.log('network', inspect `sending package of type ${pkg.type} to ${client.name}`);
+        logger.log('debug', inspect `sending package ${pkg} to ${client.name}`);
+        let encodeded = ITelexCom.encPackage(pkg);
+        client.connection.write(encodeded, resolve);
+    });
 }
 exports.sendPackage = sendPackage;
 const symbolName = (s) => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";

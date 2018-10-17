@@ -85,10 +85,12 @@ function sendQueue() {
 												serverpin: config.serverPin,
 												version: 1,
 											},
-										}, () => {
+										})
+										.then(() => {
 											client.state = constants.states.RESPONDING;
 											resolve();
-										});
+										})
+										.catch(err=>{logger.log('error', inspect`${err}`);});
 									})
 									.catch(err=>{logger.log('error', inspect`${err}`);}); 
 								})
