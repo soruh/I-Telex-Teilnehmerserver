@@ -31,7 +31,8 @@ var german = {
     text: "Port"
   },
   "#table_th_label_extension": {
-    text: "Durchwahl"
+    text: "Durch.",
+    title: "Durchwahl",
   },
   "#table_th_label_pin": {
     text: "Pin"

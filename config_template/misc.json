@@ -14,7 +14,7 @@
   "fullQueryServer":null,
   "binaryPort":11811,
 
-  "webServerTokenLifeTime": 30000,
+  "webServerTokenLifeTime": 5000,
   "webServerPort":3030,
   "webInterfacePassword":"XXX"
 }

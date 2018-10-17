@@ -168,10 +168,10 @@ h2{
   position: absolute;
   top: 30px;
   left: 20px;
-  xborder-radius: 4px;
+  /*border-radius: 4px;*/
   background-color: white;
   box-shadow: 5px 5px 2px 0px rgba(0,0,0,0.45);
-	z-index: 1;
+  z-index: 1;
 }
 #loc-dropdown-children div{
   cursor: pointer;
@@ -194,6 +194,7 @@ h2{
 }
 #table .hr{
 	position: fixed;
+	z-index: 10;
 	top: 50px;
 }
 #table .td, #table .th{
@@ -219,7 +220,7 @@ h2{
 	width: 83px;
 }
 .cell.cell_name{
-	width: calc(160px + 40px);
+	width: 200px;
 }
 .cell.cell_type{
 	width: 106px;
@@ -274,3 +275,164 @@ input.field_error{
 .table-th-label{
 	padding-right: 20px;
 }
+
+
+        .container{
+                width: 1170px !important;
+        }
+@media screen and (max-width:1170px){
+	.container{ 
+		width: 100% !important;
+	}
+}
+@media screen and (max-width:1050px){
+	#table{ 
+		top:100px;
+		width: 100%;
+	}
+	#table .hr{
+		top: 100px;
+	margin-right:15px;
+	}
+}
+@media screen and (max-width:900px){
+	#refresh-container, #download-container, #search-container,#new,#loginout{
+		float:none;
+		background-color: transparent;
+		margin-left:10px;
+		box-shadow: none;
+	}
+	#table{
+                top:150px;
+		background-color: transparent;
+		box-shadow: none;
+	}
+
+	.cell{
+		height: 51px;
+	}
+	.cell.cell_number{
+		width: 33%;
+	}
+	.cell.cell_name{
+		width: 66%;
+	}
+	.cell.cell_type{
+		width: 75px;
+	}
+	/*
+	.cell.cell_hostname{
+		width: 200px;
+	}
+	.cell.cell_ipaddress{
+		width: 131px;
+	}
+	*/
+	.cell.cell_address{
+		width: 200px;
+	}
+	.cell.cell_port{
+		width: 55px;
+	}
+	.cell.cell_extension{
+		width: 88px;
+	}
+	.cell.cell_pin{
+		width: 50px;
+	}
+	.cell.cell_disabled{
+		width: 50px;
+	}
+	.cell.cell_timestamp{
+		width: 77px;
+	}
+	#table .tr{
+		margin-bottom: 24px;
+		background-color: white;
+	}
+
+
+}
+@media screen and (max-width: 640px){
+	#loc-dropdown-parent{
+		box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.65);
+	}
+	#loc-dropdown-children{
+		position: absolute;
+		top: -5px;
+		left: 65px;
+
+		/*border-radius: 4px;*/
+		background-color: transparent;
+		box-shadow: none;
+		z-index: 1;
+	}
+	#loc-dropdown-children div{
+		display: inline-block;
+	}
+	#table .hr{
+		top: 60px;
+		right: 0;
+		left: auto;
+		border: 1px solid #dddddd;
+		/*border-radius: 5px;*/
+		box-shadow: 4px 4px 5px 0px rgba(0, 0, 0, 0.65);
+	}
+	#table .hr::before{
+		content: "Sort";
+		font-weight: bold;
+		margin-left: 50px;
+	}
+	#table .hr .cell{
+		padding-left: 25px;
+	}
+	#table .hr .cell_port::before{
+		content:"" !important;
+	}
+
+	#table .table_th_arrow{
+		right:auto;
+		left: 6px;
+	}
+	#table .th{
+		Xdisplay: none;
+	}
+	#table .td,#table .th{
+		border: none;
+		background-color: transparent;
+		display: block;
+		min-height: 0px;
+		height: auto;
+		padding-top: 0;
+		padding-bottom:0;
+		width: 100%;
+	}
+	#table .tr{
+		background-color: #eeeeee;
+		margin-bottom: 5px;
+		padding:  6px 0;
+
+	}
+	#table .admin_only{
+		text-align: right;	
+		padding: 6px;	
+	}
+	#table{ 
+		width:100%;
+	}
+	.cell_number, .cell_name{
+		font-weight: bold	;
+		font-size: 14px;
+	}
+	.cell_port::before{
+		content:"Port: ";
+	}	
+
+}
+
+
+
+
+
+
+

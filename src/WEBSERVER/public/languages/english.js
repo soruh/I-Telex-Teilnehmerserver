@@ -31,7 +31,8 @@ var english = {
     text: "port"
   },
   "#table_th_label_extension": {
-    text: "extension"
+    text: "ext",
+    title: "extension",
   },
   "#table_th_label_pin": {
     text: "pin"

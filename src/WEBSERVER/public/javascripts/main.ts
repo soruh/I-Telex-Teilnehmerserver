@@ -767,10 +767,12 @@ function updateContent(unSortedList:list) {
 	$(".remove").click(removeButtonClick);
 	updateLoc();
 	if (pwdcorrect) {
+		$('body').addClass('admin_mode');
 		$(".admin_only").show();
 		$(".user_only").hide();
 	}
 	else {
+		$('body').removeClass('admin_mode');
 		$(".admin_only").hide();
 		$(".user_only").show();
 	}
@@ -933,11 +935,11 @@ function initloc() {
 		$("#loc-dropdown-children").append(child);
 	}
 }
-function setLanguage(l) {
-	if (languages.hasOwnProperty(l)) {
-		language = l;
-		setCookie("language", l, 365 * 10);
-		$("#loc-dropdown-parent").css("background-image", "url(/images/" + l + ".svg)");
+function setLanguage(lang) {
+	if (languages.hasOwnProperty(lang)) {
+		language = lang;
+		setCookie("language", lang, 365 * 10);
+		$("#loc-dropdown-parent").css("background-image", "url(/images/" + lang + ".svg)");
 		updateContent(global_list);
 	}
 }
