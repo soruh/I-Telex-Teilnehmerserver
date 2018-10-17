@@ -205,16 +205,16 @@ app.use((req, res, next)=>{
 			color = colors.FgRed;
 	}
 	let message = [
-		(req.connection.remoteAddress.replace("::ffff:","") as any||"UNKNOWN").padEnd(16),
+		(req.connection.remoteAddress.replace("::ffff:","")||"UNKNOWN").padEnd(16),
 		(
 			req.method === "GET" ?
 			colors.FgGreen:
 			colors.FgCyan
 		)+
-		(req.method as any).padEnd(4)+
+		req.method.padEnd(4)+
 		colors.Reset,
 
-		color + (status as any).padEnd(3) + colors.Reset,
+		color + status.padEnd(3) + colors.Reset,
 		req.url.replace(/\//g, colors.FgLightBlack + "/" + colors.Reset),
 	].join(' ');
 	
