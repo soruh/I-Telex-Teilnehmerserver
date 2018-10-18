@@ -1,5 +1,8 @@
 /* jshint -W079 */
 var english = {
+  "#copy_edit_dialog":{
+    text: "copy"
+  },
   "#search-button":{
     title: "search"
   },

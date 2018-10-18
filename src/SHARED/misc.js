@@ -14,6 +14,10 @@ const textColor = colors_js_1.default.Reset;
 const stringColor = colors_js_1.default.FgGreen;
 const errorColor = colors_js_1.default.FgRed;
 const sqlColor = colors_js_1.default.Reverse;
+function timestamp() {
+    return Math.floor(Date.now() / 1000);
+}
+exports.timestamp = timestamp;
 function printDate(date) {
     return date.toJSON().replace('Z', ' ').replace('T', ' ');
 }

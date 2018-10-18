@@ -19,6 +19,11 @@ const stringColor = colors.FgGreen;
 const errorColor = colors.FgRed;
 const sqlColor = colors.Reverse;
 
+
+function timestamp() {
+	return Math.floor(Date.now() / 1000);
+}
+
 function printDate(date:Date):string{
 	return date.toJSON().replace('Z', ' ').replace('T', ' ');
 }
@@ -540,5 +545,6 @@ export {
 	inspect,
 	normalizeIp,
 	sendPackage,
-	getTimestamp
+	getTimestamp,
+	timestamp
 };

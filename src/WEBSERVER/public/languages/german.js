@@ -1,7 +1,10 @@
 /* jshint -W079 */
 var german = {
+  "#copy_edit_dialog":{
+    text: "Kopieren"
+  },
   "#search-button":{
-    title: "suchen"
+    title: "Suchen"
   },
   "#refresh-button":{
     title: "Aktualisieren"

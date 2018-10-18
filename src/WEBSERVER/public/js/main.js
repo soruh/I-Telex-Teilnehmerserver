@@ -166,23 +166,7 @@ $(document).ready(function () {
     });
     $("#submit_password_dialog").click(function () {
         let formId = "#password_form";
-        $(formId).validate({
-            highlight(element, errorClass, validClass) {
-                $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
-                $(element).addClass("bg-danger field_error");
-            },
-            unhighlight(element, errorClass, validClass) {
-                $(element).parents(".error").removeClass(errorClass).addClass(validClass);
-                $(element).removeClass("bg-danger field_error");
-            },
-            errorClass: "validate_error",
-            validClass: "validate_valid",
-            rules: {
-                password: {
-                    required: true,
-                },
-            },
-        });
+        validatePasswordDialog(formId);
         if ($(formId).valid()) {
             login($("#passwordfield").val().toString(), function (successful) {
                 if (successful) {
@@ -199,79 +183,7 @@ $(document).ready(function () {
     });
     $("#submit_newentry_dialog").click(function () {
         let formId = "#newentry_form";
-        $(formId).validate({
-            highlight(element, errorClass, validClass) {
-                $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
-                $(element).addClass("bg-danger field_error");
-                // $("#newentry_dialog").center();
-            },
-            unhighlight(element, errorClass, validClass) {
-                $(element).parents(".error").removeClass(errorClass).addClass(validClass);
-                $(element).removeClass("bg-danger field_error");
-                // $("#newentry_dialog").center();
-            },
-            errorClass: "validate_error",
-            validClass: "validate_valid",
-            rules: {
-                pin: {
-                    required: true,
-                    max: 65536,
-                },
-                extension: {
-                    digits: true,
-                    max: 100,
-                },
-                port: {
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return (type !== "email");
-                        },
-                    },
-                    max: 65536,
-                    digits: true,
-                },
-                name: {
-                    required: true,
-                    maxlength: 40,
-                },
-                number: {
-                    unique: true,
-                    required: true,
-                    digits: true,
-                    max: 4294967296,
-                },
-                email: {
-                    email: true,
-                    maxlength: 40,
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return (type === "email");
-                        },
-                    },
-                },
-                hostname: {
-                    hostname: true,
-                    maxlength: 40,
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return (type === "hostname");
-                        },
-                    },
-                },
-                ipaddress: {
-                    ipaddress: true,
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return (type === "ipaddress");
-                        },
-                    },
-                },
-            },
-        });
+        validateNewDialog(formId);
         $("#type_newentry_dialog").on('change', function () {
             $(formId).valid();
         });
@@ -314,121 +226,22 @@ $(document).ready(function () {
     });
     $("#submit_edit_dialog").click(function () {
         let formId = "#edit_form";
-        $(formId).validate({
-            highlight(element, errorClass, validClass) {
-                $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
-                $(element).trigger("checkval");
-            },
-            unhighlight(element, errorClass, validClass) {
-                $(element).parents(".error").removeClass(errorClass).addClass(validClass);
-                $(element).trigger("checkval");
-            },
-            errorClass: "validate_error",
-            validClass: "validate_valid",
-            rules: {
-                type: {
-                    required: true,
-                    digits: true,
-                    min: 1,
-                },
-                pin: {
-                    required: true,
-                    max: 65536,
-                },
-                extension: {
-                    digits: true,
-                    max: 100,
-                },
-                port: {
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return type !== "email";
-                        },
-                    },
-                    max: 65536,
-                    digits: true,
-                },
-                name: {
-                    required: true,
-                    maxlength: 40,
-                },
-                number: {
-                    unique: true,
-                    required: true,
-                    digits: true,
-                    max: 4294967296,
-                },
-                email: {
-                    email: true,
-                    maxlength: 40,
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return type === "email";
-                        },
-                    },
-                },
-                hostname: {
-                    hostname: true,
-                    maxlength: 40,
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return (type === "hostname");
-                        },
-                    },
-                },
-                ipaddress: {
-                    ipaddress: true,
-                    required: {
-                        depends(element) {
-                            let type = optionType(formId + " select[name=type]");
-                            return (type === "ipaddress");
-                        },
-                    },
-                },
-            },
-        });
+        validateEditDialog(formId);
         $("#type_edit_dialog").on('change', function () {
             $(formId).valid();
         });
         if ($(formId).valid()) {
-            let editParams = {
-                typekey: "edit",
-                uid: $("#edit_dialog").data("uid"),
-                number: $("#number_edit_dialog").val(),
-                name: $("#name_edit_dialog").val(),
-                type: $("#type_edit_dialog").val(),
-                hostname: "",
-                ipaddress: "",
-                port: $("#port_edit_dialog").val(),
-                extension: $("#extension_edit_dialog").val(),
-                timestamp: $("#timestamp_edit_dialog").val(),
-                pin: $("#pin_edit_dialog").val(),
-                disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0,
-            };
-            switch (optionType(formId + " select[name=type]")) {
-                case "ipaddress":
-                    editParams.ipaddress = $("#ipaddress_edit_dialog").val().toString();
-                    break;
-                case "hostname":
-                    editParams.hostname = $("#hostname_edit_dialog").val().toString();
-                    break;
-                case "email":
-                    editParams.hostname = $("#email_edit_dialog").val().toString();
-                    break;
-            }
-            edit(editParams, function (err, res) {
-                if (err) {
-                    console.error(err);
-                }
-                else {
-                    console.log("edit res:", res);
-                    resetforms();
-                }
-            });
-            // getList(updateTable);
+            editOrCopy('edit');
+        }
+    });
+    $("#copy_edit_dialog").click(function () {
+        let formId = "#edit_form";
+        validateEditDialog(formId);
+        $("#type_edit_dialog").on('change', function () {
+            $(formId).valid();
+        });
+        if ($(formId).valid()) {
+            editOrCopy('copy');
         }
     });
     $("#submit_delete_dialog").click(function () {
@@ -461,6 +274,43 @@ function checkUnique(number, element /*|HTMLElement*/) {
             return false;
     }
     return true;
+}
+function editOrCopy(action) {
+    let editParams = {
+        typekey: action,
+        uid: $("#edit_dialog").data("uid"),
+        number: $("#number_edit_dialog").val(),
+        name: $("#name_edit_dialog").val(),
+        type: $("#type_edit_dialog").val(),
+        hostname: "",
+        ipaddress: "",
+        port: $("#port_edit_dialog").val(),
+        extension: $("#extension_edit_dialog").val(),
+        timestamp: $("#timestamp_edit_dialog").val(),
+        pin: $("#pin_edit_dialog").val(),
+        disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0,
+    };
+    switch (optionType("#edit_dialog select[name=type]")) {
+        case "ipaddress":
+            editParams.ipaddress = $("#ipaddress_edit_dialog").val().toString();
+            break;
+        case "hostname":
+            editParams.hostname = $("#hostname_edit_dialog").val().toString();
+            break;
+        case "email":
+            editParams.hostname = $("#email_edit_dialog").val().toString();
+            break;
+    }
+    edit(editParams, function (err, res) {
+        if (err) {
+            console.error(err);
+        }
+        else {
+            console.log(action + " res:", res);
+            resetforms();
+        }
+    });
+    // getList(updateTable);
 }
 function optionType(select) {
     let val = +$(select).val();
@@ -789,6 +639,178 @@ function removeButtonClick() {
             $('<div/>', deleteDialogLabel).appendTo("#delete_dialog_label_container");
         }
         showpopup("delete_dialog");
+    });
+}
+function validateEditDialog(formId) {
+    $(formId).validate({
+        highlight(element, errorClass, validClass) {
+            $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+            $(element).trigger("checkval");
+        },
+        unhighlight(element, errorClass, validClass) {
+            $(element).parents(".error").removeClass(errorClass).addClass(validClass);
+            $(element).trigger("checkval");
+        },
+        errorClass: "validate_error",
+        validClass: "validate_valid",
+        rules: {
+            type: {
+                required: true,
+                digits: true,
+                min: 1,
+            },
+            pin: {
+                required: true,
+                max: 65536,
+            },
+            extension: {
+                digits: true,
+                max: 100,
+            },
+            port: {
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return type !== "email";
+                    },
+                },
+                max: 65536,
+                digits: true,
+            },
+            name: {
+                required: true,
+                maxlength: 40,
+            },
+            number: {
+                unique: true,
+                required: true,
+                digits: true,
+                max: 4294967296,
+            },
+            email: {
+                email: true,
+                maxlength: 40,
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return type === "email";
+                    },
+                },
+            },
+            hostname: {
+                hostname: true,
+                maxlength: 40,
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return (type === "hostname");
+                    },
+                },
+            },
+            ipaddress: {
+                ipaddress: true,
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return (type === "ipaddress");
+                    },
+                },
+            },
+        },
+    });
+}
+function validateNewDialog(formId) {
+    $(formId).validate({
+        highlight(element, errorClass, validClass) {
+            $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+            $(element).addClass("bg-danger field_error");
+            // $("#newentry_dialog").center();
+        },
+        unhighlight(element, errorClass, validClass) {
+            $(element).parents(".error").removeClass(errorClass).addClass(validClass);
+            $(element).removeClass("bg-danger field_error");
+            // $("#newentry_dialog").center();
+        },
+        errorClass: "validate_error",
+        validClass: "validate_valid",
+        rules: {
+            pin: {
+                required: true,
+                max: 65536,
+            },
+            extension: {
+                digits: true,
+                max: 100,
+            },
+            port: {
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return (type !== "email");
+                    },
+                },
+                max: 65536,
+                digits: true,
+            },
+            name: {
+                required: true,
+                maxlength: 40,
+            },
+            number: {
+                unique: true,
+                required: true,
+                digits: true,
+                max: 4294967296,
+            },
+            email: {
+                email: true,
+                maxlength: 40,
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return (type === "email");
+                    },
+                },
+            },
+            hostname: {
+                hostname: true,
+                maxlength: 40,
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return (type === "hostname");
+                    },
+                },
+            },
+            ipaddress: {
+                ipaddress: true,
+                required: {
+                    depends(element) {
+                        let type = optionType(formId + " select[name=type]");
+                        return (type === "ipaddress");
+                    },
+                },
+            },
+        },
+    });
+}
+function validatePasswordDialog(formId) {
+    $(formId).validate({
+        highlight(element, errorClass, validClass) {
+            $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+            $(element).addClass("bg-danger field_error");
+        },
+        unhighlight(element, errorClass, validClass) {
+            $(element).parents(".error").removeClass(errorClass).addClass(validClass);
+            $(element).removeClass("bg-danger field_error");
+        },
+        errorClass: "validate_error",
+        validClass: "validate_valid",
+        rules: {
+            password: {
+                required: true,
+            },
+        },
     });
 }
 function refresh() {

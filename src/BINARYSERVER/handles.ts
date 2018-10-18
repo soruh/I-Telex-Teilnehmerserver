@@ -4,7 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import {Client, sendEmail, getTimezone, inspect, symbolName, getTimestamp} from '../SHARED/misc.js';
+import {Client, sendEmail, getTimezone, inspect, symbolName, getTimestamp, timestamp} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
@@ -71,7 +71,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	const [entry] = entries;
 	if (!entry) {
 		await SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-		const result = await SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', Math.floor(Date.now() / 1000), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+		const result = await SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
 		if (!(result && result.affectedRows)) {
 			logger.log('error', inspect`could not create entry`);
 			return;
@@ -139,7 +139,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	}
 	
 	await SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
-		port, client.ipAddress, Math.floor(Date.now() / 1000), number,
+		port, client.ipAddress, timestamp(), number,
 		config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin,
 	]);
 	await client.sendPackage({

@@ -23,7 +23,7 @@ function editEntry(req, res) {
         if (entry.number === req.body.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);
             logger.log('debug', misc_1.inspect `${entry.number} == ${req.body.number}`);
-            let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, Math.floor(Date.now() / 1000), entry.pin, req.body.uid]);
+            let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, misc_1.timestamp(), entry.pin, req.body.uid]);
             if (!result)
                 return;
             res.json({
@@ -35,7 +35,7 @@ function editEntry(req, res) {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
             logger.log('debug', misc_1.inspect `${entry.number} != ${req.body.number}`);
             yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
-            let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, Math.floor(Date.now() / 1000)]);
+            let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
             if (!result)
                 return;
             res.json({
@@ -43,6 +43,30 @@ function editEntry(req, res) {
                 message: result,
             });
         }
+    });
+}
+function copyEntry(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let results = yield misc_2.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+        if (results.length === 0) {
+            res.json({
+                successful: false,
+                message: "can't copy nonexisting entry",
+            });
+            return;
+        }
+        let [exising] = results;
+        yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
+        console.log("exising:");
+        console.log(exising);
+        console.log(exising.pin);
+        let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, misc_1.timestamp()]);
+        if (!result)
+            return;
+        res.json({
+            successful: true,
+            message: result,
+        });
     });
 }
 function newEntry(req, res) {
@@ -57,7 +81,7 @@ function newEntry(req, res) {
                 message: new Error("entry already exists"),
             });
         yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
-        let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, Math.floor(Date.now() / 1000)]);
+        let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
         if (!result)
             return;
         res.json({
@@ -68,7 +92,7 @@ function newEntry(req, res) {
 }
 function deleteEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [Math.floor(Date.now() / 1000), req.body.uid]);
+        let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [misc_1.timestamp(), req.body.uid]);
         if (!result)
             return;
         res.json({
@@ -97,6 +121,9 @@ function editEndpoint(req, res) {
         switch (req.body.typekey) {
             case "edit":
                 editEntry(req, res);
+                break;
+            case "copy":
+                copyEntry(req, res);
                 break;
             case "new":
                 newEntry(req, res);
