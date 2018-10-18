@@ -54,10 +54,6 @@ async function copyEntry(req, res){
 
 	await SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
 
-	console.log("exising:");
-	console.log(exising);
-	console.log(exising.pin);
-
 	let result = await SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, timestamp()]);
 	if (!result) return;
 

@@ -57,9 +57,6 @@ function copyEntry(req, res) {
         }
         let [exising] = results;
         yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
-        console.log("exising:");
-        console.log(exising);
-        console.log(exising.pin);
         let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, misc_1.timestamp()]);
         if (!result)
             return;
