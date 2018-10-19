@@ -107,12 +107,11 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
         client.connection.end();
-        misc_js_1.sendEmail("wrongDynIpPin", {
-            Ip: client.ipAddress,
-            number: entry.number.toString(),
+        misc_js_1.increaseErrorCounter('client', {
+            clientName: client.name,
+            ip: client.ipAddress,
             name: entry.name,
-            date: misc_js_1.getTimestamp(),
-            timeZone: misc_js_1.getTimezone(new Date()),
+            number: entry.number.toString(),
         });
         return;
     }

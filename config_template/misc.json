@@ -7,6 +7,7 @@
   "allowInvalidPackageSizes":true,
 
   "warnAtErrorCounts":[1,10],
+  "warnAtWrongDynIpPinCounts":[1,3,10],
   "allowFullQueryInReadonly":true,
   "allowLoginInReadonly": false,
   "doDnsLookups":true,

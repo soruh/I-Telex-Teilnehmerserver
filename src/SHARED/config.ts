@@ -54,6 +54,7 @@ interface configFile {
 	webInterfacePassword: string;
 	
 	warnAtErrorCounts: number[];
+	warnAtWrongDynIpPinCounts: number[];
 	scientistNames:boolean;
 
 	eMail: {

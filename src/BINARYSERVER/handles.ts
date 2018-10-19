@@ -4,7 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import {Client, sendEmail, getTimezone, inspect, symbolName, getTimestamp, timestamp} from '../SHARED/misc.js';
+import {Client, sendEmail, getTimezone, inspect, symbolName, getTimestamp, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
@@ -115,13 +115,11 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	}else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
 		client.connection.end();
-
-		sendEmail("wrongDynIpPin", {
-			Ip: client.ipAddress,
-			number: entry.number.toString(),
-			name: entry.name,
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
+		increaseErrorCounter('client', {
+			clientName:client.name,
+			ip:client.ipAddress,
+			name:entry.name,
+			number:entry.number.toString(),
 		});
 		return;
 	}

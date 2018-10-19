@@ -6,7 +6,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as constants from "../BINARYSERVER/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import {increaseErrorCounter, errorCounters, resetErrorCounter, Client, clientName, inspect, normalizeIp, sendPackage} from "../SHARED/misc.js";
+import {increaseErrorCounter, serverErrorCounters, resetErrorCounter, Client, clientName, inspect, normalizeIp, sendPackage} from "../SHARED/misc.js";
 import { handlePackage } from "./handles.js";
 //#endregion
 
@@ -51,7 +51,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 			logger.log('warning', inspect`server: ${client.name} timed out`);
 			// socket.emit("end");
 			// socket.emit("error",new Error("timeout"));
-			increaseErrorCounter(serverkey, "TIMEOUT");
+			increaseErrorCounter('server', serverkey, "TIMEOUT");
 			socket.end();
 		});
 		socket.on('error', error => {
@@ -59,7 +59,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 				logger.log('debug', inspect`${error}`);
 
 				logger.log('network', inspect`server ${client.name} had an error`);
-				increaseErrorCounter(serverkey, error["code"]);
+				increaseErrorCounter('server', serverkey, error["code"]);
 			}else{
 				logger.log('silly', inspect`${error}`);
 			}
@@ -77,7 +77,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 				}
 			}
 			logger.log('network', inspect`connected to server at ${serverkey} as ${client.name}`);
-			resetErrorCounter(serverkey);
+			resetErrorCounter('server', serverkey);
 			resolve(client);
 		});
 

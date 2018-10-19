@@ -10,7 +10,7 @@
     },
     "wrongDynIpPin":{
       "subject":"Falscher DynIp Pin",
-      "text":"[Ip] hat am [date] [timeZone] mit einer falschen pin versucht die DynIp für [number]([name]) zu ändern"
+      "text":"[Ip] hat am [date] [timeZone] zum [counter]ten mal mit einer falschen pin versucht die DynIp für [number]([name]) zu ändern"
     },
     "wrongDynIpType":{
       "subject":"Falscher DynIp Typ",
