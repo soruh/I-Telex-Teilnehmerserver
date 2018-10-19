@@ -4,6 +4,16 @@ import { isValidToken } from "./tokens";
 import { peerList } from "../../BINARYSERVER/ITelexCom";
 
 
+async function resetPinEntry(req, res){
+	let result = await SqlQuery("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [timestamp(), req.body.uid]);
+	if (!result) return;
+	
+	res.json({
+		successful: true,
+		message: result,
+	});
+}
+
 async function editEntry(req, res){
 	let entries = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
 	if (!entries) return;
@@ -122,7 +132,10 @@ function editEndpoint(req, res) {
 					break;
 				case "delete":
 					deleteEntry(req, res);
-					break;	
+					break;
+				case "resetPin":
+					resetPinEntry(req, res);
+					break;
 				case "confirm password":
 					res.json({
 						successful: true,

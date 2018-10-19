@@ -58,6 +58,9 @@ var english = {
   ".remove": {
     title: "remove"
   },
+  ".resetPin": {
+    title: "reset pin"
+  },
   "#login": {
     text: "log in"
   },
@@ -169,7 +172,11 @@ var english = {
   "#hl_delete": {
     text: "delete"
   },
-  "delete_message": "do you really want to delete this entry?",
+  "#hl_resetPin": {
+    text: "reset pin"
+  },
+  "delete_message": "Do you really want to delete this entry?",
+  "resetPinMessage": "Do you really want to reset the pin for this entry?",
   "verify": {
     unique: "Please enter a unique telex-number.",
     required: "This field is required.",

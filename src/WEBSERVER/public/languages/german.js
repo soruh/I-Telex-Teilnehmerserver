@@ -58,6 +58,9 @@ var german = {
   ".remove": {
     title: "entfernen"
   },
+  ".resetPin": {
+    title: "pin zurücksetzen"
+  },
   "#login": {
     text: "einloggen"
   },
@@ -169,7 +172,11 @@ var german = {
   "#hl_delete": {
     text: "Löschen"
   },
+  "#hl_resetPin": {
+    text: "Pin zurücksetzten"
+  },
   "delete_message": "Wollen sie diesen Eintrag wirklich löschen?",
+  "resetPinMessage": "Wollen sie wirklich die PIN für diesen Eintrag zurücksetzen?",
   "verify": {
     unique: "Bitte nutzen sie eine noch nicht vorhandene Nummer.",
     required: "Dieses Feld ist ein Pflichtfeld.",

@@ -11,6 +11,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const misc_1 = require("../../SHARED/misc");
 const misc_2 = require("../../SHARED/misc");
 const tokens_1 = require("./tokens");
+function resetPinEntry(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), req.body.uid]);
+        if (!result)
+            return;
+        res.json({
+            successful: true,
+            message: result,
+        });
+    });
+}
 function editEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let entries = yield misc_2.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
@@ -127,6 +138,9 @@ function editEndpoint(req, res) {
                 break;
             case "delete":
                 deleteEntry(req, res);
+                break;
+            case "resetPin":
+                resetPinEntry(req, res);
                 break;
             case "confirm password":
                 res.json({

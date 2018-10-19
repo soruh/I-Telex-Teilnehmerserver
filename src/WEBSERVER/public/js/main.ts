@@ -292,6 +292,21 @@ $(document).ready(function() {
 		});
 		// getList(updateTable);
 	});
+	$("#submit_resetPin_dialog").click(function() {
+		edit({
+			typekey: "resetPin",
+			uid: $("#resetPin_dialog").data("uid"),
+		}, function(err, res) {
+			if (err) {
+				console.error(err);
+			}
+			else {
+				console.log("edit res:",res);
+				resetforms();
+			}
+		});
+		// getList(updateTable);
+	});
 	$(".abort_dialog").click(function() {
 		resetforms();
 		// getList(updateTable);
@@ -382,10 +397,12 @@ function showpopup(id:string, callback?:()=>void) {
 	$("#newentry_dialog").hide();
 	$("#edit_dialog").hide();
 	$("#delete_dialog").hide();
+	$("#resetPin_dialog").hide();
 	$("#password_dialog").hide();
 	if (id === "") {
 		$("#edit_dialog").data("uid", "");
 		$("#delete_dialog").data("uid", "");
+		$("#resetPin_dialog").data("uid", "");
 	}
 	else {
 		$("#" + id).show(1, function() {
@@ -404,6 +421,7 @@ function resetforms() {
 	$("#newentry_dialog input").val("");
 	$("#newentry_dialog checkbox").prop("checked", false);
 	$("#delete_dialog_label_container div").remove();
+	$("#resetPin_dialog_label_container div").remove();
 	showpopup("");
 }
 function login(pwd?:string, callback?:(success:boolean)=>void) {
@@ -594,9 +612,17 @@ function updateContent(unSortedList:list) {
 				span.addClass("btn  btn-primary btn-sm glyphicon glyphicon-pencil edit");
 				span.data("uid", entry.uid);
 			edit.append(span);
-			edit.attr("title","edit");
 			edit.addClass("edit_td");
 			modify_container.append(edit);
+
+			let resetPin = $("<div></div>");
+			// edit.addClass("td");
+			span = $("<span></span>");
+				span.addClass("btn  btn-warning btn-sm glyphicon glyphicon-repeat resetPin");
+				span.data("uid", entry.uid);
+			resetPin.append(span);
+			resetPin.addClass("resetPin_td");
+			modify_container.append(resetPin);
 			
 			let remove = $("<div></div>");
 			// remove.addClass("td");
@@ -604,7 +630,6 @@ function updateContent(unSortedList:list) {
 				span.addClass("btn btn-danger btn-sm glyphicon glyphicon-trash remove");
 				span.data("uid", entry.uid);
 			remove.append(span);
-			remove.attr("title", "remove");
 			remove.addClass("remove_td");
 			modify_container.append(remove);
 		row.append(modify_container);
@@ -613,6 +638,7 @@ function updateContent(unSortedList:list) {
 		// tslint:enable:align
 	}
 	$(".edit").click(editButtonClick);
+	$(".resetPin").click(resetPinButtonClick);
 	$(".remove").click(removeButtonClick);
 	updateLoc();
 	if (pwdcorrect) {
@@ -687,6 +713,41 @@ function removeButtonClick() {
 			$('<div/>', deleteDialogLabel).appendTo("#delete_dialog_label_container");
 		}
 		showpopup("delete_dialog");
+	});
+}
+function resetPinButtonClick() {
+	$("#resetPin_dialog_label_container div").remove();
+	let uid = $(this).data("uid");
+	$("#resetPin_dialog").data("uid", uid);
+	let resetPinMessage = {
+		id: "message_resetPin_dialog_label",
+		class: "resetPin_dialog_label",
+		text: languages[language].resetPinMessage,
+	};
+	$('<div/>', resetPinMessage).appendTo("#resetPin_dialog_label_container");
+
+
+	getList(list=>{
+		updateTable(list);
+		
+		let entry = findByUid(uid);
+		if(!entry) return console.error('uid '+uid+' not found');
+		
+		for (let k in entry) {
+			let resetPinDialogLabel = {
+				id: k + "_resetPin_dialog_label",
+				class: "resetPin_dialog_label",
+				text: null,
+			};
+			if (k === "timestamp" && (!UNIXTIMEDATE)) {
+				resetPinDialogLabel.text = k + ": " + UNIXTIMEToString(entry[k]);
+			}
+			else if (k !== "uid") {
+				resetPinDialogLabel.text = k + ": " + entry[k];
+			}
+			$('<div/>', resetPinDialogLabel).appendTo("#resetPin_dialog_label_container");
+		}
+		showpopup("resetPin_dialog");
 	});
 }
 function validateEditDialog(formId){

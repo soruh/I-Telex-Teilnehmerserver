@@ -155,11 +155,11 @@ label{
 select:invalid{
   color:gray;
 }
-.edit_td, .remove_td{
-  vertical-align: bottom;
+.resetPin_td, .edit_td, .remove_td{
+	vertical-align: bottom;
 	display: inline-block;
 }
-.edit_td{
+.resetPin_td, .edit_td{
 	margin-right: 2px;
 }
 #new{
