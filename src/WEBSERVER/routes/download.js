@@ -34,7 +34,7 @@ function download(req, res, next) {
                 }
                 break;
             default:
-                res.end("requested an invalid file type");
+                res.end("you requested an invalid file type");
                 break;
         }
     });

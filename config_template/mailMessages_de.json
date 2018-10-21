@@ -10,7 +10,7 @@
     },
     "wrongDynIpPin":{
       "subject":"Falscher DynIp Pin",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> mit einer falschen pin versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern"
+      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> zum <font color=\"blue\">[counter]ten</font> mal mit einer falschen pin versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern"
     },
     "wrongDynIpType":{
       "subject":"Falscher DynIp Typ",

@@ -1,5 +1,8 @@
 /* jshint -W079 */
 var english = {
+  "#copy_edit_dialog":{
+    text: "copy"
+  },
   "#search-button":{
     title: "search"
   },
@@ -31,7 +34,8 @@ var english = {
     text: "port"
   },
   "#table_th_label_extension": {
-    text: "extension"
+    text: "ext",
+    title: "extension",
   },
   "#table_th_label_pin": {
     text: "pin"
@@ -53,6 +57,9 @@ var english = {
   },
   ".remove": {
     title: "remove"
+  },
+  ".resetPin": {
+    title: "reset pin"
   },
   "#login": {
     text: "log in"
@@ -165,7 +172,11 @@ var english = {
   "#hl_delete": {
     text: "delete"
   },
-  "delete_message": "do you really want to delete this entry?",
+  "#hl_resetPin": {
+    text: "reset pin"
+  },
+  "delete_message": "Do you really want to delete this entry?",
+  "resetPinMessage": "Do you really want to reset the pin for this entry?",
   "verify": {
     unique: "Please enter a unique telex-number.",
     required: "This field is required.",

@@ -1,28 +1,10 @@
 "use strict";
 
-import * as mysql from "mysql";
 import * as express from "express";
-
-import config from '../../SHARED/config.js';
-import { inspect } from "../../SHARED/misc.js";
-import edit from "./edit";
+import editEndpoint from "./edit";
 import list from "./list";
 import download from "./download";
-
-
-const logger = global.logger;
-global.sqlPool = mysql.createPool(config.mySqlConnectionOptions);
-const sqlPool = global.sqlPool;
-
-sqlPool.getConnection(function(err, connection) {
-	if (err) {
-		logger.log('error', inspect`could not connect to database!`);
-		throw err;
-	} else {
-		logger.log('warning', inspect`connected to database!`);
-		connection.release();
-	}
-});
+import { createToken } from "./tokens";
 
 const router = express.Router();
 router.get('/', function(req, res, next) {
@@ -31,8 +13,10 @@ router.get('/', function(req, res, next) {
 
 router.post('/list', list);
 
-router.post('/edit', edit);
+router.post('/edit', editEndpoint);
 
 router.get('/download', download);
+
+router.get('/getSalt', createToken);
 
 export default router;

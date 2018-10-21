@@ -9,11 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const misc_1 = require("../../SHARED/misc");
-const config_1 = require("../../SHARED/config");
+const tokens_1 = require("./tokens");
 function list(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         // tslint:disable:no-var-keyword
-        if (req.body.password === config_1.default.webInterfacePassword) {
+        if (tokens_1.isValidToken(req.body.token)) {
             var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,disabled,timestamp FROM teilnehmer";
         }
         else {

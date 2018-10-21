@@ -19,6 +19,11 @@ const stringColor = colors.FgGreen;
 const errorColor = colors.FgRed;
 const sqlColor = colors.Reverse;
 
+
+function timestamp() {
+	return Math.floor(Date.now() / 1000);
+}
+
 function printDate(date:Date):string{
 	return date.toJSON().replace('Z', ' ').replace('T', ' ');
 }
@@ -62,42 +67,84 @@ function getTimezone(date: Date) {
 	return `UTC${(offset < 0 ? "" : "+")}${offsetStr}`;
 }
 
-let errorCounters: {
-	[index: string]:number;
-} = {};
+let serverErrorCounters:    {[index: string]:number} = {};
+let clientWrongPinCounters: {[index: string]:number} = {};
 
-function increaseErrorCounter(serverkey: string, code: string): void {
-	if (errorCounters.hasOwnProperty(serverkey)) {
-		errorCounters[serverkey]++;
-	} else {
-		errorCounters[serverkey] = 1;
-	}
-	const warn: boolean = config.warnAtErrorCounts.indexOf(errorCounters[serverkey]) > -1;
-	const counterColor = warn?colors.FgRed:colors.FgCyan;
-	logger.log('warning', inspect`increased errorCounter for server ${serverkey} to ${counterColor+errorCounters[serverkey]+colors.Reset}`);
-	if (warn){
-		sendEmail("ServerError", {
-			host: serverkey.split(":")[0],
-			port: serverkey.split(":")[1],
-			errorCounter: errorCounters[serverkey].toString(),
-			lastError: code,
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
-		});
+function increaseErrorCounter(type:"client", identifier:{
+	name:string;
+	clientName:string;
+	number:string;
+	ip:string;
+}): void;
+function increaseErrorCounter(type:"server", identifier:string, code:string): void;
+function increaseErrorCounter(type, identifier, code?): void {
+	if(type === "server"){
+		if (serverErrorCounters.hasOwnProperty(identifier)) {
+			serverErrorCounters[identifier]++;
+		} else {
+			serverErrorCounters[identifier] = 1;
+		}
+		const warn: boolean = config.warnAtErrorCounts.indexOf(serverErrorCounters[identifier]) > -1;
+		const counterColor = warn?colors.FgRed:colors.FgCyan;
+		logger.log('warning', inspect`increased errorCounter for server ${identifier} to ${counterColor+serverErrorCounters[identifier]+colors.Reset}`);
+		if (warn){
+			sendEmail("ServerError", {
+				host: identifier.split(":")[0],
+				port: identifier.split(":")[1],
+				errorCounter: serverErrorCounters[identifier].toString(),
+				lastError: code,
+				date: getTimestamp(),
+				timeZone: getTimezone(new Date()),
+			});
+		}
+	}else if(type === "client"){
+		if (clientWrongPinCounters.hasOwnProperty(identifier.number)) {
+			clientWrongPinCounters[identifier.number]++;
+		} else {
+			clientWrongPinCounters[identifier.number] = 1;
+		}
+
+		const warn: boolean = config.warnAtWrongDynIpPinCounts.indexOf(clientWrongPinCounters[identifier.number]) > -1;
+		const counterColor = warn?colors.FgRed:colors.FgCyan;
+		logger.log('warning', inspect`increased wrongPinCounter for client ${identifier.clientName} to ${counterColor+clientWrongPinCounters[identifier.number]+colors.Reset}`);
+		if (warn){
+			sendEmail("wrongDynIpPin", {
+				Ip: identifier.ip,
+				number: identifier.number,
+				name: identifier.name,
+				counter: clientWrongPinCounters[identifier.number],
+				date: getTimestamp(),
+				timeZone: getTimezone(new Date()),
+			});
+		}
 	}
 }
 
-function resetErrorCounter(serverkey: string) {
-	if(errorCounters.hasOwnProperty(serverkey)){
-		sendEmail("ServerErrorOver", {
-			host: serverkey.split(":")[0],
-			port: serverkey.split(":")[1],
-			errorCounter: errorCounters[serverkey].toString(),
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
-		});
-		logger.log('debug', inspect`reset error counter for: ${serverkey}. Counter was at: ${errorCounters[serverkey]}`);
-		delete errorCounters[serverkey];
+function resetErrorCounter(type:"client", identifier:{
+	name:string;
+	clientName:string;
+	number:string;
+	ip:string;
+}): void;
+function resetErrorCounter(type:"server", identifier:string,): void;
+function resetErrorCounter(type, identifier):void {
+	if(type === "server"){
+		if(serverErrorCounters.hasOwnProperty(identifier)){
+			sendEmail("ServerErrorOver", {
+				host: identifier.split(":")[0],
+				port: identifier.split(":")[1],
+				errorCounter: serverErrorCounters[identifier].toString(),
+				date: getTimestamp(),
+				timeZone: getTimezone(new Date()),
+			});
+			logger.log('debug', inspect`reset error counter for: ${identifier}. Counter was at: ${serverErrorCounters[identifier]}`);
+			delete serverErrorCounters[identifier];
+		}
+	}else if(type === "client"){
+		if(serverErrorCounters.hasOwnProperty(identifier.number)){
+			logger.log('debug', inspect`reset error counter for: ${identifier.clientName}. Counter was at: ${serverErrorCounters[identifier.number]}`);
+			delete serverErrorCounters[identifier.number];
+		}
 	}
 }
 
@@ -158,9 +205,70 @@ function normalizeIp(ipAddr:string){
 	}
 }
 
-function sendEmail(messageName: string, values: {
-	[index: string]: string;
-}): Promise < any > {
+interface mail_ipV6DynIpUpdate_options {
+	Ip: string;
+	number: string;
+	date: string;
+	timeZone: string;
+}
+interface mail_invalidNumber_options {
+	Ip: string;
+	number: string;
+	date: string;
+	timeZone: string;
+}
+interface mail_wrongDynIpType_options {
+	type: string;
+	Ip: string;
+	number: string;
+	name: string;
+	date: string;
+	timeZone: string;
+}
+interface mail_wrongDynIpPin_options {
+	Ip: string;
+	number: string;
+	name: string;
+	date: string;
+	timeZone: string;
+	counter: number;
+}
+interface mail_new_options {
+	Ip: string;
+	number: string;
+	date: string;
+	timeZone: string;
+}
+interface mail_wrongServerPin_options {
+	Ip: string;
+	date: string;
+	timeZone: string;
+}
+interface mail_ServerError_options {
+	host: string;
+	port: string;
+	errorCounter: string;
+	lastError: string;
+	date: string;
+	timeZone: string;
+}
+interface mail_ServerErrorOver_options {
+	host: string;
+	port: string;
+	errorCounter: string;
+	date: string;
+	timeZone: string;
+}
+
+function sendEmail(messageName:'invalidNumber',   values:mail_invalidNumber_options);
+function sendEmail(messageName:'wrongDynIpType',  values:mail_wrongDynIpType_options);
+function sendEmail(messageName:'wrongDynIpPin',   values:mail_wrongDynIpPin_options);
+function sendEmail(messageName:'new',             values:mail_new_options);
+function sendEmail(messageName:'wrongServerPin',  values:mail_wrongServerPin_options);
+function sendEmail(messageName:'ServerError',     values:mail_ServerError_options);
+function sendEmail(messageName:'ServerErrorOver', values:mail_ServerErrorOver_options);
+function sendEmail(messageName:'ipV6DynIpUpdate', values:mail_ipV6DynIpUpdate_options);
+function sendEmail(messageName, values) {
 	return new Promise((resolve, reject) => {
 		let message: {
 			"subject": string,
@@ -184,7 +292,13 @@ function sendEmail(messageName: string, values: {
 			//     for (let k in values) mailOptions[type] = mailOptions[type].replace(new RegExp(k.replace(/\[/g, "\\[").replace(/\]/g, "\\]"), "g"), values[k]);
 			// }
 			if (type) {
-				mailOptions[type] = (message[type] as string).replace(/\[([^\]]*)\]/g, (match, key) =>values[key] || "NULL");
+				mailOptions[type] = (message[type] as string).replace(/\[([^\]]*)\]/g, (match, key) => {
+					if(values[key] == null){
+						return "NULL";
+					}else{
+						return values[key];
+					}
+				});
 			} else {
 				mailOptions.text = "configuration error in config/mailMessages.json";
 			}
@@ -206,13 +320,15 @@ function sendEmail(messageName: string, values: {
 	});
 }
 
-function sendPackage(pkg:ITelexCom.Package_decoded, callback?:()=>void):void {
-	let client = (this as Client);
+function sendPackage(pkg:ITelexCom.Package_decoded) {
+	return new Promise((resolve, reject)=>{
+		let client = (this as Client);
 
-	logger.log('network', inspect`sending package of type ${pkg.type} to ${client.name}`);
-	logger.log('debug', inspect`sending package ${pkg} to ${client.name}`);
-	let encodeded = ITelexCom.encPackage(pkg);
-	client.connection.write(encodeded, callback);
+		logger.log('network', inspect`sending package of type ${pkg.type} to ${client.name}`);
+		logger.log('debug', inspect`sending package ${pkg} to ${client.name}`);
+		let encodeded = ITelexCom.encPackage(pkg);
+		client.connection.write(encodeded, resolve);
+	});
 }
 
 const symbolName = (s: symbol): string => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
@@ -470,7 +586,7 @@ export {
 	sendEmail,
 	increaseErrorCounter,
 	resetErrorCounter,
-	errorCounters,
+	serverErrorCounters,
 	symbolName,
 	Client,
 	clientName,
@@ -478,5 +594,6 @@ export {
 	inspect,
 	normalizeIp,
 	sendPackage,
-	getTimestamp
+	getTimestamp,
+	timestamp
 };

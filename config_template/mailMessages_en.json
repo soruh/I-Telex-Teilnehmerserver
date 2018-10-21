@@ -10,7 +10,7 @@
     },
     "wrongDynIpPin":{
       "subject":"wrong dynIp pin",
-      "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with a wrong pin on <font color=\"blue\">[date] [timeZone]</font>"
+      "html":"<font color=\"blue\">[Ip]</font> tried to update the dynIp for <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) with a wrong pin for the <font color=\"blue\">[counter].</font> time on <font color=\"blue\">[date] [timeZone]</font>"
     },
     "wrongDynIpType":{
       "subject":"wrong dynIp type",

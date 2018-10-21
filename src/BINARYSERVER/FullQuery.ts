@@ -57,10 +57,12 @@ function getFullQuery() {
 							},
 						};
 					}
-					client.sendPackage(request, () => {
+					client.sendPackage(request)
+					.then(() => {
 						client.state = constants.states.FULLQUERY;
 						client.cb = resolveLoop;
-					});
+					})
+					.catch(err=>{logger.log('error', inspect`${err}`);}); 
 				})
 				.catch(err=>{logger.log('error', inspect`${err}`);});
 			}));

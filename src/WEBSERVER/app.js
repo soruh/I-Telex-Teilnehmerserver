@@ -94,10 +94,23 @@ const express = require("express");
 const favicon = require("serve-favicon");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const mysql = require("mysql");
 const colors_js_1 = require("../SHARED/colors.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const index_js_1 = require("./routes/index.js");
 const logger = global.logger;
+global.sqlPool = mysql.createPool(config_js_1.default.mySqlConnectionOptions);
+const sqlPool = global.sqlPool;
+sqlPool.getConnection(function (err, connection) {
+    if (err) {
+        logger.log('error', misc_js_1.inspect `could not connect to database!`);
+        throw err;
+    }
+    else {
+        logger.log('warning', misc_js_1.inspect `connected to database!`);
+        connection.release();
+    }
+});
 let app = express();
 // view engine setup
 app.set('views', path.join(__dirname, '../WEBSERVER/views'));

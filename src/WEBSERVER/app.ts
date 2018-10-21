@@ -112,6 +112,7 @@ import * as express from "express";
 import * as favicon from "serve-favicon";
 import * as cookieParser from "cookie-parser";
 import * as bodyParser from "body-parser";
+import * as mysql from "mysql";
 
 
 import colors from "../SHARED/colors.js";
@@ -120,6 +121,21 @@ import { inspect } from "../SHARED/misc.js";
 import router from "./routes/index.js";
 
 const logger = global.logger;
+global.sqlPool = mysql.createPool(config.mySqlConnectionOptions);
+const sqlPool = global.sqlPool;
+
+sqlPool.getConnection(function(err, connection) {
+	if (err) {
+		logger.log('error', inspect`could not connect to database!`);
+		throw err;
+	} else {
+		logger.log('warning', inspect`connected to database!`);
+		connection.release();
+	}
+});
+
+
+
 
 let app = express();
 
@@ -189,16 +205,16 @@ app.use((req, res, next)=>{
 			color = colors.FgRed;
 	}
 	let message = [
-		(req.connection.remoteAddress.replace("::ffff:","") as any||"UNKNOWN").padEnd(16),
+		(req.connection.remoteAddress.replace("::ffff:","")||"UNKNOWN").padEnd(16),
 		(
 			req.method === "GET" ?
 			colors.FgGreen:
 			colors.FgCyan
 		)+
-		(req.method as any).padEnd(4)+
+		req.method.padEnd(4)+
 		colors.Reset,
 
-		color + (status as any).padEnd(3) + colors.Reset,
+		color + status.padEnd(3) + colors.Reset,
 		req.url.replace(/\//g, colors.FgLightBlack + "/" + colors.Reset),
 	].join(' ');
 	

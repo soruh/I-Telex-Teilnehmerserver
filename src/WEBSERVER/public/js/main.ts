@@ -6,6 +6,7 @@ const SORTNUMERIC = false;
 
 // tslint:disable:no-console
 
+
 interface language {
 	[index:string]: {
 		html?:string
@@ -32,8 +33,7 @@ const languages:{
 };
 interface listItem {
 	extension: string;
-	hostname: string;
-	ipaddress: string;
+	address:string;
 	name: string;
 	number: number;
 	port: string;
@@ -199,23 +199,7 @@ $(document).ready(function() {
 	});
 	$("#submit_password_dialog").click(function() {
 		let formId = "#password_form";
-		$(formId).validate({
-			highlight(element, errorClass, validClass) {
-				$(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
-				$(element).addClass("bg-danger field_error");
-			},
-			unhighlight(element, errorClass, validClass) {
-				$(element).parents(".error").removeClass(errorClass).addClass(validClass);
-				$(element).removeClass("bg-danger field_error");
-			},
-			errorClass: "validate_error",
-			validClass: "validate_valid",
-			rules: {
-				password: {
-					required: true,
-				},
-			},
-		});
+		validatePasswordDialog(formId);
 		if ($(formId).valid()) {
 			login($("#passwordfield").val().toString(), function(successful) {
 				if (successful) {
@@ -232,79 +216,7 @@ $(document).ready(function() {
 	});
 	$("#submit_newentry_dialog").click(function() {
 		let formId = "#newentry_form";
-		$(formId).validate({
-			highlight(element, errorClass, validClass) {
-				$(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
-				$(element).addClass("bg-danger field_error");
-				// $("#newentry_dialog").center();
-			},
-			unhighlight(element, errorClass, validClass) {
-				$(element).parents(".error").removeClass(errorClass).addClass(validClass);
-				$(element).removeClass("bg-danger field_error");
-				// $("#newentry_dialog").center();
-			},
-			errorClass: "validate_error",
-			validClass: "validate_valid",
-			rules: {
-				pin: {
-					required: true,
-					max: 65536,
-				},
-				extension: {
-					digits: true,
-					max: 100,
-				},
-				port: {
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return (type !== "email");
-						},
-					},
-					max: 65536,
-					digits: true,
-				},
-				name: {
-					required: true,
-					maxlength: 40,
-				},
-				number: {
-					unique: true,
-					required: true,
-					digits: true,
-					max: 4294967296,
-				},
-				email: {
-					email: true,
-					maxlength: 40,
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return (type === "email");
-						},
-					},
-				},
-				hostname: {
-					hostname: true,
-					maxlength: 40,
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return (type === "hostname");
-						},
-					},
-				},
-				ipaddress: {
-					ipaddress: true,
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return (type === "ipaddress");
-						},
-					},
-				},
-			},
-		});
+		validateNewDialog(formId);
 		$("#type_newentry_dialog").on('change', function() {
 			$(formId).valid();
 		});
@@ -347,127 +259,43 @@ $(document).ready(function() {
 	});
 	$("#submit_edit_dialog").click(function() {
 		let formId = "#edit_form";
-		$(formId).validate({
-			highlight(element, errorClass, validClass) {
-				$(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
-				$(element).trigger("checkval");
-			},
-			unhighlight(element, errorClass, validClass) {
-				$(element).parents(".error").removeClass(errorClass).addClass(validClass);
-				$(element).trigger("checkval");
-			},
-			errorClass: "validate_error",
-			validClass: "validate_valid",
-			rules: {
-				type: {
-					required: true,
-					digits: true,
-					min: 1,
-				},
-				pin: {
-					required: true,
-					max: 65536,
-				},
-				extension: {
-					digits: true,
-					max: 100,
-				},
-				port: {
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return type !== "email";
-						},
-					},
-					max: 65536,
-					digits: true,
-				},
-				name: {
-					required: true,
-					maxlength: 40,
-				},
-				number: {
-					unique: true,
-					required: true,
-					digits: true,
-					max: 4294967296,
-				},
-				email: {
-					email: true,
-					maxlength: 40,
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return type === "email";
-						},
-					},
-				},
-				hostname: {
-					hostname: true,
-					maxlength: 40,
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return (type === "hostname");
-						},
-					},
-				},
-				ipaddress: {
-					ipaddress: true,
-					required: {
-						depends(element) {
-							let type = optionType(formId + " select[name=type]");
-							return (type === "ipaddress");
-						},
-					},
-				},
-			},
-		});
+		validateEditDialog(formId);
 		$("#type_edit_dialog").on('change', function() {
 			$(formId).valid();
 		});
 		if ($(formId).valid()) {
-			let editParams = {
-				typekey: "edit",
-				uid: $("#edit_dialog").data("uid"),
-				number: $("#number_edit_dialog").val(),
-				name: $("#name_edit_dialog").val(),
-				type: $("#type_edit_dialog").val(),
-				hostname: "",
-				ipaddress: "",
-				port: $("#port_edit_dialog").val(),
-				extension: $("#extension_edit_dialog").val(),
-				timestamp: $("#timestamp_edit_dialog").val(),
-				pin: $("#pin_edit_dialog").val(),
-				disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0,
-			};
-			switch (optionType(formId + " select[name=type]")) {
-				case "ipaddress":
-					editParams.ipaddress = $("#ipaddress_edit_dialog").val().toString();
-					break;
-				case "hostname":
-					editParams.hostname = $("#hostname_edit_dialog").val().toString();
-					break;
-				case "email":
-					editParams.hostname = $("#email_edit_dialog").val().toString();
-					break;
-			}
-			edit(editParams, function(err, res) {
-				if (err) {
-					console.error(err);
-				}
-				else {
-					console.log("edit res:",res);
-					resetforms();
-				}
-			});
-			// getList(updateTable);
+			editOrCopy('edit');
+		}
+	});
+	$("#copy_edit_dialog").click(function() {
+		let formId = "#edit_form";
+		validateEditDialog(formId);
+		$("#type_edit_dialog").on('change', function() {
+			$(formId).valid();
+		});
+		if ($(formId).valid()) {
+			editOrCopy('copy');
 		}
 	});
 	$("#submit_delete_dialog").click(function() {
 		edit({
 			typekey: "delete",
 			uid: $("#delete_dialog").data("uid"),
+		}, function(err, res) {
+			if (err) {
+				console.error(err);
+			}
+			else {
+				console.log("edit res:",res);
+				resetforms();
+			}
+		});
+		// getList(updateTable);
+	});
+	$("#submit_resetPin_dialog").click(function() {
+		edit({
+			typekey: "resetPin",
+			uid: $("#resetPin_dialog").data("uid"),
 		}, function(err, res) {
 			if (err) {
 				console.error(err);
@@ -498,6 +326,43 @@ function checkUnique(number:number, element:JQuery<HTMLElement>/*|HTMLElement*/)
 		return false;
 	}
 	return true;
+}
+function editOrCopy(action:"edit"|"copy"){
+	let editParams = {
+		typekey: action,
+		uid: $("#edit_dialog").data("uid"),
+		number: $("#number_edit_dialog").val(),
+		name: $("#name_edit_dialog").val(),
+		type: $("#type_edit_dialog").val(),
+		hostname: "",
+		ipaddress: "",
+		port: $("#port_edit_dialog").val(),
+		extension: $("#extension_edit_dialog").val(),
+		timestamp: $("#timestamp_edit_dialog").val(),
+		pin: $("#pin_edit_dialog").val(),
+		disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0,
+	};
+	switch (optionType("#edit_dialog select[name=type]")) {
+		case "ipaddress":
+			editParams.ipaddress = $("#ipaddress_edit_dialog").val().toString();
+			break;
+		case "hostname":
+			editParams.hostname = $("#hostname_edit_dialog").val().toString();
+			break;
+		case "email":
+			editParams.hostname = $("#email_edit_dialog").val().toString();
+			break;
+	}
+	edit(editParams, function(err, res) {
+		if (err) {
+			console.error(err);
+		}
+		else {
+			console.log(action+" res:",res);
+			resetforms();
+		}
+	});
+	// getList(updateTable);
 }
 function optionType(select:JQuery<HTMLElement>|HTMLElement);
 // tslint:disable-next-line:unified-signatures
@@ -532,10 +397,12 @@ function showpopup(id:string, callback?:()=>void) {
 	$("#newentry_dialog").hide();
 	$("#edit_dialog").hide();
 	$("#delete_dialog").hide();
+	$("#resetPin_dialog").hide();
 	$("#password_dialog").hide();
 	if (id === "") {
 		$("#edit_dialog").data("uid", "");
 		$("#delete_dialog").data("uid", "");
+		$("#resetPin_dialog").data("uid", "");
 	}
 	else {
 		$("#" + id).show(1, function() {
@@ -554,6 +421,7 @@ function resetforms() {
 	$("#newentry_dialog input").val("");
 	$("#newentry_dialog checkbox").prop("checked", false);
 	$("#delete_dialog_label_container div").remove();
+	$("#resetPin_dialog_label_container div").remove();
 	showpopup("");
 }
 function login(pwd?:string, callback?:(success:boolean)=>void) {
@@ -592,36 +460,39 @@ function UNIXTIMEToString(UNIXTIME) {
 	}
 }
 function getList(callback?:(list:list)=>void) {
-	$.ajax({
-		url: "/list",
-		type: "POST",
-		dataType: "json",
-		data: {
-			password: getPasswordCookie(),
-		},
-		success(response) {
-			if (response.successful) {
-				let {result} = response;
-
-				for(let row of result){ // combine hostname and ipaddress into address
-					let address = row.hostname||row.ipaddress;
-					
-					row.address = address;
-					delete row.hostname;
-					delete row.ipaddress;
+	console.log('getList');
+	getToken(token=>{
+		$.ajax({
+			url: "/list",
+			type: "POST",
+			dataType: "json",
+			data: {
+				token,
+			},
+			success(response) {
+				if (response.successful) {
+					let {result} = response;
+	
+					for(let row of result){ // combine hostname and ipaddress into address
+						let address = row.hostname||row.ipaddress;
+						
+						row.address = address;
+						delete row.hostname;
+						delete row.ipaddress;
+					}
+	
+					global_list = result;
+				} else {
+					console.error(response.message);
 				}
-
-				global_list = result;
-			} else {
-				console.error(response.message);
-			}
-			if (typeof callback === "function")
-				callback(global_list);
-		},
-		error(error) {
-			console.log(error);
-			callback(null);
-		},
+				if (typeof callback === "function")
+					callback(global_list);
+			},
+			error(error) {
+				console.log(error);
+				callback(null);
+			},
+		});
 	});
 }
 function findByUid(uid:number,list:list=global_list){
@@ -741,9 +612,17 @@ function updateContent(unSortedList:list) {
 				span.addClass("btn  btn-primary btn-sm glyphicon glyphicon-pencil edit");
 				span.data("uid", entry.uid);
 			edit.append(span);
-			edit.attr("title","edit");
 			edit.addClass("edit_td");
 			modify_container.append(edit);
+
+			let resetPin = $("<div></div>");
+			// edit.addClass("td");
+			span = $("<span></span>");
+				span.addClass("btn  btn-warning btn-sm glyphicon glyphicon-repeat resetPin");
+				span.data("uid", entry.uid);
+			resetPin.append(span);
+			resetPin.addClass("resetPin_td");
+			modify_container.append(resetPin);
 			
 			let remove = $("<div></div>");
 			// remove.addClass("td");
@@ -751,7 +630,6 @@ function updateContent(unSortedList:list) {
 				span.addClass("btn btn-danger btn-sm glyphicon glyphicon-trash remove");
 				span.data("uid", entry.uid);
 			remove.append(span);
-			remove.attr("title", "remove");
 			remove.addClass("remove_td");
 			modify_container.append(remove);
 		row.append(modify_container);
@@ -760,13 +638,16 @@ function updateContent(unSortedList:list) {
 		// tslint:enable:align
 	}
 	$(".edit").click(editButtonClick);
+	$(".resetPin").click(resetPinButtonClick);
 	$(".remove").click(removeButtonClick);
 	updateLoc();
 	if (pwdcorrect) {
+		$('body').addClass('admin_mode');
 		$(".admin_only").show();
 		$(".user_only").hide();
 	}
 	else {
+		$('body').removeClass('admin_mode');
 		$(".admin_only").hide();
 		$(".user_only").show();
 	}
@@ -786,12 +667,12 @@ function editButtonClick() {
 		$("#name_edit_dialog").val(entry.name).trigger('change');
 		$("#type_edit_dialog").val(entry.type).trigger('change');
 		if (entry.type === 6) {
-			$("#email_edit_dialog").val(entry.hostname).trigger('change');
+			$("#email_edit_dialog").val(entry.address).trigger('change');
 		}
 		else {
-			$("#hostname_edit_dialog").val(entry.hostname).trigger('change');
+			$("#hostname_edit_dialog").val(entry.address).trigger('change');
 		}
-		$("#ipaddress_edit_dialog").val(entry.ipaddress).trigger('change');
+		$("#ipaddress_edit_dialog").val(entry.address).trigger('change');
 		$("#port_edit_dialog").val(entry.port).trigger('change');
 		$("#extension_edit_dialog").val(entry.extension).trigger('change');
 		// $("#pin_edit_dialog").val(entry.pin).trigger('change');
@@ -834,34 +715,244 @@ function removeButtonClick() {
 		showpopup("delete_dialog");
 	});
 }
+function resetPinButtonClick() {
+	$("#resetPin_dialog_label_container div").remove();
+	let uid = $(this).data("uid");
+	$("#resetPin_dialog").data("uid", uid);
+	let resetPinMessage = {
+		id: "message_resetPin_dialog_label",
+		class: "resetPin_dialog_label",
+		text: languages[language].resetPinMessage,
+	};
+	$('<div/>', resetPinMessage).appendTo("#resetPin_dialog_label_container");
+
+
+	getList(list=>{
+		updateTable(list);
+		
+		let entry = findByUid(uid);
+		if(!entry) return console.error('uid '+uid+' not found');
+		
+		for (let k in entry) {
+			let resetPinDialogLabel = {
+				id: k + "_resetPin_dialog_label",
+				class: "resetPin_dialog_label",
+				text: null,
+			};
+			if (k === "timestamp" && (!UNIXTIMEDATE)) {
+				resetPinDialogLabel.text = k + ": " + UNIXTIMEToString(entry[k]);
+			}
+			else if (k !== "uid") {
+				resetPinDialogLabel.text = k + ": " + entry[k];
+			}
+			$('<div/>', resetPinDialogLabel).appendTo("#resetPin_dialog_label_container");
+		}
+		showpopup("resetPin_dialog");
+	});
+}
+function validateEditDialog(formId){
+	$(formId).validate({
+		highlight(element, errorClass, validClass) {
+			$(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+			$(element).trigger("checkval");
+		},
+		unhighlight(element, errorClass, validClass) {
+			$(element).parents(".error").removeClass(errorClass).addClass(validClass);
+			$(element).trigger("checkval");
+		},
+		errorClass: "validate_error",
+		validClass: "validate_valid",
+		rules: {
+			type: {
+				required: true,
+				digits: true,
+				min: 1,
+			},
+			pin: {
+				required: true,
+				max: 65536,
+
+			},
+			extension: {
+				digits: true,
+				max: 100,
+			},
+			port: {
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return type !== "email";
+					},
+				},
+				max: 65536,
+				digits: true,
+			},
+			name: {
+				required: true,
+				maxlength: 40,
+			},
+			number: {
+				unique: true,
+				required: true,
+				digits: true,
+				max: 4294967296,
+			},
+			email: {
+				email: true,
+				maxlength: 40,
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return type === "email";
+					},
+				},
+			},
+			hostname: {
+				hostname: true,
+				maxlength: 40,
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return (type === "hostname");
+					},
+				},
+			},
+			ipaddress: {
+				ipaddress: true,
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return (type === "ipaddress");
+					},
+				},
+			},
+		},
+	});
+}
+function validateNewDialog(formId){
+	$(formId).validate({
+		highlight(element, errorClass, validClass) {
+			$(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+			$(element).addClass("bg-danger field_error");
+			// $("#newentry_dialog").center();
+		},
+		unhighlight(element, errorClass, validClass) {
+			$(element).parents(".error").removeClass(errorClass).addClass(validClass);
+			$(element).removeClass("bg-danger field_error");
+			// $("#newentry_dialog").center();
+		},
+		errorClass: "validate_error",
+		validClass: "validate_valid",
+		rules: {
+			pin: {
+				required: true,
+				max: 65536,
+			},
+			extension: {
+				digits: true,
+				max: 100,
+			},
+			port: {
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return (type !== "email");
+					},
+				},
+				max: 65536,
+				digits: true,
+			},
+			name: {
+				required: true,
+				maxlength: 40,
+			},
+			number: {
+				unique: true,
+				required: true,
+				digits: true,
+				max: 4294967296,
+			},
+			email: {
+				email: true,
+				maxlength: 40,
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return (type === "email");
+					},
+				},
+			},
+			hostname: {
+				hostname: true,
+				maxlength: 40,
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return (type === "hostname");
+					},
+				},
+			},
+			ipaddress: {
+				ipaddress: true,
+				required: {
+					depends(element) {
+						let type = optionType(formId + " select[name=type]");
+						return (type === "ipaddress");
+					},
+				},
+			},
+		},
+	});
+}
+function validatePasswordDialog(formId){
+	$(formId).validate({
+		highlight(element, errorClass, validClass) {
+			$(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+			$(element).addClass("bg-danger field_error");
+		},
+		unhighlight(element, errorClass, validClass) {
+			$(element).parents(".error").removeClass(errorClass).addClass(validClass);
+			$(element).removeClass("bg-danger field_error");
+		},
+		errorClass: "validate_error",
+		validClass: "validate_valid",
+		rules: {
+			password: {
+				required: true,
+			},
+		},
+	});
+}
 function refresh() {
 	getList(updateTable);
 }
 function edit(vals, callback) {
-	console.log(vals);
-	vals.password = getPasswordCookie();
-	$.ajax({
-		url: "/edit",
-		type: "POST",
-		dataType: "json",
-		data: vals,
-		success(response) {
-			refresh();
-			if (callback)
-				callback(null, response.message);
-			if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
-				$("#log").text(JSON.stringify(response.message));
-			if (!response.successful) {
-				console.log(response.message);
-			}
-		},
-		error(error) {
-			console.error(error);
-			if ($("#log").length === 1)
-				$("#log").text(JSON.stringify(error));
-			if (callback)
-				callback(error, null);
-		},
+	console.log('edit', vals);
+	getToken(token=>{
+		vals.token = token;
+		$.ajax({
+			url: "/edit",
+			type: "POST",
+			dataType: "json",
+			data: vals,
+			success(response) {
+				refresh();
+				if (callback)
+					callback(null, response.message);
+				if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
+					$("#log").text(JSON.stringify(response.message));
+				if (!response.successful) {
+					console.log(response.message);
+				}
+			},
+			error(error) {
+				console.error(error);
+				if ($("#log").length === 1)
+					$("#log").text(JSON.stringify(error));
+				if (callback)
+					callback(error, null);
+			},
+		});
 	});
 }
 function search(list:list, pattern:string) {
@@ -893,7 +984,6 @@ function sortFunction(x, y) {
 		numeric: SORTNUMERIC,
 	});
 }
-
 function sort(unSortedList) {
 	if (sortby === '') return unSortedList;
 
@@ -928,11 +1018,11 @@ function initloc() {
 		$("#loc-dropdown-children").append(child);
 	}
 }
-function setLanguage(l) {
-	if (languages.hasOwnProperty(l)) {
-		language = l;
-		setCookie("language", l, 365 * 10);
-		$("#loc-dropdown-parent").css("background-image", "url(/images/" + l + ".svg)");
+function setLanguage(lang) {
+	if (languages.hasOwnProperty(lang)) {
+		language = lang;
+		setCookie("language", lang, 365 * 10);
+		$("#loc-dropdown-parent").css("background-image", "url(/images/" + lang + ".svg)");
 		updateContent(global_list);
 	}
 }
@@ -968,27 +1058,32 @@ function getPasswordCookie() {
 	}
 	return password;
 }
-/*
-function setCookie(c_name:string, value:string, exdays?:number):void {
-  var exdate = new Date();
-  exdate.setDate(exdate.getDate() + exdays);
-  var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
-  document.cookie = c_name + "=" + c_value;
+function createHash(salt:string){
+	return window['forge_sha256'](salt+getPasswordCookie());
 }
-
-function getCookie(c_name:string):string {
-  var i, x, y, ARRcookies = document.cookie.split(";");
-  for (let i = 0; i < ARRcookies.length; i++) {
-	x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-	y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-	x = x.replace(/^\s+|\s+$/g, "");
-	if (x == c_name) {
-	  return unescape(y);
-	}
-  }
-  return ("");
+function getToken(callback:(token:string)=>void){
+	$.ajax({
+		url: "/getSalt",
+		type: "GET",
+		success(response) {
+			// console.log(response);
+			if (response.successful) {
+				const {salt} = response;
+				// console.log(`got salt: ${salt}`);
+				const hash = createHash(salt);
+				// console.log(`created hash: ${hash}`);
+				
+				callback(hash);
+			}else{
+				console.error(response.message);
+			}
+		},
+		error(error) {
+			console.error(error);
+			if ($("#log").length === 1) $("#log").text(JSON.stringify(error));
+		},
+	});
 }
-*/
 function setCookie(c_name:string, value:string, exdays?:number) {
 	let exdate = new Date();
 	exdate.setDate(exdate.getDate() + exdays);
