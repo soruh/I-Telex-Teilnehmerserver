@@ -20,7 +20,7 @@ const errorColor = colors.FgRed;
 const sqlColor = colors.Reverse;
 
 function printDate(date:Date):string{
-	return date.toJSON().replace('Z', ' ').replace('T', ' ');
+	return date.toISOString().replace('Z', ' ').replace('T', ' ');
 }
 
 function getTimestamp():string {
@@ -458,7 +458,7 @@ if(config.scientistNames){
 	};
 }else{
 	clientName = function(){
-		return new Date().toJSON();
+		return new Date().toISOString();
 	};
 }
 

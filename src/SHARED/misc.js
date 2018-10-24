@@ -15,7 +15,7 @@ const stringColor = colors_js_1.default.FgGreen;
 const errorColor = colors_js_1.default.FgRed;
 const sqlColor = colors_js_1.default.Reverse;
 function printDate(date) {
-    return date.toJSON().replace('Z', ' ').replace('T', ' ');
+    return date.toISOString().replace('Z', ' ').replace('T', ' ');
 }
 function getTimestamp() {
     let gmtDate = new Date();
@@ -433,6 +433,6 @@ if (config_js_1.default.scientistNames) {
 }
 else {
     exports.clientName = clientName = function () {
-        return new Date().toJSON();
+        return new Date().toISOString();
     };
 }
