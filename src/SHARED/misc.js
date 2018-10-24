@@ -213,8 +213,6 @@ function sendPackage(pkg, callback) {
     client.connection.write(encodeded, callback);
 }
 exports.sendPackage = sendPackage;
-const symbolName = (s) => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
-exports.symbolName = symbolName;
 let clientName;
 exports.clientName = clientName;
 if (config_js_1.default.scientistNames) {

@@ -58,13 +58,13 @@ exports.Timer = Timer;
 function pauseAll() {
     for (let [name, timeout] of timeouts) {
         timeout.pause();
-        // logger.log('silly', inspect`paused timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
+        // logger.log('silly', inspect`paused timeout: ${name.description} remaining: ${timeout.remaining}`);
     }
 }
 function resumeAll() {
     for (let [name, timeout] of timeouts) {
         timeout.resume();
-        // logger.log('silly', inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
+        // logger.log('silly', inspect`resumed timeout: ${name.description} remaining: ${timeout.remaining}`);
     }
 }
 function TimeoutWrapper(fn, duration, ...args) {

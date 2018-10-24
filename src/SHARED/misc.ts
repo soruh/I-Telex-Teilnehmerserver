@@ -215,8 +215,6 @@ function sendPackage(pkg:ITelexCom.Package_decoded, callback?:()=>void):void {
 	client.connection.write(encodeded, callback);
 }
 
-const symbolName = (s: symbol): string => (s && typeof s.toString === "function") ? /Symbol\((.*)\)/.exec(s.toString())[1] : "NULL";
-
 // interface connection extends net.Socket {
 
 // }
@@ -471,7 +469,6 @@ export {
 	increaseErrorCounter,
 	resetErrorCounter,
 	errorCounters,
-	symbolName,
 	Client,
 	clientName,
 	getTimezone,

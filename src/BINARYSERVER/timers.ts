@@ -2,7 +2,7 @@
 
 //#region imports
 // import colors from "../SHARED/colors.js";
-import {inspect, symbolName} from "../SHARED/misc.js";
+import {inspect} from "../SHARED/misc.js";
 //#endregion
 
 
@@ -67,14 +67,14 @@ class Timer {
 function pauseAll() {
 	for (let [name, timeout] of timeouts) {
 		timeout.pause();
-		// logger.log('silly', inspect`paused timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
+		// logger.log('silly', inspect`paused timeout: ${name.description} remaining: ${timeout.remaining}`);
 	}
 }
 
 function resumeAll() {
 	for (let [name, timeout] of timeouts) {
 		timeout.resume();
-		// logger.log('silly', inspect`resumed timeout: ${symbolName(name)} remaining: ${timeout.remaining}`);
+		// logger.log('silly', inspect`resumed timeout: ${name.description} remaining: ${timeout.remaining}`);
 	}
 	
 }

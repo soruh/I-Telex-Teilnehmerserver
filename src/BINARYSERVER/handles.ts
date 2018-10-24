@@ -4,7 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import {Client, sendEmail, getTimezone, inspect, symbolName, getTimestamp} from '../SHARED/misc.js';
+import {Client, sendEmail, getTimezone, inspect, getTimestamp} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
@@ -378,9 +378,9 @@ function handlePackage(obj: ITelexCom.Package_decoded, client: Client) {
 			logger.log('warning', inspect`no package to handle`);
 			resolve();
 		} else {
-			logger.log('debug', inspect`state: ${symbolName(client.state)}`);
+			logger.log('debug', inspect`state: ${client.state.description}`);
 			try {
-				logger.log('network', inspect`handling package of type ${constants.PackageNames[obj.type]} (${obj.type}) for ${client.name} in state ${symbolName(client.state)}`);
+				logger.log('network', inspect`handling package of type ${constants.PackageNames[obj.type]} (${obj.type}) for ${client.name} in state ${client.state.description}`);
 				logger.log('verbose network', inspect`handling package: ${obj}`);
 
 				if (typeof handles[obj.type][client.state] === "function") {
@@ -393,7 +393,7 @@ function handlePackage(obj: ITelexCom.Package_decoded, client: Client) {
 						resolve();
 					}
 				} else {
-					logger.log('warning', inspect`client ${client.name} sent a package of type ${constants.PackageNames[obj.type]} (${obj.type}) which is not supported in state ${symbolName(client.state)}`);
+					logger.log('warning', inspect`client ${client.name} sent a package of type ${constants.PackageNames[obj.type]} (${obj.type}) which is not supported in state ${client.state.description}`);
 					resolve();
 				}
 			} catch (e) {

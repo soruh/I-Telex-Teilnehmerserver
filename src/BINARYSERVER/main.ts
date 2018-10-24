@@ -38,6 +38,9 @@ declare global {
 		padStart:(paddingSize:number, padWith?:string)=>string;
 		padEnd:  (paddingSize:number, padWith?:string)=>string;
 	}
+	interface Symbol {
+		description:string;
+	}
 	const sqlPool:mysql.Pool;
 	const transporter:MailTransporter;
 	const logger:winston.Logger;
