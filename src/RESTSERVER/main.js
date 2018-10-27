@@ -14,7 +14,7 @@ const http = require("http");
 const misc_js_1 = require("../SHARED/misc.js");
 const createLogger_js_1 = require("../SHARED/createLogger.js");
 const setupSQLPool_js_1 = require("../SHARED/setupSQLPool.js");
-createLogger_js_1.default(config_js_1.default.webserverLoggingLevel, config_js_1.default.webserverLog, config_js_1.default.webserverErrorLog, config_js_1.default.logWebserverToConsole, {
+createLogger_js_1.default(config_js_1.default.RESTserverLoggingLevel, config_js_1.default.RESTserverLog, config_js_1.default.RESTserverErrorLog, config_js_1.default.logRESTserverToConsole, {
     levels: {
         "error": 0,
         "warning": 1,
@@ -42,7 +42,7 @@ const server = http.createServer(app_1.default);
 server.on('error', error => {
     throw error;
 });
-server.listen(config_js_1.default.webServerPort, () => {
+server.listen(config_js_1.default.RESTServerPort, () => {
     logger.log('warning', misc_js_1.inspect `Listening on ${server.address()}`);
 });
 // write uncaught exceptions to all logs

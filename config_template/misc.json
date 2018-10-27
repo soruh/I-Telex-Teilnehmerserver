@@ -14,9 +14,11 @@
   "exitOnUncaughtException": false,
 
   "fullQueryServer":null,
+
   "binaryPort":11811,
+  "webServerPort":3030,
+  "RESTServerPort":11812,
 
   "webServerTokenLifeTime": 5000,
-  "webServerPort":3030,
   "webInterfacePassword":"XXX"
 }

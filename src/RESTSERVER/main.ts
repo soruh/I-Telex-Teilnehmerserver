@@ -8,10 +8,10 @@ import { inspect, sendEmail } from "../SHARED/misc.js";
 import createLogger from '../SHARED/createLogger.js';
 import setupSQLPool from '../SHARED/setupSQLPool.js';
 createLogger(
-	config.webserverLoggingLevel,
-	config.webserverLog,
-	config.webserverErrorLog,
-	config.logWebserverToConsole,
+	config.RESTserverLoggingLevel,
+	config.RESTserverLog,
+	config.RESTserverErrorLog,
+	config.logRESTserverToConsole,
 	{
 		levels:{
 			"error": 0,
@@ -44,7 +44,7 @@ const server = http.createServer(app);
 server.on('error', error=>{
 	throw error;
 });
-server.listen(config.webServerPort, ()=>{
+server.listen(config.RESTServerPort, ()=>{
 	logger.log('warning', inspect`Listening on ${server.address()}`);
 });
 

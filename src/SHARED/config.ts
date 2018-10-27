@@ -53,6 +53,12 @@ interface configFile {
 	webServerTokenLifeTime: number;
 	webServerPort: number;
 	webInterfacePassword: string;
+
+	RESTserverLoggingLevel: number | string;
+	RESTserverLog:string;
+	RESTserverErrorLog:string;
+	logRESTserverToConsole:boolean;
+	RESTServerPort:number;
 	
 	warnAtErrorCounts: number[];
 	warnAtWrongDynIpPinCounts: number[];
