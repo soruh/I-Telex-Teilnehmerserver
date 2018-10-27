@@ -127,8 +127,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
             ipaddress: client.ipAddress,
         },
     });
-    yield sendQueue_js_1.default();
-    return;
+    // await sendQueue();
 });
 handles[3][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, void 0, function* () {
     if (!client)

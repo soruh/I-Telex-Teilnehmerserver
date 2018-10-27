@@ -138,8 +138,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 			ipaddress: client.ipAddress,
 		},
 	});
-	await sendQueue();
-	return;
+	// await sendQueue();
 };
 handles[3][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_3, client: Client) => {
 	if (!client) return;
