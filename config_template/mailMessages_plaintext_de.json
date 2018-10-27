@@ -31,6 +31,10 @@
     "ServerErrorOver":{
       "subject":"Störung Ende",
       "text":"Der Server: [host]:[port] konnte am [date] [timeZone] wieder erreicht werden. Fehlerzähler war: [errorCounter]"
+    },
+    "Nicht abgefangener Ausnahmezustand":{
+      "subject":"Uncaught Exception",
+      "html":"Fehler:\n[exception]"
     }
   }
 }

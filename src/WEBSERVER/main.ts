@@ -1,22 +1,18 @@
 "use strict";
 
-import * as winston from "winston";
 import config from '../SHARED/config.js';
-import * as path from "path";
-import { Pool } from "mysql";
+import * as util from "util";
 import * as http from "http";
-import { inspect } from "../SHARED/misc.js";
+import { inspect, sendEmail } from "../SHARED/misc.js";
 
-declare global {
-	namespace NodeJS {
-		interface Global {
-			logger: winston.Logger;
-			sqlPool: Pool;
-		}
-	}
-}
-{
-	let customLevels = {
+import createLogger from '../SHARED/createLogger.js';
+import setupSQLPool from '../SHARED/setupSQLPool.js';
+createLogger(
+	config.webserverLoggingLevel,
+	config.webserverLog,
+	config.webserverLog,
+	config.logWebserverToConsole,
+	{
 		levels:{
 			"error": 0,
 			"warning": 1,
@@ -37,80 +33,9 @@ declare global {
 			"debug": "magenta",
 			"silly": "bold",
 		},
-	};
-	let getLoggingLevel = ():string => {
-		if (typeof config.webserverLoggingLevel === "number") {
-			let level = Object.entries(customLevels.levels).find(([, value]) => value === config.webserverLoggingLevel);
-			if (level) return level[0];
-		}
-		if (typeof config.webserverLoggingLevel === "string") {
-			if (customLevels.levels.hasOwnProperty(config.webserverLoggingLevel))
-				return config.webserverLoggingLevel;
-		}
-		// tslint:disable:no-console
-		console.log("valid logging levels are:");
-		console.log(
-			Object .entries(customLevels.levels)
-			.map(([key, value])=>`${value}/${key}`)
-			.join("\n")
-		);
-		// tslint:enable:no-console
-
-		throw new Error("invalid logging level");
-	};
-	let resolvePath = (pathToResolve: string): string => {
-		if (path.isAbsolute(pathToResolve)) return pathToResolve;
-		return path.join(path.join(__dirname, "../.."), pathToResolve);
-	};
-	let transports = [];
-	if (config.webserverLog) transports.push(
-		new winston.transports.File({
-			filename: resolvePath(config.webserverLog),
-		})
-	);
-	if (config.webserverErrorLog) transports.push(
-		new winston.transports.File({
-			filename: resolvePath(config.webserverErrorLog),
-			level: 'error',
-		})
-	);
-	if (config.logWebserverToConsole) transports.push(
-		new winston.transports.Console({
-
-		})
-	);
-
-	// let getLine = winston.format((info) => {
-	// 	let line = new Error().stack.split("\n")[10];
-	// 	if(line){
-	// 		let file = line.split("(")[1];
-	// 		if(file){
-	// 			info.line = file.split("/").slice(-1)[0].slice(0, -1);
-	// 		}
-	// 	}
-	// 	info.line = info.line||""
-	// 	return info;
-	// })();
-
-	let formats = [];
-	if(config.logDate) formats.push(winston.format.timestamp());
-	if(!config.disableColors) formats.push(winston.format.colorize());
-	// formats.push(getLine),
-	let logPadding = config.disableColors?12:22;
-	formats.push(winston.format.printf(info=>`${config.logDate?(info.timestamp.replace("T"," ").slice(0, -1)+" "):""}${info.level.padStart(logPadding)}: ${info.message}`));
-	// formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
-
-	winston.addColors(customLevels.colors);
-	global.logger = winston.createLogger({
-		level: getLoggingLevel(),
-		levels: customLevels.levels,
-		format: winston.format.combine(...formats),
-		exitOnError: false,
-		transports, // : transports
-	});
-}
-
-const logger = global.logger;
+	}
+);
+setupSQLPool(config.mySqlConnectionOptions);
 
 import app from './app';
 
@@ -121,4 +46,13 @@ server.on('error', error=>{
 });
 server.listen(config.webServerPort, ()=>{
 	logger.log('warning', inspect`Listening on ${server.address()}`);
+});
+
+// write uncaught exceptions to all logs
+process.on('uncaughtException', async err=>{
+	logger.log('error', inspect`uncaught exception ${err}`);
+	await sendEmail('uncaughtException', {
+		exception: util.inspect(err),
+	});
+	if(config.exitOnUncaughtException) process.exit(1);
 });

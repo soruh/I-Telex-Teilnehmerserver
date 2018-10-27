@@ -28,7 +28,7 @@ function printDate(date:Date):string{
 	return date.toISOString().replace('Z', ' ').replace('T', ' ');
 }
 
-function getTimestamp():string {
+function getFormatedDate():string {
 	let gmtDate = new Date();
 	let gmtTime = gmtDate.getTime();
 	let timezoneOffsetMillis = gmtDate.getTimezoneOffset()*-60*1000;
@@ -93,8 +93,6 @@ function increaseErrorCounter(type, identifier, code?): void {
 				port: identifier.split(":")[1],
 				errorCounter: serverErrorCounters[identifier].toString(),
 				lastError: code,
-				date: getTimestamp(),
-				timeZone: getTimezone(new Date()),
 			});
 		}
 	}else if(type === "client"){
@@ -113,8 +111,6 @@ function increaseErrorCounter(type, identifier, code?): void {
 				number: identifier.number,
 				name: identifier.name,
 				counter: clientWrongPinCounters[identifier.number],
-				date: getTimestamp(),
-				timeZone: getTimezone(new Date()),
 			});
 		}
 	}
@@ -134,8 +130,6 @@ function resetErrorCounter(type, identifier):void {
 				host: identifier.split(":")[0],
 				port: identifier.split(":")[1],
 				errorCounter: serverErrorCounters[identifier].toString(),
-				date: getTimestamp(),
-				timeZone: getTimezone(new Date()),
 			});
 			logger.log('debug', inspect`reset error counter for: ${identifier}. Counter was at: ${serverErrorCounters[identifier]}`);
 			delete serverErrorCounters[identifier];
@@ -208,68 +202,63 @@ function normalizeIp(ipAddr:string){
 interface mail_ipV6DynIpUpdate_options {
 	Ip: string;
 	number: string;
-	date: string;
-	timeZone: string;
 }
 interface mail_invalidNumber_options {
 	Ip: string;
 	number: string;
-	date: string;
-	timeZone: string;
 }
 interface mail_wrongDynIpType_options {
 	type: string;
 	Ip: string;
 	number: string;
 	name: string;
-	date: string;
-	timeZone: string;
 }
 interface mail_wrongDynIpPin_options {
 	Ip: string;
 	number: string;
 	name: string;
-	date: string;
-	timeZone: string;
 	counter: number;
 }
 interface mail_new_options {
 	Ip: string;
 	number: string;
-	date: string;
-	timeZone: string;
 }
 interface mail_wrongServerPin_options {
 	Ip: string;
-	date: string;
-	timeZone: string;
 }
 interface mail_ServerError_options {
 	host: string;
 	port: string;
 	errorCounter: string;
 	lastError: string;
-	date: string;
-	timeZone: string;
 }
 interface mail_ServerErrorOver_options {
 	host: string;
 	port: string;
 	errorCounter: string;
-	date: string;
-	timeZone: string;
 }
 
-function sendEmail(messageName:'invalidNumber',   values:mail_invalidNumber_options);
-function sendEmail(messageName:'wrongDynIpType',  values:mail_wrongDynIpType_options);
-function sendEmail(messageName:'wrongDynIpPin',   values:mail_wrongDynIpPin_options);
-function sendEmail(messageName:'new',             values:mail_new_options);
-function sendEmail(messageName:'wrongServerPin',  values:mail_wrongServerPin_options);
-function sendEmail(messageName:'ServerError',     values:mail_ServerError_options);
-function sendEmail(messageName:'ServerErrorOver', values:mail_ServerErrorOver_options);
-function sendEmail(messageName:'ipV6DynIpUpdate', values:mail_ipV6DynIpUpdate_options);
+interface mail_uncaughtException_options {
+	exception:string;
+}
+
+function sendEmail(messageName:'invalidNumber',     values:mail_invalidNumber_options);
+function sendEmail(messageName:'wrongDynIpType',    values:mail_wrongDynIpType_options);
+function sendEmail(messageName:'wrongDynIpPin',     values:mail_wrongDynIpPin_options);
+function sendEmail(messageName:'new',               values:mail_new_options);
+function sendEmail(messageName:'wrongServerPin',    values:mail_wrongServerPin_options);
+function sendEmail(messageName:'ServerError',       values:mail_ServerError_options);
+function sendEmail(messageName:'ServerErrorOver',   values:mail_ServerErrorOver_options);
+function sendEmail(messageName:'ipV6DynIpUpdate',   values:mail_ipV6DynIpUpdate_options);
+function sendEmail(messageName:'uncaughtException', values:mail_uncaughtException_options);
+
 function sendEmail(messageName, values) {
 	return new Promise((resolve, reject) => {
+		Object.assign(values, {
+			date: getFormatedDate(),
+			timeZone: getTimezone(new Date()),
+		});
+
 		let message: {
 			"subject": string,
 			"html" ? : string,
@@ -591,6 +580,6 @@ export {
 	inspect,
 	normalizeIp,
 	sendPackage,
-	getTimestamp,
+	getFormatedDate,
 	timestamp
 };

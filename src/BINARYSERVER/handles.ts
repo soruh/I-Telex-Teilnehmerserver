@@ -4,7 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import {Client, sendEmail, getTimezone, inspect, getTimestamp, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
+import {Client, sendEmail, inspect, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
@@ -46,8 +46,6 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		sendEmail("ipV6DynIpUpdate", {
 			Ip: client.ipAddress,
 			number: number.toString(),
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
 		});
 		return;
 	}
@@ -59,8 +57,6 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		sendEmail("invalidNumber", {
 			Ip: client.ipAddress,
 			number: number.toString(),
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
 		});
 		return;
 	}
@@ -87,8 +83,6 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		sendEmail("new", {
 			Ip: client.ipAddress,
 			number: number.toString(),
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
 		});
 
 		return;
@@ -103,8 +97,6 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 			Ip: client.ipAddress,
 			number: entry.number.toString(),
 			name: entry.name,
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
 		});
 		return;
 	}
@@ -222,8 +214,6 @@ handles[6][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_6, 
 
 		sendEmail("wrongServerPin", {
 			Ip: client.ipAddress,
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
 		});
 
 		return;
@@ -248,8 +238,6 @@ handles[7][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_7, 
 
 		sendEmail("wrongServerPin", {
 			Ip: client.ipAddress,
-			date: getTimestamp(),
-			timeZone: getTimezone(new Date()),
 		});
 		
 		return;

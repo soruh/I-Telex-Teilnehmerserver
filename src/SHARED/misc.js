@@ -21,14 +21,14 @@ exports.timestamp = timestamp;
 function printDate(date) {
     return date.toISOString().replace('Z', ' ').replace('T', ' ');
 }
-function getTimestamp() {
+function getFormatedDate() {
     let gmtDate = new Date();
     let gmtTime = gmtDate.getTime();
     let timezoneOffsetMillis = gmtDate.getTimezoneOffset() * -60 * 1000;
     let adjustedDate = new Date(gmtTime + timezoneOffsetMillis);
     return printDate(adjustedDate);
 }
-exports.getTimestamp = getTimestamp;
+exports.getFormatedDate = getFormatedDate;
 function isAnyError(error) {
     if (error instanceof Error)
         return true;
@@ -82,8 +82,6 @@ function increaseErrorCounter(type, identifier, code) {
                 port: identifier.split(":")[1],
                 errorCounter: serverErrorCounters[identifier].toString(),
                 lastError: code,
-                date: getTimestamp(),
-                timeZone: getTimezone(new Date()),
             });
         }
     }
@@ -103,8 +101,6 @@ function increaseErrorCounter(type, identifier, code) {
                 number: identifier.number,
                 name: identifier.name,
                 counter: clientWrongPinCounters[identifier.number],
-                date: getTimestamp(),
-                timeZone: getTimezone(new Date()),
             });
         }
     }
@@ -117,8 +113,6 @@ function resetErrorCounter(type, identifier) {
                 host: identifier.split(":")[0],
                 port: identifier.split(":")[1],
                 errorCounter: serverErrorCounters[identifier].toString(),
-                date: getTimestamp(),
-                timeZone: getTimezone(new Date()),
             });
             logger.log('debug', inspect `reset error counter for: ${identifier}. Counter was at: ${serverErrorCounters[identifier]}`);
             delete serverErrorCounters[identifier];
@@ -200,6 +194,10 @@ function normalizeIp(ipAddr) {
 exports.normalizeIp = normalizeIp;
 function sendEmail(messageName, values) {
     return new Promise((resolve, reject) => {
+        Object.assign(values, {
+            date: getFormatedDate(),
+            timeZone: getTimezone(new Date()),
+        });
         let message = config_js_1.default.eMail.messages[messageName];
         if (!message) {
             resolve();

@@ -11,6 +11,7 @@
   "allowFullQueryInReadonly":true,
   "allowLoginInReadonly": false,
   "doDnsLookups":true,
+  "exitOnUncaughtException": false,
 
   "fullQueryServer":null,
   "binaryPort":11811,

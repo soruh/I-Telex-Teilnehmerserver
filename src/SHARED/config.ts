@@ -28,7 +28,8 @@ interface configFile {
 	allowFullQueryInReadonly: boolean;
 	allowLoginInReadonly: boolean;
 	doDnsLookups: boolean;
-	// updateQueueInterval: number,
+	exitOnUncaughtException: boolean;
+
 	cleanUpInterval:number;
 	queueSendInterval: number;
 	fullQueryInterval: number;

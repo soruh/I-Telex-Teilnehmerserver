@@ -1,17 +1,17 @@
 "use strict";
-import colors from "../SHARED/colors.js";
 import config from '../SHARED/config.js';
-import * as path from "path";
+import * as util from "util";
 import * as mysql from "mysql";
 import * as winston from "winston";
 import * as timers from "../BINARYSERVER/timers.js";
 import * as nodemailer from "nodemailer";
-import {inspect, serverErrorCounters, getTimestamp} from "../SHARED/misc.js";
+import {inspect, sendEmail} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
-// import updateQueue from './updateQueue.js';
 import binaryServer from './binaryServer.js';
 import cleanUp from "./cleanUp.js";
+import createLogger from "../SHARED/createLogger.js";
+import setupSQLPool from '../SHARED/setupSQLPool.js';
 
 type MailTransporter = nodemailer.Transporter | {
 	sendMail: (...rest: any[]) => void,
@@ -22,9 +22,7 @@ type MailTransporter = nodemailer.Transporter | {
 declare global {
 	namespace NodeJS {
 		interface Global {
-			sqlPool: mysql.Pool;
 			transporter: MailTransporter;
-			logger: winston.Logger;
 		}
 	}
 	interface Buffer {
@@ -46,128 +44,46 @@ declare global {
 	const logger:winston.Logger;
 }
 
-colors.disable(config.disableColors);
-const readonly = (config.serverPin == null);
-if (readonly) logger.log('warning', inspect`Starting in read-only mode!`);
-
-global.sqlPool = mysql.createPool(config.mySqlConnectionOptions);
-
-function createLogger(){
-	return new Promise((resolve, reject)=>{
-		const customLevels = {
-			levels:{
-				"error": 0,
-				"warning": 1,
-				"sql": 2,
-				"network": 3,			
-				"verbose sql": 4,
-				"verbose network": 5,
-				"debug": 6,
-				"queue": 7,
-				"iTelexCom": 8,
-				"silly":9,
-			},
-			colors:{
-				"error": "red",
-				"warning": "yellow",
-				"sql": "green",
-				"network": "cyan",
-				"verbose sql": "green",
-				"verbose network": "blue",
-				"debug": "magenta",
-				"queue": "gray",
-				"iTelexCom": "underline",
-				"silly": "bold",
-			},
-		};
-		// let customLevels = winston.config.npm;
-		const getLoggingLevel = function s(): string {
-			if (typeof config.binaryserverLoggingLevel === "number") {
-				let level = Object.entries(customLevels.levels).find(([, value]) => value === config.binaryserverLoggingLevel);
-				if (level) return level[0];
+async function createWinstonLogger(){
+	process.stdout.write(inspect`creating logger... `);
+	try{
+		createLogger(
+			config.binaryserverLoggingLevel,
+			config.binaryserverLog,
+			config.binaryserverErrorLog,
+			config.logBinaryserverToConsole,
+			{
+				levels:{
+					"error": 0,
+					"warning": 1,
+					"sql": 2,
+					"network": 3,			
+					"verbose sql": 4,
+					"verbose network": 5,
+					"debug": 6,
+					"queue": 7,
+					"iTelexCom": 8,
+					"silly":9,
+				},
+				colors:{
+					"error": "red",
+					"warning": "yellow",
+					"sql": "green",
+					"network": "cyan",
+					"verbose sql": "green",
+					"verbose network": "blue",
+					"debug": "magenta",
+					"queue": "gray",
+					"iTelexCom": "underline",
+					"silly": "bold",
+				},
 			}
-			if (typeof config.binaryserverLoggingLevel === "string") {
-				if (customLevels.levels.hasOwnProperty(config.binaryserverLoggingLevel))
-					return config.binaryserverLoggingLevel;
-			}
-			// tslint:disable:no-console
-			console.log("valid logging levels are:");
-			console.log(
-				Object.entries(customLevels.levels)
-				.map(([key, value])=>`${value}/${key}`)
-				.join("\n")
-			);
-			// tslint:enable:no-console
-			
-			throw new Error("invalid logging level");
-		};
-		const resolvePath = function(pathToResolve: string): string {
-			if (path.isAbsolute(pathToResolve)) return pathToResolve;
-			return path.join(path.join(__dirname, "../.."), pathToResolve);
-		};
-		let transports = [];
-		if (config.binaryserverLog) transports.push(
-			new winston.transports.File({
-				filename: resolvePath(config.binaryserverLog),
-			})
 		);
-		if (config.binaryserverErrorLog) transports.push(
-			new winston.transports.File({
-				filename: resolvePath(config.binaryserverErrorLog),
-				level: 'error',
-			})
-		);
-		if (config.logBinaryserverToConsole) transports.push(
-			new winston.transports.Console({
-
-			})
-		);
-
-		// let getLine = winston.format((info) => {
-		// 	let line = new Error().stack.split("\n")[10];
-		// 	if(line){
-		// 		let file = line.split("(")[1];
-		// 		if(file){
-		// 			info.line = file.split("/").slice(-1)[0].slice(0, -1);
-		// 		}
-		// 	}
-		// 	info.line = info.line||""
-		// 	return info;
-		// })();
-
-		let formats = [];
-
-		if(config.logDate) formats.push(
-			winston.format.timestamp({
-				format:()=>getTimestamp(),
-			})
-		);
-		if(!config.disableColors) formats.push(winston.format.colorize());
-		// formats.push(getLine),
-		const levelPadding = Math.max(...Object.keys(customLevels.colors).map(x=>x.length));
-		formats.push(winston.format.printf(info=>
-			`${
-				config.logDate?(info.timestamp.replace("T"," ").replace("Z"," ")):""
-			}${
-				" ".repeat(levelPadding-info.level.replace(/\u001b\[\d{1,3}m/g,"").length)
-			}${
-				info.level
-			}: ${
-				info.message
-			}`)
-		);
-		// formats.push(winston.format.printf(info => `${info.timestamp} ${info.level.padStart(17)} ${info.line}: ${info.message}`));
-
-		winston.addColors(customLevels.colors);
-		global.logger = winston.createLogger({
-			// exceptionHandlers: transports,
-			level: getLoggingLevel(),
-			levels:customLevels.levels,
-			format: winston.format.combine(...formats),
-			transports,
-		});
-		resolve();
-	});
+	}catch(err){
+		process.stdout.write(inspect`fail\n`);
+		throw(err);
+	}
+	process.stdout.write(inspect`done\n`);
 }
 function listenBinaryserver() {
 	return new Promise((resolve, reject)=>{
@@ -189,21 +105,15 @@ function startTimeouts(){
 		resolve();
 	});
 }
-function connectToDatabase(){
-	return new Promise((resolve, reject)=>{
-		process.stdout.write(inspect`connecting to database... `);
-		global.sqlPool.getConnection(function(err, connection) {
-			if (err) {
-				process.stdout.write(inspect`fail\n`);
-				logger.log('error', inspect`${err}`);
-				reject(err);
-			} else {
-				connection.release();
-				process.stdout.write(inspect`done\n`);
-				resolve();
-			}
-		});
-	});
+async function connectToDatabase(){
+	process.stdout.write(inspect`connecting to database... `);
+	try{
+		await setupSQLPool(config.mySqlConnectionOptions);
+	}catch(err){
+		process.stdout.write(inspect`fail\n`);
+		throw(err);
+	}
+	process.stdout.write(inspect`done\n`);
 }
 function setupEmailTransport(){
 	return new Promise((resolve, reject)=>{
@@ -246,18 +156,25 @@ function setupEmailTransport(){
 	});
 }
 
-createLogger()
+createWinstonLogger()
 .then(setupEmailTransport)
 .then(connectToDatabase)
 .then(startTimeouts)
 .then(listenBinaryserver)
+.then(()=>{
+	const readonly = (config.serverPin == null);
+	if (readonly) logger.log('warning', inspect`Starting in read-only mode!`);
+})
 .then(getFullQuery)
 .catch(err=>{
-	logger.log('error', inspect`error in initialisation: ${err}`);
+	logger.log('error', inspect`error in startup sequence: ${err}`);
 });
 
 // write uncaught exceptions to all logs
-process.on('uncaughtException', err=>{
+process.on('uncaughtException', async err=>{
 	logger.log('error', inspect`uncaught exception ${err}`);
-	process.exit();
+	await sendEmail('uncaughtException', {
+		exception: util.inspect(err),
+	});
+	if(config.exitOnUncaughtException) process.exit(1);
 });

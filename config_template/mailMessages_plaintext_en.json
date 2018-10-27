@@ -31,6 +31,10 @@
     "ServerErrorOver":{
       "subject":"Server could be reached again",
       "text":"Could connect to server: [host]:[port] again on [date] [timeZone]. Error counter was at: [errorCounter]"
+    },
+    "uncaughtException":{
+      "subject":"Uncaught Exception",
+      "html":"Error:\n[exception]"
     }
   }
 }

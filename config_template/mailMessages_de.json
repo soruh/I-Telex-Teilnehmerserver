@@ -31,6 +31,10 @@
     "ServerErrorOver":{
       "subject":"Störung Ende",
       "html":"Der Server: <font color=\"blue\">[host]:[port]</font> konnte am <font color=\"blue\">[date] [timeZone]</font> wieder erreicht werden. Fehlerzähler war: <font color=\"blue\">[errorCounter]</font>"
+    },
+    "Nicht abgefangener Ausnahmezuständ":{
+      "subject":"Uncaught Exception",
+      "html":"Fehler\n[exception]"
     }
   }
 }

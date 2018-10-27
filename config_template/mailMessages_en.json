@@ -31,6 +31,10 @@
     "ServerErrorOver":{
       "subject":"Server could be reached again",
       "html":"Could connect to server: <font color=\"blue\">[host]:[port]</font> again on <font color=\"blue\">[date] [timeZone]</font>. Error counter was at: <font color=\"blue\">[errorCounter]</font>"
+    },
+    "uncaughtException":{
+      "subject":"Uncaught Exception",
+      "html":"Error:\n<font color=\"blue\">[exception]</font>"
     }
   }
 }
