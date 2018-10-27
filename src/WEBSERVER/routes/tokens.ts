@@ -12,9 +12,14 @@ function removeOldTokens(){
 	}
 }
 
+function createSalt(){
+	// let salt = Array.from(new Date(Date.now()+Math.random()*60000).toISOString());
+	return crypto.randomBytes(32).toString('base64').slice(0,-1)
+}
+
 function createToken(req, res) {
 	try{
-		const salt = new Date().toJSON();
+		const salt = createSalt();
 
 		const hash = crypto.createHash('sha256').update(salt+config.webInterfacePassword).digest();
 
