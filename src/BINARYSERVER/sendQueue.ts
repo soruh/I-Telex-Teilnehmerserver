@@ -16,107 +16,82 @@ import updateQueue from './updateQueue.js';
 const readonly = (config.serverPin == null);
 
 
-function sendQueue() {
-	return updateQueue()
-	.then(() => new Promise((resolve, reject) => {
-		logger.log('debug', inspect`sending Queue`);
-		if (readonly) {
-			logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
-			return void resolve();
-		}
-		SqlQuery("SELECT * FROM teilnehmer;", [], true)
-		.then(function(teilnehmer: ITelexCom.peerList) {
-			SqlQuery("SELECT * FROM queue;")
-			.then(function(queue: ITelexCom.queue) {
-				if (queue.length === 0) {
-					logger.log('debug', inspect`No queue!`);
-					return void resolve();
+async function sendQueue() {
+	await updateQueue();
+	logger.log('debug', inspect`sending Queue`);
+	if (readonly) {
+		logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
+		return;
+	}
+	const queue:ITelexCom.queue = await SqlQuery("SELECT * FROM queue;");
+	if (queue.length === 0) {
+		logger.log('debug', inspect`No queue!`);
+		return;
+	}
+	let entriesByServer: {
+		[index: number]: ITelexCom.queueEntry[];
+	} = {};
+	for (let q of queue) {
+		if (!entriesByServer[q.server]) entriesByServer[q.server] = [];
+		entriesByServer[q.server].push(q);
+	}
+	await Promise.all((Object.values(entriesByServer) as ITelexCom.queueEntry[][]).map(entriesForServer=> (()=>
+	new Promise(async (resolve, reject) => {
+		try {
+			let server = entriesForServer[0].server;
+
+			let servers:ITelexCom.serverList = await SqlQuery("SELECT * FROM servers WHERE uid=?;", [server]);
+			if (servers.length !== 1) {
+				await SqlQuery("DELETE FROM queue WHERE server=?;", [server]);
+				resolve();
+				return;
+			}
+
+			const [serverinf] = servers;
+			logger.log('debug', inspect`sending queue for ${serverinf}`);
+
+			let client = await connect({
+				host: serverinf.addresse,
+				port: +serverinf.port,
+			}, resolve);
+
+			client.servernum = server;
+			
+			logger.log('verbose network', inspect`connected to server ${serverinf.uid}: ${serverinf.addresse} on port ${serverinf.port}`);
+			client.writebuffer = [];
+			for(let entry of entriesForServer){
+				const [message]:ITelexCom.peerList = await SqlQuery("SELECT * FROM teilnehmer where uid=?;", [entry.message], true);
+				if (!message) {
+					logger.log('debug', inspect`entry does not exist`);
+					break;
 				}
 
-				let servers: {
-					[index: number]: ITelexCom.queueEntry[]
-				} = {};
-				for (let q of queue) {
-					if (!servers[q.server]) servers[q.server] = [];
-					servers[q.server].push(q);
+				let deleted = await SqlQuery("DELETE FROM queue WHERE uid=?;", [entry.uid]);
+
+				if (deleted.affectedRows === 0) {
+					logger.log('warning', inspect`could not delete queue entry ${entry.uid} from queue`);
+					break;
 				}
-				serialEachPromise(Object.values(servers), (server: ITelexCom.queueEntry[]) =>
-				new Promise((resolve, reject) => {
-					SqlQuery("SELECT  * FROM servers WHERE uid=?;", [server[0].server])
-					.then(function(result2: ITelexCom.serverList) {
-						if (result2.length === 1) {
-							const serverinf = result2[0];
-							logger.log('debug', inspect`sending queue for ${serverinf}`);
-							try {
-								connect({
-									host: serverinf.addresse,
-									port: +serverinf.port,
-								}, resolve)
-								.then(client => {
-									client.servernum = server[0].server;
-									logger.log('verbose network', inspect`connected to server ${server[0].server}: ${serverinf.addresse} on port ${serverinf.port}`);
-									client.writebuffer = [];
-									serialEachPromise(server, serverdata =>
-									new Promise((resolve, reject) => {
-										const message: ITelexCom.Peer = teilnehmer.find((t)=>t.uid === serverdata.message);
-										if (message) {
-											SqlQuery("DELETE FROM queue WHERE uid=?;", [serverdata.uid])
-											.then(function(res) {
-												if (res.affectedRows > 0) {
-													client.writebuffer.push(message);
-													logger.log('debug', inspect`deleted queue entry ${message.name} from queue`);
-													resolve();
-												} else {
-													logger.log('warning', inspect`could not delete queue entry ${serverdata.uid} from queue`);
-													resolve();
-												}
-											})
-											.catch(err=>{logger.log('error', inspect`${err}`);});
-										} else {
-											logger.log('debug', inspect`entry does not exist`);
-											resolve();
-										}
-									})
-									)
-									.then(() => {
-										client.sendPackage({
-											type: 7,
-											data: {
-												serverpin: config.serverPin,
-												version: 1,
-											},
-										})
-										.then(() => {
-											client.state = constants.states.RESPONDING;
-											resolve();
-										})
-										.catch(err=>{logger.log('error', inspect`${err}`);});
-									})
-									.catch(err=>{logger.log('error', inspect`${err}`);}); 
-								})
-								.catch(err=>{logger.log('error', inspect`${err}`);}); 
-							} catch (e) {
-								logger.log('error', inspect`${e}`);
-								resolve();
-							}
-						} else {
-							SqlQuery("DELETE FROM queue WHERE server=?;", [server[0].server])
-							.then(resolve)
-							.catch(err=>{logger.log('error', inspect`${err}`);}); 
-						}
-					})
-					.catch(err=>{logger.log('error', inspect`${err}`);}); 
-				})
-				)
-				.then(() => {
-					resolve();
-				})
-				.catch(err=>{logger.log('error', inspect`${err}`);}); 
-			})
-			.catch(err=>{logger.log('error', inspect`${err}`);}); 
-		})
-		.catch(err=>{logger.log('error', inspect`${err}`);}); 
-	}));
+
+				logger.log('debug', inspect`deleted queue entry ${message.name} from queue`);
+				client.writebuffer.push(message);
+			}
+			
+			client.state = constants.states.RESPONDING;
+			
+			await client.sendPackage({
+				type: 7,
+				data: {
+					serverpin: config.serverPin,
+					version: 1,
+				},
+			});
+		} catch (e) {
+			logger.log('error', inspect`error in sendQueue: ${e}`);
+			resolve();
+		}
+	})
+	)()));
 }
 
 export default sendQueue;
