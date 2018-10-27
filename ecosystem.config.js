@@ -8,7 +8,7 @@ module.exports = {
     },
     {
       name: "webserver",
-      script: "src/WEBSERVER/bin/webserver.js",
+      script: "src/WEBSERVER/main.js",
       output: 'logs/webserver/out.log',
       error: 'logs/webserver/error.log',
     }
