@@ -11,7 +11,9 @@ const PackageNames = {
 	10: "Peer_search",
 	255: "Error",
 };
-const PackageSizes = {
+const PackageSizes:{
+	[index:number]: 0|4|5|8|41|100
+} = {
 	1: 8,
 	2: 4,
 	3: 5,

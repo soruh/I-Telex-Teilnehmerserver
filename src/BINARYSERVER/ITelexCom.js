@@ -125,7 +125,7 @@ function encPackage(pkg) {
             {
                 let normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
                 if (normalizedIp && normalizedIp.family === 4) {
-                    ip.toBuffer(normalizedIp.address, buffer, 2);
+                    ip.toBuffer(normalizedIp.address, buffer, 2); // error in @types/ip: buffer should be of type Buffer
                 }
             }
             break;

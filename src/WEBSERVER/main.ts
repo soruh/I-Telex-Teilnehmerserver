@@ -40,7 +40,7 @@ declare global {
 	};
 	let getLoggingLevel = ():string => {
 		if (typeof config.webserverLoggingLevel === "number") {
-			let level = ( Object as any).entries(customLevels.levels).find(([, value]) => value === config.webserverLoggingLevel);
+			let level = Object.entries(customLevels.levels).find(([, value]) => value === config.webserverLoggingLevel);
 			if (level) return level[0];
 		}
 		if (typeof config.webserverLoggingLevel === "string") {
@@ -50,7 +50,7 @@ declare global {
 		// tslint:disable:no-console
 		console.log("valid logging levels are:");
 		console.log(
-			(Object as any).entries(customLevels.levels)
+			Object .entries(customLevels.levels)
 			.map(([key, value])=>`${value}/${key}`)
 			.join("\n")
 		);
@@ -97,7 +97,7 @@ declare global {
 	if(!config.disableColors) formats.push(winston.format.colorize());
 	// formats.push(getLine),
 	let logPadding = config.disableColors?12:22;
-	formats.push(winston.format.printf(info=>`${config.logDate?(info.timestamp.replace("T"," ").slice(0, -1)+" "):""}${(info.level as any).padStart(logPadding)}: ${info.message}`));
+	formats.push(winston.format.printf(info=>`${config.logDate?(info.timestamp.replace("T"," ").slice(0, -1)+" "):""}${info.level.padStart(logPadding)}: ${info.message}`));
 	// formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
 
 	winston.addColors(customLevels.colors);

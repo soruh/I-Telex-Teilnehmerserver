@@ -77,7 +77,7 @@ $(document).ready(function() {
 	});
 	$.fn.extend({
 		// tslint:disable-next-line:object-literal-shorthand
-		center: function(){
+		center: function():JQuery<HTMLElement> {
 			return this.each(function() {
 				let top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2); // (($(window).height() - $(this).outerHeight()) / 2);
 				let left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
@@ -963,7 +963,7 @@ function search(list:list, pattern:string) {
 	.filter(row =>{
 		return pattern.split(" ")
 		.map(word=>{
-			for(let [key, value] of (Object as any).entries(row)){
+			for(let [key, value] of Object.entries(row)){
 				if(new RegExp(word, "gi").test(
 					(key === "timestamp") && (!UNIXTIMEDATE)?
 					UNIXTIMEToString(row[key]):

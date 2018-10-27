@@ -299,7 +299,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 		if (pkg.type === 255){
 			if(pkg.data.message!=null) pkg.datalength = pkg.data.message.length;
 		}else{
-			pkg.datalength = constants.PackageSizes[pkg.type] as any;
+			pkg.datalength = constants.PackageSizes[pkg.type];
 		}
 	}
 	let buffer: PackageData_encoded = Buffer.alloc(pkg.datalength + 2);
@@ -317,7 +317,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			{
 				let normalizedIp = normalizeIp(pkg.data.ipaddress);
 				if(normalizedIp&&normalizedIp.family === 4){
-					ip.toBuffer(normalizedIp.address, (buffer as any), 2);
+					ip.toBuffer(normalizedIp.address, buffer as any, 2); // error in @types/ip: buffer should be of type Buffer
 				}
 			}
 			break;
@@ -353,7 +353,7 @@ function encPackage(pkg: Package_decoded): Buffer {
 			{
 				let normalizedIp = normalizeIp(pkg.data.ipaddress);
 				if(normalizedIp&&normalizedIp.family === 4){
-					ip.toBuffer(normalizedIp.address, (buffer as any), 89);
+					ip.toBuffer(normalizedIp.address, buffer as any, 89);
 				}
 			}
 

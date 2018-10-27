@@ -40,7 +40,7 @@ function sendQueue() {
 					if (!servers[q.server]) servers[q.server] = [];
 					servers[q.server].push(q);
 				}
-				serialEachPromise((Object as any).values(servers), (server: ITelexCom.queueEntry[]) =>
+				serialEachPromise(Object.values(servers), (server: ITelexCom.queueEntry[]) =>
 				new Promise((resolve, reject) => {
 					SqlQuery("SELECT  * FROM servers WHERE uid=?;", [server[0].server])
 					.then(function(result2: ITelexCom.serverList) {
