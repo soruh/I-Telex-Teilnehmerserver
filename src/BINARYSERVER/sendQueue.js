@@ -75,10 +75,12 @@ function sendQueue() {
                                                 serverpin: config_js_1.default.serverPin,
                                                 version: 1,
                                             },
-                                        }, () => {
+                                        })
+                                            .then(() => {
                                             client.state = constants.states.RESPONDING;
                                             resolve();
-                                        });
+                                        })
+                                            .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                     })
                                         .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                 })

@@ -4,7 +4,7 @@
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
-import {SqlQuery, inspect} from '../SHARED/misc.js';
+import {SqlQuery, inspect, timestamp} from '../SHARED/misc.js';
 
 //#endregion
 
@@ -27,7 +27,7 @@ async function updateQueue() {
 									SqlQuery("SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
 									.then(function(qentry: ITelexCom.queue) {
 										if (qentry.length === 1) {
-											SqlQuery("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [Math.floor(Date.now() / 1000), server.uid, message.uid])
+											SqlQuery("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [timestamp(), server.uid, message.uid])
 											.then(function() {
 												// SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 												// .then(function(){
@@ -37,7 +37,7 @@ async function updateQueue() {
 											})
 											.catch(err=>{logger.log('error', inspect`${err}`);}); 
 										} else if (qentry.length === 0) {
-											SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)])
+											SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, timestamp()])
 											.then(function() {
 												// SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 												// .then(function(){
@@ -49,7 +49,7 @@ async function updateQueue() {
 										} else {
 											logger.log('error', inspect`duplicate queue entry!`);
 											SqlQuery("DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
-											.then(() => SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)]))
+											.then(() => SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, timestamp()]))
 											.then(() => {
 												// SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
 												// .then(function(){

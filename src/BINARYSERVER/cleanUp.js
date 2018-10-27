@@ -6,7 +6,7 @@ function cleanUp() {
     return new Promise((resolve, reject) => {
         if (config_1.default.keepDeletedFor != null) {
             logger.log('debug', misc_1.inspect `cleaning up`);
-            let expiredAfter = Math.floor(Date.now() / 1000) - config_1.default.keepDeletedFor * 86400;
+            let expiredAfter = misc_1.timestamp() - config_1.default.keepDeletedFor * 86400;
             misc_1.SqlQuery("DELETE FROM teilnehmer WHERE type=0 AND timestamp<=?", [expiredAfter])
                 .then(res => {
                 if (res && res.affectedRows > 0)

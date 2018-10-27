@@ -25,7 +25,7 @@ function updateQueue() {
                             serialEachPromise_js_1.default(servers, server => serialEachPromise_js_1.default(changed, (message) => misc_js_1.SqlQuery("SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
                                 .then(function (qentry) {
                                 if (qentry.length === 1) {
-                                    misc_js_1.SqlQuery("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [Math.floor(Date.now() / 1000), server.uid, message.uid])
+                                    misc_js_1.SqlQuery("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [misc_js_1.timestamp(), server.uid, message.uid])
                                         .then(function () {
                                         // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
                                         // .then(function(){
@@ -36,7 +36,7 @@ function updateQueue() {
                                         .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
                                 }
                                 else if (qentry.length === 0) {
-                                    misc_js_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)])
+                                    misc_js_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, misc_js_1.timestamp()])
                                         .then(function () {
                                         // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
                                         // .then(function(){
@@ -49,7 +49,7 @@ function updateQueue() {
                                 else {
                                     logger.log('error', misc_js_1.inspect `duplicate queue entry!`);
                                     misc_js_1.SqlQuery("DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
-                                        .then(() => misc_js_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, Math.floor(Date.now() / 1000)]))
+                                        .then(() => misc_js_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, misc_js_1.timestamp()]))
                                         .then(() => {
                                         // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
                                         // .then(function(){

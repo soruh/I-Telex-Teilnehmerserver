@@ -1,7 +1,10 @@
 /* jshint -W079 */
 var german = {
+  "#copy_edit_dialog":{
+    text: "Kopieren"
+  },
   "#search-button":{
-    title: "suchen"
+    title: "Suchen"
   },
   "#refresh-button":{
     title: "Aktualisieren"
@@ -31,7 +34,8 @@ var german = {
     text: "Port"
   },
   "#table_th_label_extension": {
-    text: "Durchwahl"
+    text: "Durch.",
+    title: "Durchwahl",
   },
   "#table_th_label_pin": {
     text: "Pin"
@@ -53,6 +57,9 @@ var german = {
   },
   ".remove": {
     title: "entfernen"
+  },
+  ".resetPin": {
+    title: "pin zurücksetzen"
   },
   "#login": {
     text: "einloggen"
@@ -165,7 +172,11 @@ var german = {
   "#hl_delete": {
     text: "Löschen"
   },
+  "#hl_resetPin": {
+    text: "Pin zurücksetzten"
+  },
   "delete_message": "Wollen sie diesen Eintrag wirklich löschen?",
+  "resetPinMessage": "Wollen sie wirklich die PIN für diesen Eintrag zurücksetzen?",
   "verify": {
     unique: "Bitte nutzen sie eine noch nicht vorhandene Nummer.",
     required: "Dieses Feld ist ein Pflichtfeld.",

@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto+Condensed" rel="stylesheet">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-  <!--<link rel="stylesheet" href="stylesheets/bootstrap.min.css">
-  <link rel="stylesheet" href="stylesheets/bootstrap-theme.min.css">-->
-  <link rel="stylesheet" href="stylesheets/input.css">
-  <link rel="stylesheet" href="stylesheets/main.css">
 
-  <script src="/javascripts/jquery-3.3.1.min.js"></script>
-  <script src="/javascripts/jquery.validate.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-  <!--<script src="javascripts/bootstrap.min.js"></script>-->
+  <link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css" >
+  <link rel="stylesheet" href="/css/input.css">
+  <link rel="stylesheet" href="/css/main.css">
+
+  <script src="/js/jquery-3.3.1.min.js"></script>
+  <script src="/js/jquery.validate.min.js"></script>
+
+  <script src='/js/forge-sha256.min.js'></script>
+
+  <script src="/bootstrap-3.3.7-dist/js/bootstrap.min.js" ></script>
+
 
   <script src="/languages/german.js"></script>
   <script src="/languages/english.js"></script>
 
-  <script src="/javascripts/main.js"></script>
+  <script src="/js/main.js"></script>
 </head>
 
 <body>
@@ -34,8 +35,8 @@
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li class="inactive"><a href="/">Home</a></li>
-          <li class="inactive"><a href="/impressum.html">Impressum</a></li>
+          <!--<li class="inactive"><a href="/">Home</a></li>-->
+          <li class="inactive"><a href="/html/impressum.html">Impressum</a></li>
           <li class="inactive"><a href="http://telexgateway.de/">Nachrichtendienst</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
@@ -48,7 +49,7 @@
           </li>
           <li>
             <div id="download-container" class="panel">
-              <a id="download-button" href="/download?type=csv&version=1" class="glyphicon glyphicon glyphicon-download-alt btn btn-primary btn-sm"></a>
+              <button id="download-button" onclick="window.location.href='/download?type=csv&version=1'" class="glyphicon glyphicon glyphicon-download-alt btn btn-primary btn-sm"></button>
             </div>
           </li>
           <li>
@@ -213,9 +214,10 @@
       <label for="disabled_edit_dialog" id="disabled_edit_dialog_label">disabled_edit_dialog</label>
       <input type="checkbox" id="disabled_edit_dialog" name="disabled"></input>
       <div class="button_container">
-      <button id="submit_edit_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
-      <button id="abort_edit_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
-    </div>
+        <button id="submit_edit_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
+        <button id="copy_edit_dialog" class="btn btn-warning btn-sm" type="button"></button>
+        <button id="abort_edit_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
+      </div>
     </form>
   </div>
   <div style="display: none;" id="delete_dialog" class="popup">
@@ -226,7 +228,15 @@
       <button id="abort_delete_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
     </div>
   </div>
-  </br>
+  <div style="display: none;" id="resetPin_dialog" class="popup">
+    <h2 id="hl_resetPin"></h2>
+    <div id="resetPin_dialog_label_container"></div>
+    <div class="button_container">
+      <button id="submit_resetPin_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
+      <button id="abort_resetPin_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
+    </div>
+  </div>
+  <br/>
   <span id="log" style="display: none;"></span>
 </body>
 </html>

@@ -45,14 +45,14 @@ function connect(options, onClose = () => { }) {
             logger.log('warning', misc_js_1.inspect `server: ${client.name} timed out`);
             // socket.emit("end");
             // socket.emit("error",new Error("timeout"));
-            misc_js_1.increaseErrorCounter(serverkey, "TIMEOUT");
+            misc_js_1.increaseErrorCounter('server', serverkey, "TIMEOUT");
             socket.end();
         });
         socket.on('error', error => {
             if (error["code"] !== "ECONNRESET") {
                 logger.log('debug', misc_js_1.inspect `${error}`);
                 logger.log('network', misc_js_1.inspect `server ${client.name} had an error`);
-                misc_js_1.increaseErrorCounter(serverkey, error["code"]);
+                misc_js_1.increaseErrorCounter('server', serverkey, error["code"]);
             }
             else {
                 logger.log('silly', misc_js_1.inspect `${error}`);
@@ -71,7 +71,7 @@ function connect(options, onClose = () => { }) {
                 }
             }
             logger.log('network', misc_js_1.inspect `connected to server at ${serverkey} as ${client.name}`);
-            misc_js_1.resetErrorCounter(serverkey);
+            misc_js_1.resetErrorCounter('server', serverkey);
             resolve(client);
         });
         socket.setTimeout(config_js_1.default.connectionTimeout);
