@@ -4,11 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-<<<<<<< HEAD
-import {Client, sendEmail, getTimezone, inspect, getTimestamp} from '../SHARED/misc.js';
-=======
-import {Client, sendEmail, getTimezone, inspect, symbolName, getTimestamp, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
->>>>>>> d5942ebb6c607c51d16b0420105947d5cc4d9eea
+import {Client, sendEmail, getTimezone, inspect, getTimestamp, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";

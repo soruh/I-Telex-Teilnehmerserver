@@ -68,7 +68,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
     const [entry] = entries;
     if (!entry) {
         yield misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-        const result = yield misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+        const result = yield misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', misc_js_1.timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
         if (!(result && result.affectedRows)) {
             logger.log('error', misc_js_1.inspect `could not create entry`);
             return;
@@ -107,7 +107,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
         client.connection.end();
-        increaseErrorCounter('client', {
+        misc_js_1.increaseErrorCounter('client', {
             clientName: client.name,
             ip: client.ipAddress,
             name: entry.name,
@@ -126,7 +126,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         return;
     }
     yield misc_js_2.SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
-        port, client.ipAddress, timestamp(), number,
+        port, client.ipAddress, misc_js_1.timestamp(), number,
         config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin,
     ]);
     yield client.sendPackage({

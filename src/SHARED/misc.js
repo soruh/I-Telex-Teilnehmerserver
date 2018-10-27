@@ -63,6 +63,7 @@ function getTimezone(date) {
 }
 exports.getTimezone = getTimezone;
 let serverErrorCounters = {};
+exports.serverErrorCounters = serverErrorCounters;
 let clientWrongPinCounters = {};
 function increaseErrorCounter(type, identifier, code) {
     if (type === "server") {
