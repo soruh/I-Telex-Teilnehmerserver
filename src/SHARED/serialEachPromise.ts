@@ -1,7 +1,7 @@
 import { inspect } from "./misc";
 
-async function serialEachPromise<T,U>(iterable:Iterable<T>, promiseFunction:(value:T, key:string)=>Promise<U>){
-	let results = [];
+async function serialEachPromise<T,U>(iterable:Iterable<T>, promiseFunction:(value:T, key:string)=>Promise<U>):Promise<U[]>{
+	let results:U[] = [];
 	for(let key in iterable){
 		try{
 			logger.log('silly', inspect`starting promiseFunction ${promiseFunction.name?promiseFunction.name+" ":""}called with key: ${key} value: ${iterable[key]} `);
