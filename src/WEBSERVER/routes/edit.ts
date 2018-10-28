@@ -110,7 +110,6 @@ function editEndpoint(req, res) {
 		logger.log('debug', inspect`request body: ${req.body}`);
 		logger.log('debug', inspect`typekey: ${req.body.typekey}`);
 		if (!isValidToken(req.body.token)){
-			if(req.body.password !== "") logger.log('warning', inspect`${req.connection.remoteAddress} tried to login with a wrong password`);
 			return void res.json({
 				successful: false,
 				message: {

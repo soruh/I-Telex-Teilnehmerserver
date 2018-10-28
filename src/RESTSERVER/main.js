@@ -18,20 +18,22 @@ createLogger_js_1.default(config_js_1.default.RESTserverLoggingLevel, config_js_
     levels: {
         "error": 0,
         "warning": 1,
-        "sql": 2,
-        "http": 3,
-        "verbose sql": 4,
-        "verbose http": 5,
-        "debug": 6,
-        "silly": 7,
+        "others": 2,
+        "public": 3,
+        "private": 4,
+        "sql": 5,
+        "verbose sql": 6,
+        "debug": 7,
+        "silly": 8,
     },
     colors: {
         "error": "red",
         "warning": "yellow",
-        "sql": "green",
-        "http": "cyan",
-        "verbose sql": "green",
-        "verbose http": "blue",
+        "others": 'gray',
+        "public": 'green',
+        "private": 'blue',
+        "sql": 'cyan',
+        "verbose sql": "cyan",
         "debug": "magenta",
         "silly": "bold",
     },
@@ -43,7 +45,8 @@ server.on('error', error => {
     throw error;
 });
 server.listen(config_js_1.default.RESTServerPort, () => {
-    logger.log('warning', misc_js_1.inspect `Listening on ${server.address()}`);
+    let address = server.address();
+    logger.log('warning', `Listening on ${typeof address === "string" ? 'pipe ' + address : 'port ' + address.port}`);
 });
 // write uncaught exceptions to all logs
 process.on('uncaughtException', (err) => __awaiter(this, void 0, void 0, function* () {

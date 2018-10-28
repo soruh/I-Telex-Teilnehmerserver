@@ -567,8 +567,16 @@ if(config.scientistNames){
 	};
 }
 
+function sleep(millis:number):Promise<number>{
+	return new Promise((resolve,reject)=>{
+		setTimeout(()=>{
+			resolve(millis);
+		}, millis);
+	});
+}
 
 export {
+	sleep,
 	SqlQuery,
 	sendEmail,
 	increaseErrorCounter,

@@ -45,7 +45,8 @@ server.on('error', error=>{
 	throw error;
 });
 server.listen(config.webServerPort, ()=>{
-	logger.log('warning', inspect`Listening on ${server.address()}`);
+	let address = server.address();
+	logger.log('warning', `Listening on ${typeof address === "string"?'pipe '+address:'port '+address.port}`);
 });
 
 // write uncaught exceptions to all logs

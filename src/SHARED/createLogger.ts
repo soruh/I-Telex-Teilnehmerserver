@@ -11,21 +11,28 @@ declare global {
 		}
 	}
 }
-function createLogger(loggingLevel, standartLog, errorLog, logToConsole, customLevels){
+function createLogger(loggingLevel:string|number, standartLog:string, errorLog:string, logToConsole:boolean, customLevels){
 	colors.disable(config.disableColors);
+	let levels = winston.config.npm.levels;
+	let colours = winston.config.npm.colors;
+	if(customLevels){
+		winston.addColors(customLevels.colors);
+		levels = customLevels.levels;
+		colours = customLevels.colors;
+	}
 	let getLoggingLevel = ():string => {
 		if (typeof loggingLevel === "number") {
-			let level = Object.entries(customLevels.levels).find(([, value]) => value === loggingLevel);
+			let level = Object.entries(levels).find(([, value]) => value === loggingLevel);
 			if (level) return level[0];
 		}
 		if (typeof loggingLevel === "string") {
-			if (customLevels.levels.hasOwnProperty(loggingLevel))
+			if (levels.hasOwnProperty(loggingLevel))
 				return loggingLevel;
 		}
 		// tslint:disable:no-console
 		console.log("valid logging levels are:");
 		console.log(
-			Object .entries(customLevels.levels)
+			Object .entries(levels)
 			.map(([key, value])=>`${value}/${key}`)
 			.join("\n")
 		);
@@ -50,9 +57,7 @@ function createLogger(loggingLevel, standartLog, errorLog, logToConsole, customL
 		})
 	);
 	if (logToConsole) transports.push(
-		new winston.transports.Console({
-
-		})
+		new winston.transports.Console()
 	);
 
 	// let getLine = winston.format((info) => {
@@ -71,7 +76,7 @@ function createLogger(loggingLevel, standartLog, errorLog, logToConsole, customL
 	if(config.logDate) formats.push(winston.format.timestamp());
 	if(!config.disableColors) formats.push(winston.format.colorize());
 	// formats.push(getLine),
-	const levelPadding = Math.max(...Object.keys(customLevels.colors).map(x=>x.length));
+	const levelPadding = Math.max(...Object.keys(colours).map(x=>x.length));
 	formats.push(winston.format.printf(info=>
 		`${
 			config.logDate?(info.timestamp.replace("T"," ").replace("Z"," ")):""
@@ -85,10 +90,9 @@ function createLogger(loggingLevel, standartLog, errorLog, logToConsole, customL
 	);
 	// formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
 
-	winston.addColors(customLevels.colors);
 	global.logger = winston.createLogger({
 		level: getLoggingLevel(),
-		levels: customLevels.levels,
+		levels,
 		format: winston.format.combine(...formats),
 		exitOnError: false,
 		transports, // : transports

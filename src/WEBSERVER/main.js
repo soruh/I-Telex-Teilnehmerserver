@@ -43,7 +43,8 @@ server.on('error', error => {
     throw error;
 });
 server.listen(config_js_1.default.webServerPort, () => {
-    logger.log('warning', misc_js_1.inspect `Listening on ${server.address()}`);
+    let address = server.address();
+    logger.log('warning', `Listening on ${typeof address === "string" ? 'pipe ' + address : 'port ' + address.port}`);
 });
 // write uncaught exceptions to all logs
 process.on('uncaughtException', (err) => __awaiter(this, void 0, void 0, function* () {
