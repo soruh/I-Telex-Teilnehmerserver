@@ -27,7 +27,7 @@ async function httpLogger(callback:(message:string, req:Request, res:Response)=>
 	message += ' ';
 	message += statusColor + status.padStart(3) + colors.Reset;
 	message += ' ';
-	message += decodeURI(req.url).replace(/(\/|\?|&)/g,`${colors.FgLightBlack}$1${colors.Reset}`);
+	message += decodeURI(req.originalUrl).replace(/(\/|\?|&)/g,`${colors.FgLightBlack}$1${colors.Reset}`);
 	
 	callback(message, req, res);
 }

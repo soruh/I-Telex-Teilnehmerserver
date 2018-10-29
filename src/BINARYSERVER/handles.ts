@@ -3,7 +3,7 @@
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import * as constants from "../BINARYSERVER/constants.js";
+import * as constants from "../SHARED/constants.js";
 import {Client, sendEmail, inspect, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
@@ -169,8 +169,7 @@ handles[5][constants.states.FULLQUERY] =
 handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, client: Client) => {
 	if (!client) return;
 
-	let names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
-	names = names.filter(name => pkg.data[name] !== undefined);
+	let names = constants.peerProperties.filter(name => pkg.data[name] !== undefined);
 	const values = names.map(name => pkg.data[name]);
 
 	logger.log('verbose network', inspect`got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);

@@ -4,7 +4,7 @@
 import * as net from "net";
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
-import * as constants from "../BINARYSERVER/constants.js";
+import * as constants from "../SHARED/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import {increaseErrorCounter, serverErrorCounters, resetErrorCounter, Client, clientName, inspect, normalizeIp, sendPackage} from "../SHARED/misc.js";
 import { handlePackage } from "./handles.js";

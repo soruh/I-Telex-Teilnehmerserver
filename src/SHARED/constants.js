@@ -27,6 +27,10 @@ const PackageSizes = {
     10: 41,
 };
 exports.PackageSizes = PackageSizes;
+const peerProperties = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
+exports.peerProperties = peerProperties;
+const peerPropertiesPublic = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "timestamp"];
+exports.peerPropertiesPublic = peerPropertiesPublic;
 const states = {
     STANDBY: Symbol("STANDBY"),
     RESPONDING: Symbol("RESPONDING"),

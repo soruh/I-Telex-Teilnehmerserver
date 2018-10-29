@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../SHARED/config.js");
-const constants = require("../BINARYSERVER/constants.js");
+const constants = require("../SHARED/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const connect_js_1 = require("./connect.js");

@@ -1,20 +1,25 @@
 "use strict";
 
 import * as express from "express";
+import { getEntries, putEntries } from "./entries";
 
-const privateRouter = express.Router();
+// !!!!! DO THIS BEFORE USAGE !!!!!
+const PASSWORD = "admin"; // TODO change to config.serverpin
+// !!!!! DO THIS BEFORE USAGE !!!!!
+
+const adminRouter = express.Router();
 
 
 // Test Authorization header of all requests to /private/*
-privateRouter.all('/', function(req, res, next) {
+adminRouter.all('/', function(req, res, next) {
 	if(!(req.header('Authorization')&&/Basic (.*)/.test(req.header('Authorization')))){
-		res.header("WWW-Authenticate", "Basic");
 		res.status(401);
+		res.header("WWW-Authenticate", "Basic");
 		res.json({success:false, error:'authentication error'});
 		return;
 	}
 	let [user, pass] = Buffer.from(/Basic (.*)/.exec(req.header('Authorization'))[1], 'base64').toString().split(':');
-	if(true){ // * SQLQuery for user pin by number(user)
+	if(!(user === "admin"&&pass === PASSWORD)){
 		res.status(403);
 		res.json({success:false, error:'authentication error'});
 		return;
@@ -22,9 +27,11 @@ privateRouter.all('/', function(req, res, next) {
 	next();
 });
 
-privateRouter.get('/', function(req, res, next) {
-	res.status(200);
+adminRouter.get('/', function(req, res, next) {
 	res.json({success:true, error:'authenticated'});
 });
 
-export default privateRouter;
+adminRouter.get('/entries', getEntries);
+adminRouter.put('/entries', putEntries);
+
+export default adminRouter;

@@ -14,7 +14,7 @@ let app = express();
 app.set('views', path.join(__dirname, '../WEBSERVER/views'));
 app.set('view engine', 'pug');
 app.use(httpLogger_js_1.default.bind(null, (message, req, res) => {
-    if (req.url === '/') {
+    if (req.originalUrl === '/') {
         logger.log('http', message);
     }
     else {
@@ -34,6 +34,8 @@ app.use(function (req, res, next) {
     next(err);
 });
 app.use(function errorHandler(err, req, res, next) {
+    if (!(err instanceof Error))
+        err = new Error(err);
     if (err.status !== 404) {
         logger.log('error', misc_js_1.inspect `${err}`);
     }

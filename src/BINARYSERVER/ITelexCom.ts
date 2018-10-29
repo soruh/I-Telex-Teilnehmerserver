@@ -4,7 +4,7 @@
 import * as ip from "ip";
 import config from '../SHARED/config.js';
 import colors from "../SHARED/colors.js";
-import * as constants from "../BINARYSERVER/constants.js";
+import * as constants from "../SHARED/constants.js";
 import { inspect, normalizeIp } from "../SHARED/misc.js";
 import { Transform } from "stream";
 

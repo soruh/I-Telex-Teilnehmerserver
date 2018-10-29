@@ -33,7 +33,7 @@ function httpLogger(callback, req, res, next) {
         message += ' ';
         message += statusColor + status.padStart(3) + colors_js_1.default.Reset;
         message += ' ';
-        message += decodeURI(req.url).replace(/(\/|\?|&)/g, `${colors_js_1.default.FgLightBlack}$1${colors_js_1.default.Reset}`);
+        message += decodeURI(req.originalUrl).replace(/(\/|\?|&)/g, `${colors_js_1.default.FgLightBlack}$1${colors_js_1.default.Reset}`);
         callback(message, req, res);
     });
 }

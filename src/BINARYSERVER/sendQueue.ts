@@ -4,7 +4,7 @@
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import * as constants from "../BINARYSERVER/constants.js";
+import * as constants from "../SHARED/constants.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
 import connect from './connect.js';
 import {SqlQuery, inspect} from '../SHARED/misc.js';

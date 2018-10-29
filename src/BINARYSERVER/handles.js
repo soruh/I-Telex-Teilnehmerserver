@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../SHARED/config.js");
-const constants = require("../BINARYSERVER/constants.js");
+const constants = require("../SHARED/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const misc_js_2 = require("../SHARED/misc.js");
 const sendQueue_js_1 = require("./sendQueue.js");
@@ -158,8 +158,7 @@ handles[5][constants.states.FULLQUERY] =
     handles[5][constants.states.LOGIN] = (pkg, client) => __awaiter(this, void 0, void 0, function* () {
         if (!client)
             return;
-        let names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
-        names = names.filter(name => pkg.data[name] !== undefined);
+        let names = constants.peerProperties.filter(name => pkg.data[name] !== undefined);
         const values = names.map(name => pkg.data[name]);
         logger.log('verbose network', misc_js_1.inspect `got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
         const entries = yield misc_js_2.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);

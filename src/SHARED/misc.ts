@@ -9,7 +9,7 @@ import colors from "../SHARED/colors.js";
 
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import { states } from "../BINARYSERVER/constants.js";
+import { states } from "./constants.js";
 // import * as winston from "winston";
 //#endregion
 

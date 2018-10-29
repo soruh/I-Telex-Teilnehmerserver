@@ -5,7 +5,7 @@ const util = require("util");
 const config_js_1 = require("../SHARED/config.js");
 // import colors from "../SHARED/colors.js";
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-const constants = require("../BINARYSERVER/constants.js");
+const constants = require("../SHARED/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const ascii_js_1 = require("./ascii.js");
 const handles_js_1 = require("./handles.js");

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
-const constants = require("../BINARYSERVER/constants.js");
+const constants = require("../SHARED/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const stream_1 = require("stream");
 //#endregion

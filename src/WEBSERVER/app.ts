@@ -18,8 +18,8 @@ let app = express();
 app.set('views', path.join(__dirname,'../WEBSERVER/views'));
 app.set('view engine', 'pug');
 
-app.use(httpLogger.bind(null, (message:string, req:Request, res:Response)=>{
-	if(req.url === '/'){
+app.use(httpLogger.bind(null, (message:string, req:express.Request, res:express.Response)=>{
+	if(req.originalUrl === '/'){
 		logger.log('http', message);
 	}else{
 		logger.log('verbose http', message);
@@ -43,6 +43,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function errorHandler(err, req, res, next) {
+	if(!(err instanceof Error)) err = new Error(err);
 	if(err.status!==404){
 		logger.log('error', inspect`${err}`);
 	}
