@@ -4,7 +4,7 @@ import * as express from "express";
 import editEndpoint from "./edit";
 import list from "./list";
 import download from "./download";
-import { createToken } from "./tokens";
+import { createSalt } from "./tokens";
 
 const router = express.Router();
 router.get('/', function(req, res, next) {
@@ -17,6 +17,6 @@ router.post('/edit', editEndpoint);
 
 router.get('/download', download);
 
-router.get('/getSalt', createToken);
+router.get('/getSalt', createSalt);
 
 export default router;

@@ -13,7 +13,7 @@ const tokens_1 = require("./tokens");
 function list(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         // tslint:disable:no-var-keyword
-        if (tokens_1.isValidToken(req.body.token)) {
+        if (tokens_1.isValidToken(req.body.token, '', req.body.salt)) {
             var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,disabled,timestamp FROM teilnehmer";
         }
         else {

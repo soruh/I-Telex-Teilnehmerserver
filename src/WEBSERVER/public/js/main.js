@@ -189,7 +189,7 @@ $(document).ready(function () {
         });
         if ($(formId).valid()) {
             let editParams = {
-                typekey: "new",
+                job: "new",
                 number: $("#number_newentry_dialog").val(),
                 name: $("#name_newentry_dialog").val(),
                 type: $("#type_newentry_dialog").val(),
@@ -246,7 +246,7 @@ $(document).ready(function () {
     });
     $("#submit_delete_dialog").click(function () {
         edit({
-            typekey: "delete",
+            job: "delete",
             uid: $("#delete_dialog").data("uid"),
         }, function (err, res) {
             if (err) {
@@ -261,7 +261,7 @@ $(document).ready(function () {
     });
     $("#submit_resetPin_dialog").click(function () {
         edit({
-            typekey: "resetPin",
+            job: "resetPin",
             uid: $("#resetPin_dialog").data("uid"),
         }, function (err, res) {
             if (err) {
@@ -292,7 +292,7 @@ function checkUnique(number, element /*|HTMLElement*/) {
 }
 function editOrCopy(action) {
     let editParams = {
-        typekey: action,
+        job: action,
         uid: $("#edit_dialog").data("uid"),
         number: $("#number_edit_dialog").val(),
         name: $("#name_edit_dialog").val(),
@@ -391,7 +391,7 @@ function login(pwd, callback) {
     if (pwd)
         setCookie("pwd", btoa(pwd));
     edit({
-        typekey: "confirm password",
+        job: "confirm password",
     }, function (err, res) {
         pwdcorrect = (res.code === 1);
         if (typeof callback === "function")
@@ -424,13 +424,14 @@ function UNIXTIMEToString(UNIXTIME) {
 }
 function getList(callback) {
     console.log('getList');
-    getToken(token => {
+    getToken('', (token, salt) => {
         $.ajax({
             url: "/list",
             type: "POST",
             dataType: "json",
             data: {
                 token,
+                salt,
             },
             success(response) {
                 if (response.successful) {
@@ -873,15 +874,19 @@ function validatePasswordDialog(formId) {
 function refresh() {
     getList(updateTable);
 }
-function edit(vals, callback) {
-    console.log('edit', vals);
-    getToken(token => {
-        vals.token = token;
+function edit(values, callback) {
+    console.log('edit', values);
+    const data = JSON.stringify(values);
+    console.log('edit data:', data);
+    getToken(data, (token, salt) => {
         $.ajax({
             url: "/edit",
             type: "POST",
-            dataType: "json",
-            data: vals,
+            data: {
+                data,
+                token,
+                salt,
+            },
             success(response) {
                 refresh();
                 if (callback)
@@ -1002,10 +1007,13 @@ function getPasswordCookie() {
     }
     return password;
 }
-function createHash(salt) {
-    return window['forge_sha256'](salt + getPasswordCookie());
+function createHash(salt, data) {
+    // console.log('creating Hash: salt='+salt+' password='+getPasswordCookie()+' data='+data);
+    const hash = window['forge_sha256'](salt + getPasswordCookie() + data);
+    // console.log('created Hash: '+hash);
+    return hash;
 }
-function getToken(callback) {
+function getToken(data, callback) {
     $.ajax({
         url: "/getSalt",
         type: "GET",
@@ -1014,9 +1022,9 @@ function getToken(callback) {
             if (response.successful) {
                 const { salt } = response;
                 // console.log(`got salt: ${salt}`);
-                const hash = createHash(salt);
+                const hash = createHash(salt, data);
                 // console.log(`created hash: ${hash}`);
-                callback(hash);
+                callback(hash, salt);
             }
             else {
                 console.error(response.message);

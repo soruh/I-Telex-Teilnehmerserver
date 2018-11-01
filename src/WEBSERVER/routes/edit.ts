@@ -4,8 +4,8 @@ import { isValidToken } from "./tokens";
 import { peerList } from "../../BINARYSERVER/ITelexCom";
 
 
-async function resetPinEntry(req, res){
-	let result = await SqlQuery("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [timestamp(), req.body.uid]);
+async function resetPinEntry(req, res, data){
+	let result = await SqlQuery("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [timestamp(), data.uid]);
 	if (!result) return;
 	
 	res.json({
@@ -14,8 +14,8 @@ async function resetPinEntry(req, res){
 	});
 }
 
-async function editEntry(req, res){
-	let entries = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+async function editEntry(req, res, data){
+	let entries = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
 	if (!entries) return;
 
 	let [entry] = entries;
@@ -24,10 +24,10 @@ async function editEntry(req, res){
 	logger.log('debug', inspect`exising entry: ${entry}`);
 	
 
-	if(entry.number === req.body.number){
+	if(entry.number === data.number){
 		logger.log('debug', inspect`number wasn't changed updating`);
-		logger.log('debug', inspect`${entry.number} == ${req.body.number}`);
-		let result = await SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, timestamp(), entry.pin, req.body.uid]);
+		logger.log('debug', inspect`${entry.number} == ${data.number}`);
+		let result = await SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, timestamp(), entry.pin, data.uid]);
 		if (!result) return;
 
 		res.json({
@@ -36,11 +36,11 @@ async function editEntry(req, res){
 		});
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
-		logger.log('debug', inspect`${entry.number} != ${req.body.number}`);
-		await SqlQuery("UPDATE teilnehmer SET type=0 WHERE uid=?;", [req.body.uid]);
+		logger.log('debug', inspect`${entry.number} != ${data.number}`);
+		await SqlQuery("UPDATE teilnehmer SET type=0 WHERE uid=?;", [data.uid]);
 
 		let result = await SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-		[req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, entry.pin, req.body.disabled, timestamp()]);
+		[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, entry.pin, data.disabled, timestamp()]);
 		if (!result) return;
 
 		res.json({
@@ -50,8 +50,8 @@ async function editEntry(req, res){
 	}
 }
 
-async function copyEntry(req, res){
-	let results:peerList = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+async function copyEntry(req, res, data){
+	let results:peerList = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
 	if (results.length === 0) {
 		res.json({
 			successful: false,
@@ -62,9 +62,9 @@ async function copyEntry(req, res){
 
 	let [exising] = results;
 
-	await SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
+	await SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [data.number]);
 
-	let result = await SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, timestamp()]);
+	let result = await SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, exising.pin, data.disabled, timestamp()]);
 	if (!result) return;
 
 	res.json({
@@ -73,8 +73,8 @@ async function copyEntry(req, res){
 	});
 }
 
-async function newEntry(req, res){
-	let existing = await SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number]);
+async function newEntry(req, res, data){
+	let existing = await SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [data.number]);
 	logger.log('debug', inspect`${existing}`);
 	if (!existing) return;
 
@@ -83,9 +83,9 @@ async function newEntry(req, res){
 		message: new Error("entry already exists"),
 	});
 
-	await SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
+	await SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [data.number]);
 
-	let result = await SqlQuery("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, timestamp()]);
+	let result = await SqlQuery("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.pin, data.disabled, timestamp()]);
 	if (!result) return;
 
 	res.json({
@@ -94,8 +94,8 @@ async function newEntry(req, res){
 	});
 }
 
-async function deleteEntry(req, res){
-	let result = await SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [timestamp(), req.body.uid]);
+async function deleteEntry(req, res, data){
+	let result = await SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [timestamp(), data.uid]);
 	if (!result) return;
 	
 	res.json({
@@ -105,12 +105,22 @@ async function deleteEntry(req, res){
 }
 
 function editEndpoint(req, res) {
-		// ll(req.body);
+		// logger.log('debug', "editEndpoint");
+		// logger.log('debug', inspect`request body: ${req.body}`);
+	
+		let data;
+		try {
+			data = JSON.parse(req.body.data);
+		}catch(err){
+			logger.log('error', err);
+			return;
+		}
+		
+		
+
 		res.header("Content-Type", "application/json; charset=utf-8");
-		logger.log('debug', inspect`request body: ${req.body}`);
-		logger.log('debug', inspect`typekey: ${req.body.typekey}`);
-		if (!isValidToken(req.body.token)){
-			if(req.body.password !== "") logger.log('warning', inspect`${req.connection.remoteAddress} tried to login with a wrong password`);
+		logger.log('debug', inspect`job: ${data.job}`);
+		if (!isValidToken(req.body.token, req.body.data, req.body.salt)){
 			return void res.json({
 				successful: false,
 				message: {
@@ -120,21 +130,21 @@ function editEndpoint(req, res) {
 			});
 		}
 		try{
-			switch (req.body.typekey) {
+			switch (data.job) {
 				case "edit": 
-					editEntry(req, res);
+					editEntry(req, res, data);
 					break;
 				case "copy": 
-					copyEntry(req, res);
+					copyEntry(req, res, data);
 					break;
 				case "new":
-					newEntry(req, res);
+					newEntry(req, res, data);
 					break;
 				case "delete":
-					deleteEntry(req, res);
+					deleteEntry(req, res, data);
 					break;
 				case "resetPin":
-					resetPinEntry(req, res);
+					resetPinEntry(req, res, data);
 					break;
 				case "confirm password":
 					res.json({
@@ -150,7 +160,7 @@ function editEndpoint(req, res) {
 						successful: false,
 						message: {
 							code: -2,
-							text: "unknown typekey",
+							text: "unknown job",
 						},
 					});
 					break;

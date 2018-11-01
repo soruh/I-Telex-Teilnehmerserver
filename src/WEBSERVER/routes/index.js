@@ -12,5 +12,5 @@ router.get('/', function (req, res, next) {
 router.post('/list', list_1.default);
 router.post('/edit', edit_1.default);
 router.get('/download', download_1.default);
-router.get('/getSalt', tokens_1.createToken);
+router.get('/getSalt', tokens_1.createSalt);
 exports.default = router;
