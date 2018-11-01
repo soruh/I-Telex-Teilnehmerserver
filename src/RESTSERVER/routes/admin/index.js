@@ -2,9 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const entries_1 = require("./entries");
-// !!!!! DO THIS BEFORE USAGE !!!!!
-const PASSWORD = "admin"; // TODO change to config.serverpin
-// !!!!! DO THIS BEFORE USAGE !!!!!
+const config_1 = require("../../../SHARED/config");
+const PASSWORD = config_1.default.serverPin.toString();
 const adminRouter = express.Router();
 // Test Authorization header of all requests to /private/*
 adminRouter.all('/', function (req, res, next) {

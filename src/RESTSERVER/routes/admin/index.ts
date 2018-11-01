@@ -2,10 +2,10 @@
 
 import * as express from "express";
 import { getEntries, putEntries } from "./entries";
+import config from "../../../SHARED/config";
 
-// !!!!! DO THIS BEFORE USAGE !!!!!
-const PASSWORD = "admin"; // TODO change to config.serverpin
-// !!!!! DO THIS BEFORE USAGE !!!!!
+const PASSWORD = config.serverPin.toString();
+
 
 const adminRouter = express.Router();
 
