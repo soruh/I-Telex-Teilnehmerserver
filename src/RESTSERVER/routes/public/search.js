@@ -20,7 +20,7 @@ function search(req, res, next) {
                 return;
             }
             const searchWords = pattern.split(" ").map(q => `%${q}%`);
-            const entries = yield SQL_1.SqlQuery(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
+            const entries = yield SQL_1.SqlAll(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
             if (entries.length === 0) {
                 res.status(404);
                 res.json({ success: false, error: 'Not found' });

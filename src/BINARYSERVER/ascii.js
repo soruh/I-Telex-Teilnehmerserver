@@ -22,8 +22,8 @@ function asciiLookup(data, client) {
         if (number && (!isNaN(parseInt(number)))) {
             logger.log('debug', misc_1.inspect `starting lookup for: ${number}`);
             try {
-                let result = yield SQL_1.SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number]);
-                if (!result || result.length === 0) {
+                let result = yield SQL_1.SqlGet(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number]);
+                if (!result) {
                     let send = "";
                     send += "fail\r\n";
                     send += number + "\r\n";
@@ -36,7 +36,7 @@ function asciiLookup(data, client) {
                 }
                 else {
                     let send = "";
-                    let res = result[0];
+                    let res = result;
                     send += "ok\r\n";
                     send += res.number + "\r\n";
                     send += res.name + "\r\n";
@@ -95,7 +95,7 @@ function checkIp(data, client) {
             }
             if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
                 try {
-                    let peers = yield SQL_1.SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", []);
+                    let peers = yield SQL_1.SqlAll("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", []);
                     let ipPeers = [];
                     yield serialEachPromise_1.default(peers, peer => new Promise((resolve, reject) => {
                         if ((!peer.ipaddress) && peer.hostname) {

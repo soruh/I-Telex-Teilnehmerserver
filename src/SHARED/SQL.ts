@@ -89,6 +89,18 @@ function SqlGet(query: string, values: any[]):Promise<any>{
 	});
 }
 
+function SqlExec(query: string, values: any[]):Promise<any>{
+	return new Promise((resolve, reject) => {
+		db.exec(prepareQuery(query, values), function(err:Error){
+			if(err){
+				reject(err);
+				return;
+			}
+			resolve(this);
+		});
+	});
+}
+
 
 const SqlQuery = SqlAll;
 
@@ -98,4 +110,5 @@ export {
 	SqlEach,
 	SqlGet,
 	SqlQuery,
+	SqlExec,
 };

@@ -8,10 +8,10 @@ function cleanUp() {
         if (config_1.default.keepDeletedFor != null) {
             logger.log('debug', misc_1.inspect `cleaning up`);
             let expiredAfter = misc_1.timestamp() - config_1.default.keepDeletedFor * 86400;
-            SQL_1.SqlQuery("DELETE FROM teilnehmer WHERE type=0 AND timestamp<=?", [expiredAfter])
+            SQL_1.SqlExec("DELETE FROM teilnehmer WHERE type=0 AND timestamp<=?", [expiredAfter])
                 .then(res => {
-                if (res && res.affectedRows > 0)
-                    logger.log('debug', misc_1.inspect `removed ${res.affectedRows} expired entries`);
+                if (res && res.changes > 0)
+                    logger.log('debug', misc_1.inspect `removed ${res.changes} expired entries`);
                 resolve();
             })
                 .catch(err => { logger.log('error', misc_1.inspect `${err}`); });

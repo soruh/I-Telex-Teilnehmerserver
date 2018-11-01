@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from "express";
-import { SqlQuery, SqlAll, SqlEach, SqlGet } from "../../../SHARED/SQL";
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from "../../../SHARED/SQL";
 import { peerPropertiesPublic } from "../../../SHARED/constants";
 
 async function search(req:Request, res:Response, next:NextFunction){
@@ -12,7 +12,7 @@ async function search(req:Request, res:Response, next:NextFunction){
 		}
 
 		const searchWords = pattern.split(" ").map(q => `%${q}%`);
-		const entries = await SqlQuery(`SELECT ${peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
+		const entries = await SqlAll(`SELECT ${peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
 		if(entries.length === 0){
 			res.status(404);
 			res.json({success:false, error: 'Not found'});

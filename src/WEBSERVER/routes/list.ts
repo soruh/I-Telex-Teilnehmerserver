@@ -1,4 +1,4 @@
-import { SqlQuery, SqlAll, SqlEach, SqlGet } from "../../SHARED/SQL";
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from "../../SHARED/SQL";
 import { isValidToken } from "./tokens";
 
 async function list(req, res) {
@@ -12,7 +12,7 @@ async function list(req, res) {
 		res.header("Content-Type", "application/json; charset=utf-8");
 		
 		try{
-			let data = await SqlQuery(query, []);
+			let data = await SqlAll(query, []);
 			
 			if(!data) throw(new Error('no data'));
 			res.json({

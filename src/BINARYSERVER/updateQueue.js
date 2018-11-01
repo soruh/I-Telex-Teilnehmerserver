@@ -8,86 +8,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const SQL_1 = require("../SHARED/SQL");
 //#endregion
 function updateQueue() {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            logger.log('debug', misc_js_1.inspect `updating Queue`);
-            SQL_1.SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;", [])
-                .then(function (changed) {
-                if (changed.length > 0) {
-                    logger.log('queue', misc_js_1.inspect `${changed.length} numbers to enqueue`);
-                    SQL_1.SqlQuery("SELECT * FROM servers;", [])
-                        .then(function (servers) {
-                        if (servers.length > 0) {
-                            serialEachPromise_js_1.default(servers, server => serialEachPromise_js_1.default(changed, (message) => SQL_1.SqlQuery("SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
-                                .then(function (qentry) {
-                                if (qentry.length === 1) {
-                                    SQL_1.SqlQuery("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [misc_js_1.timestamp(), server.uid, message.uid])
-                                        .then(function () {
-                                        // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-                                        // .then(function(){
-                                        logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
-                                        // })
-                                        // .catch(err=>{logger.log('error', inspect`${err}`)}); 
-                                    })
-                                        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
-                                }
-                                else if (qentry.length === 0) {
-                                    SQL_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, misc_js_1.timestamp()])
-                                        .then(function () {
-                                        // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-                                        // .then(function(){
-                                        logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
-                                        // })
-                                        // .catch(err=>{logger.log('error', inspect`${err}`)}); 
-                                    })
-                                        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
-                                }
-                                else {
-                                    logger.log('error', misc_js_1.inspect `duplicate queue entry!`);
-                                    SQL_1.SqlQuery("DELETE FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid])
-                                        .then(() => SQL_1.SqlQuery("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, misc_js_1.timestamp()]))
-                                        .then(() => {
-                                        // SqlQuery("UPDATE teilnehmer SET changed = 0 WHERE uid="+message.uid+";")
-                                        // .then(function(){
-                                        logger.log('queue', misc_js_1.inspect `enqueued: message.number`);
-                                        // })
-                                        // .catch(err=>{logger.log('error', inspect`${err}`)}); 
-                                    })
-                                        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
-                                }
-                            })
-                                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); })))
-                                .then(() => {
-                                logger.log('queue', misc_js_1.inspect `finished enqueueing`);
-                                logger.log('queue', misc_js_1.inspect `reseting changed flags...`);
-                                return SQL_1.SqlQuery(`UPDATE teilnehmer SET changed = 0 WHERE uid=?${" or uid=?".repeat(changed.length - 1)};`, changed.map(entry => entry.uid));
-                            })
-                                .then(() => {
-                                logger.log('queue', misc_js_1.inspect `reset ${changed.length} changed flags.`);
-                                // sendQueue();
-                                resolve();
-                            })
-                                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
+        logger.log('debug', misc_js_1.inspect `updating Queue`);
+        const changed = yield SQL_1.SqlAll("SELECT  * FROM teilnehmer WHERE changed = 1;", []);
+        if (changed.length > 0) {
+            logger.log('queue', misc_js_1.inspect `${changed.length} numbers to enqueue`);
+            const servers = yield SQL_1.SqlAll("SELECT * FROM servers;", []);
+            if (servers.length > 0) {
+                for (const server of servers) {
+                    for (const message of changed) {
+                        const qentry = yield SQL_1.SqlGet("SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid]);
+                        if (qentry) {
+                            yield SQL_1.SqlExec("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [misc_js_1.timestamp(), server.uid, message.uid]);
+                            yield SQL_1.SqlExec("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
+                            logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
                         }
                         else {
-                            logger.log('warning', misc_js_1.inspect `No configured servers -> aborting updateQueue`);
-                            resolve();
+                            yield SQL_1.SqlExec("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, misc_js_1.timestamp()]);
+                            yield SQL_1.SqlExec("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
+                            logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
                         }
-                    })
-                        .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
+                    }
                 }
-                else {
-                    logger.log('queue', misc_js_1.inspect `no numbers to enqueue`);
-                    resolve();
-                }
-            })
-                .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
-        });
+            }
+            else {
+                logger.log('warning', misc_js_1.inspect `No configured servers -> aborting updateQueue`);
+            }
+        }
+        else {
+            logger.log('queue', misc_js_1.inspect `no numbers to enqueue`);
+        }
     });
 }
 exports.default = updateQueue;

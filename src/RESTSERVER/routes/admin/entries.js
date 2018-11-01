@@ -15,7 +15,7 @@ const config_1 = require("../../../SHARED/config");
 function getEntries(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let entries = yield SQL_1.SqlQuery(`SELECT ${constants_1.peerProperties.join(',')} from teilnehmer;`, []);
+            let entries = yield SQL_1.SqlAll(`SELECT ${constants_1.peerProperties.join(',')} from teilnehmer;`, []);
             if (entries.length === 0) {
                 res.status(404);
                 res.json({ success: false, error: 'Not found' });
@@ -57,7 +57,7 @@ function putEntries(req, res, next) {
                 const values = names.map(name => entry[name]);
                 // TODO check if number is set and a valid integer
                 // logger.log('admin', inspect`got dataset for: ${entry.name} (${entry.number})`);
-                const [existing] = yield SQL_1.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);
+                const existing = yield SQL_1.SqlGet(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);
                 if (existing) {
                     if (entry.timestamp <= existing.timestamp) {
                         logger.log('debug', misc_1.inspect `recieved entry is ${+existing.timestamp - entry.timestamp} seconds older and was ignored`);
@@ -65,7 +65,7 @@ function putEntries(req, res, next) {
                     }
                     logger.log('admin', misc_1.inspect `changed dataset for: ${entry.name}`);
                     logger.log('debug', misc_1.inspect `recieved entry is ${+entry.timestamp - existing.timestamp} seconds newer  > ${existing.timestamp}`);
-                    yield SQL_1.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0, entry.number]));
+                    yield SQL_1.SqlExec(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0, entry.number]));
                 }
                 else {
                     if (entry.type === 0) {
@@ -73,7 +73,7 @@ function putEntries(req, res, next) {
                     }
                     else {
                         logger.log('admin', misc_1.inspect `new dataset for: ${entry.name}`);
-                        yield SQL_1.SqlQuery(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0,]));
+                        yield SQL_1.SqlExec(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0,]));
                     }
                 }
             }

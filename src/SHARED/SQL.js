@@ -86,5 +86,17 @@ function SqlGet(query, values) {
     });
 }
 exports.SqlGet = SqlGet;
+function SqlExec(query, values) {
+    return new Promise((resolve, reject) => {
+        db.exec(prepareQuery(query, values), function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this);
+        });
+    });
+}
+exports.SqlExec = SqlExec;
 const SqlQuery = SqlAll;
 exports.SqlQuery = SqlQuery;

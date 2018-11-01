@@ -5,7 +5,7 @@ import * as util from 'util';
 import * as dns from 'dns';
 import * as ip from 'ip';
 import { inspect, Client } from '../SHARED/misc';
-import { SqlQuery, SqlAll, SqlEach, SqlGet } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
 
 import { peerList, Peer } from './ITelexCom';
 import serialEachPromise from '../SHARED/serialEachPromise';
@@ -16,8 +16,8 @@ async function asciiLookup(data: Buffer, client: Client) {
 	if (number&&(!isNaN(parseInt(number)))) {
 		logger.log('debug', inspect`starting lookup for: ${number}`);
 		try {
-			let result:peerList = await SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number]);
-			if (!result || result.length === 0) {
+			let result:Peer = await SqlGet(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number]);
+			if (!result) {
 				let send: string = "";
 				send += "fail\r\n";
 				send += number + "\r\n";
@@ -29,7 +29,7 @@ async function asciiLookup(data: Buffer, client: Client) {
 				});
 			} else {
 				let send: string = "";
-				let res = result[0];
+				let res = result;
 				send += "ok\r\n";
 				send += res.number + "\r\n";
 				send += res.name + "\r\n";
@@ -87,7 +87,7 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
 			try{
-				let peers:peerList = await SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", []);
+				let peers:peerList = await SqlAll("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", []);
 				let ipPeers: Array<{
 					peer: Peer,
 					ipaddress: string

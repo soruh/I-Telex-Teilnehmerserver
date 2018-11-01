@@ -13,7 +13,7 @@ const constants_1 = require("../../../SHARED/constants");
 function entries(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let entries = yield SQL_1.SqlQuery(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1;`, []);
+            let entries = yield SQL_1.SqlAll(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1;`, []);
             if (entries.length === 0) {
                 res.status(404);
                 res.json({ success: false, error: 'Not found' });

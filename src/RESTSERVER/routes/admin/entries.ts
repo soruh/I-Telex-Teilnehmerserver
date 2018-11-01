@@ -1,14 +1,14 @@
 import { NextFunction, Response, Request } from "express";
 import { inspect } from "../../../SHARED/misc";
-import { SqlQuery, SqlAll, SqlEach, SqlGet } from '../../../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../../../SHARED/SQL';
 
 import { peerProperties } from "../../../SHARED/constants";
-import { peerList } from "../../../BINARYSERVER/ITelexCom";
+import { peerList, Peer } from "../../../BINARYSERVER/ITelexCom";
 import config from "../../../SHARED/config";
 
 async function getEntries(req:Request, res:Response, next:NextFunction){
 	try{
-		let entries = await SqlQuery(`SELECT ${peerProperties.join(',')} from teilnehmer;`, []);
+		let entries = await SqlAll(`SELECT ${peerProperties.join(',')} from teilnehmer;`, []);
 		if(entries.length === 0){
 			res.status(404);
 			res.json({success:false, error: 'Not found'});
@@ -53,7 +53,7 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 			// TODO check if number is set and a valid integer
 
 			// logger.log('admin', inspect`got dataset for: ${entry.name} (${entry.number})`);
-			const [existing]:peerList = await SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);
+			const existing:Peer = await SqlGet(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);
 
 			if (existing) {
 				if (entry.timestamp <= existing.timestamp) {
@@ -65,13 +65,13 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 				logger.log('debug', inspect`recieved entry is ${+entry.timestamp - existing.timestamp} seconds newer  > ${existing.timestamp}`);
 
 
-				await SqlQuery(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, entry.number]));
+				await SqlExec(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, entry.number]));
 			}else{
 				if(entry.type === 0) {
 					logger.log('debug', inspect`not inserting deleted entry: ${entry}`);
 				}else{
 					logger.log('admin', inspect`new dataset for: ${entry.name}`);
-					await SqlQuery(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
+					await SqlExec(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
 				}
 			}
 		}

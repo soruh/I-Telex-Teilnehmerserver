@@ -20,7 +20,7 @@ const readonly = (config_js_1.default.serverPin == null);
 function getFullQuery() {
     return __awaiter(this, void 0, void 0, function* () {
         logger.log('debug', misc_js_1.inspect `getting FullQuery`);
-        let servers = yield SQL_1.SqlQuery("SELECT  * FROM servers;", []);
+        let servers = yield SQL_1.SqlAll("SELECT  * FROM servers;", []);
         if (servers.length === 0) {
             logger.log('warning', misc_js_1.inspect `No configured servers -> aborting FullQuery`);
             return;

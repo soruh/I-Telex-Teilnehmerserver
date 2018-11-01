@@ -1,7 +1,7 @@
 "use strict";
 
 import * as express from "express";
-import { SqlQuery, SqlAll, SqlEach, SqlGet } from "../../../SHARED/SQL";
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from "../../../SHARED/SQL";
 import { peerPropertiesPublic } from "../../../SHARED/constants";
 
 const entryRouter = express.Router();
@@ -23,13 +23,13 @@ entryRouter.get('*', async function(req, res, next) {
 			res.json({success:false, error:'Not an integer'});
 			return;
 		}
-		let entry = await SqlQuery(`SELECT ${peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1 AND number=?;`, [number]);
-		if(entry.length === 0){
+		let entry = await SqlGet(`SELECT ${peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1 AND number=?;`, [number]);
+		if(!entry){
 			res.status(404);
 			res.json({success:false, error:'Not found'});
 			return;
 		}
-		res.json({success:true, data:entry[0]});
+		res.json({success:true, data:entry});
 	}catch(err){
 		next(err);
 	}

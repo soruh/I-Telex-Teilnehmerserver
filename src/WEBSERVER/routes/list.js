@@ -22,7 +22,7 @@ function list(req, res) {
         // tslint:enable:no-var-keyword
         res.header("Content-Type", "application/json; charset=utf-8");
         try {
-            let data = yield SQL_1.SqlQuery(query, []);
+            let data = yield SQL_1.SqlAll(query, []);
             if (!data)
                 throw (new Error('no data'));
             res.json({

@@ -30,13 +30,13 @@ entryRouter.get('*', function (req, res, next) {
                 res.json({ success: false, error: 'Not an integer' });
                 return;
             }
-            let entry = yield SQL_1.SqlQuery(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1 AND number=?;`, [number]);
-            if (entry.length === 0) {
+            let entry = yield SQL_1.SqlGet(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1 AND number=?;`, [number]);
+            if (!entry) {
                 res.status(404);
                 res.json({ success: false, error: 'Not found' });
                 return;
             }
-            res.json({ success: true, data: entry[0] });
+            res.json({ success: true, data: entry });
         }
         catch (err) {
             next(err);

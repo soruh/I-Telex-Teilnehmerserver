@@ -6,7 +6,7 @@ import config from '../SHARED/config.js';
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
 import { inspect } from "../SHARED/misc.js";
-import { SqlQuery, SqlAll, SqlEach, SqlGet } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
 
 import serialEachPromise from '../SHARED/serialEachPromise.js';
 import connect from './connect.js';
@@ -19,7 +19,7 @@ const readonly = (config.serverPin == null);
 
 async function getFullQuery() {
 	logger.log('debug', inspect`getting FullQuery`);
-	let servers: ITelexCom.serverList = await SqlQuery("SELECT  * FROM servers;", []);
+	let servers: ITelexCom.serverList = await SqlAll("SELECT  * FROM servers;", []);
 	if (servers.length === 0) {
 		logger.log('warning', inspect`No configured servers -> aborting FullQuery`);
 		return;
