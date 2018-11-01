@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from "express";
-import { SqlQuery } from "../../../SHARED/misc";
+import { SqlQuery, SqlAll, SqlEach, SqlGet } from "../../../SHARED/SQL";
 import { peerPropertiesPublic } from "../../../SHARED/constants";
 
 async function search(req:Request, res:Response, next:NextFunction){

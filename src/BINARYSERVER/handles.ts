@@ -5,7 +5,7 @@ import config from '../SHARED/config.js';
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
 import {Client, sendEmail, inspect, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
-import {SqlQuery} from '../SHARED/misc.js';
+import { SqlQuery, SqlAll, SqlEach, SqlGet } from '../SHARED/SQL';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
 
@@ -219,7 +219,7 @@ handles[6][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_6, 
 
 	logger.log('debug', inspect`serverpin is correct!`);
 
-	let result:ITelexCom.peerList = await SqlQuery("SELECT  * FROM teilnehmer;");
+	let result:ITelexCom.peerList = await SqlQuery("SELECT  * FROM teilnehmer;", []);
 	if (!result) result = [];
 
 	client.writebuffer = result;

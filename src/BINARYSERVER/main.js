@@ -18,7 +18,7 @@ const sendQueue_js_1 = require("./sendQueue.js");
 const binaryServer_js_1 = require("./binaryServer.js");
 const cleanUp_js_1 = require("./cleanUp.js");
 const createLogger_js_1 = require("../SHARED/createLogger.js");
-const setupSQLPool_js_1 = require("../SHARED/setupSQLPool.js");
+const SQL_js_1 = require("../SHARED/SQL.js");
 function createWinstonLogger() {
     return __awaiter(this, void 0, void 0, function* () {
         process.stdout.write(misc_js_1.inspect `creating logger... `);
@@ -81,7 +81,7 @@ function connectToDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
         process.stdout.write(misc_js_1.inspect `connecting to database... `);
         try {
-            yield setupSQLPool_js_1.default(config_js_1.default.mySqlConnectionOptions);
+            yield SQL_js_1.connectToDb();
         }
         catch (err) {
             process.stdout.write(misc_js_1.inspect `fail\n`);

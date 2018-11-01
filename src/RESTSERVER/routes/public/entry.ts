@@ -1,7 +1,7 @@
 "use strict";
 
 import * as express from "express";
-import { SqlQuery } from "../../../SHARED/misc";
+import { SqlQuery, SqlAll, SqlEach, SqlGet } from "../../../SHARED/SQL";
 import { peerPropertiesPublic } from "../../../SHARED/constants";
 
 const entryRouter = express.Router();

@@ -1,5 +1,5 @@
 import { inspect, timestamp } from "../../SHARED/misc";
-import { SqlQuery } from "../../SHARED/misc";
+import { SqlQuery, SqlAll, SqlEach, SqlGet } from "../../SHARED/SQL";
 import { isValidToken } from "./tokens";
 import { peerList } from "../../BINARYSERVER/ITelexCom";
 

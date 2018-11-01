@@ -13,7 +13,7 @@ const util = require("util");
 const http = require("http");
 const misc_js_1 = require("../SHARED/misc.js");
 const createLogger_js_1 = require("../SHARED/createLogger.js");
-const setupSQLPool_js_1 = require("../SHARED/setupSQLPool.js");
+const SQL_js_1 = require("../SHARED/SQL.js");
 createLogger_js_1.default(config_js_1.default.webserverLoggingLevel, config_js_1.default.webserverLog, config_js_1.default.webserverErrorLog, config_js_1.default.logWebserverToConsole, {
     levels: {
         "error": 0,
@@ -36,7 +36,7 @@ createLogger_js_1.default(config_js_1.default.webserverLoggingLevel, config_js_1
         "silly": "bold",
     },
 });
-setupSQLPool_js_1.default(config_js_1.default.mySqlConnectionOptions);
+SQL_js_1.connectToDb();
 const app_1 = require("./app");
 const server = http.createServer(app_1.default);
 server.on('error', error => {

@@ -1,6 +1,5 @@
 //#region imports
 import * as util from "util";
-import * as mysql from "mysql";
 import * as ip from "ip";
 import * as net from "net";
 import * as nodemailer from "nodemailer";
@@ -17,7 +16,6 @@ import { states } from "./constants.js";
 const textColor = colors.Reset;
 const stringColor = colors.FgGreen;
 const errorColor = colors.FgRed;
-const sqlColor = colors.Reverse;
 
 
 function timestamp() {
@@ -140,46 +138,6 @@ function resetErrorCounter(type, identifier):void {
 			delete serverErrorCounters[identifier.number];
 		}
 	}
-}
-
-function SqlQuery(query: string, options ? : any[], verbose?:boolean): Promise < any > {
-	return new Promise((resolve, reject) => {
-		query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-
-		logger.log('debug', inspect`${query} ${options||[]}`);
-		
-		{
-			let formatted = mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
-			if(verbose === undefined){
-				if (query.indexOf("teilnehmer") > -1) {
-					logger.log('sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-				} else {
-					logger.log('verbose sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-				}
-			}else if(verbose === true){
-				logger.log('verbose sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-			}else if(verbose === false){
-				logger.log('sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-			}
-		}
-
-		if (global.sqlPool) {
-			global.sqlPool.query(query, options, function(err, res) {
-				if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
-					logger.log('silly', inspect`number of open connections: ${global.sqlPool["_allConnections"].length}`);
-
-				if (err) {
-					logger.log('error', inspect`${err}`);
-					reject(err);
-				} else {
-					// logger.log('debug', inspect`result:\n${res}`);
-					resolve(res);
-				}
-			});
-		} else {
-			logger.log('error', inspect`sql pool is not set!`);
-		}
-	});
 }
 function normalizeIp(ipAddr:string){
 	if(ip.isV4Format(ipAddr)){
@@ -577,7 +535,6 @@ function sleep(millis:number):Promise<number>{
 
 export {
 	sleep,
-	SqlQuery,
 	sendEmail,
 	increaseErrorCounter,
 	resetErrorCounter,

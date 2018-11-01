@@ -2,12 +2,12 @@
 //#region imports
 
 import config from '../SHARED/config.js';
-// import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
-import serialEachPromise from '../SHARED/serialEachPromise.js';
 import connect from './connect.js';
-import {SqlQuery, inspect} from '../SHARED/misc.js';
+import { inspect } from '../SHARED/misc.js';
+import { SqlQuery, SqlAll, SqlEach, SqlGet } from '../SHARED/SQL';
+
 import updateQueue from './updateQueue.js';
 
 //#endregion
@@ -23,7 +23,7 @@ async function sendQueue() {
 		logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 		return;
 	}
-	const queue:ITelexCom.queue = await SqlQuery("SELECT * FROM queue;");
+	const queue:ITelexCom.queue = await SqlQuery("SELECT * FROM queue;", []);
 	if (queue.length === 0) {
 		logger.log('debug', inspect`No queue!`);
 		return;
@@ -60,7 +60,7 @@ async function sendQueue() {
 			logger.log('verbose network', inspect`connected to server ${serverinf.uid}: ${serverinf.addresse} on port ${serverinf.port}`);
 			client.writebuffer = [];
 			for(let entry of entriesForServer){
-				const [message]:ITelexCom.peerList = await SqlQuery("SELECT * FROM teilnehmer where uid=?;", [entry.message], true);
+				const [message]:ITelexCom.peerList = await SqlQuery("SELECT * FROM teilnehmer where uid=?;", [entry.message]);
 				if (!message) {
 					logger.log('debug', inspect`entry does not exist`);
 					break;

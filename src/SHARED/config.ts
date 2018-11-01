@@ -1,15 +1,4 @@
 interface configFile {
-	mySqlConnectionOptions: {
-		host: string,
-		user: string,
-		password: string,
-		database: string,
-		insecureAuth ? : boolean,
-
-		connectTimeout ? : number,
-		aquireTimeout ? : number,
-		timeout ? : number
-	};
 	DynIpUpdateNameDifference: number;
 
 	setChangedOnNewerEntry: boolean;
@@ -116,11 +105,8 @@ let eMail: any = {};
 Object.assign(eMail, require("../../config/mailAccount.json"));
 Object.assign(eMail, require("../../config/mailMessages.json"));
 
-Object.assign(collection, {
-	eMail,
-});
+Object.assign(collection, {eMail});
 
-Object.assign(collection, require("../../config/mysql.json"));
 Object.assign(collection, require("../../config/logging.json"));
 Object.assign(collection, require("../../config/misc.json"));
 Object.assign(collection, require("../../config/timings.json"));

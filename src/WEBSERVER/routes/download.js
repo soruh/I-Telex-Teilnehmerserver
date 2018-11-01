@@ -8,14 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const misc_1 = require("../../SHARED/misc");
+const SQL_1 = require("../../SHARED/SQL");
 function download(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (req.query.type) {
             case "csv":
                 res.setHeader('Content-disposition', 'attachment; filename=list.csv');
                 res.setHeader('Content-type', 'text/csv');
-                let data = yield misc_1.SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1 and type!=0;');
+                let data = yield SQL_1.SqlQuery('select number,name,type,hostname,ipaddress,port,extension from teilnehmer where disabled!=1 and type!=0;', []);
                 if (data && data.length > 0) {
                     let header = Object.keys(data[0]);
                     res.write(header.join(',') + '\n');

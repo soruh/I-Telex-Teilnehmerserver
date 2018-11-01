@@ -9,11 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const misc_1 = require("../../SHARED/misc");
-const misc_2 = require("../../SHARED/misc");
+const SQL_1 = require("../../SHARED/SQL");
 const tokens_1 = require("./tokens");
 function resetPinEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), req.body.uid]);
+        let result = yield SQL_1.SqlQuery("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), req.body.uid]);
         if (!result)
             return;
         res.json({
@@ -24,7 +24,7 @@ function resetPinEntry(req, res) {
 }
 function editEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let entries = yield misc_2.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+        let entries = yield SQL_1.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
         if (!entries)
             return;
         let [entry] = entries;
@@ -34,7 +34,7 @@ function editEntry(req, res) {
         if (entry.number === req.body.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);
             logger.log('debug', misc_1.inspect `${entry.number} == ${req.body.number}`);
-            let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, misc_1.timestamp(), entry.pin, req.body.uid]);
+            let result = yield SQL_1.SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, misc_1.timestamp(), entry.pin, req.body.uid]);
             if (!result)
                 return;
             res.json({
@@ -45,8 +45,8 @@ function editEntry(req, res) {
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
             logger.log('debug', misc_1.inspect `${entry.number} != ${req.body.number}`);
-            yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
-            let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
+            yield SQL_1.SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+            let result = yield SQL_1.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
             if (!result)
                 return;
             res.json({
@@ -58,7 +58,7 @@ function editEntry(req, res) {
 }
 function copyEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let results = yield misc_2.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+        let results = yield SQL_1.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
         if (results.length === 0) {
             res.json({
                 successful: false,
@@ -67,8 +67,8 @@ function copyEntry(req, res) {
             return;
         }
         let [exising] = results;
-        yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
-        let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, misc_1.timestamp()]);
+        yield SQL_1.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
+        let result = yield SQL_1.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, misc_1.timestamp()]);
         if (!result)
             return;
         res.json({
@@ -79,7 +79,7 @@ function copyEntry(req, res) {
 }
 function newEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let existing = yield misc_2.SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number]);
+        let existing = yield SQL_1.SqlQuery("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number]);
         logger.log('debug', misc_1.inspect `${existing}`);
         if (!existing)
             return;
@@ -88,8 +88,8 @@ function newEntry(req, res) {
                 successful: false,
                 message: new Error("entry already exists"),
             });
-        yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
-        let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
+        yield SQL_1.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
+        let result = yield SQL_1.SqlQuery("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
         if (!result)
             return;
         res.json({
@@ -100,7 +100,7 @@ function newEntry(req, res) {
 }
 function deleteEntry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [misc_1.timestamp(), req.body.uid]);
+        let result = yield SQL_1.SqlQuery("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [misc_1.timestamp(), req.body.uid]);
         if (!result)
             return;
         res.json({

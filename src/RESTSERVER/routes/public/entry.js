@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
-const misc_1 = require("../../../SHARED/misc");
+const SQL_1 = require("../../../SHARED/SQL");
 const constants_1 = require("../../../SHARED/constants");
 const entryRouter = express.Router();
 function parseIntStrict(string) {
@@ -30,7 +30,7 @@ entryRouter.get('*', function (req, res, next) {
                 res.json({ success: false, error: 'Not an integer' });
                 return;
             }
-            let entry = yield misc_1.SqlQuery(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1 AND number=?;`, [number]);
+            let entry = yield SQL_1.SqlQuery(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1 AND number=?;`, [number]);
             if (entry.length === 0) {
                 res.status(404);
                 res.json({ success: false, error: 'Not found' });

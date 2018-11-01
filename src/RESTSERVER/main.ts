@@ -6,7 +6,7 @@ import * as http from "http";
 import { inspect, sendEmail } from "../SHARED/misc.js";
 
 import createLogger from '../SHARED/createLogger.js';
-import setupSQLPool from '../SHARED/setupSQLPool.js';
+import { connectToDb } from '../SHARED/SQL.js';
 createLogger(
 	config.RESTserverLoggingLevel,
 	config.RESTserverLog,
@@ -38,7 +38,7 @@ createLogger(
 		},
 	}
 );
-setupSQLPool(config.mySqlConnectionOptions);
+connectToDb();
 
 import app from './app';
 

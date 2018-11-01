@@ -1,7 +1,6 @@
 "use strict";
 import config from '../SHARED/config.js';
 import * as util from "util";
-import * as mysql from "mysql";
 import * as winston from "winston";
 import * as timers from "../BINARYSERVER/timers.js";
 import * as nodemailer from "nodemailer";
@@ -11,7 +10,7 @@ import sendQueue from './sendQueue.js';
 import binaryServer from './binaryServer.js';
 import cleanUp from "./cleanUp.js";
 import createLogger from "../SHARED/createLogger.js";
-import setupSQLPool from '../SHARED/setupSQLPool.js';
+import { connectToDb } from '../SHARED/SQL.js';
 
 type MailTransporter = nodemailer.Transporter | {
 	sendMail: (...rest: any[]) => void,
@@ -39,7 +38,6 @@ declare global {
 	interface Symbol {
 		description:string;
 	}
-	const sqlPool:mysql.Pool;
 	const transporter:MailTransporter;
 	const logger:winston.Logger;
 }
@@ -108,7 +106,7 @@ function startTimeouts(){
 async function connectToDatabase(){
 	process.stdout.write(inspect`connecting to database... `);
 	try{
-		await setupSQLPool(config.mySqlConnectionOptions);
+		await connectToDb();
 	}catch(err){
 		process.stdout.write(inspect`fail\n`);
 		throw(err);

@@ -4,7 +4,9 @@
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
-import {SqlQuery, inspect, timestamp} from '../SHARED/misc.js';
+import { inspect, timestamp } from '../SHARED/misc.js';
+import { SqlQuery, SqlAll, SqlEach, SqlGet } from '../SHARED/SQL';
+
 
 //#endregion
 
@@ -14,12 +16,12 @@ import {SqlQuery, inspect, timestamp} from '../SHARED/misc.js';
 async function updateQueue() {
 	return new Promise((resolve, reject) => {
 		logger.log('debug', inspect`updating Queue`);
-		SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;", [], true)
+		SqlQuery("SELECT  * FROM teilnehmer WHERE changed = 1;", [])
 		.then(function(changed: ITelexCom.peerList) {
 			if (changed.length > 0) {
 				logger.log('queue', inspect`${changed.length} numbers to enqueue`);
 
-				SqlQuery("SELECT * FROM servers;")
+				SqlQuery("SELECT * FROM servers;", [])
 				.then(function(servers: ITelexCom.serverList) {
 					if (servers.length > 0) {
 						serialEachPromise(servers, server =>

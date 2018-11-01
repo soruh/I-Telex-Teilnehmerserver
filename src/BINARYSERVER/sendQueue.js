@@ -13,6 +13,7 @@ const config_js_1 = require("../SHARED/config.js");
 const constants = require("../SHARED/constants.js");
 const connect_js_1 = require("./connect.js");
 const misc_js_1 = require("../SHARED/misc.js");
+const SQL_1 = require("../SHARED/SQL");
 const updateQueue_js_1 = require("./updateQueue.js");
 //#endregion
 const readonly = (config_js_1.default.serverPin == null);
@@ -24,7 +25,7 @@ function sendQueue() {
             logger.log('warning', misc_js_1.inspect `Read-only mode -> aborting sendQueue`);
             return;
         }
-        const queue = yield misc_js_1.SqlQuery("SELECT * FROM queue;");
+        const queue = yield SQL_1.SqlQuery("SELECT * FROM queue;", []);
         if (queue.length === 0) {
             logger.log('debug', misc_js_1.inspect `No queue!`);
             return;
@@ -38,9 +39,9 @@ function sendQueue() {
         yield Promise.all(Object.values(entriesByServer).map(entriesForServer => (() => new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
                 let server = entriesForServer[0].server;
-                let servers = yield misc_js_1.SqlQuery("SELECT * FROM servers WHERE uid=?;", [server]);
+                let servers = yield SQL_1.SqlQuery("SELECT * FROM servers WHERE uid=?;", [server]);
                 if (servers.length !== 1) {
-                    yield misc_js_1.SqlQuery("DELETE FROM queue WHERE server=?;", [server]);
+                    yield SQL_1.SqlQuery("DELETE FROM queue WHERE server=?;", [server]);
                     resolve();
                     return;
                 }
@@ -54,12 +55,12 @@ function sendQueue() {
                 logger.log('verbose network', misc_js_1.inspect `connected to server ${serverinf.uid}: ${serverinf.addresse} on port ${serverinf.port}`);
                 client.writebuffer = [];
                 for (let entry of entriesForServer) {
-                    const [message] = yield misc_js_1.SqlQuery("SELECT * FROM teilnehmer where uid=?;", [entry.message], true);
+                    const [message] = yield SQL_1.SqlQuery("SELECT * FROM teilnehmer where uid=?;", [entry.message]);
                     if (!message) {
                         logger.log('debug', misc_js_1.inspect `entry does not exist`);
                         break;
                     }
-                    let deleted = yield misc_js_1.SqlQuery("DELETE FROM queue WHERE uid=?;", [entry.uid]);
+                    let deleted = yield SQL_1.SqlQuery("DELETE FROM queue WHERE uid=?;", [entry.uid]);
                     if (deleted.affectedRows === 0) {
                         logger.log('warning', misc_js_1.inspect `could not delete queue entry ${entry.uid} from queue`);
                         break;

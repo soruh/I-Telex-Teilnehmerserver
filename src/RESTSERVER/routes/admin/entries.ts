@@ -1,12 +1,14 @@
 import { NextFunction, Response, Request } from "express";
-import { SqlQuery, inspect } from "../../../SHARED/misc";
+import { inspect } from "../../../SHARED/misc";
+import { SqlQuery, SqlAll, SqlEach, SqlGet } from '../../../SHARED/SQL';
+
 import { peerProperties } from "../../../SHARED/constants";
 import { peerList } from "../../../BINARYSERVER/ITelexCom";
 import config from "../../../SHARED/config";
 
 async function getEntries(req:Request, res:Response, next:NextFunction){
 	try{
-		let entries = await SqlQuery(`SELECT ${peerProperties.join(',')} from teilnehmer;`);
+		let entries = await SqlQuery(`SELECT ${peerProperties.join(',')} from teilnehmer;`, []);
 		if(entries.length === 0){
 			res.status(404);
 			res.json({success:false, error: 'Not found'});

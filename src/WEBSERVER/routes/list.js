@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const misc_1 = require("../../SHARED/misc");
+const SQL_1 = require("../../SHARED/SQL");
 const tokens_1 = require("./tokens");
 function list(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -22,7 +22,7 @@ function list(req, res) {
         // tslint:enable:no-var-keyword
         res.header("Content-Type", "application/json; charset=utf-8");
         try {
-            let data = yield misc_1.SqlQuery(query);
+            let data = yield SQL_1.SqlQuery(query, []);
             if (!data)
                 throw (new Error('no data'));
             res.json({

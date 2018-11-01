@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const util = require("util");
-const mysql = require("mysql");
 const ip = require("ip");
 const nodemailer = require("nodemailer");
 const config_js_1 = require("../SHARED/config.js");
@@ -13,7 +12,6 @@ const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const textColor = colors_js_1.default.Reset;
 const stringColor = colors_js_1.default.FgGreen;
 const errorColor = colors_js_1.default.FgRed;
-const sqlColor = colors_js_1.default.Reverse;
 function timestamp() {
     return Math.floor(Date.now() / 1000);
 }
@@ -126,47 +124,6 @@ function resetErrorCounter(type, identifier) {
     }
 }
 exports.resetErrorCounter = resetErrorCounter;
-function SqlQuery(query, options, verbose) {
-    return new Promise((resolve, reject) => {
-        query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-        logger.log('debug', inspect `${query} ${options || []}`);
-        {
-            let formatted = mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
-            if (verbose === undefined) {
-                if (query.indexOf("teilnehmer") > -1) {
-                    logger.log('sql', inspect `${(config_js_1.default.highlightSqlQueries ? sqlColor : "") + formatted + colors_js_1.default.Reset}`);
-                }
-                else {
-                    logger.log('verbose sql', inspect `${(config_js_1.default.highlightSqlQueries ? sqlColor : "") + formatted + colors_js_1.default.Reset}`);
-                }
-            }
-            else if (verbose === true) {
-                logger.log('verbose sql', inspect `${(config_js_1.default.highlightSqlQueries ? sqlColor : "") + formatted + colors_js_1.default.Reset}`);
-            }
-            else if (verbose === false) {
-                logger.log('sql', inspect `${(config_js_1.default.highlightSqlQueries ? sqlColor : "") + formatted + colors_js_1.default.Reset}`);
-            }
-        }
-        if (global.sqlPool) {
-            global.sqlPool.query(query, options, function (err, res) {
-                if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
-                    logger.log('silly', inspect `number of open connections: ${global.sqlPool["_allConnections"].length}`);
-                if (err) {
-                    logger.log('error', inspect `${err}`);
-                    reject(err);
-                }
-                else {
-                    // logger.log('debug', inspect`result:\n${res}`);
-                    resolve(res);
-                }
-            });
-        }
-        else {
-            logger.log('error', inspect `sql pool is not set!`);
-        }
-    });
-}
-exports.SqlQuery = SqlQuery;
 function normalizeIp(ipAddr) {
     if (ip.isV4Format(ipAddr)) {
         return { family: 4, address: ipAddr };
