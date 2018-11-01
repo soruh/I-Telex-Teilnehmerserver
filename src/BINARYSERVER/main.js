@@ -93,7 +93,7 @@ function createLogger() {
         let formats = [];
         if (config_js_1.default.logDate)
             formats.push(winston.format.timestamp({
-                format: () => misc_js_1.getTimestamp(),
+                format: () => misc_js_1.printDate(),
             }));
         if (!config_js_1.default.disableColors)
             formats.push(winston.format.colorize());

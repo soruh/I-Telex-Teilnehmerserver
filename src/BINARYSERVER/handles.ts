@@ -4,7 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../BINARYSERVER/constants.js";
-import {Client, sendEmail, getTimezone, inspect, getTimestamp, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
+import {Client, sendEmail, getTimezone, inspect, printDate, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
 import {SqlQuery} from '../SHARED/misc.js';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
@@ -46,7 +46,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		sendEmail("ipV6DynIpUpdate", {
 			Ip: client.ipAddress,
 			number: number.toString(),
-			date: getTimestamp(),
+			date: printDate(),
 			timeZone: getTimezone(new Date()),
 		});
 		return;
@@ -59,7 +59,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		sendEmail("invalidNumber", {
 			Ip: client.ipAddress,
 			number: number.toString(),
-			date: getTimestamp(),
+			date: printDate(),
 			timeZone: getTimezone(new Date()),
 		});
 		return;
@@ -87,7 +87,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		sendEmail("new", {
 			Ip: client.ipAddress,
 			number: number.toString(),
-			date: getTimestamp(),
+			date: printDate(),
 			timeZone: getTimezone(new Date()),
 		});
 
@@ -103,7 +103,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 			Ip: client.ipAddress,
 			number: entry.number.toString(),
 			name: entry.name,
-			date: getTimestamp(),
+			date: printDate(),
 			timeZone: getTimezone(new Date()),
 		});
 		return;
@@ -111,7 +111,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 	if (entry.pin === '0') {
 		logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
-		await SqlQuery(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
+		await SqlQuery(`UPDATE teilnehmer SET pin = ? and changed=1 and timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
 	}else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
 		client.connection.end();
@@ -222,7 +222,7 @@ handles[6][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_6, 
 
 		sendEmail("wrongServerPin", {
 			Ip: client.ipAddress,
-			date: getTimestamp(),
+			date: printDate(),
 			timeZone: getTimezone(new Date()),
 		});
 
@@ -248,7 +248,7 @@ handles[7][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_7, 
 
 		sendEmail("wrongServerPin", {
 			Ip: client.ipAddress,
-			date: getTimestamp(),
+			date: printDate(),
 			timeZone: getTimezone(new Date()),
 		});
 		

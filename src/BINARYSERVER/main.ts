@@ -6,7 +6,7 @@ import * as mysql from "mysql";
 import * as winston from "winston";
 import * as timers from "../BINARYSERVER/timers.js";
 import * as nodemailer from "nodemailer";
-import {inspect, serverErrorCounters, getTimestamp} from "../SHARED/misc.js";
+import {inspect, serverErrorCounters, printDate} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 // import updateQueue from './updateQueue.js';
@@ -136,7 +136,7 @@ function createLogger(){
 
 		if(config.logDate) formats.push(
 			winston.format.timestamp({
-				format:()=>getTimestamp(),
+				format:()=>printDate(),
 			})
 		);
 		if(!config.disableColors) formats.push(winston.format.colorize());
