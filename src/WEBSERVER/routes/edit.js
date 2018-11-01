@@ -45,8 +45,8 @@ function editEntry(req, res) {
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
             logger.log('debug', misc_1.inspect `${entry.number} != ${req.body.number}`);
-            yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
-            let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
+            yield misc_2.SqlQuery("UPDATE teilnehmer SET type=0 WHERE uid=?;", [req.body.uid]);
+            let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, entry.pin, req.body.disabled, misc_1.timestamp()]);
             if (!result)
                 return;
             res.json({

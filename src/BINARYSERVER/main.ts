@@ -47,9 +47,6 @@ declare global {
 }
 
 colors.disable(config.disableColors);
-const readonly = (config.serverPin == null);
-if (readonly) logger.log('warning', inspect`Starting in read-only mode!`);
-
 global.sqlPool = mysql.createPool(config.mySqlConnectionOptions);
 
 function createLogger(){
@@ -247,6 +244,10 @@ function setupEmailTransport(){
 }
 
 createLogger()
+.then(()=>{
+	const readonly = (config.serverPin == null);
+	if (readonly) logger.log('warning', inspect`Starting in read-only mode!`);
+})
 .then(setupEmailTransport)
 .then(connectToDatabase)
 .then(startTimeouts)

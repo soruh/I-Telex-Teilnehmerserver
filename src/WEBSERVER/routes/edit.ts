@@ -37,10 +37,10 @@ async function editEntry(req, res){
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
 		logger.log('debug', inspect`${entry.number} != ${req.body.number}`);
-		await SqlQuery("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+		await SqlQuery("UPDATE teilnehmer SET type=0 WHERE uid=?;", [req.body.uid]);
 
 		let result = await SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-		[req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, timestamp()]);
+		[req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, entry.pin, req.body.disabled, timestamp()]);
 		if (!result) return;
 
 		res.json({

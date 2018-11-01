@@ -14,9 +14,6 @@ const sendQueue_js_1 = require("./sendQueue.js");
 const binaryServer_js_1 = require("./binaryServer.js");
 const cleanUp_js_1 = require("./cleanUp.js");
 colors_js_1.default.disable(config_js_1.default.disableColors);
-const readonly = (config_js_1.default.serverPin == null);
-if (readonly)
-    logger.log('warning', misc_js_1.inspect `Starting in read-only mode!`);
 global.sqlPool = mysql.createPool(config_js_1.default.mySqlConnectionOptions);
 function createLogger() {
     return new Promise((resolve, reject) => {
@@ -195,6 +192,11 @@ function setupEmailTransport() {
     });
 }
 createLogger()
+    .then(() => {
+    const readonly = (config_js_1.default.serverPin == null);
+    if (readonly)
+        logger.log('warning', misc_js_1.inspect `Starting in read-only mode!`);
+})
     .then(setupEmailTransport)
     .then(connectToDatabase)
     .then(startTimeouts)
