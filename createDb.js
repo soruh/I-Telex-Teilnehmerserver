@@ -1,8 +1,9 @@
 const sqlite = require("sqlite3").verbose();
 const path = require("path");
 const fs = require("fs");
+const config = require("./src/SHARED/config.js").default;
 
-const dbPath = path.join(__dirname, '/db/telefonbuch.db');
+const dbPath = path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, config.DBPath);
 
 function connectToDb() {
     return new Promise((resolve, reject) => {

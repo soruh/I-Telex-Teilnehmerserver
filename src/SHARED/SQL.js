@@ -20,7 +20,7 @@ let db;
 // }
 function connectToDb() {
     return new Promise((resolve, reject) => {
-        db = new sqlite.Database(path.join(__dirname, '../../db/telefonbuch.db'), err => {
+        db = new sqlite.Database(path.isAbsolute(config_1.default.DBPath) ? config_1.default.DBPath : path.join(__dirname, '../..', config_1.default.DBPath), err => {
             if (err) {
                 reject(err);
                 return;

@@ -29,6 +29,8 @@ interface configFile {
 	binaryserverErrorLog: string;
 	logBinaryserverToConsole: boolean;
 
+	DBPath:string;
+
 	keepDeletedFor:number;
 	webserverLog: string;
 	webserverErrorLog: string;

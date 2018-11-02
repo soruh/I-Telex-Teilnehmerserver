@@ -2,6 +2,8 @@
   "DynIpUpdateNameDifference": 20,
 
   "keepDeletedFor":200,
+  
+  "DBPath": "db/telefonbuch.db",
 
   "setChangedOnNewerEntry":true,
   "allowInvalidPackageSizes":true,
