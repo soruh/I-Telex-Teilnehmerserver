@@ -11,7 +11,7 @@ import { peerList, Peer } from './ITelexCom';
 import serialEachPromise from '../SHARED/serialEachPromise';
 
 async function asciiLookup(data: Buffer, client: Client) {
-	const match = /q[0-9]+/.exec(data.toString());
+	const match = /q([0-9]+)/.exec(data.toString());
 	const number: string = match[1];
 	if (number&&(!isNaN(parseInt(number)))) {
 		logger.log('debug', inspect`starting lookup for: ${number}`);

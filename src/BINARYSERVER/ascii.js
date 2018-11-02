@@ -17,7 +17,7 @@ const SQL_1 = require("../SHARED/SQL");
 const serialEachPromise_1 = require("../SHARED/serialEachPromise");
 function asciiLookup(data, client) {
     return __awaiter(this, void 0, void 0, function* () {
-        const match = /q[0-9]+/.exec(data.toString());
+        const match = /q([0-9]+)/.exec(data.toString());
         const number = match[1];
         if (number && (!isNaN(parseInt(number)))) {
             logger.log('debug', misc_1.inspect `starting lookup for: ${number}`);
