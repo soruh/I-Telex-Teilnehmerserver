@@ -6,7 +6,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
 import connect from './connect.js';
 import { inspect } from '../SHARED/misc.js';
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
 
 import updateQueue from './updateQueue.js';
 
@@ -60,7 +60,7 @@ async function sendQueue() {
 					break;
 				}
 
-				let deleted = await SqlExec("DELETE FROM queue WHERE uid=?;", [entry.uid]);
+				let deleted = await SqlRun("DELETE FROM queue WHERE uid=?;", [entry.uid]);
 
 				if (deleted.changes === 0) {
 					logger.log('warning', inspect`could not delete queue entry ${entry.uid} from queue`);

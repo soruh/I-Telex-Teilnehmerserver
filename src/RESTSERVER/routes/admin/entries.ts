@@ -1,6 +1,6 @@
 import { NextFunction, Response, Request } from "express";
 import { inspect } from "../../../SHARED/misc";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../../../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../../../SHARED/SQL';
 
 import { peerProperties } from "../../../SHARED/constants";
 import { peerList, Peer } from "../../../BINARYSERVER/ITelexCom";
@@ -65,13 +65,13 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 				logger.log('debug', inspect`recieved entry is ${+entry.timestamp - existing.timestamp} seconds newer  > ${existing.timestamp}`);
 
 
-				await SqlExec(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, entry.number]));
+				await SqlRun(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, entry.number]));
 			}else{
 				if(entry.type === 0) {
 					logger.log('debug', inspect`not inserting deleted entry: ${entry}`);
 				}else{
 					logger.log('admin', inspect`new dataset for: ${entry.name}`);
-					await SqlExec(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
+					await SqlRun(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
 				}
 			}
 		}

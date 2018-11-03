@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from "express";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from "../../../SHARED/SQL";
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from "../../../SHARED/SQL";
 import { peerPropertiesPublic } from "../../../SHARED/constants";
 
 async function entries(req:Request, res:Response, next:NextFunction){

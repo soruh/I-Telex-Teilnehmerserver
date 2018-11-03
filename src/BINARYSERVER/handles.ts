@@ -5,7 +5,7 @@ import config from '../SHARED/config.js';
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
 import {Client, sendEmail, inspect, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
 
@@ -64,8 +64,8 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	const entry: ITelexCom.Peer = await SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
 
 	if (!entry) {
-		await SqlExec(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-		const result = await SqlExec(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+		await SqlRun(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
+		const result = await SqlRun(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
 		if (!(result && result.changes)) {
 			logger.log('error', inspect`could not create entry`);
 			return;
@@ -101,7 +101,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 	if (entry.pin === '0') {
 		logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
-		await SqlExec(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
+		await SqlRun(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
 	}else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
 		client.connection.end();
@@ -126,7 +126,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		return;
 	}
 	
-	await SqlExec(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
+	await SqlRun(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
 		port, client.ipAddress, timestamp(), number,
 		config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin,
 	]);
@@ -185,7 +185,7 @@ handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, cl
 		logger.log('debug', inspect`recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
 
 
-		await SqlExec(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
+		await SqlRun(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
 		await client.sendPackage({type: 8});
 		return;
 	} else if(pkg.data.type === 0) {
@@ -193,7 +193,7 @@ handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, cl
 		await client.sendPackage({type: 8});
 		return;
 	}else{
-		await SqlExec(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
+		await SqlRun(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
 		await client.sendPackage({type: 8});
 		return;
 	}

@@ -23,13 +23,13 @@ function updateQueue() {
                     for (const message of changed) {
                         const qentry = yield SQL_1.SqlGet("SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid]);
                         if (qentry) {
-                            yield SQL_1.SqlExec("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [misc_js_1.timestamp(), server.uid, message.uid]);
-                            yield SQL_1.SqlExec("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
+                            yield SQL_1.SqlRun("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [misc_js_1.timestamp(), server.uid, message.uid]);
+                            yield SQL_1.SqlRun("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
                             logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
                         }
                         else {
-                            yield SQL_1.SqlExec("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, misc_js_1.timestamp()]);
-                            yield SQL_1.SqlExec("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
+                            yield SQL_1.SqlRun("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, misc_js_1.timestamp()]);
+                            yield SQL_1.SqlRun("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
                             logger.log('queue', misc_js_1.inspect `enqueued: ${message.number}`);
                         }
                     }

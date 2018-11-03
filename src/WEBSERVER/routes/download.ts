@@ -1,4 +1,4 @@
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from "../../SHARED/SQL";
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from "../../SHARED/SQL";
 import { peerList } from "../../BINARYSERVER/ITelexCom";
 
 async function download(req, res, next) {

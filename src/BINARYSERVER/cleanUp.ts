@@ -1,7 +1,7 @@
 "use strict";
 
 import { inspect, timestamp } from "../SHARED/misc";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
 
 import config from "../SHARED/config";
 
@@ -12,7 +12,7 @@ return new Promise((resolve, reject)=>{
 	if(config.keepDeletedFor!=null){
 		logger.log('debug', inspect`cleaning up`);
 		let expiredAfter = timestamp() - config.keepDeletedFor*86400;
-		SqlExec("DELETE FROM teilnehmer WHERE type=0 AND timestamp<=?",[expiredAfter])
+		SqlRun("DELETE FROM teilnehmer WHERE type=0 AND timestamp<=?",[expiredAfter])
 		.then(res=>{
 			if(res&&res.changes>0) logger.log('debug', inspect`removed ${res.changes} expired entries`);
 			resolve();

@@ -1,11 +1,11 @@
 import { inspect, timestamp } from "../../SHARED/misc";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from "../../SHARED/SQL";
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from "../../SHARED/SQL";
 import { isValidToken } from "./tokens";
 import { peerList, Peer } from "../../BINARYSERVER/ITelexCom";
 
 
 async function resetPinEntry(req, res){
-	let result = await SqlExec("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [timestamp(), req.body.uid]);
+	let result = await SqlRun("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [timestamp(), req.body.uid]);
 	if (!result) return;
 	
 	res.json({
@@ -24,7 +24,7 @@ async function editEntry(req, res){
 	if(entry.number === req.body.number){
 		logger.log('debug', inspect`number wasn't changed updating`);
 		logger.log('debug', inspect`${entry.number} == ${req.body.number}`);
-		let result = await SqlExec("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, timestamp(), entry.pin, req.body.uid]);
+		let result = await SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, timestamp(), entry.pin, req.body.uid]);
 		if (!result) return;
 
 		res.json({
@@ -34,9 +34,9 @@ async function editEntry(req, res){
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
 		logger.log('debug', inspect`${entry.number} != ${req.body.number}`);
-		await SqlExec("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+		await SqlRun("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
 
-		let result = await SqlExec("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+		let result = await SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
 		[req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, timestamp()]);
 		if (!result) return;
 
@@ -57,9 +57,9 @@ async function copyEntry(req, res){
 		return;
 	}
 
-	await SqlExec("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
+	await SqlRun("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
 
-	let result = await SqlExec("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, timestamp()]);
+	let result = await SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, timestamp()]);
 	if (!result) return;
 
 	res.json({
@@ -81,7 +81,7 @@ async function newEntry(req, res){
 		return;
 	}
 
-	let result = await SqlExec("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, timestamp()]);
+	let result = await SqlRun("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, timestamp()]);
 	if (!result) return;
 
 	res.json({
@@ -91,7 +91,7 @@ async function newEntry(req, res){
 }
 
 async function deleteEntry(req, res){
-	let result = await SqlExec("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [timestamp(), req.body.uid]);
+	let result = await SqlRun("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [timestamp(), req.body.uid]);
 	if (!result) return;
 	
 	res.json({

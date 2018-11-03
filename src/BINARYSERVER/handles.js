@@ -60,8 +60,8 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
     }
     const entry = yield SQL_1.SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
     if (!entry) {
-        yield SQL_1.SqlExec(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-        const result = yield SQL_1.SqlExec(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', misc_js_1.timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+        yield SQL_1.SqlRun(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
+        const result = yield SQL_1.SqlRun(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', misc_js_1.timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
         if (!(result && result.changes)) {
             logger.log('error', misc_js_1.inspect `could not create entry`);
             return;
@@ -91,7 +91,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
     }
     if (entry.pin === '0') {
         logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
-        yield SQL_1.SqlExec(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
+        yield SQL_1.SqlRun(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
     }
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
@@ -114,7 +114,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         });
         return;
     }
-    yield SQL_1.SqlExec(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
+    yield SQL_1.SqlRun(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
         port, client.ipAddress, misc_js_1.timestamp(), number,
         config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin,
     ]);
@@ -169,7 +169,7 @@ handles[5][constants.states.FULLQUERY] =
             client.newEntries++;
             logger.log('network', misc_js_1.inspect `got new dataset for: ${pkg.data.name}`);
             logger.log('debug', misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
-            yield SQL_1.SqlExec(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
+            yield SQL_1.SqlRun(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
             yield client.sendPackage({ type: 8 });
             return;
         }
@@ -179,7 +179,7 @@ handles[5][constants.states.FULLQUERY] =
             return;
         }
         else {
-            yield SQL_1.SqlExec(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0,]));
+            yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0,]));
             yield client.sendPackage({ type: 8 });
             return;
         }

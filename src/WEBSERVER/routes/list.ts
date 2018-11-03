@@ -1,4 +1,4 @@
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from "../../SHARED/SQL";
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from "../../SHARED/SQL";
 import { isValidToken } from "./tokens";
 
 async function list(req, res) {

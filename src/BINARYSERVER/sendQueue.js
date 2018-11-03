@@ -54,7 +54,7 @@ function sendQueue() {
                         logger.log('debug', misc_js_1.inspect `entry does not exist`);
                         break;
                     }
-                    let deleted = yield SQL_1.SqlExec("DELETE FROM queue WHERE uid=?;", [entry.uid]);
+                    let deleted = yield SQL_1.SqlRun("DELETE FROM queue WHERE uid=?;", [entry.uid]);
                     if (deleted.changes === 0) {
                         logger.log('warning', misc_js_1.inspect `could not delete queue entry ${entry.uid} from queue`);
                         break;

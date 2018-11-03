@@ -86,9 +86,9 @@ function SqlGet(query, values) {
     });
 }
 exports.SqlGet = SqlGet;
-function SqlExec(query, values) {
+function SqlRun(query, values) {
     return new Promise((resolve, reject) => {
-        db.exec(prepareQuery(query, values), function (err) {
+        db.run(prepareQuery(query, values), function (err) {
             if (err) {
                 reject(err);
                 return;
@@ -97,6 +97,6 @@ function SqlExec(query, values) {
         });
     });
 }
-exports.SqlExec = SqlExec;
+exports.SqlRun = SqlRun;
 const SqlQuery = SqlAll;
 exports.SqlQuery = SqlQuery;

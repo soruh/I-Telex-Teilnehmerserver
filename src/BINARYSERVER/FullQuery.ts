@@ -6,7 +6,7 @@ import config from '../SHARED/config.js';
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
 import { inspect } from "../SHARED/misc.js";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
 
 import serialEachPromise from '../SHARED/serialEachPromise.js';
 import connect from './connect.js';

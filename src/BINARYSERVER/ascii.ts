@@ -5,7 +5,7 @@ import * as util from 'util';
 import * as dns from 'dns';
 import * as ip from 'ip';
 import { inspect, Client } from '../SHARED/misc';
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
 
 import { peerList, Peer } from './ITelexCom';
 import serialEachPromise from '../SHARED/serialEachPromise';

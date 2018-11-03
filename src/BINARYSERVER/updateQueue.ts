@@ -5,7 +5,7 @@
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import serialEachPromise from '../SHARED/serialEachPromise.js';
 import { inspect, timestamp } from '../SHARED/misc.js';
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlExec } from '../SHARED/SQL';
+import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
 
 
 //#endregion
@@ -25,12 +25,12 @@ async function updateQueue() {
 				for(const message of changed){
 					const qentry: ITelexCom.queueEntry = await SqlGet("SELECT * FROM queue WHERE server = ? AND message = ?;", [server.uid, message.uid]);
 					if (qentry) {
-						await SqlExec("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [timestamp(), server.uid, message.uid]);
-						await SqlExec("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
+						await SqlRun("UPDATE queue SET timestamp = ? WHERE server = ? AND message = ?;", [timestamp(), server.uid, message.uid]);
+						await SqlRun("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
 						logger.log('queue', inspect`enqueued: ${message.number}`);
 					} else {
-						await SqlExec("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, timestamp()]);
-						await SqlExec("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
+						await SqlRun("INSERT INTO queue (server,message,timestamp) VALUES (?,?,?)", [server.uid, message.uid, timestamp()]);
+						await SqlRun("UPDATE teilnehmer SET changed = 0 WHERE uid=?;", [message.uid]);
 						logger.log('queue', inspect`enqueued: ${message.number}`);
 					}
 				}

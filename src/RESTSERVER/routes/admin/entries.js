@@ -65,7 +65,7 @@ function putEntries(req, res, next) {
                     }
                     logger.log('admin', misc_1.inspect `changed dataset for: ${entry.name}`);
                     logger.log('debug', misc_1.inspect `recieved entry is ${+entry.timestamp - existing.timestamp} seconds newer  > ${existing.timestamp}`);
-                    yield SQL_1.SqlExec(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0, entry.number]));
+                    yield SQL_1.SqlRun(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0, entry.number]));
                 }
                 else {
                     if (entry.type === 0) {
@@ -73,7 +73,7 @@ function putEntries(req, res, next) {
                     }
                     else {
                         logger.log('admin', misc_1.inspect `new dataset for: ${entry.name}`);
-                        yield SQL_1.SqlExec(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0,]));
+                        yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_1.default.setChangedOnNewerEntry ? 1 : 0,]));
                     }
                 }
             }
