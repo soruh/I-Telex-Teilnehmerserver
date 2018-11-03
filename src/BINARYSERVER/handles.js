@@ -114,7 +114,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         });
         return;
     }
-    yield SQL_1.SqlExec(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+    yield SQL_1.SqlExec(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
         port, client.ipAddress, misc_js_1.timestamp(), number,
         config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin,
     ]);

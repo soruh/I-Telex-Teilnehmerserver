@@ -126,7 +126,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		return;
 	}
 	
-	await SqlExec(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+	await SqlExec(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
 		port, client.ipAddress, timestamp(), number,
 		config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin,
 	]);
