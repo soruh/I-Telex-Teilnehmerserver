@@ -200,7 +200,7 @@ interface PackageData_decoded_5 {
 	hostname: string;
 	ipaddress: string;
 	port: number;
-	extension: string;
+	extension: number;
 	pin: number;
 	timestamp: number;
 }
@@ -299,20 +299,6 @@ function encPackage(pkg: Package_decoded): Buffer {
 		case 5:
 			let flags = pkg.data.disabled ? 2 : 0;
 
-			// TODO:extract into function
-			let ext = 0;
-			if (!pkg.data.extension) {
-				ext = 0;
-			} else if (pkg.data.extension === "0") {
-				ext = 110;
-			} else if (pkg.data.extension === "00") {
-				ext = 100;
-			} else if (pkg.data.extension.toString().length === 1) {
-				ext = parseInt(pkg.data.extension) + 100;
-			} else {
-				ext = parseInt(pkg.data.extension);
-			}
-
 			buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
 			buffer.write(pkg.data.name || "", 6, 40);
 			buffer.writeUIntLE(flags || 0, 46, 2);
@@ -326,10 +312,10 @@ function encPackage(pkg: Package_decoded): Buffer {
 				}
 			}
 
-			buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
-			buffer.writeUIntLE(ext || 0, 95, 1);
-			buffer.writeUIntLE(+pkg.data.pin || 0, 96, 2);
-			buffer.writeUIntLE((+pkg.data.timestamp || 0) + 2208988800, 98, 4);
+			buffer.writeUIntLE(pkg.data.port || 0, 93, 2);
+			buffer.writeUIntLE(pkg.data.extension || 0, 95, 1);
+			buffer.writeUIntLE(pkg.data.pin || 0, 96, 2);
+			buffer.writeUIntLE((pkg.data.timestamp || 0) + 2208988800, 98, 4);
 			break;
 		case 6:
 			buffer.writeUIntLE(pkg.data.version || 0, 2, 1);
@@ -411,29 +397,9 @@ function decPackage(buffer: Buffer): Package_decoded {
 				port: buffer.readUIntLE(93, 2),
 				pin: buffer.readUIntLE(96, 2),
 				timestamp: buffer.readUIntLE(98, 4) - 2208988800,
-				extension: null,
+				extension: buffer.readUIntLE(95, 1),
 			};
 			if (pkg.data.ipaddress === "0.0.0.0") pkg.data.ipaddress = "";
-			if (pkg.data.hostname === "") pkg.data.hostname = "";
-
-			// TODO: extract into function
-			let extension: number = buffer.readUIntLE(95, 1);
-			if (extension === 0) {
-				pkg.data.extension = null;
-			} else if (extension === 110) {
-				pkg.data.extension = "0";
-			} else if (extension === 100) {
-				pkg.data.extension = "00";
-			} else if (extension > 110) {
-				pkg.data.extension = null;
-			} else if (extension > 100) {
-				pkg.data.extension = (extension - 100).toString();
-			} else if (extension < 10) {
-				pkg.data.extension = "0" + extension;
-			} else {
-				pkg.data.extension = extension.toString();
-			}
-
 			break;
 		case 6:
 			pkg.data = {

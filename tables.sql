@@ -19,7 +19,7 @@ CREATE TABLE teilnehmer (
 	hostname tinytext,
 	ipaddress tinytext,
 	port smallint unsigned,
-	extension tinytext,
+	extension tinyint DEFAULT 0,
 	pin smallint unsigned,
 	disabled bit DEFAULT 1,
 	timestamp int unsigned DEFAULT 0,
