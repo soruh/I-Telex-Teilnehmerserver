@@ -14,9 +14,9 @@ import { Transform } from "stream";
 
 
 
-Buffer.prototype.readNullTermString =  function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length):string {
-	let firstZero = this.indexOf(0, start);
-	let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+Buffer.prototype.readNullTermString = function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length):string {
+	const firstZero = this.indexOf(0, start);
+	const stop = firstZero >= start && firstZero <= end ? firstZero : end;
 	return this.toString(encoding, start, stop);
 };
 
@@ -35,8 +35,8 @@ function explainPackagePart(buffer: Buffer, name: string, color: string) {
 function explainPackage(pkg: Buffer): string {
 	let res: string = (config.explainBuffers > 1 ? colors.Reset : "")+"<Buffer";
 
-	let type = pkg[0];
-	let datalength = pkg[1];
+	const type = pkg[0];
+	const datalength = pkg[1];
 	res += explainPackagePart(Buffer.from([type]), "type", "\x1b[036m");
 	res += explainPackagePart(Buffer.from([datalength]), "datalength", "\x1b[032m");
 	switch (type) {

@@ -9,8 +9,8 @@ const misc_js_1 = require("../SHARED/misc.js");
 const stream_1 = require("stream");
 //#endregion
 Buffer.prototype.readNullTermString = function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
-    let firstZero = this.indexOf(0, start);
-    let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+    const firstZero = this.indexOf(0, start);
+    const stop = firstZero >= start && firstZero <= end ? firstZero : end;
     return this.toString(encoding, start, stop);
 };
 function inspectBuffer(buffer) {
@@ -26,8 +26,8 @@ function explainPackagePart(buffer, name, color) {
 }
 function explainPackage(pkg) {
     let res = (config_js_1.default.explainBuffers > 1 ? colors_js_1.default.Reset : "") + "<Buffer";
-    let type = pkg[0];
-    let datalength = pkg[1];
+    const type = pkg[0];
+    const datalength = pkg[1];
     res += explainPackagePart(Buffer.from([type]), "type", "\x1b[036m");
     res += explainPackagePart(Buffer.from([datalength]), "datalength", "\x1b[032m");
     switch (type) {
