@@ -13,7 +13,7 @@ if (process.argv[2] == "--help") {
 		switch (process.argv[2]) {
 			case "add":
 				if (process.argv.length == 5) {
-					db.run("INSERT INTO servers (addresse, port) VALUES (" + sqlstring.escape(process.argv[3]) + ", " + sqlstring.escape(process.argv[4]) + ");", function (err) {
+					db.run("INSERT INTO servers (address, port) VALUES (" + sqlstring.escape(process.argv[3]) + ", " + sqlstring.escape(process.argv[4]) + ");", function (err) {
 						if (err) {
 							console.error(err);
 						} else {
@@ -28,7 +28,7 @@ if (process.argv[2] == "--help") {
 				break;
 			case "remove":
 				if (process.argv.length == 5) {
-					db.run("DELETE FROM servers WHERE addresse=" + sqlstring.escape(process.argv[3]) + " AND  port=" + sqlstring.escape(process.argv[4]) + ";", function (err) {
+					db.run("DELETE FROM servers WHERE address=" + sqlstring.escape(process.argv[3]) + " AND  port=" + sqlstring.escape(process.argv[4]) + ";", function (err) {
 						if (err) {
 							console.error(err);
 						} else if (this.changes > 0) {
@@ -49,7 +49,7 @@ if (process.argv[2] == "--help") {
 							console.error(err);
 						} else {
 							for (let o of res) {
-								console.log(o.addresse + " " + o.port);
+								console.log(o.address + " " + o.port);
 							}
 						}
 						process.exit();
@@ -66,10 +66,5 @@ if (process.argv[2] == "--help") {
 
 function printUsage() {
 	console.log("USAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " [OPTION] (parameter1) (parameter2)\n\nSYNOPSIS:\n\Manage servers\n\nOPTIONS:\n\nlist:\n\tList all servers\n\tUSAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " list\n\nadd:\n\tAdd a server\n\tUSAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " add [server address] [server port]\n\nremove:\n\tRemove a server\n\tUSAGE: " + process.argv[0].split("/").slice(-1)[0] + " " + process.argv[1].split("/").slice(-1)[0] + " remove [server address] [server port]\n");
-	try {
-		dbcon.end();
-		process.exit();
-	} catch (e) {
-		process.exit();
-	}
+	process.exit(1);
 }

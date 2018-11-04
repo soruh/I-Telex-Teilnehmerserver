@@ -36,17 +36,17 @@ function sendQueue() {
                 entriesByServer[q.server] = [];
             entriesByServer[q.server].push(q);
         }
-        yield Promise.all(Object.values(entriesByServer).map(entriesForServer => (() => new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+        yield Promise.all(Object.values(entriesByServer).map((entriesForServer) => (() => new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
                 let server = entriesForServer[0].server;
                 let serverinf = yield SQL_1.SqlGet("SELECT * FROM servers WHERE uid=?;", [server]);
                 logger.log('debug', misc_js_1.inspect `sending queue for ${serverinf}`);
                 let client = yield connect_js_1.default({
-                    host: serverinf.addresse,
-                    port: +serverinf.port,
+                    host: serverinf.address,
+                    port: serverinf.port,
                 }, resolve);
                 client.servernum = server;
-                logger.log('verbose network', misc_js_1.inspect `connected to server ${serverinf.uid}: ${serverinf.addresse} on port ${serverinf.port}`);
+                logger.log('verbose network', misc_js_1.inspect `connected to server ${serverinf.uid}: ${serverinf.address} on port ${serverinf.port}`);
                 client.writebuffer = [];
                 for (let entry of entriesForServer) {
                     const message = yield SQL_1.SqlGet("SELECT * FROM teilnehmer where uid=?;", [entry.message]);

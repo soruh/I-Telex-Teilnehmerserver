@@ -6,7 +6,7 @@ import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
 import connect from './connect.js';
 import { inspect } from '../SHARED/misc.js';
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
+import { SqlAll, SqlEach, SqlGet, SqlRun, queueRow, serversRow, teilnehmerRow } from '../SHARED/SQL';
 
 import updateQueue from './updateQueue.js';
 
@@ -23,38 +23,38 @@ async function sendQueue() {
 		logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 		return;
 	}
-	const queue:ITelexCom.queue = await SqlAll("SELECT * FROM queue;", []);
+	const queue = await SqlAll<queueRow>("SELECT * FROM queue;", []);
 	if (queue.length === 0) {
 		logger.log('debug', inspect`No queue!`);
 		return;
 	}
 	let entriesByServer: {
-		[index: number]: ITelexCom.queueEntry[];
+		[index: number]: queueRow[];
 	} = {};
 	for (let q of queue) {
 		if (!entriesByServer[q.server]) entriesByServer[q.server] = [];
 		entriesByServer[q.server].push(q);
 	}
-	await Promise.all((Object.values(entriesByServer) as ITelexCom.queueEntry[][]).map(entriesForServer=> (()=>
+	await Promise.all(Object.values(entriesByServer).map((entriesForServer:queueRow[])=> (()=>
 	new Promise(async (resolve, reject) => {
 		try {
 			let server = entriesForServer[0].server;
 
-			let serverinf:ITelexCom.server = await SqlGet("SELECT * FROM servers WHERE uid=?;", [server]);
+			let serverinf = await SqlGet<serversRow>("SELECT * FROM servers WHERE uid=?;", [server]);
 			
 			logger.log('debug', inspect`sending queue for ${serverinf}`);
 
 			let client = await connect({
-				host: serverinf.addresse,
-				port: +serverinf.port,
+				host: serverinf.address,
+				port: serverinf.port,
 			}, resolve);
 
 			client.servernum = server;
 			
-			logger.log('verbose network', inspect`connected to server ${serverinf.uid}: ${serverinf.addresse} on port ${serverinf.port}`);
+			logger.log('verbose network', inspect`connected to server ${serverinf.uid}: ${serverinf.address} on port ${serverinf.port}`);
 			client.writebuffer = [];
 			for(let entry of entriesForServer){
-				const message:ITelexCom.Peer = await SqlGet("SELECT * FROM teilnehmer where uid=?;", [entry.message]);
+				const message = await SqlGet<teilnehmerRow>("SELECT * FROM teilnehmer where uid=?;", [entry.message]);
 				if (!message) {
 					logger.log('debug', inspect`entry does not exist`);
 					break;

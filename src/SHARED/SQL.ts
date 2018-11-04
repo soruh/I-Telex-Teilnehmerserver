@@ -8,17 +8,36 @@ import { inspect, sleep } from "./misc";
 
 let db:sqlite.Database;
 
-// function connectToDb(){
-// 	return new Promise((resolve, reject)=>{
-// 		db = new sqlite.Database(path.join(__dirname, '../../db/telefonbuch.db'), err=>{
-// 			if (err){
-// 				reject(err);
-// 				return;
-// 			}
-// 			resolve(db);
-// 		});
-// 	});
-// }
+
+interface queueRow {
+	uid: number;
+	server: number;
+	message: number;
+	timestamp: number;
+}
+
+interface serversRow {
+	 uid: number;
+	 address: string;
+	 port: number;
+}
+
+interface teilnehmerRow {
+	uid: number;
+	number: number;
+	name: string;
+	type: number;
+	hostname: string;
+	ipaddress: string;
+	port: number;
+	extension: string;
+	pin: number;
+	disabled: number;
+	timestamp: number;
+	changed: number;
+}
+
+
 
 function connectToDb(){
 	return new Promise((resolve, reject)=>{
@@ -32,7 +51,7 @@ function connectToDb(){
 	});
 }
 
-function prepareQuery(query: string, values?: any[], verbose?:boolean){
+function prepareQuery(query: string, values?: any[], verbose?:boolean):string{
 	query = query.replace(/\n/g, "").replace(/\s+/g, " ");
 	logger.log('debug', inspect`${query} ${values||[]}`);
 
@@ -52,8 +71,7 @@ function prepareQuery(query: string, values?: any[], verbose?:boolean){
 	return formatted;
 }
 
-
-function SqlEach(query: string, values: any[], callback:(err:Error, rows)=>void):Promise<any>{
+function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>void):Promise<number>{
 	return new Promise((resolve, reject) => {
 		db.each(prepareQuery(query, values), callback, (err:Error, count:number)=>{
 			if(err){
@@ -65,7 +83,7 @@ function SqlEach(query: string, values: any[], callback:(err:Error, rows)=>void)
 	});
 }
 
-function SqlAll(query: string, values: any[]):Promise<any>{
+function SqlAll<T>(query: string, values: any[]):Promise<T[]>{
 	return new Promise((resolve, reject) => {
 		db.all(prepareQuery(query, values), (err:Error, rows)=>{
 			if(err){
@@ -77,7 +95,7 @@ function SqlAll(query: string, values: any[]):Promise<any>{
 	});
 }
 
-function SqlGet(query: string, values: any[]):Promise<any>{
+function SqlGet<T>(query: string, values: any[]):Promise<T>{
 	return new Promise((resolve, reject) => {
 		db.get(prepareQuery(query, values), (err:Error, row)=>{
 			if(err){
@@ -89,7 +107,7 @@ function SqlGet(query: string, values: any[]):Promise<any>{
 	});
 }
 
-function SqlRun(query: string, values: any[]):Promise<any>{
+function SqlRun(query: string, values: any[]):Promise<sqlite.RunResult>{
 	return new Promise((resolve, reject) => {
 		db.run(prepareQuery(query, values), function(err:Error){
 			if(err){
@@ -102,13 +120,13 @@ function SqlRun(query: string, values: any[]):Promise<any>{
 }
 
 
-const SqlQuery = SqlAll;
-
 export {
 	connectToDb,
 	SqlAll,
 	SqlEach,
 	SqlGet,
-	SqlQuery,
 	SqlRun,
+	serversRow,
+	queueRow,
+	teilnehmerRow
 };

@@ -7,17 +7,6 @@ const sqlstring = require("sqlstring");
 const path = require("path");
 const misc_1 = require("./misc");
 let db;
-// function connectToDb(){
-// 	return new Promise((resolve, reject)=>{
-// 		db = new sqlite.Database(path.join(__dirname, '../../db/telefonbuch.db'), err=>{
-// 			if (err){
-// 				reject(err);
-// 				return;
-// 			}
-// 			resolve(db);
-// 		});
-// 	});
-// }
 function connectToDb() {
     return new Promise((resolve, reject) => {
         db = new sqlite.Database(path.isAbsolute(config_1.default.DBPath) ? config_1.default.DBPath : path.join(__dirname, '../..', config_1.default.DBPath), err => {
@@ -98,5 +87,3 @@ function SqlRun(query, values) {
     });
 }
 exports.SqlRun = SqlRun;
-const SqlQuery = SqlAll;
-exports.SqlQuery = SqlQuery;

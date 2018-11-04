@@ -41,7 +41,7 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 	let binaryListener = (pkg: Buffer): void => {
 		if(client){
 			logger.log('verbose network', inspect`recieved package: ${pkg}`);
-			logger.log('verbose network', inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
+			logger.log('verbose network', inspect`${pkg.toString().replace(/\u0000/g, '–').replace(/[^ -~–]/g, "·")}`);
 			
 			handlePackage(ITelexCom.decPackage(pkg), client)
 			.catch(err=>{logger.log('error', inspect`${err}`);}); 

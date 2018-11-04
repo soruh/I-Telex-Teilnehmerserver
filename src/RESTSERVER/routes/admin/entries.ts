@@ -1,14 +1,13 @@
 import { NextFunction, Response, Request } from "express";
 import { inspect } from "../../../SHARED/misc";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../../../SHARED/SQL';
+import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from '../../../SHARED/SQL';
 
 import { peerProperties } from "../../../SHARED/constants";
-import { peerList, Peer } from "../../../BINARYSERVER/ITelexCom";
 import config from "../../../SHARED/config";
 
 async function getEntries(req:Request, res:Response, next:NextFunction){
 	try{
-		let entries = await SqlAll(`SELECT ${peerProperties.join(',')} from teilnehmer;`, []);
+		let entries = await SqlAll<teilnehmerRow>(`SELECT ${peerProperties.join(',')} from teilnehmer;`, []);
 		if(entries.length === 0){
 			res.status(404);
 			res.json({success:false, error: 'Not found'});
@@ -30,7 +29,7 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 
 		try{
 			// tslint:disable-next-line:no-var-keyword
-			var entries:peerList = JSON.parse(req.body.data);
+			var entries = JSON.parse(req.body.data);
 		}catch(err){
 			res.status(400);
 			res.json({success:false, error:"the 'data' field must contain valid JSON"});
@@ -53,7 +52,7 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 			// TODO check if number is set and a valid integer
 
 			// logger.log('admin', inspect`got dataset for: ${entry.name} (${entry.number})`);
-			const existing:Peer = await SqlGet(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);
+			const existing = await SqlGet<teilnehmerRow>(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);
 
 			if (existing) {
 				if (entry.timestamp <= existing.timestamp) {

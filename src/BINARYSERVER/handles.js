@@ -89,7 +89,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         });
         return;
     }
-    if (entry.pin === '0') {
+    if (entry.pin === 0) {
         logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
         yield SQL_1.SqlRun(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
     }
@@ -136,7 +136,7 @@ handles[3][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
     }
     const result = yield SQL_1.SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number]);
     if (result) {
-        result.pin = "0";
+        result.pin = 0;
         yield client.sendPackage({
             type: 5,
             data: result,
@@ -266,7 +266,10 @@ handles[10][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0,
     logger.log('network', misc_js_1.inspect `found ${result.length} public entries matching pattern ${pattern}`);
     logger.log('debug', misc_js_1.inspect `entries matching pattern ${pattern}:\n${result}`);
     client.state = constants.states.RESPONDING;
-    client.writebuffer = result.map(peer => { peer.pin = "0"; return peer; });
+    client.writebuffer = result.map(peer => {
+        peer.pin = 0;
+        return peer;
+    });
     yield handlePackage({ type: 8 }, client);
     return;
 });

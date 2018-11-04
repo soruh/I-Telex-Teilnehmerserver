@@ -1,7 +1,6 @@
 import { inspect, timestamp } from "../../SHARED/misc";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from "../../SHARED/SQL";
+import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from "../../SHARED/SQL";
 import { isValidToken } from "./tokens";
-import { peerList, Peer } from "../../BINARYSERVER/ITelexCom";
 
 
 async function resetPinEntry(req, res){
@@ -15,7 +14,7 @@ async function resetPinEntry(req, res){
 }
 
 async function editEntry(req, res){
-	let entry = await SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+	let entry = await SqlGet<teilnehmerRow>("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
 	if (!entry) return;
 
 	logger.log('debug', inspect`exising entry: ${entry}`);
@@ -48,7 +47,7 @@ async function editEntry(req, res){
 }
 
 async function copyEntry(req, res){
-	let exising:Peer = await SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+	let exising = await SqlGet<teilnehmerRow>("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
 	if (!exising) {
 		res.json({
 			successful: false,
@@ -69,7 +68,7 @@ async function copyEntry(req, res){
 }
 
 async function newEntry(req, res){
-	let existing = await SqlGet("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number]);
+	let existing = await SqlGet<teilnehmerRow>("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number]);
 	if (!existing) return;
 	logger.log('debug', inspect`${existing}`);
 

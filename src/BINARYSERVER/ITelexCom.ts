@@ -179,8 +179,8 @@ interface Package_decoded_255 {
 }
 interface PackageData_decoded_1 {
 	number: number;
-		pin: string;
-		port: string;
+	pin: number;
+	port: number;
 }
 interface PackageData_decoded_2 {
 	ipaddress: string;
@@ -194,15 +194,15 @@ interface PackageData_decoded_4 {
 }
 interface PackageData_decoded_5 {
 	number: number;
-		name: string;
-		disabled: number;
-		type: number;
-		hostname: string;
-		ipaddress: string;
-		port: string;
-		extension: string;
-		pin: string;
-		timestamp: number;
+	name: string;
+	disabled: number;
+	type: number;
+	hostname: string;
+	ipaddress: string;
+	port: number;
+	extension: string;
+	pin: number;
+	timestamp: number;
 }
 interface PackageData_decoded_6 {
 	version: number;
@@ -241,37 +241,6 @@ interface rawPackage {
 		data: PackageData_encoded;
 }
 
-interface Peer {
-	uid: number;
-	number: number;
-	name: string;
-	type: number;
-	hostname: string;
-	ipaddress: string;
-	port: string;
-	extension: string;
-	pin: string;
-	disabled: number;
-	timestamp: number;
-	changed: number;
-}
-type peerList = Peer[];
-
-interface server {
-	uid: number;
-	addresse: string;
-	port: string;
-}
-type serverList = server[];
-
-interface queueEntry {
-	uid: number;
-	server: number;
-	message: number;
-	timestamp: number;
-}
-type queue = queueEntry[];
-
 //#endregion
 
 class ChunkPackages extends Transform {
@@ -293,7 +262,7 @@ class ChunkPackages extends Transform {
 }
 
 function encPackage(pkg: Package_decoded): Buffer {
-	logger.log('iTelexCom', inspect`encoding package : ${pkg}`);
+	logger.log('iTelexCom', inspect`encoding package: ${pkg}`);
 	
 	if (pkg.datalength == null){
 		if (pkg.type === 255){
@@ -398,8 +367,8 @@ function decPackage(buffer: Buffer): Package_decoded {
 		case 1:
 			pkg.data = {
 				number: buffer.readUIntLE(2, 4),
-				pin: buffer.readUIntLE(6, 2).toString(),
-				port: buffer.readUIntLE(8, 2).toString(),
+				pin: buffer.readUIntLE(6, 2),
+				port: buffer.readUIntLE(8, 2),
 			};
 			break;
 		case 2:
@@ -439,8 +408,8 @@ function decPackage(buffer: Buffer): Package_decoded {
 				type: buffer.readUIntLE(48, 1),
 				hostname: buffer.readNullTermString("utf8", 49, 89),
 				ipaddress: ip.toString(buffer, 89, 4),
-				port: buffer.readUIntLE(93, 2).toString(),
-				pin: buffer.readUIntLE(96, 2).toString(),
+				port: buffer.readUIntLE(93, 2),
+				pin: buffer.readUIntLE(96, 2),
 				timestamp: buffer.readUIntLE(98, 4) - 2208988800,
 				extension: null,
 			};
@@ -518,12 +487,6 @@ export {
 	explainPackage,
 	//#endregion
 	//#region interfaces
-	Peer,
-	peerList,
-	serverList,
-	server,
-	queueEntry,
-	queue,
 	PackageData_decoded,
 	Package_decoded,
 	PackageData_encoded,

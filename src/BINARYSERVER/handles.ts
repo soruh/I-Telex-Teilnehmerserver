@@ -5,7 +5,7 @@ import config from '../SHARED/config.js';
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
 import {Client, sendEmail, inspect, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
+import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from '../SHARED/SQL';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
 
@@ -61,7 +61,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		return;
 	}
 
-	const entry: ITelexCom.Peer = await SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
+	const entry = await SqlGet<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
 
 	if (!entry) {
 		await SqlRun(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
@@ -99,7 +99,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		return;
 	}
 
-	if (entry.pin === '0') {
+	if (entry.pin === 0) {
 		logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
 		await SqlRun(`UPDATE teilnehmer SET pin = ? WHERE uid=?;`, [pin, entry.uid]);
 	}else if (entry.pin !== pin) {
@@ -147,9 +147,9 @@ handles[3][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_3, 
 		return;
 	}
 
-	const result:ITelexCom.Peer = await SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number]);
+	const result = await SqlGet<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number]);
 	if (result) {
-		result.pin = "0";
+		result.pin = 0;
 		await client.sendPackage({
 			type: 5,
 			data: result,
@@ -170,7 +170,7 @@ handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, cl
 	const values = names.map(name => pkg.data[name]);
 
 	logger.log('verbose network', inspect`got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
-	const entry:ITelexCom.Peer = await SqlGet(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
+	const entry = await SqlGet<teilnehmerRow>(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
 
 	if (entry) {
 		if (typeof client.newEntries !== "number") client.newEntries = 0;
@@ -214,8 +214,9 @@ handles[6][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_6, 
 
 	logger.log('debug', inspect`serverpin is correct!`);
 
-	let result:ITelexCom.peerList = await SqlAll("SELECT  * FROM teilnehmer;", []);
+	let result = await SqlAll<teilnehmerRow>("SELECT  * FROM teilnehmer;", []);
 	if (!result) result = [];
+
 
 	client.writebuffer = result;
 	client.state = constants.states.RESPONDING;
@@ -289,14 +290,17 @@ handles[10][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_10
 
 	const searchWords = pattern.split(" ").map(q => `%${q}%`);
 
-	let result:ITelexCom.peerList = await SqlAll(`SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
+	let result = await SqlAll<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
 	if (!result) result = [];
 
 	logger.log('network', inspect`found ${result.length} public entries matching pattern ${pattern}`);
 	logger.log('debug', inspect`entries matching pattern ${pattern}:\n${result}`);
 
 	client.state = constants.states.RESPONDING;
-	client.writebuffer = result.map(peer=>{peer.pin="0";return peer;});
+	client.writebuffer = result.map(peer=>{
+		peer.pin=0;
+		return peer;
+	});
 
 	await handlePackage({type: 8}, client);
 	return;

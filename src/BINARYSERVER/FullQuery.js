@@ -32,11 +32,11 @@ function getFullQuery() {
         // 	}
         // }
         if (config_js_1.default.fullQueryServer)
-            servers = servers.filter(server => server.port === config_js_1.default.fullQueryServer.split(":")[1] &&
-                server.addresse === config_js_1.default.fullQueryServer.split(":")[0]);
+            servers = servers.filter(server => server.port === parseInt(config_js_1.default.fullQueryServer.split(":")[1]) &&
+                server.address === config_js_1.default.fullQueryServer.split(":")[0]);
         return serialEachPromise_js_1.default(servers, server => new Promise((resolveLoop) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const client = yield connect_js_1.default({ host: server.addresse, port: +server.port }, resolveLoop);
+                const client = yield connect_js_1.default({ host: server.address, port: +server.port }, resolveLoop);
                 let request;
                 if (readonly) {
                     request = {

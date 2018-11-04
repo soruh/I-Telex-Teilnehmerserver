@@ -1,4 +1,4 @@
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from "../../SHARED/SQL";
+import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from "../../SHARED/SQL";
 import { isValidToken } from "./tokens";
 
 async function list(req, res) {
@@ -12,7 +12,7 @@ async function list(req, res) {
 		res.header("Content-Type", "application/json; charset=utf-8");
 		
 		try{
-			let data = await SqlAll(query, []);
+			let data = await SqlAll<teilnehmerRow>(query, []);
 			
 			if(!data) throw(new Error('no data'));
 			res.json({

@@ -290,7 +290,7 @@ interface Client {
 	state: symbol;
 	ipAddress:string;
 	ipFamily:number;
-	writebuffer: ITelexCom.Peer[];
+	writebuffer: ITelexCom.PackageData_decoded_5[];
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;
 	servernum ? : number;

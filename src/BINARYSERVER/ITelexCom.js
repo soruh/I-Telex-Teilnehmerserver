@@ -102,7 +102,7 @@ class ChunkPackages extends stream_1.Transform {
 }
 exports.ChunkPackages = ChunkPackages;
 function encPackage(pkg) {
-    logger.log('iTelexCom', misc_js_1.inspect `encoding package : ${pkg}`);
+    logger.log('iTelexCom', misc_js_1.inspect `encoding package: ${pkg}`);
     if (pkg.datalength == null) {
         if (pkg.type === 255) {
             if (pkg.data.message != null)
@@ -205,8 +205,8 @@ function decPackage(buffer) {
         case 1:
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
-                pin: buffer.readUIntLE(6, 2).toString(),
-                port: buffer.readUIntLE(8, 2).toString(),
+                pin: buffer.readUIntLE(6, 2),
+                port: buffer.readUIntLE(8, 2),
             };
             break;
         case 2:
@@ -244,8 +244,8 @@ function decPackage(buffer) {
                 type: buffer.readUIntLE(48, 1),
                 hostname: buffer.readNullTermString("utf8", 49, 89),
                 ipaddress: ip.toString(buffer, 89, 4),
-                port: buffer.readUIntLE(93, 2).toString(),
-                pin: buffer.readUIntLE(96, 2).toString(),
+                port: buffer.readUIntLE(93, 2),
+                pin: buffer.readUIntLE(96, 2),
                 timestamp: buffer.readUIntLE(98, 4) - 2208988800,
                 extension: null,
             };

@@ -1,7 +1,7 @@
 "use strict";
 
 import { inspect, timestamp } from "../SHARED/misc";
-import { SqlQuery, SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
+import { SqlAll, SqlEach, SqlGet, SqlRun } from '../SHARED/SQL';
 
 import config from "../SHARED/config";
 
