@@ -279,6 +279,10 @@ $(document).ready(function () {
         // getList(updateTable);
     });
 });
+const FIELD_ORDER = ["number", "name", "extension", "address", "port", "type", "disabled", "timestamp"];
+function sortFields(a, b) {
+    return FIELD_ORDER.indexOf(a[0]) - FIELD_ORDER.indexOf(b[0]);
+}
 function checkUnique(number, element /*|HTMLElement*/) {
     console.log("checking if " + number + "is unique");
     let uid = $($(element).parents()[2]).data("uid");
@@ -436,11 +440,18 @@ function getList(callback) {
             success(response) {
                 if (response.successful) {
                     let { result } = response;
-                    for (let row of result) { // combine hostname and ipaddress into address
-                        let address = row.hostname || row.ipaddress;
+                    for (let key in result) { // combine hostname and ipaddress into address
+                        const row = result[key];
+                        const address = row.hostname || row.ipaddress;
                         row.address = address;
                         delete row.hostname;
                         delete row.ipaddress;
+                        const sortedEntries = Object.entries(row).sort(sortFields);
+                        let sortedRow = {};
+                        for (const field of sortedEntries) {
+                            sortedRow[field[0]] = field[1];
+                        }
+                        result[key] = sortedRow;
                     }
                     global_list = result;
                 }
