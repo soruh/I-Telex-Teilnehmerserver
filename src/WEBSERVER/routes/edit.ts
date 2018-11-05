@@ -20,9 +20,9 @@ async function editEntry(req, res, data){
 	logger.log('debug', inspect`exising entry: ${entry}`);
 	
 
-	if(entry.number === data.number){
+	if(entry.number === +data.number){
 		logger.log('debug', inspect`number wasn't changed updating`);
-		logger.log('debug', inspect`${entry.number} == ${data.number}`);
+		logger.log('debug', inspect`${entry.number} == ${+data.number}`);
 		let result = await SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, timestamp(), entry.pin, data.uid]);
 		if (!result) return;
 
@@ -32,7 +32,7 @@ async function editEntry(req, res, data){
 		});
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
-		logger.log('debug', inspect`${entry.number} != ${data.number}`);
+		logger.log('debug', inspect`${entry.number} != ${+data.number}`);
 		await SqlRun("UPDATE teilnehmer set type=0 WHERE uid=?;", [data.uid]);
 
 		let result = await SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",

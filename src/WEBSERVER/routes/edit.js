@@ -28,9 +28,9 @@ function editEntry(req, res, data) {
         if (!entry)
             return;
         logger.log('debug', misc_1.inspect `exising entry: ${entry}`);
-        if (entry.number === data.number) {
+        if (entry.number === +data.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);
-            logger.log('debug', misc_1.inspect `${entry.number} == ${data.number}`);
+            logger.log('debug', misc_1.inspect `${entry.number} == ${+data.number}`);
             let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, misc_1.timestamp(), entry.pin, data.uid]);
             if (!result)
                 return;
@@ -41,7 +41,7 @@ function editEntry(req, res, data) {
         }
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
-            logger.log('debug', misc_1.inspect `${entry.number} != ${data.number}`);
+            logger.log('debug', misc_1.inspect `${entry.number} != ${+data.number}`);
             yield SQL_1.SqlRun("UPDATE teilnehmer set type=0 WHERE uid=?;", [data.uid]);
             let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.pin, data.disabled, misc_1.timestamp()]);
             if (!result)
