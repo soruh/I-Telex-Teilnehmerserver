@@ -3,7 +3,7 @@ import { isValidToken } from "./tokens";
 
 async function list(req, res) {
 		// tslint:disable:no-var-keyword
-		if(isValidToken(req.body.token)){
+		if(isValidToken(req.body.token, '', req.body.salt)){
 			var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,disabled,timestamp FROM teilnehmer";
 		}else{
 			var query = "SELECT uid,number,name,type,hostname,ipaddress,port,extension,timestamp FROM teilnehmer where type!=0 and disabled=0;";

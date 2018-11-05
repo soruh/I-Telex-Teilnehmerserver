@@ -2,35 +2,25 @@ import config from "../../SHARED/config";
 import * as crypto from "crypto";
 import { inspect } from "../../SHARED/misc";
 
-let tokens = {};
+let salts = {};
 
-function removeOldTokens(){
-	for(let salt in tokens){
-		if(Date.now()-new Date(salt).getTime()>config.webServerTokenLifeTime){
-			delete tokens[salt];
+function removeOldSalts(){
+	for(let i in salts){
+		if(Date.now()-new Date(salts[i]).getTime()>config.webServerTokenLifeTime){
+			delete salts[i];
 		}
 	}
 }
 
-function createSalt(){
-	// let salt = Array.from(new Date(Date.now()+Math.random()*60000).toISOString());
-	return crypto.randomBytes(32).toString('base64').slice(0,-1)
-}
-
-function createToken(req, res) {
+function createSalt(req, res) {
 	try{
-		const salt = createSalt();
-
-		const hash = crypto.createHash('sha256').update(salt+config.webInterfacePassword).digest();
-
-		const token = Array.from(hash).map(x=>x.toString(16).padStart(2, '0')).join('');
+		removeOldSalts();
 		
-		removeOldTokens();
-		tokens[salt] = token;
+		const salt = crypto.randomBytes(32).toString('base64').slice(0,-1);
+		salts[salt] = new Date().toJSON();
+		
+		logger.log('debug', inspect`created new salt: ${salt}`);
 
-		res.header("Content-Type", "application/json; charset=utf-8");
-
-		logger.log('debug', inspect`created new token: ${token}`);
 		res.json({
 			successful: true,
 			salt,
@@ -43,21 +33,30 @@ function createToken(req, res) {
 	}
 }
 
-function isValidToken(token){
-	logger.log('debug', inspect`checking if token ${token} is valid`);
-	removeOldTokens();
-	for(let salt in tokens){
-		if(tokens[salt] === token){
-			logger.log('debug', inspect`token is valid`);
-			delete tokens[salt];
-			return true;
-		}
+function isValidToken(suppliedToken:string, data:string, salt:string){
+	logger.log('debug', inspect`checking if token ${suppliedToken} is valid for data: ${data}`);
+	removeOldSalts();
+
+	if(!salts.hasOwnProperty(salt)){
+		logger.log('debug', inspect`salt is invalid`);
+		return false;
 	}
-	logger.log('debug', inspect`token is invalid`);
-	return false;
+
+	const hash = crypto.createHash('sha256').update(salt+config.webInterfacePassword+data).digest();
+	const correctToken = Array.from(hash).map(x=>x.toString(16).padStart(2, '0')).join('');
+
+	if(suppliedToken === correctToken){
+		logger.log('debug', inspect`token is valid`);
+		delete salts[salt];
+		return true;
+	}else{
+		logger.log('debug', inspect`${correctToken} !=\n${suppliedToken}`);
+		logger.log('debug', inspect`token is invalid`);
+		return false;
+	}
 }
 
 export {
-	createToken,
+	createSalt,
 	isValidToken
 };

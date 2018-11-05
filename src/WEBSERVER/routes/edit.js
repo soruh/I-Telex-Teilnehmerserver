@@ -11,9 +11,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const misc_1 = require("../../SHARED/misc");
 const SQL_1 = require("../../SHARED/SQL");
 const tokens_1 = require("./tokens");
-function resetPinEntry(req, res) {
+function resetPinEntry(req, res, data) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), req.body.uid]);
+        let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), data.uid]);
         if (!result)
             return;
         res.json({
@@ -22,16 +22,16 @@ function resetPinEntry(req, res) {
         });
     });
 }
-function editEntry(req, res) {
+function editEntry(req, res, data) {
     return __awaiter(this, void 0, void 0, function* () {
-        let entry = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+        let entry = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
         if (!entry)
             return;
         logger.log('debug', misc_1.inspect `exising entry: ${entry}`);
-        if (entry.number === req.body.number) {
+        if (entry.number === data.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);
-            logger.log('debug', misc_1.inspect `${entry.number} == ${req.body.number}`);
-            let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.disabled, misc_1.timestamp(), entry.pin, req.body.uid]);
+            logger.log('debug', misc_1.inspect `${entry.number} == ${data.number}`);
+            let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, misc_1.timestamp(), entry.pin, data.uid]);
             if (!result)
                 return;
             res.json({
@@ -41,9 +41,9 @@ function editEntry(req, res) {
         }
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
-            logger.log('debug', misc_1.inspect `${entry.number} != ${req.body.number}`);
-            yield SQL_1.SqlRun("DELETE FROM teilnehmer WHERE uid=?;", [req.body.uid]);
-            let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
+            logger.log('debug', misc_1.inspect `${entry.number} != ${data.number}`);
+            yield SQL_1.SqlRun("DELETE FROM teilnehmer WHERE uid=?;", [data.uid]);
+            let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.pin, data.disabled, misc_1.timestamp()]);
             if (!result)
                 return;
             res.json({
@@ -53,9 +53,9 @@ function editEntry(req, res) {
         }
     });
 }
-function copyEntry(req, res) {
+function copyEntry(req, res, data) {
     return __awaiter(this, void 0, void 0, function* () {
-        let exising = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [req.body.uid]);
+        let exising = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
         if (!exising) {
             res.json({
                 successful: false,
@@ -63,8 +63,8 @@ function copyEntry(req, res) {
             });
             return;
         }
-        yield SQL_1.SqlRun("DELETE FROM teilnehmer WHERE number=?;", [req.body.number]);
-        let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, exising.pin, req.body.disabled, misc_1.timestamp()]);
+        yield SQL_1.SqlRun("DELETE FROM teilnehmer WHERE number=?;", [data.number]);
+        let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, exising.pin, data.disabled, misc_1.timestamp()]);
         if (!result)
             return;
         res.json({
@@ -73,11 +73,9 @@ function copyEntry(req, res) {
         });
     });
 }
-function newEntry(req, res) {
+function newEntry(req, res, data) {
     return __awaiter(this, void 0, void 0, function* () {
-        let existing = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE number=?;", [req.body.number]);
-        if (!existing)
-            return;
+        let existing = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE number=?;", [data.number]);
         logger.log('debug', misc_1.inspect `${existing}`);
         if (existing) {
             res.json({
@@ -86,32 +84,36 @@ function newEntry(req, res) {
             });
             return;
         }
-        let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [req.body.number, req.body.name, req.body.type, req.body.hostname, req.body.ipaddress, req.body.port, req.body.extension, req.body.pin, req.body.disabled, misc_1.timestamp()]);
-        if (!result)
-            return;
+        let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number,name,type,hostname,ipaddress,port,extension,pin,disabled,timestamp) VALUES (?,?,?,?,?,?,?,?,?,?);", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.pin, data.disabled, misc_1.timestamp()]);
         res.json({
-            successful: true,
+            successful: Boolean(result),
             message: result,
         });
     });
 }
-function deleteEntry(req, res) {
+function deleteEntry(req, res, data) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [misc_1.timestamp(), req.body.uid]);
-        if (!result)
-            return;
+        let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE type!=0 AND uid=?;", [misc_1.timestamp(), data.uid]);
         res.json({
-            successful: true,
+            successful: Boolean(result),
             message: result,
         });
     });
 }
 function editEndpoint(req, res) {
-    // ll(req.body);
+    // logger.log('debug', "editEndpoint");
+    // logger.log('debug', inspect`request body: ${req.body}`);
+    let data;
+    try {
+        data = JSON.parse(req.body.data);
+    }
+    catch (err) {
+        logger.log('error', err);
+        return;
+    }
     res.header("Content-Type", "application/json; charset=utf-8");
-    logger.log('debug', misc_1.inspect `request body: ${req.body}`);
-    logger.log('debug', misc_1.inspect `typekey: ${req.body.typekey}`);
-    if (!tokens_1.isValidToken(req.body.token)) {
+    logger.log('debug', misc_1.inspect `job: ${data.job}`);
+    if (!tokens_1.isValidToken(req.body.token, req.body.data, req.body.salt)) {
         return void res.json({
             successful: false,
             message: {
@@ -121,21 +123,21 @@ function editEndpoint(req, res) {
         });
     }
     try {
-        switch (req.body.typekey) {
+        switch (data.job) {
             case "edit":
-                editEntry(req, res);
+                editEntry(req, res, data);
                 break;
             case "copy":
-                copyEntry(req, res);
+                copyEntry(req, res, data);
                 break;
             case "new":
-                newEntry(req, res);
+                newEntry(req, res, data);
                 break;
             case "delete":
-                deleteEntry(req, res);
+                deleteEntry(req, res, data);
                 break;
             case "resetPin":
-                resetPinEntry(req, res);
+                resetPinEntry(req, res, data);
                 break;
             case "confirm password":
                 res.json({
@@ -151,7 +153,7 @@ function editEndpoint(req, res) {
                     successful: false,
                     message: {
                         code: -2,
-                        text: "unknown typekey",
+                        text: "unknown job",
                     },
                 });
                 break;

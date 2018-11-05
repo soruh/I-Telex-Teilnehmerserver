@@ -22,18 +22,18 @@ function timestamp() {
 	return Math.floor(Date.now() / 1000);
 }
 
-function printDate(date:Date):string{
+function printDateAsISO(date:Date):string{
 	return date.toISOString().replace('Z', ' ').replace('T', ' ');
 }
 
-function getFormatedDate():string {
-	let gmtDate = new Date();
-	let gmtTime = gmtDate.getTime();
-	let timezoneOffsetMillis = gmtDate.getTimezoneOffset()*-60*1000;
+function printDate():string {
+	const gmtDate = new Date();
+	const gmtTime = gmtDate.getTime();
+	const timezoneOffsetMillis = gmtDate.getTimezoneOffset()*-60*1000;
 	
-	let adjustedDate = new Date(gmtTime+timezoneOffsetMillis);
+	const adjustedDate = new Date(gmtTime+timezoneOffsetMillis);
 
-	return printDate(adjustedDate);
+	return printDateAsISO(adjustedDate);
 }
 
 function isAnyError(error){
@@ -91,6 +91,8 @@ function increaseErrorCounter(type, identifier, code?): void {
 				port: identifier.split(":")[1],
 				errorCounter: serverErrorCounters[identifier].toString(),
 				lastError: code,
+				date: printDate(),
+				timeZone: getTimezone(new Date()),
 			});
 		}
 	}else if(type === "client"){
@@ -109,6 +111,8 @@ function increaseErrorCounter(type, identifier, code?): void {
 				number: identifier.number,
 				name: identifier.name,
 				counter: clientWrongPinCounters[identifier.number],
+				date: printDate(),
+				timeZone: getTimezone(new Date()),
 			});
 		}
 	}
@@ -128,6 +132,8 @@ function resetErrorCounter(type, identifier):void {
 				host: identifier.split(":")[0],
 				port: identifier.split(":")[1],
 				errorCounter: serverErrorCounters[identifier].toString(),
+				date: printDate(),
+				timeZone: getTimezone(new Date()),
 			});
 			logger.log('debug', inspect`reset error counter for: ${identifier}. Counter was at: ${serverErrorCounters[identifier]}`);
 			delete serverErrorCounters[identifier];
@@ -545,6 +551,6 @@ export {
 	inspect,
 	normalizeIp,
 	sendPackage,
-	getFormatedDate,
+	printDate,
 	timestamp
 };
