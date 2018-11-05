@@ -34,7 +34,7 @@
     },
     "uncaughtException":{
       "subject":"Uncaught Exception",
-      "html":"Error:\n[exception]"
+      "html":"Error:\n[exception] on [date] [timeZone]"
     }
   }
 }

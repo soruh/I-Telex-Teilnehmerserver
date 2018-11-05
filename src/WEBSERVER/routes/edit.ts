@@ -33,7 +33,7 @@ async function editEntry(req, res, data){
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
 		logger.log('debug', inspect`${entry.number} != ${data.number}`);
-		await SqlRun("DELETE FROM teilnehmer WHERE uid=?;", [data.uid]);
+		await SqlRun("UPDATE teilnehmer set type=0 WHERE uid=?;", [data.uid]);
 
 		let result = await SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
 		[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.pin, data.disabled, timestamp()]);

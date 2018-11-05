@@ -4,7 +4,7 @@ import * as util from "util";
 import * as winston from "winston";
 import * as timers from "../BINARYSERVER/timers.js";
 import * as nodemailer from "nodemailer";
-import {inspect, serverErrorCounters, printDate, sendEmail} from "../SHARED/misc.js";
+import {inspect, serverErrorCounters, printDate, sendEmail, getTimezone} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 import binaryServer from './binaryServer.js';
@@ -173,6 +173,8 @@ process.on('uncaughtException', async err=>{
 	logger.log('error', inspect`uncaught exception ${err}`);
 	await sendEmail('uncaughtException', {
 		exception: util.inspect(err),
+		date: printDate(),
+		timeZone: getTimezone(new Date()),
 	});
 	if(config.exitOnUncaughtException) process.exit(1);
 });

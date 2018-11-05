@@ -151,6 +151,8 @@ process.on('uncaughtException', (err) => __awaiter(this, void 0, void 0, functio
     logger.log('error', misc_js_1.inspect `uncaught exception ${err}`);
     yield misc_js_1.sendEmail('uncaughtException', {
         exception: util.inspect(err),
+        date: misc_js_1.printDate(),
+        timeZone: misc_js_1.getTimezone(new Date()),
     });
     if (config_js_1.default.exitOnUncaughtException)
         process.exit(1);

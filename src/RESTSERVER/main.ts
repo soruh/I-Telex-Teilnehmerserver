@@ -3,7 +3,7 @@
 import config from '../SHARED/config.js';
 import * as util from "util";
 import * as http from "http";
-import { inspect, sendEmail } from "../SHARED/misc.js";
+import { inspect, sendEmail, printDate, getTimezone } from "../SHARED/misc.js";
 
 import createLogger from '../SHARED/createLogger.js';
 import { connectToDb } from '../SHARED/SQL.js';
@@ -58,6 +58,8 @@ process.on('uncaughtException', async err=>{
 	logger.log('error', inspect`uncaught exception ${err}`);
 	await sendEmail('uncaughtException', {
 		exception: util.inspect(err),
+		date: printDate(),
+		timeZone: getTimezone(new Date()),
 	});
 	if(config.exitOnUncaughtException) process.exit(1);
 });

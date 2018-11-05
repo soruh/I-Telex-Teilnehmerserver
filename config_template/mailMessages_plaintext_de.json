@@ -34,7 +34,7 @@
     },
     "uncaughtException":{
       "subject":"Nicht abgefangener Ausnahmezustand",
-      "html":"Fehler:\n[exception]"
+      "html":"Fehler:\n[exception] am [date] [timeZone]"
     }
   }
 }

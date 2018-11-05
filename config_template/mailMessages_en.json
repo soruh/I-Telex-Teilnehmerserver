@@ -34,7 +34,7 @@
     },
     "uncaughtException":{
       "subject":"Uncaught Exception",
-      "html":"Error:\n<font color=\"blue\">[exception]</font>"
+      "html":"Error:\n<font color=\"blue\">[exception]</font> on <font color=\"blue\">[date] [timeZone]</font>"
     }
   }
 }
