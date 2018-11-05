@@ -2,7 +2,7 @@ CREATE TABLE queue (
 	uid INTEGER PRIMARY KEY,
 	server INTEGER NOT NULL,
 	message INTEGER NOT NULL,
-	timestamp int unsigned DEFAULT 0,
+	timestamp int unsigned DEFAULT 0
 );
 
 CREATE TABLE servers (
