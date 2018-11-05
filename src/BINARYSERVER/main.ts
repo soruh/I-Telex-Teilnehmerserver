@@ -4,7 +4,7 @@ import * as util from "util";
 import * as winston from "winston";
 import * as timers from "../BINARYSERVER/timers.js";
 import * as nodemailer from "nodemailer";
-import {inspect, serverErrorCounters, printDate} from "../SHARED/misc.js";
+import {inspect, serverErrorCounters, printDate, sendEmail} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 import binaryServer from './binaryServer.js';

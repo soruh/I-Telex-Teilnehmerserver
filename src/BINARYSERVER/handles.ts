@@ -4,7 +4,7 @@ import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import * as constants from "../SHARED/constants.js";
-import {Client, sendEmail, inspect, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
+import {Client, sendEmail, inspect, timestamp, increaseErrorCounter, printDate, getTimezone} from '../SHARED/misc.js';
 import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from '../SHARED/SQL';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
@@ -109,7 +109,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 	if (entry.pin === 0) {
 		logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
-		await SqlQuery(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
+		await SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
 	}else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
 		client.connection.end();

@@ -149,7 +149,7 @@ createWinstonLogger()
 // write uncaught exceptions to all logs
 process.on('uncaughtException', (err) => __awaiter(this, void 0, void 0, function* () {
     logger.log('error', misc_js_1.inspect `uncaught exception ${err}`);
-    yield sendEmail('uncaughtException', {
+    yield misc_js_1.sendEmail('uncaughtException', {
         exception: util.inspect(err),
     });
     if (config_js_1.default.exitOnUncaughtException)

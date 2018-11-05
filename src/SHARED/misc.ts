@@ -163,46 +163,51 @@ function normalizeIp(ipAddr:string){
 	}
 }
 
-interface mail_ipV6DynIpUpdate_options {
+interface mail_options {
+	date: string;
+	timeZone: string;
+}
+
+interface mail_ipV6DynIpUpdate_options extends mail_options{
 	Ip: string;
 	number: string;
 }
-interface mail_invalidNumber_options {
+interface mail_invalidNumber_options extends mail_options {
 	Ip: string;
 	number: string;
 }
-interface mail_wrongDynIpType_options {
+interface mail_wrongDynIpType_options extends mail_options {
 	type: string;
 	Ip: string;
 	number: string;
 	name: string;
 }
-interface mail_wrongDynIpPin_options {
+interface mail_wrongDynIpPin_options extends mail_options {
 	Ip: string;
 	number: string;
 	name: string;
 	counter: number;
 }
-interface mail_new_options {
+interface mail_new_options extends mail_options {
 	Ip: string;
 	number: string;
 }
-interface mail_wrongServerPin_options {
+interface mail_wrongServerPin_options extends mail_options {
 	Ip: string;
 }
-interface mail_ServerError_options {
+interface mail_ServerError_options extends mail_options {
 	host: string;
 	port: string;
 	errorCounter: string;
 	lastError: string;
 }
-interface mail_ServerErrorOver_options {
+interface mail_ServerErrorOver_options extends mail_options {
 	host: string;
 	port: string;
 	errorCounter: string;
 }
 
-interface mail_uncaughtException_options {
+interface mail_uncaughtException_options extends mail_options {
 	exception:string;
 }
 
@@ -219,7 +224,7 @@ function sendEmail(messageName:'uncaughtException', values:mail_uncaughtExceptio
 function sendEmail(messageName, values) {
 	return new Promise((resolve, reject) => {
 		Object.assign(values, {
-			date: getFormatedDate(),
+			date: printDate(),
 			timeZone: getTimezone(new Date()),
 		});
 

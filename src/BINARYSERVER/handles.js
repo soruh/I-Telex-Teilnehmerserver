@@ -46,8 +46,8 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         misc_js_1.sendEmail("ipV6DynIpUpdate", {
             Ip: client.ipAddress,
             number: number.toString(),
-            date: printDate(),
-            timeZone: getTimezone(new Date()),
+            date: misc_js_1.printDate(),
+            timeZone: misc_js_1.getTimezone(new Date()),
         });
         return;
     }
@@ -57,8 +57,8 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         misc_js_1.sendEmail("invalidNumber", {
             Ip: client.ipAddress,
             number: number.toString(),
-            date: printDate(),
-            timeZone: getTimezone(new Date()),
+            date: misc_js_1.printDate(),
+            timeZone: misc_js_1.getTimezone(new Date()),
         });
         return;
     }
@@ -79,8 +79,8 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         misc_js_1.sendEmail("new", {
             Ip: client.ipAddress,
             number: number.toString(),
-            date: printDate(),
-            timeZone: getTimezone(new Date()),
+            date: misc_js_1.printDate(),
+            timeZone: misc_js_1.getTimezone(new Date()),
         });
         return;
     }
@@ -92,14 +92,14 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
             Ip: client.ipAddress,
             number: entry.number.toString(),
             name: entry.name,
-            date: printDate(),
-            timeZone: getTimezone(new Date()),
+            date: misc_js_1.printDate(),
+            timeZone: misc_js_1.getTimezone(new Date()),
         });
         return;
     }
     if (entry.pin === 0) {
         logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
-        yield SqlQuery(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, misc_js_1.timestamp(), entry.uid]);
+        yield SQL_1.SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, misc_js_1.timestamp(), entry.uid]);
     }
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
@@ -200,8 +200,8 @@ handles[6][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         client.connection.end();
         misc_js_1.sendEmail("wrongServerPin", {
             Ip: client.ipAddress,
-            date: printDate(),
-            timeZone: getTimezone(new Date()),
+            date: misc_js_1.printDate(),
+            timeZone: misc_js_1.getTimezone(new Date()),
         });
         return;
     }
@@ -222,8 +222,8 @@ handles[7][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         client.connection.end();
         misc_js_1.sendEmail("wrongServerPin", {
             Ip: client.ipAddress,
-            date: printDate(),
-            timeZone: getTimezone(new Date()),
+            date: misc_js_1.printDate(),
+            timeZone: misc_js_1.getTimezone(new Date()),
         });
         return;
     }

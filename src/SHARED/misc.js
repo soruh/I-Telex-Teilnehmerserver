@@ -158,7 +158,7 @@ exports.normalizeIp = normalizeIp;
 function sendEmail(messageName, values) {
     return new Promise((resolve, reject) => {
         Object.assign(values, {
-            date: getFormatedDate(),
+            date: printDate(),
             timeZone: getTimezone(new Date()),
         });
         let message = config_js_1.default.eMail.messages[messageName];
