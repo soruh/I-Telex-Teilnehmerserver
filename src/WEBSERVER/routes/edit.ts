@@ -18,16 +18,23 @@ async function editEntry(req, res, data){
 	let entries = await SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
 	if (!entries) return;
 
-	let [entry] = entries;
-	if (!entry) return;
+	let [toEdit] = entries;
+	if (!toEdit) {
+		res.json({
+			successful: false,
+			message: "can't edit nonexisting entry",
+		});
+		return;
+	}
 
-	logger.log('debug', inspect`exising entry: ${entry}`);
+	logger.log('debug', inspect`entry to edit: ${toEdit}`);
 	
 
-	if(entry.number === data.number){
+	// tslint:disable-next-line:triple-equals
+	if(toEdit.number == data.number){
 		logger.log('debug', inspect`number wasn't changed updating`);
-		logger.log('debug', inspect`${entry.number} == ${data.number}`);
-		let result = await SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, timestamp(), entry.pin, data.uid]);
+		logger.log('debug', inspect`${toEdit.number} == ${data.number}`);
+		let result = await SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, timestamp(), toEdit.pin, data.uid]);
 		if (!result) return;
 
 		res.json({
@@ -36,12 +43,32 @@ async function editEntry(req, res, data){
 		});
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
-		logger.log('debug', inspect`${entry.number} != ${data.number}`);
+		logger.log('debug', inspect`${toEdit.number} != ${data.number}`);
+
+		const [exising] = await SqlQuery("SELECT * from teilnehmer WHERE number=?;", [data.number]);
+		if(exising){
+			if(exising.type === 0){
+				await SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [data.number]);
+			}else{
+				res.json({
+					successful: false,
+					message: "number already exists",
+				});
+				return;
+			}
+		}
+		
 		await SqlQuery("UPDATE teilnehmer SET type=0 WHERE uid=?;", [data.uid]);
 
-		let result = await SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-		[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, entry.pin, data.disabled, timestamp()]);
-		if (!result) return;
+		const result = await SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+		[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, toEdit.pin, data.disabled, timestamp()]);
+		if (!result) {
+			res.json({
+				successful: false,
+				message: "internal error",
+			});
+			return;
+		}
 
 		res.json({
 			successful: true,

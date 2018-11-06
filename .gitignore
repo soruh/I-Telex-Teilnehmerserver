@@ -4,3 +4,4 @@ tests/
 logs/
 .vscode/
 .jshintrc
+package-lock.json

@@ -27,14 +27,20 @@ function editEntry(req, res, data) {
         let entries = yield misc_2.SqlQuery("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
         if (!entries)
             return;
-        let [entry] = entries;
-        if (!entry)
+        let [toEdit] = entries;
+        if (!toEdit) {
+            res.json({
+                successful: false,
+                message: "can't edit nonexisting entry",
+            });
             return;
-        logger.log('debug', misc_1.inspect `exising entry: ${entry}`);
-        if (entry.number === data.number) {
+        }
+        logger.log('debug', misc_1.inspect `entry to edit: ${toEdit}`);
+        // tslint:disable-next-line:triple-equals
+        if (toEdit.number == data.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);
-            logger.log('debug', misc_1.inspect `${entry.number} == ${data.number}`);
-            let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, misc_1.timestamp(), entry.pin, data.uid]);
+            logger.log('debug', misc_1.inspect `${toEdit.number} == ${data.number}`);
+            let result = yield misc_2.SqlQuery("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, misc_1.timestamp(), toEdit.pin, data.uid]);
             if (!result)
                 return;
             res.json({
@@ -44,11 +50,29 @@ function editEntry(req, res, data) {
         }
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
-            logger.log('debug', misc_1.inspect `${entry.number} != ${data.number}`);
+            logger.log('debug', misc_1.inspect `${toEdit.number} != ${data.number}`);
+            const [exising] = yield misc_2.SqlQuery("SELECT * from teilnehmer WHERE number=?;", [data.number]);
+            if (exising) {
+                if (exising.type === 0) {
+                    yield misc_2.SqlQuery("DELETE FROM teilnehmer WHERE number=?;", [data.number]);
+                }
+                else {
+                    res.json({
+                        successful: false,
+                        message: "number already exists",
+                    });
+                    return;
+                }
+            }
             yield misc_2.SqlQuery("UPDATE teilnehmer SET type=0 WHERE uid=?;", [data.uid]);
-            let result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, entry.pin, data.disabled, misc_1.timestamp()]);
-            if (!result)
+            const result = yield misc_2.SqlQuery("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, toEdit.pin, data.disabled, misc_1.timestamp()]);
+            if (!result) {
+                res.json({
+                    successful: false,
+                    message: "internal error",
+                });
                 return;
+            }
             res.json({
                 successful: true,
                 message: result,
