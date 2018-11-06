@@ -14,16 +14,16 @@ async function resetPinEntry(req, res, data){
 }
 
 async function editEntry(req, res, data){
-	let entry = await SqlGet<teilnehmerRow>("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
-	if (!entry) return;
+	let existing = await SqlGet<teilnehmerRow>("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
+	if (!existing) return;
 
-	logger.log('debug', inspect`exising entry: ${entry}`);
+	logger.log('debug', inspect`exising entry: ${existing}`);
 	
 
-	if(entry.number === +data.number){
+	if(existing.number === +data.number){
 		logger.log('debug', inspect`number wasn't changed updating`);
-		logger.log('debug', inspect`${entry.number} == ${+data.number}`);
-		let result = await SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, timestamp(), entry.pin, data.uid]);
+		logger.log('debug', inspect`${existing.number} == ${+data.number}`);
+		let result = await SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, timestamp(), existing.pin, data.uid]);
 		if (!result) return;
 
 		res.json({
@@ -32,11 +32,11 @@ async function editEntry(req, res, data){
 		});
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
-		logger.log('debug', inspect`${entry.number} != ${+data.number}`);
+		logger.log('debug', inspect`${existing.number} != ${+data.number}`);
 		await SqlRun("UPDATE teilnehmer set type=0 WHERE uid=?;", [data.uid]);
 
 		let result = await SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-		[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.pin, data.disabled, timestamp()]);
+		[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, existing.pin, data.disabled, timestamp()]);
 		if (!result) return;
 
 		res.json({

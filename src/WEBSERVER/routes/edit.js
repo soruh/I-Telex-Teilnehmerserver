@@ -24,14 +24,14 @@ function resetPinEntry(req, res, data) {
 }
 function editEntry(req, res, data) {
     return __awaiter(this, void 0, void 0, function* () {
-        let entry = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
-        if (!entry)
+        let existing = yield SQL_1.SqlGet("SELECT * FROM teilnehmer WHERE uid=?;", [data.uid]);
+        if (!existing)
             return;
-        logger.log('debug', misc_1.inspect `exising entry: ${entry}`);
-        if (entry.number === +data.number) {
+        logger.log('debug', misc_1.inspect `exising entry: ${existing}`);
+        if (existing.number === +data.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);
-            logger.log('debug', misc_1.inspect `${entry.number} == ${+data.number}`);
-            let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, misc_1.timestamp(), entry.pin, data.uid]);
+            logger.log('debug', misc_1.inspect `${existing.number} == ${+data.number}`);
+            let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, misc_1.timestamp(), existing.pin, data.uid]);
             if (!result)
                 return;
             res.json({
@@ -41,9 +41,9 @@ function editEntry(req, res, data) {
         }
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
-            logger.log('debug', misc_1.inspect `${entry.number} != ${+data.number}`);
+            logger.log('debug', misc_1.inspect `${existing.number} != ${+data.number}`);
             yield SQL_1.SqlRun("UPDATE teilnehmer set type=0 WHERE uid=?;", [data.uid]);
-            let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.pin, data.disabled, misc_1.timestamp()]);
+            let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, existing.pin, data.disabled, misc_1.timestamp()]);
             if (!result)
                 return;
             res.json({
