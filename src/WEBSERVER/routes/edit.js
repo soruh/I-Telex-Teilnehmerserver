@@ -43,7 +43,7 @@ function editEntry(req, res, data) {
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
             logger.log('debug', misc_1.inspect `${existing.number} != ${+data.number}`);
-            yield SQL_1.SqlRun("UPDATE teilnehmer set type=0 WHERE uid=?;", [data.uid]);
+            yield SQL_1.SqlRun("UPDATE teilnehmer set type=0, changed=1, timestamp=? WHERE uid=?;", [data.uid, misc_1.timestamp()]);
             let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, existing.pin, data.disabled, misc_1.timestamp()]);
             if (!result)
                 return;
