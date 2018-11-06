@@ -15,7 +15,7 @@ module.exports = {
       merge_logs: true
     },
     {
-      name: "REST api",
+      name: "RESTapi",
       script: "src/RESTSERVER/main.js",
       output: 'logs/restserver/out.log',
       error: 'logs/restserver/error.log',
