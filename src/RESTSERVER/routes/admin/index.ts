@@ -4,7 +4,7 @@ import * as express from "express";
 import { getEntries, putEntries } from "./entries";
 import config from "../../../SHARED/config";
 
-const PASSWORD = config.serverPin.toString();
+const PASSWORD = config.serverPin+"";
 
 
 const adminRouter = express.Router();
