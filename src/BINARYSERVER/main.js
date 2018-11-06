@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_js_1 = require("../SHARED/config.js");
 const util = require("util");
-const timers = require("../BINARYSERVER/timers.js");
+const timers_1 = require("../BINARYSERVER/timers");
 const nodemailer = require("nodemailer");
 const misc_js_1 = require("../SHARED/misc.js");
 const FullQuery_js_1 = require("./FullQuery.js");
@@ -19,9 +19,11 @@ const binaryServer_js_1 = require("./binaryServer.js");
 const cleanUp_js_1 = require("./cleanUp.js");
 const createLogger_js_1 = require("../SHARED/createLogger.js");
 const SQL_js_1 = require("../SHARED/SQL.js");
+function logInitilisation(message) {
+    process.stdout.write(`${new Date().toISOString().replace(/[TZ]*/, " ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
+}
 function createWinstonLogger() {
     return __awaiter(this, void 0, void 0, function* () {
-        process.stdout.write(misc_js_1.inspect `creating logger... `);
         try {
             createLogger_js_1.default(config_js_1.default.binaryserverLoggingLevel, config_js_1.default.binaryserverLog, config_js_1.default.binaryserverErrorLog, config_js_1.default.logBinaryserverToConsole, {
                 levels: {
@@ -51,53 +53,48 @@ function createWinstonLogger() {
             });
         }
         catch (err) {
-            process.stdout.write(misc_js_1.inspect `fail\n`);
+            logInitilisation(misc_js_1.inspect `createWinstonLogger: \x1b[031mfail\x1b[000m`);
             throw (err);
         }
-        process.stdout.write(misc_js_1.inspect `done\n`);
+        logInitilisation(misc_js_1.inspect `createWinstonLogger: \x1b[032mdone\x1b[000m`);
     });
 }
 function listenBinaryserver() {
     return new Promise((resolve, reject) => {
-        process.stdout.write(misc_js_1.inspect `listen on port ${config_js_1.default.binaryPort}... `);
         binaryServer_js_1.default.listen(config_js_1.default.binaryPort, function () {
-            process.stdout.write(misc_js_1.inspect `done\n`);
+            logInitilisation(misc_js_1.inspect `listenBinaryserver: \x1b[032mdone\x1b[000m`);
             resolve();
         });
     });
 }
 function startTimeouts() {
     return new Promise((resolve, reject) => {
-        process.stdout.write(misc_js_1.inspect `starting timeouts... `);
-        timers.TimeoutWrapper(FullQuery_js_1.default, config_js_1.default.fullQueryInterval);
-        timers.TimeoutWrapper(sendQueue_js_1.default, config_js_1.default.queueSendInterval);
-        timers.TimeoutWrapper(cleanUp_js_1.default, config_js_1.default.cleanUpInterval);
-        // timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
-        process.stdout.write(misc_js_1.inspect `done\n`);
+        timers_1.TimeoutWrapper(FullQuery_js_1.default, config_js_1.default.fullQueryInterval);
+        timers_1.TimeoutWrapper(sendQueue_js_1.default, config_js_1.default.queueSendInterval);
+        timers_1.TimeoutWrapper(cleanUp_js_1.default, config_js_1.default.cleanUpInterval);
+        // TimeoutWrapper(updateQueue, config.updateQueueInterval);
+        logInitilisation(misc_js_1.inspect `startTimeouts: \x1b[032mdone\x1b[000m`);
         resolve();
     });
 }
 function connectToDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
-        process.stdout.write(misc_js_1.inspect `connecting to database... `);
         try {
             yield SQL_js_1.connectToDb();
         }
         catch (err) {
-            process.stdout.write(misc_js_1.inspect `fail\n`);
+            logInitilisation(misc_js_1.inspect `connectToDatabase: \x1b[031mfail\x1b[000m`);
             throw (err);
         }
-        process.stdout.write(misc_js_1.inspect `done\n`);
+        logInitilisation(misc_js_1.inspect `connectToDatabase: \x1b[032mdone\x1b[000m`);
     });
 }
 function setupEmailTransport() {
     return new Promise((resolve, reject) => {
-        process.stdout.write(misc_js_1.inspect `setting up email transporter... `);
         if (config_js_1.default.eMail.useTestAccount) {
-            process.stdout.write(misc_js_1.inspect `\n  getting test account... `);
             nodemailer.createTestAccount(function (err, account) {
                 if (err) {
-                    process.stdout.write(misc_js_1.inspect `fail\n`);
+                    logInitilisation(misc_js_1.inspect `setupEmailTransport: \x1b[031mfail\x1b[000m`);
                     logger.log('error', misc_js_1.inspect `${err}`);
                     global.transporter = {
                         sendMail: function sendMail() {
@@ -110,8 +107,7 @@ function setupEmailTransport() {
                     reject(err);
                 }
                 else {
-                    process.stdout.write(misc_js_1.inspect `done\n`);
-                    process.stdout.write(misc_js_1.inspect `  got test account:\n` + Object.entries(account).map(([key, value]) => misc_js_1.inspect `     ${key}: ${value}`).join('\n') + '\n');
+                    logInitilisation(misc_js_1.inspect `setupEmailTransport: \x1b[032mdone\x1b[000m`);
                     global.transporter = nodemailer.createTransport({
                         host: 'smtp.ethereal.email',
                         port: 587,
@@ -127,22 +123,17 @@ function setupEmailTransport() {
         }
         else {
             global.transporter = nodemailer.createTransport(config_js_1.default.eMail.account);
-            process.stdout.write(misc_js_1.inspect `done\n`);
+            logInitilisation(misc_js_1.inspect `setupEmailTransport: \x1b[032mdone\x1b[000m`);
             resolve();
         }
     });
 }
-createWinstonLogger()
-    .then(setupEmailTransport)
-    .then(connectToDatabase)
-    .then(startTimeouts)
-    .then(listenBinaryserver)
+Promise.all([createWinstonLogger(), setupEmailTransport(), connectToDatabase(), startTimeouts(), listenBinaryserver()])
     .then(() => {
-    const readonly = (config_js_1.default.serverPin == null);
-    if (readonly)
+    if (config_js_1.default.serverPin == null)
         logger.log('warning', misc_js_1.inspect `Starting in read-only mode!`);
+    FullQuery_js_1.default();
 })
-    .then(FullQuery_js_1.default)
     .catch(err => {
     logger.log('error', misc_js_1.inspect `error in startup sequence: ${err}`);
 });

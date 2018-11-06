@@ -66,7 +66,7 @@ function createLogger(loggingLevel, standartLog, errorLog, logToConsole, customL
         formats.push(winston.format.colorize());
     // formats.push(getLine),
     const levelPadding = Math.max(...Object.keys(colours).map(x => x.length));
-    formats.push(winston.format.printf(info => `${config_1.default.logDate ? (info.timestamp.replace("T", " ").replace("Z", " ")) : ""}${" ".repeat(levelPadding - info.level.replace(/\u001b\[\d{1,3}m/g, "").length)}${info.level}: ${info.message}`));
+    formats.push(winston.format.printf(info => `${config_1.default.logDate ? (info.timestamp.replace(/[TZ]/g, " ")) : ""}${" ".repeat(levelPadding - info.level.replace(/\u001b\[\d{1,3}m/g, "").length)}${info.level}: ${info.message}`));
     // formats.push(winston.format.printf(info => `${info.timestamp} ${(<any>info.level).padStart(17)} ${info.line}: ${info.message}`));
     global.logger = winston.createLogger({
         level: getLoggingLevel(),

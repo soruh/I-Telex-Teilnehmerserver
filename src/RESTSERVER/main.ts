@@ -4,9 +4,15 @@ import config from '../SHARED/config.js';
 import * as util from "util";
 import * as http from "http";
 import { inspect, sendEmail, printDate, getTimezone } from "../SHARED/misc.js";
+// import { TimeoutWrapper } from "../BINARYSERVER/timers";
 
 import createLogger from '../SHARED/createLogger.js';
 import { connectToDb } from '../SHARED/SQL.js';
+import { TimeoutWrapper } from '../BINARYSERVER/timers.js';
+
+import getFullQuery from './FullQuery';
+import sendQueue from './sendQueue';
+
 createLogger(
 	config.RESTserverLoggingLevel,
 	config.RESTserverLog,
@@ -40,6 +46,13 @@ createLogger(
 );
 connectToDb();
 
+TimeoutWrapper(getFullQuery, config.fullQueryInterval);
+TimeoutWrapper(sendQueue, config.queueSendInterval);
+
+
+
+
+
 import app from './app';
 
 const server = http.createServer(app);
@@ -52,6 +65,8 @@ server.listen(config.RESTServerPort, ()=>{
 	let address = server.address();
 	logger.log('warning', `Listening on ${typeof address === "string"?'pipe '+address:'port '+address.port}`);
 });
+
+getFullQuery();
 
 // write uncaught exceptions to all logs
 process.on('uncaughtException', async err=>{

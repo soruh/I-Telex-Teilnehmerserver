@@ -178,8 +178,11 @@ handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, cl
 	const values = names.map(name => pkg.data[name]);
 
 	logger.log('verbose network', inspect`got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
-	const entry = await SqlGet<teilnehmerRow>(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
 
+	await SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(()=>'?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name=>name+"=?").join(', ')};`, [...values,...values]);
+	await client.sendPackage({type: 8});
+	/*
+	const entry = await SqlGet<teilnehmerRow>(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
 	if (entry) {
 		if (typeof client.newEntries !== "number") client.newEntries = 0;
 		if (pkg.data.timestamp <= entry.timestamp) {
@@ -205,6 +208,7 @@ handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, cl
 		await client.sendPackage({type: 8});
 		return;
 	}
+	*/
 };
 handles[6][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_6, client: Client) => {
 	if (!client) return;

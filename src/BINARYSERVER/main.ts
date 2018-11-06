@@ -2,7 +2,7 @@
 import config from '../SHARED/config.js';
 import * as util from "util";
 import * as winston from "winston";
-import * as timers from "../BINARYSERVER/timers.js";
+import { TimeoutWrapper } from "../BINARYSERVER/timers";
 import * as nodemailer from "nodemailer";
 import {inspect, serverErrorCounters, printDate, sendEmail, getTimezone} from "../SHARED/misc.js";
 import getFullQuery from './FullQuery.js';
@@ -42,8 +42,11 @@ declare global {
 	const logger:winston.Logger;
 }
 
+function logInitilisation(message:string){
+	process.stdout.write(`${new Date().toISOString().replace(/[TZ]*/," ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
+}
+
 async function createWinstonLogger(){
-	process.stdout.write(inspect`creating logger... `);
 	try{
 		createLogger(
 			config.binaryserverLoggingLevel,
@@ -78,49 +81,44 @@ async function createWinstonLogger(){
 			}
 		);
 	}catch(err){
-		process.stdout.write(inspect`fail\n`);
+		logInitilisation(inspect`createWinstonLogger: \x1b[031mfail\x1b[000m`);
 		throw(err);
 	}
-	process.stdout.write(inspect`done\n`);
+	logInitilisation(inspect`createWinstonLogger: \x1b[032mdone\x1b[000m`);
 }
 function listenBinaryserver() {
 	return new Promise((resolve, reject)=>{
-		process.stdout.write(inspect`listen on port ${config.binaryPort}... `);
 		binaryServer.listen(config.binaryPort, function() {
-			process.stdout.write(inspect`done\n`);
+			logInitilisation(inspect`listenBinaryserver: \x1b[032mdone\x1b[000m`);
 			resolve();
 		});
 	});
 }
 function startTimeouts(){
 	return new Promise((resolve, reject)=>{
-		process.stdout.write(inspect`starting timeouts... `);
-		timers.TimeoutWrapper(getFullQuery, config.fullQueryInterval);
-		timers.TimeoutWrapper(sendQueue, config.queueSendInterval);
-		timers.TimeoutWrapper(cleanUp, config.cleanUpInterval);
-		// timers.TimeoutWrapper(updateQueue, config.updateQueueInterval);
-		process.stdout.write(inspect`done\n`);
+		TimeoutWrapper(getFullQuery, config.fullQueryInterval);
+		TimeoutWrapper(sendQueue, config.queueSendInterval);
+		TimeoutWrapper(cleanUp, config.cleanUpInterval);
+		// TimeoutWrapper(updateQueue, config.updateQueueInterval);
+		logInitilisation(inspect`startTimeouts: \x1b[032mdone\x1b[000m`);
 		resolve();
 	});
 }
 async function connectToDatabase(){
-	process.stdout.write(inspect`connecting to database... `);
 	try{
 		await connectToDb();
 	}catch(err){
-		process.stdout.write(inspect`fail\n`);
+		logInitilisation(inspect`connectToDatabase: \x1b[031mfail\x1b[000m`);
 		throw(err);
 	}
-	process.stdout.write(inspect`done\n`);
+	logInitilisation(inspect`connectToDatabase: \x1b[032mdone\x1b[000m`);
 }
 function setupEmailTransport(){
 	return new Promise((resolve, reject)=>{
-		process.stdout.write(inspect`setting up email transporter... `);
 		if (config.eMail.useTestAccount) {
-			process.stdout.write(inspect`\n  getting test account... `);
 			nodemailer.createTestAccount(function(err, account) {
 				if (err) {
-					process.stdout.write(inspect`fail\n`);
+					logInitilisation(inspect`setupEmailTransport: \x1b[031mfail\x1b[000m`);
 					logger.log('error', inspect`${err}`);
 					global.transporter = {
 						sendMail: function sendMail() {
@@ -132,8 +130,7 @@ function setupEmailTransport(){
 					};
 					reject(err);
 				} else {
-					process.stdout.write(inspect`done\n`);
-					process.stdout.write(inspect`  got test account:\n`+Object.entries(account).map(([key,value])=>inspect`     ${key}: ${value}`).join('\n')+'\n');
+					logInitilisation(inspect`setupEmailTransport: \x1b[032mdone\x1b[000m`);
 					global.transporter = nodemailer.createTransport({
 						host: 'smtp.ethereal.email',
 						port: 587,
@@ -148,22 +145,17 @@ function setupEmailTransport(){
 			});
 		} else {
 			global.transporter = nodemailer.createTransport(config.eMail.account);
-			process.stdout.write(inspect`done\n`);
+			logInitilisation(inspect`setupEmailTransport: \x1b[032mdone\x1b[000m`);
 			resolve();
 		}
 	});
 }
 
-createWinstonLogger()
-.then(setupEmailTransport)
-.then(connectToDatabase)
-.then(startTimeouts)
-.then(listenBinaryserver)
+Promise.all([createWinstonLogger(), setupEmailTransport(), connectToDatabase(), startTimeouts(), listenBinaryserver()])
 .then(()=>{
-	const readonly = (config.serverPin == null);
-	if (readonly) logger.log('warning', inspect`Starting in read-only mode!`);
+	if (config.serverPin == null) logger.log('warning', inspect`Starting in read-only mode!`);
+	getFullQuery();
 })
-.then(getFullQuery)
 .catch(err=>{
 	logger.log('error', inspect`error in startup sequence: ${err}`);
 });

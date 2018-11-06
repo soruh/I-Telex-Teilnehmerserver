@@ -6,9 +6,10 @@ CREATE TABLE queue (
 );
 
 CREATE TABLE servers (
-	 uid INTEGER PRIMARY KEY,
-	 address tinytext,
-	 port tinyint unsigned
+	uid INTEGER PRIMARY KEY,
+	address tinytext,
+	version tinyint,
+	port tinyint unsigned
 );
 
 CREATE TABLE teilnehmer (

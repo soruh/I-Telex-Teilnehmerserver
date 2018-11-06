@@ -8,7 +8,7 @@ import connect from './connect.js';
 import { inspect } from '../SHARED/misc.js';
 import { SqlAll, SqlEach, SqlGet, SqlRun, queueRow, serversRow, teilnehmerRow } from '../SHARED/SQL';
 
-import updateQueue from './updateQueue.js';
+import updateQueue from '../SHARED/updateQueue.js';
 
 //#endregion
 
@@ -43,6 +43,12 @@ async function sendQueue() {
 			let serverinf = await SqlGet<serversRow>("SELECT * FROM servers WHERE uid=?;", [server]);
 			
 			logger.log('debug', inspect`sending queue for ${serverinf}`);
+
+			if(serverinf.version !== 1){
+				logger.log('network', inspect`entries for server ${serverinf.address}:${serverinf.port} will be ignored, because it's version is ${serverinf.version} not ${1}`);
+				resolve();
+				return;
+			}
 
 			let client = await connect({
 				host: serverinf.address,

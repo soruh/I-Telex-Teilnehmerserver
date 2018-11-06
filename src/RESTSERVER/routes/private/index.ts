@@ -6,7 +6,7 @@ const privateRouter = express.Router();
 
 
 // Test Authorization header of all requests to /private/*
-privateRouter.all('/', function(req, res, next) {
+privateRouter.all('*', function(req, res, next) {
 	if(!(req.header('Authorization')&&/Basic (.*)/.test(req.header('Authorization')))){
 		res.header("WWW-Authenticate", "Basic");
 		res.status(401);

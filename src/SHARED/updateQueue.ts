@@ -1,15 +1,6 @@
 "use strict";
-//#region imports
-// import config from '../SHARED/config.js';
-// import colors from "../SHARED/colors.js";
-import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import serialEachPromise from '../SHARED/serialEachPromise.js';
-import { inspect, timestamp } from '../SHARED/misc.js';
-import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow, serversRow, queueRow } from '../SHARED/SQL';
-
-
-//#endregion
-
+import { inspect, timestamp } from './misc.js';
+import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow, serversRow, queueRow } from './SQL';
 
 
 

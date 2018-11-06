@@ -20,6 +20,7 @@ interface serversRow {
 	 uid: number;
 	 address: string;
 	 port: number;
+	 version: number;
 }
 
 interface teilnehmerRow {

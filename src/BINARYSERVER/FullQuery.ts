@@ -19,7 +19,7 @@ const readonly = (config.serverPin == null);
 
 async function getFullQuery() {
 	logger.log('debug', inspect`getting FullQuery`);
-	let servers = await SqlAll<serversRow>("SELECT  * FROM servers;", []);
+	let servers = await SqlAll<serversRow>("SELECT  * FROM servers WHERE version=1;", []);
 	if (servers.length === 0) {
 		logger.log('warning', inspect`No configured servers -> aborting FullQuery`);
 		return;

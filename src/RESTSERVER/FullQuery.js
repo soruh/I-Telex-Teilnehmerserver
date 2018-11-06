@@ -8,62 +8,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-//#region imports
 const config_js_1 = require("../SHARED/config.js");
-const constants = require("../SHARED/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const SQL_1 = require("../SHARED/SQL");
-const serialEachPromise_js_1 = require("../SHARED/serialEachPromise.js");
-const connect_js_1 = require("./connect.js");
-//#endregion
+const APICall_js_1 = require("./APICall.js");
+const constants = require("../SHARED/constants");
 const readonly = (config_js_1.default.serverPin == null);
 function getFullQuery() {
     return __awaiter(this, void 0, void 0, function* () {
         logger.log('debug', misc_js_1.inspect `getting FullQuery`);
-        let servers = yield SQL_1.SqlAll("SELECT  * FROM servers WHERE version=1;", []);
+        let servers = yield SQL_1.SqlAll('SELECT * from servers WHERE version=2;', []);
         if (servers.length === 0) {
             logger.log('warning', misc_js_1.inspect `No configured servers -> aborting FullQuery`);
             return;
         }
-        // for (let i in servers) {
-        // 	if (config.fullQueryServer&&servers[i].addresse == config.fullQueryServer.split(":")[0] && servers[i].port == config.fullQueryServer.split(":")[1]) {
-        // 		servers = [servers[i]];
-        // 		break;
-        // 	}
-        // }
         if (config_js_1.default.fullQueryServer)
             servers = servers.filter(server => server.port === parseInt(config_js_1.default.fullQueryServer.split(":")[1]) &&
                 server.address === config_js_1.default.fullQueryServer.split(":")[0]);
-        return serialEachPromise_js_1.default(servers, server => new Promise((resolveLoop) => __awaiter(this, void 0, void 0, function* () {
+        for (let server of servers) {
             try {
-                const client = yield connect_js_1.default({ host: server.address, port: +server.port }, resolveLoop);
-                let request;
-                if (readonly) {
-                    request = {
-                        type: 10,
-                        data: {
-                            pattern: '',
-                            version: 1,
-                        },
-                    };
+                let entries = yield APICall_js_1.default('GET', server.address, server.port, '/admin/entries');
+                for (let entry of entries) {
+                    const names = constants.peerProperties;
+                    const values = names.filter(name => entry.hasOwnProperty(name)).map(name => entry[name]);
+                    yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(() => '?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name => name + "=?").join(', ')};`, [...values, ...values]);
                 }
-                else {
-                    request = {
-                        type: 6,
-                        data: {
-                            serverpin: config_js_1.default.serverPin,
-                            version: 1,
-                        },
-                    };
-                }
-                yield client.sendPackage(request);
-                client.state = constants.states.FULLQUERY;
-                client.cb = resolveLoop;
             }
             catch (err) {
                 logger.log('error', misc_js_1.inspect `${err}`);
             }
-        })));
+        }
     });
 }
 exports.default = getFullQuery;

@@ -79,7 +79,7 @@ function createLogger(loggingLevel:string|number, standartLog:string, errorLog:s
 	const levelPadding = Math.max(...Object.keys(colours).map(x=>x.length));
 	formats.push(winston.format.printf(info=>
 		`${
-			config.logDate?(info.timestamp.replace("T"," ").replace("Z"," ")):""
+			config.logDate?(info.timestamp.replace(/[TZ]/g," ")):""
 		}${
 			" ".repeat(levelPadding-info.level.replace(/\u001b\[\d{1,3}m/g,"").length)
 		}${

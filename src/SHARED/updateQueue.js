@@ -8,9 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const misc_js_1 = require("../SHARED/misc.js");
-const SQL_1 = require("../SHARED/SQL");
-//#endregion
+const misc_js_1 = require("./misc.js");
+const SQL_1 = require("./SQL");
 function updateQueue() {
     return __awaiter(this, void 0, void 0, function* () {
         logger.log('debug', misc_js_1.inspect `updating Queue`);

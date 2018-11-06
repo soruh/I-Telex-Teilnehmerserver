@@ -12,8 +12,12 @@ const config_js_1 = require("../SHARED/config.js");
 const util = require("util");
 const http = require("http");
 const misc_js_1 = require("../SHARED/misc.js");
+// import { TimeoutWrapper } from "../BINARYSERVER/timers";
 const createLogger_js_1 = require("../SHARED/createLogger.js");
 const SQL_js_1 = require("../SHARED/SQL.js");
+const timers_js_1 = require("../BINARYSERVER/timers.js");
+const FullQuery_1 = require("./FullQuery");
+const sendQueue_1 = require("./sendQueue");
 createLogger_js_1.default(config_js_1.default.RESTserverLoggingLevel, config_js_1.default.RESTserverLog, config_js_1.default.RESTserverErrorLog, config_js_1.default.logRESTserverToConsole, {
     levels: {
         "error": 0,
@@ -40,6 +44,8 @@ createLogger_js_1.default(config_js_1.default.RESTserverLoggingLevel, config_js_
     },
 });
 SQL_js_1.connectToDb();
+timers_js_1.TimeoutWrapper(FullQuery_1.default, config_js_1.default.fullQueryInterval);
+timers_js_1.TimeoutWrapper(sendQueue_1.default, config_js_1.default.queueSendInterval);
 const app_1 = require("./app");
 const server = http.createServer(app_1.default);
 server.on('error', error => {
@@ -49,6 +55,7 @@ server.listen(config_js_1.default.RESTServerPort, () => {
     let address = server.address();
     logger.log('warning', `Listening on ${typeof address === "string" ? 'pipe ' + address : 'port ' + address.port}`);
 });
+FullQuery_1.default();
 // write uncaught exceptions to all logs
 process.on('uncaughtException', (err) => __awaiter(this, void 0, void 0, function* () {
     logger.log('error', misc_js_1.inspect `uncaught exception ${err}`);

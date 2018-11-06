@@ -14,7 +14,7 @@ const constants = require("../SHARED/constants.js");
 const connect_js_1 = require("./connect.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const SQL_1 = require("../SHARED/SQL");
-const updateQueue_js_1 = require("./updateQueue.js");
+const updateQueue_js_1 = require("../SHARED/updateQueue.js");
 //#endregion
 const readonly = (config_js_1.default.serverPin == null);
 function sendQueue() {
@@ -41,6 +41,11 @@ function sendQueue() {
                 let server = entriesForServer[0].server;
                 let serverinf = yield SQL_1.SqlGet("SELECT * FROM servers WHERE uid=?;", [server]);
                 logger.log('debug', misc_js_1.inspect `sending queue for ${serverinf}`);
+                if (serverinf.version !== 1) {
+                    logger.log('network', misc_js_1.inspect `entries for server ${serverinf.address}:${serverinf.port} will be ignored, because it's version is ${serverinf.version} not ${1}`);
+                    resolve();
+                    return;
+                }
                 let client = yield connect_js_1.default({
                     host: serverinf.address,
                     port: serverinf.port,
