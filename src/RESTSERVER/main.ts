@@ -28,8 +28,9 @@ createLogger(
 			"others": 5,
 			"sql": 6,
 			"verbose sql": 7,
-			"debug": 8,
-			"silly":9,
+			"queue": 8,
+			"debug": 9,
+			"silly": 10,
 		},
 		colors:{
 			"error": "red",
@@ -40,7 +41,9 @@ createLogger(
 			"others": "gray",
 			"sql": "cyan",
 			"verbose sql": "cyan",
-			"debug": "bold",
+			"queue": "gray",
+			"debug": "magenta",
+			"silly": 'bold',
 		},
 	}
 );
@@ -66,7 +69,7 @@ server.listen(config.RESTServerPort, ()=>{
 	logger.log('warning', `Listening on ${typeof address === "string"?'pipe '+address:'port '+address.port}`);
 });
 
-getFullQuery();
+sendQueue();
 
 // write uncaught exceptions to all logs
 process.on('uncaughtException', async err=>{

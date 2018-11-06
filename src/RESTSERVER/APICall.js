@@ -10,14 +10,14 @@ function APIcall(method, host, port, path, data) {
         let stringifiedData;
         if (data) {
             try {
-                stringifiedData = JSON.stringify(data);
+                stringifiedData = JSON.stringify({ data });
             }
             catch (err) {
                 reject(err);
                 return;
             }
             headers = {
-                'content-lype': 'application/json; charset=utf-8',
+                'content-type': 'application/json; charset=utf-8',
                 'content-length': Buffer.byteLength(stringifiedData),
             };
         }
@@ -36,6 +36,12 @@ function APIcall(method, host, port, path, data) {
             });
             res.once('end', () => {
                 logger.log('debug', 'API request ended');
+                logger.log('silly', buffer);
+                if (res.statusCode !== 200) {
+                    logger.log('debug', `API call failed with code ${res.statusCode} (${res.statusMessage})`);
+                    reject(`${res.statusCode} (${res.statusMessage})`);
+                    return;
+                }
                 try {
                     const parsed = JSON.parse(buffer);
                     if (parsed.success) {

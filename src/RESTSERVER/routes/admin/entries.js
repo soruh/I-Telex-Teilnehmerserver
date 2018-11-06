@@ -37,9 +37,11 @@ function putEntries(req, res, next) {
                 res.json({ success: false, error: "please supply 'data' field" });
                 return;
             }
+            let entries = req.body.data;
             try {
+                if (typeof entries === "string")
+                    entries = JSON.parse(entries);
                 // tslint:disable-next-line:no-var-keyword
-                var entries = JSON.parse(req.body.data);
             }
             catch (err) {
                 res.status(400);

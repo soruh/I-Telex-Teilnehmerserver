@@ -3,12 +3,8 @@
 import config from '../SHARED/config.js';
 import { inspect } from "../SHARED/misc.js";
 import { SqlAll, SqlEach, SqlGet, SqlRun, serversRow, teilnehmerRow } from '../SHARED/SQL';
-import serialEachPromise from '../SHARED/serialEachPromise.js';
 import APIcall from './APICall.js';
 import * as constants from '../SHARED/constants';
-
-
-const readonly = (config.serverPin == null);
 
 async function getFullQuery(){
 	logger.log('debug', inspect`getting FullQuery`);

@@ -23,6 +23,7 @@ async function sendQueue() {
 		logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 		return;
 	}
+	
 	const queue = await SqlAll<queueRow>("SELECT * FROM queue;", []);
 	if (queue.length === 0) {
 		logger.log('debug', inspect`No queue!`);
