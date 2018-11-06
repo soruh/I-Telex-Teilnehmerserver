@@ -28,9 +28,10 @@ function editEntry(req, res, data) {
         if (!existing)
             return;
         logger.log('debug', misc_1.inspect `exising entry: ${existing}`);
-        if (existing.number === +data.number) {
+        // tslint:disable-next-line:triple-equals
+        if (existing.number == data.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);
-            logger.log('debug', misc_1.inspect `${existing.number} == ${+data.number}`);
+            logger.log('debug', misc_1.inspect `${existing.number} == ${data.number}`);
             let result = yield SQL_1.SqlRun("UPDATE teilnehmer SET number=?, name=?, type=?, hostname=?, ipaddress=?, port=?, extension=?, disabled=?, timestamp=?, changed=1, pin=? WHERE uid=?;", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, data.disabled, misc_1.timestamp(), existing.pin, data.uid]);
             if (!result)
                 return;

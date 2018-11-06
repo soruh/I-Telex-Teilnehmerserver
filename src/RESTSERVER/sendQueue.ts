@@ -50,7 +50,7 @@ async function sendQueue(){
 		let res = await APIcall('PUT', serverinf.address, serverinf.port, '/admin/entries', data);
 		logger.log('warning', inspect`${res}`);
 
-		await SqlRun(`DELETE FROM teilnehmer WHERE uid IN (${entriesForServer.map(x=>'?').join(', ')});`, entriesForServer.map(x=>x.message));
+		await SqlRun(`DELETE FROM queue WHERE uid IN (${entriesForServer.map(x=>'?').join(', ')});`, entriesForServer.map(x=>x.message));
 	})()));
 }
 export default sendQueue;
