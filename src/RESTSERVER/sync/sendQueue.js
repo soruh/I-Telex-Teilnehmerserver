@@ -8,12 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("../SHARED/config.js");
-const misc_js_1 = require("../SHARED/misc.js");
-const SQL_1 = require("../SHARED/SQL");
-const APICall_js_1 = require("./APICall.js");
-const constants = require("../SHARED/constants");
-const updateQueue_js_1 = require("../SHARED/updateQueue.js");
+const config_js_1 = require("../../SHARED/config.js");
+const misc_js_1 = require("../../SHARED/misc.js");
+const SQL_1 = require("../../SHARED/SQL");
+const APICall_1 = require("./APICall");
+const constants = require("../../SHARED/constants");
+const updateQueue_js_1 = require("../../SHARED/updateQueue.js");
 const readonly = (config_js_1.default.serverPin == null);
 function sendQueue() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -43,7 +43,7 @@ function sendQueue() {
                 return;
             }
             let data = yield SQL_1.SqlAll(`SELECT ${constants.peerProperties} FROM teilnehmer WHERE uid IN (${entriesForServer.map(x => '?').join(', ')});`, entriesForServer.map(x => x.message));
-            let res = yield APICall_js_1.default('PUT', serverinf.address, serverinf.port, '/admin/entries', data);
+            let res = yield APICall_1.default('PUT', serverinf.address, serverinf.port, '/admin/entries', data);
             logger.log('warning', misc_js_1.inspect `${res}`);
             yield SQL_1.SqlRun(`DELETE FROM queue WHERE uid IN (${entriesForServer.map(x => '?').join(', ')});`, entriesForServer.map(x => x.message));
         }))()));

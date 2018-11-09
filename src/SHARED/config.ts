@@ -1,3 +1,8 @@
+// tslint:disable:no-var-requires
+import { readFileSync } from "fs";
+import { isAbsolute, join } from "path";
+
+//#region type
 interface configFile {
 	DynIpUpdateNameDifference: number;
 
@@ -55,6 +60,10 @@ interface configFile {
 	warnAtWrongDynIpPinCounts: number[];
 	scientistNames:boolean;
 
+	RESTKey:Buffer;
+	RESTCert:Buffer;
+	useClientCertificate:boolean;
+
 	eMail: {
 		useTestAccount: boolean,
 		account: {
@@ -99,21 +108,59 @@ interface configFile {
 		}
 	};
 }
+//#endregion
+
+//#region email
+let eMail: any = {};
+
+Object.assign(eMail, require("../../config/mailAccount.json"));
+Object.assign(eMail, require("../../config/mailMessages.json"));
+//#endregion
+
+//#region tls
+const {RESTCertPath, RESTKeyPath} = require("../../config/tls.json");
+
+function readCertFile(path):Buffer {
+	function normalizePath(path){
+		if(isAbsolute(path)){
+			return path;
+		}else{
+			return join(__dirname, '../..', path);
+		}
+	}
+
+	try{
+		return readFileSync(normalizePath(path));
+	}catch(err){
+		(console as any).error(err);
+		throw(new Error("couldn't load https certificates"));
+	}
+}
+
+let RESTCert;
+let RESTKey;
+
+const tls = {
+	get RESTCert(){
+		if(!RESTCert) RESTCert = readCertFile(RESTCertPath);
+		return RESTCert;
+	},
+	get RESTKey(){
+		if(!RESTKey) RESTKey  = readCertFile(RESTKeyPath);
+		return RESTKey;
+	},
+};
+//#endregion
 
 let collection: any = {};
 
-let eMail: any = {};
-// tslint:disable:no-var-requires
-Object.assign(eMail, require("../../config/mailAccount.json"));
-Object.assign(eMail, require("../../config/mailMessages.json"));
-
-Object.assign(collection, {eMail});
-
+Object.assign(collection, tls);
+Object.assign(collection, { eMail });
 Object.assign(collection, require("../../config/logging.json"));
 Object.assign(collection, require("../../config/misc.json"));
 Object.assign(collection, require("../../config/timings.json"));
 Object.assign(collection, require("../../config/serverpin.json"));
-// tslint:enable:no-var-requires
+
 const config: configFile = collection;
 
 export default config;

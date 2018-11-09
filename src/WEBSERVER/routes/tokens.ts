@@ -43,7 +43,7 @@ function isValidToken(suppliedToken:string, data:string, salt:string){
 	}
 
 	const hash = crypto.createHash('sha256').update(salt+config.webInterfacePassword+data).digest();
-	const correctToken = Array.from(hash).map(x=>x.toString(16).padStart(2, '0')).join('');
+	const correctToken = hash.toString('hex');
 
 	if(suppliedToken === correctToken){
 		logger.log('debug', inspect`token is valid`);

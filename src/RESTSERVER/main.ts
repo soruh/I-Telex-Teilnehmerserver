@@ -2,7 +2,7 @@
 
 import config from '../SHARED/config.js';
 import * as util from "util";
-import * as http from "http";
+import * as https from "https";
 import { inspect, sendEmail, printDate, getTimezone } from "../SHARED/misc.js";
 // import { TimeoutWrapper } from "../BINARYSERVER/timers";
 
@@ -10,8 +10,8 @@ import createLogger from '../SHARED/createLogger.js';
 import { connectToDb } from '../SHARED/SQL.js';
 import { TimeoutWrapper } from '../BINARYSERVER/timers.js';
 
-import getFullQuery from './FullQuery';
-import sendQueue from './sendQueue';
+import getFullQuery from './sync/FullQuery';
+import sendQueue from './sync/sendQueue';
 
 createLogger(
 	config.RESTserverLoggingLevel,
@@ -54,11 +54,16 @@ TimeoutWrapper(sendQueue, config.queueSendInterval);
 
 
 
-
-
 import app from './app';
 
-const server = http.createServer(app);
+const server = https.createServer({
+	key: config.RESTKey,
+	cert: config.RESTCert,
+	
+	rejectUnauthorized: true,
+	requestCert: config.useClientCertificate,
+	ca: [config.RESTCert],
+}, app);
 
 server.on('error', error=>{
 	throw error;
@@ -69,7 +74,8 @@ server.listen(config.RESTServerPort, ()=>{
 	logger.log('warning', `Listening on ${typeof address === "string"?'pipe '+address:'port '+address.port}`);
 });
 
-sendQueue();
+getFullQuery();
+// sendQueue();
 
 // write uncaught exceptions to all logs
 process.on('uncaughtException', async err=>{

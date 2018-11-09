@@ -1,0 +1,5 @@
+{
+	"RESTCertPath": "cert/cert.pem",
+	"RESTKeyPath": "cert/key.pem",
+	"useClientCertificate": false
+}

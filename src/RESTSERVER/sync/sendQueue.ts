@@ -1,11 +1,10 @@
 
-import config from '../SHARED/config.js';
-import { inspect } from "../SHARED/misc.js";
-import { SqlAll, SqlEach, SqlGet, SqlRun, serversRow, teilnehmerRow, queueRow } from '../SHARED/SQL';
-import APIcall from './APICall.js';
-import * as constants from '../SHARED/constants';
-import updateQueue from '../SHARED/updateQueue.js';
-import { connect } from 'net';
+import config from '../../SHARED/config.js';
+import { inspect } from "../../SHARED/misc.js";
+import { SqlAll, SqlEach, SqlGet, SqlRun, serversRow, teilnehmerRow, queueRow } from '../../SHARED/SQL';
+import APIcall from './APICall';
+import * as constants from '../../SHARED/constants';
+import updateQueue from '../../SHARED/updateQueue.js';
 
 
 const readonly = (config.serverPin == null);

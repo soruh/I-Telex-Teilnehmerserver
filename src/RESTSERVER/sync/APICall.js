@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const http = require("http");
-const config_1 = require("../SHARED/config");
-const misc_1 = require("../SHARED/misc");
+const https = require("https");
+const config_1 = require("../../SHARED/config");
+const misc_1 = require("../../SHARED/misc");
 function APIcall(method, host, port, path, data) {
     return new Promise((resolve, reject) => {
         logger.log('debug', `making ${method} request to ${host}:${port}${path[0] === '/' ? '' : '/'}${path}`);
@@ -21,13 +21,18 @@ function APIcall(method, host, port, path, data) {
                 'content-length': Buffer.byteLength(stringifiedData),
             };
         }
-        const req = http.request({
+        const req = https.request({
             method,
             host,
             port,
             path,
             auth: 'admin:' + config_1.default.serverPin,
             headers,
+            key: config_1.default.RESTKey,
+            cert: config_1.default.RESTCert,
+            rejectUnauthorized: true,
+            ca: [config_1.default.RESTCert],
+            checkServerIdentity: () => undefined,
         }, res => {
             logger.log('debug', 'made API request');
             let buffer = "";

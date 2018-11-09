@@ -1,10 +1,10 @@
 "use strict";
 
-import config from '../SHARED/config.js';
-import { inspect } from "../SHARED/misc.js";
-import { SqlAll, SqlEach, SqlGet, SqlRun, serversRow, teilnehmerRow } from '../SHARED/SQL';
+import config from '../../SHARED/config.js';
+import { inspect } from "../../SHARED/misc.js";
+import { SqlAll, SqlEach, SqlGet, SqlRun, serversRow, teilnehmerRow } from '../../SHARED/SQL';
 import APIcall from './APICall.js';
-import * as constants from '../SHARED/constants';
+import * as constants from '../../SHARED/constants';
 
 async function getFullQuery(){
 	logger.log('debug', inspect`getting FullQuery`);

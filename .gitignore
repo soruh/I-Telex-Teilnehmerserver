@@ -3,5 +3,6 @@ config/
 tests/
 logs/
 db/
+cert/
 .vscode/
 .jshintrc

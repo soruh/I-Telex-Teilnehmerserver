@@ -38,7 +38,7 @@ function isValidToken(suppliedToken, data, salt) {
         return false;
     }
     const hash = crypto.createHash('sha256').update(salt + config_1.default.webInterfacePassword + data).digest();
-    const correctToken = Array.from(hash).map(x => x.toString(16).padStart(2, '0')).join('');
+    const correctToken = hash.toString('hex');
     if (suppliedToken === correctToken) {
         logger.log('debug', misc_1.inspect `token is valid`);
         delete salts[salt];

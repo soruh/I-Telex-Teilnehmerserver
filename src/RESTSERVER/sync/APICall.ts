@@ -1,6 +1,6 @@
-import * as http from "http";
-import config from "../SHARED/config";
-import { inspect } from "../SHARED/misc";
+import * as https from "https";
+import config from "../../SHARED/config";
+import { inspect } from "../../SHARED/misc";
 
 
 function APIcall(method:string, host:string, port:number, path:string, data?:any):Promise<any>{
@@ -22,15 +22,21 @@ function APIcall(method:string, host:string, port:number, path:string, data?:any
 			};
 		}
 
-
-		const req = http.request({
+		const req = https.request({
 			method,
 			host,
 			port,
 			path,
 			auth: 'admin:'+config.serverPin,
 			headers,
-		}, res=>{
+
+			key: config.RESTKey,
+			cert: config.RESTCert,
+
+			rejectUnauthorized: true,
+			ca: [config.RESTCert],
+			checkServerIdentity: ()=>undefined, // don't check server identity
+		} as https.RequestOptions, res=>{
 			logger.log('debug', 'made API request');
 			let buffer = "";
 			res.on('data', data=>{

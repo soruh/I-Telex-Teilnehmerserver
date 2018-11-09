@@ -8,11 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("../SHARED/config.js");
-const misc_js_1 = require("../SHARED/misc.js");
-const SQL_1 = require("../SHARED/SQL");
+const config_js_1 = require("../../SHARED/config.js");
+const misc_js_1 = require("../../SHARED/misc.js");
+const SQL_1 = require("../../SHARED/SQL");
 const APICall_js_1 = require("./APICall.js");
-const constants = require("../SHARED/constants");
+const constants = require("../../SHARED/constants");
 function getFullQuery() {
     return __awaiter(this, void 0, void 0, function* () {
         logger.log('debug', misc_js_1.inspect `getting FullQuery`);
