@@ -28,7 +28,7 @@ adminRouter.all('*', function(req, res, next) {
 });
 
 adminRouter.get('/', function(req, res, next) {
-	res.json({success:true, data:'authenticated'});
+	res.json({success:true});
 });
 
 adminRouter.get('/entries', getEntries);

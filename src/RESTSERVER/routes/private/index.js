@@ -45,7 +45,7 @@ privateRouter.all('*', function (req, res, next) {
     });
 });
 privateRouter.get('/', function (req, res, next) {
-    res.json({ success: true, data: 'authenticated' });
+    res.json({ success: true });
 });
 privateRouter.patch('/edit', clientUpdate_1.default);
 exports.default = privateRouter;
