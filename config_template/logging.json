@@ -1,7 +1,7 @@
 {
-    "binaryserverLoggingLevel":2,
-    "webserverLoggingLevel":2,
-    "RESTserverLoggingLevel":2,
+    "binaryserverLoggingLevel": 3,
+    "webserverLoggingLevel": 3,
+    "RESTserverLoggingLevel": 5,
 
     "logFullBuffer": false,
     "highlightSqlQueries": true,

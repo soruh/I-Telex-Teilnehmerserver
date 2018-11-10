@@ -4,7 +4,7 @@ import * as express from "express";
 import { getEntries, putEntries } from "./entries";
 import config from "../../../SHARED/config";
 
-const PASSWORD = config.serverPin+"";
+const PASSWORD = config.serverPin+'';
 
 
 const adminRouter = express.Router();
@@ -18,7 +18,7 @@ adminRouter.all('*', function(req, res, next) {
 		res.json({success:false, error:'authentication error'});
 		return;
 	}
-	let [user, pass] = Buffer.from(/Basic (.*)/.exec(req.header('Authorization'))[1], 'base64').toString().split(':');
+	const [user, pass] = Buffer.from(/Basic (.*)/.exec(req.header('Authorization'))[1], 'base64').toString().split(':');
 	if(!(user === "admin"&&pass === PASSWORD)){
 		res.status(403);
 		res.json({success:false, error:'authentication error'});

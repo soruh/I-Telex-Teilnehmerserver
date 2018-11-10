@@ -30,7 +30,6 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 		let entries = req.body.data;
 		try{
 			if(typeof entries === "string") entries = JSON.parse(entries);
-			// tslint:disable-next-line:no-var-keyword
 		}catch(err){
 			res.status(400);
 			res.json({success:false, error:"the 'data' field must contain valid JSON"});

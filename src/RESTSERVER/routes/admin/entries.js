@@ -41,7 +41,6 @@ function putEntries(req, res, next) {
             try {
                 if (typeof entries === "string")
                     entries = JSON.parse(entries);
-                // tslint:disable-next-line:no-var-keyword
             }
             catch (err) {
                 res.status(400);

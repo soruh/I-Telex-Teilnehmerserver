@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const entries_1 = require("./entries");
 const config_1 = require("../../../SHARED/config");
-const PASSWORD = config_1.default.serverPin + "";
+const PASSWORD = config_1.default.serverPin + '';
 const adminRouter = express.Router();
 // Test Authorization header of all requests to /private/*
 adminRouter.all('*', function (req, res, next) {
@@ -13,7 +13,7 @@ adminRouter.all('*', function (req, res, next) {
         res.json({ success: false, error: 'authentication error' });
         return;
     }
-    let [user, pass] = Buffer.from(/Basic (.*)/.exec(req.header('Authorization'))[1], 'base64').toString().split(':');
+    const [user, pass] = Buffer.from(/Basic (.*)/.exec(req.header('Authorization'))[1], 'base64').toString().split(':');
     if (!(user === "admin" && pass === PASSWORD)) {
         res.status(403);
         res.json({ success: false, error: 'authentication error' });
