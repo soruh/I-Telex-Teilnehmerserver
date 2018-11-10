@@ -15,10 +15,10 @@ CREATE TABLE servers (
 CREATE TABLE teilnehmer (
 	uid INTEGER PRIMARY KEY,
 	number int unsigned NOT NULL UNIQUE,
-	name tinytext,
+	name VARCHAR(40),
 	type tinyint unsigned DEFAULT 0,
-	hostname tinytext,
-	ipaddress tinytext,
+	hostname VARCHAR(40),
+	ipaddress VARCHAR(15),
 	port smallint unsigned,
 	extension tinyint unsigned DEFAULT 0,
 	pin smallint unsigned,
