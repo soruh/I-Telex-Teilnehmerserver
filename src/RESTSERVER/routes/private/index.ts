@@ -40,7 +40,7 @@ privateRouter.all('*', async function(req, res, next) {
 });
 
 privateRouter.get('/', function(req, res, next) {
-	res.json({success:true, error:'authenticated'});
+	res.json({success:true, data:'authenticated'});
 });
 
 privateRouter.patch('/edit', clientUpdate);
