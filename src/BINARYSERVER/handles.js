@@ -98,8 +98,10 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         return;
     }
     if (entry.pin === 0) {
-        logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
-        yield SQL_1.SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, misc_js_1.timestamp(), entry.uid]);
+        if (pin !== 0) {
+            logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
+            yield SQL_1.SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, misc_js_1.timestamp(), entry.uid]);
+        }
     }
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);

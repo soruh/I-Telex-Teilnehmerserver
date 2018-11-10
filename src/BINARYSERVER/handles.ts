@@ -108,8 +108,10 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	}
 
 	if (entry.pin === 0) {
-		logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
-		await SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
+		if(pin !== 0){
+			logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
+			await SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
+		}
 	}else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
 		client.connection.end();
