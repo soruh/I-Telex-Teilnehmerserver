@@ -32,7 +32,7 @@ npm install
 ## create database and setup tables
 You can do this manually using a sqlite3 CLI and the tables.sql file or use the supplied script.
 
-If you want to use the supplied script please configure the [DBPath](./config#DBPath) config option first.
+If you want to use the supplied script please configure the [DBPath](./config.md#DBPath) config option first.
 
 Then execute:
 ```
