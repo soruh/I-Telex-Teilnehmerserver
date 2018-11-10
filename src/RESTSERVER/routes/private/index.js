@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const SQL_1 = require("../../../SHARED/SQL");
-const peerUpdate_1 = require("./peerUpdate");
+const clientUpdate_1 = require("./clientUpdate");
 const privateRouter = express.Router();
 // Test Authorization header of all requests to /private/*
 privateRouter.all('*', function (req, res, next) {
@@ -40,5 +40,5 @@ privateRouter.all('*', function (req, res, next) {
 privateRouter.get('/', function (req, res, next) {
     res.json({ success: true, error: 'authenticated' });
 });
-privateRouter.patch('/edit', peerUpdate_1.default);
+privateRouter.patch('/edit', clientUpdate_1.default);
 exports.default = privateRouter;

@@ -2,7 +2,7 @@ import { NextFunction, Response, Request } from "express";
 import { SqlRun, teilnehmerRow } from "../../../SHARED/SQL";
 import { normalizeIp, inspect } from "../../../SHARED/misc";
 
-async function peerUpdate(req:Request, res:Response, next:NextFunction){
+async function clientUpdate(req:Request, res:Response, next:NextFunction){
 
 	const addr = normalizeIp(req.ip);
 	if(addr.family === 6){
@@ -44,4 +44,4 @@ async function peerUpdate(req:Request, res:Response, next:NextFunction){
 	res.json({ success:true, data: { ipaddress } });
 }
 
-export default peerUpdate;
+export default clientUpdate;

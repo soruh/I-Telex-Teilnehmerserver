@@ -2,7 +2,7 @@
 
 import * as express from "express";
 import { SqlGet, teilnehmerRow } from "../../../SHARED/SQL";
-import peerUpdate from "./peerUpdate";
+import clientUpdate from "./clientUpdate";
 
 const privateRouter = express.Router();
 
@@ -36,7 +36,7 @@ privateRouter.get('/', function(req, res, next) {
 	res.json({success:true, error:'authenticated'});
 });
 
-privateRouter.patch('/edit', peerUpdate);
+privateRouter.patch('/edit', clientUpdate);
 
 
 export default privateRouter;
