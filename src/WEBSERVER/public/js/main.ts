@@ -317,12 +317,13 @@ function sortFields(a, b){
 	return FIELD_ORDER.indexOf(a[0])-FIELD_ORDER.indexOf(b[0]);
 }
 
-function decodeExt(ext:number){
+function decodeExt(ext:number):string{
 	if(ext === 0) return '';
 	if(ext>=1&&ext<=99) return ext.toString().padStart(2,'0');
 	if(ext===100) return '00';
 	if(ext>100&&ext<110) return ext.toString()[2];
-	if(ext>110||ext<0) return 'invalid'; // invalid
+	if(ext===110) return '0';
+	if(ext>110||ext<0) return ''; // invalid
 }
 function checkUnique(number:number, element:JQuery<HTMLElement>/*|HTMLElement*/) {
 	console.log("checking if "+number+" is unique");

@@ -4,8 +4,9 @@ import config from '../SHARED/config';
 import * as util from 'util';
 import * as dns from 'dns';
 import * as ip from 'ip';
-import { inspect, Client } from '../SHARED/misc';
+import { inspect, Client, decodeExt } from '../SHARED/misc';
 import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from '../SHARED/SQL';
+
 
 import serialEachPromise from '../SHARED/serialEachPromise';
 
@@ -45,7 +46,7 @@ async function asciiLookup(data: Buffer, client: Client) {
 					send += "ERROR\r\n";
 				}
 				send += res.port + "\r\n";
-				send += (res.extension || "-") + "\r\n";
+				send += (decodeExt(res.extension) || "-") + "\r\n";
 				send += "+++\r\n";
 				client.connection.end(send, function() {
 					logger.log('debug', inspect`Entry found`);

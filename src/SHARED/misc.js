@@ -450,3 +450,18 @@ function sleep(millis) {
     });
 }
 exports.sleep = sleep;
+function decodeExt(ext) {
+    if (ext === 0)
+        return '';
+    if (ext >= 1 && ext <= 99)
+        return ext.toString().padStart(2, '0');
+    if (ext === 100)
+        return '00';
+    if (ext > 100 && ext < 110)
+        return ext.toString()[2];
+    if (ext === 110)
+        return '0';
+    if (ext > 110 || ext < 0)
+        return ''; // invalid
+}
+exports.decodeExt = decodeExt;

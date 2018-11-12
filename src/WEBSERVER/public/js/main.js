@@ -292,8 +292,10 @@ function decodeExt(ext) {
         return '00';
     if (ext > 100 && ext < 110)
         return ext.toString()[2];
+    if (ext === 110)
+        return '0';
     if (ext > 110 || ext < 0)
-        return 'invalid'; // invalid
+        return ''; // invalid
 }
 function checkUnique(number, element /*|HTMLElement*/) {
     console.log("checking if " + number + " is unique");
