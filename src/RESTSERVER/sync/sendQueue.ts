@@ -47,7 +47,7 @@ async function sendQueue(){
 		let data:teilnehmerRow[] = await SqlAll<teilnehmerRow>(`SELECT ${constants.peerProperties} FROM teilnehmer WHERE uid IN (${entriesForServer.map(x=>'?').join(', ')});`, entriesForServer.map(x=>x.message));
 
 		let res = await APIcall('PUT', serverinf.address, serverinf.port, '/admin/entries', data);
-		logger.log('warning', inspect`${res}`);
+		logger.log('debug', inspect`${res}`);
 
 		await SqlRun(`DELETE FROM queue WHERE uid IN (${entriesForServer.map(x=>'?').join(', ')});`, entriesForServer.map(x=>x.uid));
 	})()));
