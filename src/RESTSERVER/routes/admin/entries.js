@@ -52,7 +52,7 @@ function putEntries(req, res, next) {
                 res.json({ success: false, error: "the 'data' field must contain an Array" });
                 return;
             }
-            logger.log('admin', `recieved ${misc_1.inspect `${entries.length}`} dataset${entries.length === 1 ? 's' : ''}`);
+            logger.log('admin', `recieved ${misc_1.inspect `${entries.length}`} dataset${entries.length === 1 ? '' : 's'}`);
             for (let entry of entries) {
                 const names = constants_1.peerProperties.filter(name => entry.hasOwnProperty(name));
                 const values = names.map(name => entry[name]);

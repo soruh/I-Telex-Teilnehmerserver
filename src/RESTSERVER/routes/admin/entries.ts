@@ -42,7 +42,7 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 			return;
 		}
 
-		logger.log('admin', `recieved ${inspect`${entries.length}`} dataset${entries.length===1?'s':''}`);
+		logger.log('admin', `recieved ${inspect`${entries.length}`} dataset${entries.length===1?'':'s'}`);
 
 		for(let entry of entries){
 
