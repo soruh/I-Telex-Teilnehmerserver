@@ -167,36 +167,32 @@ handles[5][constants.states.FULLQUERY] =
         const names = constants.peerProperties.filter(name => pkg.data.hasOwnProperty(name));
         const values = names.map(name => pkg.data[name]);
         logger.log('verbose network', misc_js_1.inspect `got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
-        yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(() => '?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name => name + "=?").join(', ')};`, [...values, ...values]);
-        yield client.sendPackage({ type: 8 });
-        /*
-        const entry = await SqlGet<teilnehmerRow>(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
+        const entry = yield SQL_1.SqlGet(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
         if (entry) {
-            if (typeof client.newEntries !== "number") client.newEntries = 0;
+            if (typeof client.newEntries !== "number")
+                client.newEntries = 0;
             if (pkg.data.timestamp <= entry.timestamp) {
-                logger.log('debug', inspect`recieved entry is ${+entry.timestamp - pkg.data.timestamp} seconds older and was ignored`);
-                await client.sendPackage({type: 8});
+                logger.log('debug', misc_js_1.inspect `recieved entry is ${+entry.timestamp - pkg.data.timestamp} seconds older and was ignored`);
+                yield client.sendPackage({ type: 8 });
                 return;
             }
-    
             client.newEntries++;
-            logger.log('network', inspect`got new dataset for: ${pkg.data.name}`);
-            logger.log('debug', inspect`recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
-    
-    
-            await SqlRun(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
-            await client.sendPackage({type: 8});
-            return;
-        } else if(pkg.data.type === 0) {
-            logger.log('debug', inspect`not inserting deleted entry: ${pkg.data}`);
-            await client.sendPackage({type: 8});
-            return;
-        }else{
-            await SqlRun(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
-            await client.sendPackage({type: 8});
+            logger.log('network', misc_js_1.inspect `got new dataset for: ${pkg.data.name}`);
+            logger.log('debug', misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
+            yield SQL_1.SqlRun(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
+            yield client.sendPackage({ type: 8 });
             return;
         }
-        */
+        else if (pkg.data.type === 0) {
+            logger.log('debug', misc_js_1.inspect `not inserting deleted entry: ${pkg.data}`);
+            yield client.sendPackage({ type: 8 });
+            return;
+        }
+        else {
+            yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0,]));
+            yield client.sendPackage({ type: 8 });
+            return;
+        }
     });
 handles[6][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, void 0, function* () {
     if (!client)
