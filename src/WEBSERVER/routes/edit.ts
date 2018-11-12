@@ -33,16 +33,23 @@ async function editEntry(req, res, data){
 	}else{
 		logger.log('debug', inspect`number was changed inserting`);
 		logger.log('debug', inspect`${existing.number} != ${+data.number}`);
-		await SqlRun("UPDATE teilnehmer set type=0, changed=1, timestamp=? WHERE uid=?;", [timestamp(), data.uid]);
+		await SqlRun("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE uid=?;", [timestamp(), data.uid]);
+		await SqlRun("DELETE FROM teilnehmer WHERE number=? AND type=0;", [data.number]);
+		try{
+			let result = await SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+			[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, existing.pin, data.disabled, timestamp()]);
+			if (!result) return;
 
-		let result = await SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-		[data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, existing.pin, data.disabled, timestamp()]);
-		if (!result) return;
-
-		res.json({
-			successful: true,
-			message: result,
-		});
+			res.json({
+				successful: true,
+				message: result,
+			});
+		}catch(err){
+			res.json({
+				successful: false,
+				message: 'number already exists',
+			});
+		}
 	}
 }
 

@@ -43,14 +43,23 @@ function editEntry(req, res, data) {
         else {
             logger.log('debug', misc_1.inspect `number was changed inserting`);
             logger.log('debug', misc_1.inspect `${existing.number} != ${+data.number}`);
-            yield SQL_1.SqlRun("UPDATE teilnehmer set type=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), data.uid]);
-            let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, existing.pin, data.disabled, misc_1.timestamp()]);
-            if (!result)
-                return;
-            res.json({
-                successful: true,
-                message: result,
-            });
+            yield SQL_1.SqlRun("UPDATE teilnehmer SET type=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), data.uid]);
+            yield SQL_1.SqlRun("DELETE FROM teilnehmer WHERE number=? AND type=0;", [data.number]);
+            try {
+                let result = yield SQL_1.SqlRun("INSERT INTO teilnehmer (number, name, type, hostname, ipaddress, port, extension, pin, disabled, timestamp, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)", [data.number, data.name, data.type, data.hostname, data.ipaddress, data.port, data.extension, existing.pin, data.disabled, misc_1.timestamp()]);
+                if (!result)
+                    return;
+                res.json({
+                    successful: true,
+                    message: result,
+                });
+            }
+            catch (err) {
+                res.json({
+                    successful: false,
+                    message: 'number already exists',
+                });
+            }
         }
     });
 }
