@@ -29,7 +29,7 @@ const PackageSizes = {
 exports.PackageSizes = PackageSizes;
 const peerProperties = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
 exports.peerProperties = peerProperties;
-const peerPropertiesPublic = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "timestamp"];
+const peerPropertiesPublic = peerProperties.filter(x => !(x === 'pin' || x === 'disabled'));
 exports.peerPropertiesPublic = peerPropertiesPublic;
 const states = {
     STANDBY: Symbol("STANDBY"),

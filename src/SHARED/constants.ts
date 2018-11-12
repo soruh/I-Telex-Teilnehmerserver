@@ -26,7 +26,7 @@ const PackageSizes:{
 	10: 41,
 };
 const peerProperties = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
-const peerPropertiesPublic = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "timestamp"];
+const peerPropertiesPublic = peerProperties.filter(x=>!(x==='pin'||x==='disabled'));
 const states = {
 	STANDBY: Symbol("STANDBY"),
 	RESPONDING: Symbol("RESPONDING"),
