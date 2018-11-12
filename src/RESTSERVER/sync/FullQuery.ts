@@ -22,10 +22,11 @@ async function getFullQuery(){
 
 	for(let server of servers){
 		try{
-			let entries:teilnehmerRow[] = await APIcall('GET', server.address, server.port, '/admin/entries');
-			for(let entry of entries){
-				const names = constants.peerProperties;
-				const values = names.filter(name=>entry.hasOwnProperty(name)).map(name=>entry[name]);
+			const endPoint = config.serverPin===null?'public':'admin';
+			const entries:teilnehmerRow[] = await APIcall('GET', server.address, server.port, `/${endPoint}/entries`);
+			for(const entry of entries){
+				const names = constants.peerProperties.filter(name=>entry.hasOwnProperty(name));
+				const values = names.map(name=>entry[name]);
 				await SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(()=>'?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name=>name+"=?").join(', ')};`, [...values,...values]);
 			}
 		}catch(err){

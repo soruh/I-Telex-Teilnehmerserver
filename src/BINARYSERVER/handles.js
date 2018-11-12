@@ -164,7 +164,7 @@ handles[5][constants.states.FULLQUERY] =
     handles[5][constants.states.LOGIN] = (pkg, client) => __awaiter(this, void 0, void 0, function* () {
         if (!client)
             return;
-        let names = constants.peerProperties.filter(name => pkg.data[name] !== undefined);
+        const names = constants.peerProperties.filter(name => pkg.data.hasOwnProperty(name));
         const values = names.map(name => pkg.data[name]);
         logger.log('verbose network', misc_js_1.inspect `got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
         yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(() => '?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name => name + "=?").join(', ')};`, [...values, ...values]);

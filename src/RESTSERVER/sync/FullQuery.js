@@ -26,10 +26,11 @@ function getFullQuery() {
                 server.address === config_js_1.default.fullQueryServer.split(":")[0]);
         for (let server of servers) {
             try {
-                let entries = yield APICall_js_1.default('GET', server.address, server.port, '/admin/entries');
-                for (let entry of entries) {
-                    const names = constants.peerProperties;
-                    const values = names.filter(name => entry.hasOwnProperty(name)).map(name => entry[name]);
+                const endPoint = config_js_1.default.serverPin === null ? 'public' : 'admin';
+                const entries = yield APICall_js_1.default('GET', server.address, server.port, `/${endPoint}/entries`);
+                for (const entry of entries) {
+                    const names = constants.peerProperties.filter(name => entry.hasOwnProperty(name));
+                    const values = names.map(name => entry[name]);
                     yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(() => '?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name => name + "=?").join(', ')};`, [...values, ...values]);
                 }
             }

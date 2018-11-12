@@ -176,7 +176,7 @@ handles[5][constants.states.FULLQUERY] =
 handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, client: Client) => {
 	if (!client) return;
 
-	let names = constants.peerProperties.filter(name => pkg.data[name] !== undefined);
+	const names = constants.peerProperties.filter(name => pkg.data.hasOwnProperty(name));
 	const values = names.map(name => pkg.data[name]);
 
 	logger.log('verbose network', inspect`got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
