@@ -15,7 +15,7 @@ const APICall_js_1 = require("./APICall.js");
 const constants = require("../../SHARED/constants");
 function getFullQuery() {
     return __awaiter(this, void 0, void 0, function* () {
-        logger.log('debug', misc_js_1.inspect `getting FullQuery`);
+        logger.log('admin', misc_js_1.inspect `getting FullQuery`);
         let servers = yield SQL_1.SqlAll('SELECT * from servers WHERE version=2;', []);
         if (servers.length === 0) {
             logger.log('warning', misc_js_1.inspect `No configured servers -> aborting FullQuery`);

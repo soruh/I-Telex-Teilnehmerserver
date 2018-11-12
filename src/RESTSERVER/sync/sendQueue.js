@@ -18,7 +18,7 @@ const readonly = (config_js_1.default.serverPin == null);
 function sendQueue() {
     return __awaiter(this, void 0, void 0, function* () {
         yield updateQueue_js_1.default();
-        logger.log('debug', misc_js_1.inspect `sending Queue`);
+        logger.log('admin', misc_js_1.inspect `sending Queue`);
         if (readonly) {
             logger.log('warning', misc_js_1.inspect `Read-only mode -> aborting sendQueue`);
             return;

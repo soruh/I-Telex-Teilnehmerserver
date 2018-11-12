@@ -13,7 +13,7 @@ const readonly = (config.serverPin == null);
 async function sendQueue(){
 	await updateQueue();
 
-	logger.log('debug', inspect`sending Queue`);
+	logger.log('admin', inspect`sending Queue`);
 	if (readonly) {
 		logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 		return;

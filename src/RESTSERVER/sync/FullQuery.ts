@@ -7,7 +7,7 @@ import APIcall from './APICall.js';
 import * as constants from '../../SHARED/constants';
 
 async function getFullQuery(){
-	logger.log('debug', inspect`getting FullQuery`);
+	logger.log('admin', inspect`getting FullQuery`);
 	let servers = await SqlAll<serversRow>('SELECT * from servers WHERE version=2;', []);
 
 	if (servers.length === 0) {
