@@ -45,7 +45,7 @@ function sendQueue() {
             let data = yield SQL_1.SqlAll(`SELECT ${constants.peerProperties} FROM teilnehmer WHERE uid IN (${entriesForServer.map(x => '?').join(', ')});`, entriesForServer.map(x => x.message));
             let res = yield APICall_1.default('PUT', serverinf.address, serverinf.port, '/admin/entries', data);
             logger.log('warning', misc_js_1.inspect `${res}`);
-            yield SQL_1.SqlRun(`DELETE FROM queue WHERE uid IN (${entriesForServer.map(x => '?').join(', ')});`, entriesForServer.map(x => x.message));
+            yield SQL_1.SqlRun(`DELETE FROM queue WHERE uid IN (${entriesForServer.map(x => '?').join(', ')});`, entriesForServer.map(x => x.uid));
         }))()));
     });
 }
