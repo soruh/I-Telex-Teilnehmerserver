@@ -284,14 +284,22 @@ function sortFields(a, b) {
     return FIELD_ORDER.indexOf(a[0]) - FIELD_ORDER.indexOf(b[0]);
 }
 function checkUnique(number, element /*|HTMLElement*/) {
-    console.log("checking if " + number + "is unique");
+    console.log("checking if " + number + " is unique");
     let uid = $($(element).parents()[2]).data("uid");
-    for (let k in global_list) {
-        if (global_list[k].type !== 0 &&
-            global_list[k].number === number &&
-            global_list[k].uid !== uid)
+    console.log('uid: ' + uid);
+    for (let entry of global_list) {
+        if (
+        // tslint:disable:triple-equals
+        entry.type != 0 &&
+            entry.number == number &&
+            entry.uid != uid
+        // tslint:enable:triple-equals
+        ) {
+            console.log('number is not unique');
             return false;
+        }
     }
+    console.log('number is unique');
     return true;
 }
 function editOrCopy(action) {

@@ -320,18 +320,24 @@ function sortFields(a, b){
 }
 
 function checkUnique(number:number, element:JQuery<HTMLElement>/*|HTMLElement*/) {
-	console.log("checking if "+number+"is unique");
+	console.log("checking if "+number+" is unique");
 	
 	let uid = $($(element).parents()[2]).data("uid");
+	console.log('uid: '+uid);
 	
-	for (let k in global_list) {
+	for (let entry of global_list) {
 		if (
-			global_list[k].type !== 0 &&
-			global_list[k].number === number &&
-			global_list[k].uid !== uid
-		)
-		return false;
+			// tslint:disable:triple-equals
+			entry.type != 0 &&
+			entry.number == number &&
+			entry.uid != uid
+			// tslint:enable:triple-equals
+		){
+			console.log('number is not unique');
+			return false;
+		}
 	}
+	console.log('number is unique');
 	return true;
 }
 function editOrCopy(action:"edit"|"copy"){
@@ -807,7 +813,7 @@ function validateEditDialog(formId){
 				required: true,
 				maxlength: 40,
 			},
-			number: {
+			number: {		
 				unique: true,
 				required: true,
 				digits: true,
