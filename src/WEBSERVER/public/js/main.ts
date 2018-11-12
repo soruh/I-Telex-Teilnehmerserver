@@ -32,16 +32,14 @@ const languages:{
 	english,
 };
 interface listItem {
-	extension: string;
+	extension: number;
 	address:string;
 	name: string;
 	number: number;
-	port: string;
+	port: number;
 	timestamp: number;
 	type: number;
 	uid: number;
-	changed: 0;
-
 	disabled?: number;
 	// pin?: number
 }
@@ -319,6 +317,13 @@ function sortFields(a, b){
 	return FIELD_ORDER.indexOf(a[0])-FIELD_ORDER.indexOf(b[0]);
 }
 
+function decodeExt(ext:number){
+	if(ext === 0) return '';
+	if(ext>=1&&ext<=99) return ext.toString().padStart(2,'0');
+	if(ext===100) return '00';
+	if(ext>100&&ext<110) return ext.toString()[2];
+	if(ext>110||ext<0) return 'invalid'; // invalid
+}
 function checkUnique(number:number, element:JQuery<HTMLElement>/*|HTMLElement*/) {
 	console.log("checking if "+number+" is unique");
 	
@@ -618,6 +623,9 @@ function updateContent(unSortedList:list) {
 						link.addClass('link');
 						link.attr('href', 'http://'+entry[key]);
 						cell.append(link);
+						break;
+					case "extension":
+						cell.text(decodeExt(entry[key]));
 						break;
 					default:
 						cell.text(entry[key]);

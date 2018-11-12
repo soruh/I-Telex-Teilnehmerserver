@@ -283,6 +283,18 @@ const FIELD_ORDER = ["number", "name", "extension", "address", "port", "type", "
 function sortFields(a, b) {
     return FIELD_ORDER.indexOf(a[0]) - FIELD_ORDER.indexOf(b[0]);
 }
+function decodeExt(ext) {
+    if (ext === 0)
+        return '';
+    if (ext >= 1 && ext <= 99)
+        return ext.toString().padStart(2, '0');
+    if (ext === 100)
+        return '00';
+    if (ext > 100 && ext < 110)
+        return ext.toString()[2];
+    if (ext > 110 || ext < 0)
+        return 'invalid'; // invalid
+}
 function checkUnique(number, element /*|HTMLElement*/) {
     console.log("checking if " + number + " is unique");
     let uid = $($(element).parents()[2]).data("uid");
@@ -575,6 +587,9 @@ function updateContent(unSortedList) {
                         link.addClass('link');
                         link.attr('href', 'http://' + entry[key]);
                         cell.append(link);
+                        break;
+                    case "extension":
+                        cell.text(decodeExt(entry[key]));
                         break;
                     default:
                         cell.text(entry[key]);
