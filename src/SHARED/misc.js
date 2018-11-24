@@ -465,3 +465,17 @@ function decodeExt(ext) {
         return ''; // invalid
 }
 exports.decodeExt = decodeExt;
+function encodeExt(ext) {
+    if (!ext)
+        return 0;
+    if (isNaN(parseInt(ext)))
+        return 0;
+    if (ext === "0")
+        return 110;
+    if (ext === "00")
+        return 100;
+    if (ext.length === 1)
+        return parseInt(ext) + 100;
+    return parseInt(ext);
+}
+exports.encodeExt = encodeExt;

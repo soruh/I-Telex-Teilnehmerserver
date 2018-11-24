@@ -553,6 +553,16 @@ function decodeExt(ext:number):string{
 	if(ext>110||ext<0) return ''; // invalid
 }
 
+function encodeExt(ext:string):number{
+	if (!ext)                return 0;
+	if(isNaN(parseInt(ext))) return 0;
+	if (ext === "0")         return 110;
+	if (ext === "00")        return 100;
+	if (ext.length === 1)    return parseInt(ext) + 100;
+
+	return parseInt(ext);
+}
+
 export {
 	sleep,
 	sendEmail,
@@ -567,5 +577,6 @@ export {
 	sendPackage,
 	printDate,
 	timestamp,
-	decodeExt
+	decodeExt,
+	encodeExt
 };

@@ -54,7 +54,7 @@ function asciiLookup(data, client) {
                         send += "ERROR\r\n";
                     }
                     send += res.port + "\r\n";
-                    send += (misc_1.decodeExt(res.extension) || "-") + "\r\n";
+                    send += (res.extension || "-") + "\r\n";
                     send += "+++\r\n";
                     client.connection.end(send, function () {
                         logger.log('debug', misc_1.inspect `Entry found`);

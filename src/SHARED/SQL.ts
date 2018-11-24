@@ -31,7 +31,7 @@ interface teilnehmerRow {
 	hostname: string;
 	ipaddress: string;
 	port: number;
-	extension: number;
+	extension: string;
 	pin: number;
 	disabled: number;
 	timestamp: number;

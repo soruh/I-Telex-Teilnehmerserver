@@ -283,20 +283,6 @@ const FIELD_ORDER = ["number", "name", "extension", "address", "port", "type", "
 function sortFields(a, b) {
     return FIELD_ORDER.indexOf(a[0]) - FIELD_ORDER.indexOf(b[0]);
 }
-function decodeExt(ext) {
-    if (ext === 0)
-        return '';
-    if (ext >= 1 && ext <= 99)
-        return ext.toString().padStart(2, '0');
-    if (ext === 100)
-        return '00';
-    if (ext > 100 && ext < 110)
-        return ext.toString()[2];
-    if (ext === 110)
-        return '0';
-    if (ext > 110 || ext < 0)
-        return ''; // invalid
-}
 function checkUnique(number, element /*|HTMLElement*/) {
     console.log("checking if " + number + " is unique");
     let uid = $($(element).parents()[2]).data("uid");
@@ -591,7 +577,7 @@ function updateContent(unSortedList) {
                         cell.append(link);
                         break;
                     case "extension":
-                        cell.text(decodeExt(entry[key]));
+                        cell.text(entry[key]);
                         break;
                     default:
                         cell.text(entry[key]);
@@ -759,7 +745,7 @@ function validateEditDialog(formId) {
             },
             extension: {
                 digits: true,
-                max: 100,
+                max: 99,
             },
             port: {
                 required: {
@@ -779,7 +765,7 @@ function validateEditDialog(formId) {
                 unique: true,
                 required: true,
                 digits: true,
-                max: 4294967296,
+                max: 4294967295,
             },
             email: {
                 email: true,
@@ -834,7 +820,7 @@ function validateNewDialog(formId) {
             },
             extension: {
                 digits: true,
-                max: 100,
+                max: 99,
             },
             port: {
                 required: {
@@ -854,7 +840,7 @@ function validateNewDialog(formId) {
                 unique: true,
                 required: true,
                 digits: true,
-                max: 4294967296,
+                max: 4294967295,
             },
             email: {
                 email: true,

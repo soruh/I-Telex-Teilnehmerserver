@@ -20,7 +20,7 @@ CREATE TABLE teilnehmer (
 	hostname VARCHAR(40),
 	ipaddress VARCHAR(15),
 	port smallint unsigned,
-	extension tinyint unsigned DEFAULT 0,
+	extension VARCHAR(2) DEFAULT "",
 	pin smallint unsigned,
 	disabled bit DEFAULT 1,
 	timestamp int unsigned DEFAULT 0,

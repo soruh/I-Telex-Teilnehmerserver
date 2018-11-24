@@ -83,7 +83,6 @@ function explainPackage(pkg) {
     return res;
 }
 exports.explainPackage = explainPackage;
-//#endregion
 class ChunkPackages extends stream_1.Transform {
     constructor(options) {
         super(options);
@@ -149,7 +148,7 @@ function encPackage(pkg) {
                 }
             }
             buffer.writeUIntLE(pkg.data.port || 0, 93, 2);
-            buffer.writeUIntLE(pkg.data.extension || 0, 95, 1);
+            buffer.writeUIntLE(misc_js_1.encodeExt(pkg.data.extension) || 0, 95, 1);
             buffer.writeUIntLE(pkg.data.pin || 0, 96, 2);
             buffer.writeUIntLE((pkg.data.timestamp || 0) + 2208988800, 98, 4);
             break;
@@ -223,14 +222,14 @@ function decPackage(buffer) {
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
                 name: buffer.readNullTermString("utf8", 6, 46),
-                disabled: (flags & 2) === 2 ? 1 : 0,
+                disabled: (flags & 2) / 2,
                 type: buffer.readUIntLE(48, 1),
                 hostname: buffer.readNullTermString("utf8", 49, 89),
                 ipaddress: ip.toString(buffer, 89, 4),
                 port: buffer.readUIntLE(93, 2),
                 pin: buffer.readUIntLE(96, 2),
                 timestamp: buffer.readUIntLE(98, 4) - 2208988800,
-                extension: buffer.readUIntLE(95, 1),
+                extension: misc_js_1.decodeExt(buffer.readUIntLE(95, 1)),
             };
             if (pkg.data.ipaddress === "0.0.0.0")
                 pkg.data.ipaddress = "";

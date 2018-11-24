@@ -13,7 +13,7 @@ async function list(req, res) {
 		
 		try{
 			let data = await SqlAll<teilnehmerRow>(query, []);
-			
+
 			if(!data) throw(new Error('no data'));
 			res.json({
 				successful: true,
