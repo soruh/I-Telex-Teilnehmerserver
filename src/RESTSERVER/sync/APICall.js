@@ -43,8 +43,14 @@ function APIcall(method, host, port, path, data) {
                 logger.log('debug', 'API request ended');
                 logger.log('silly', buffer);
                 if (res.statusCode !== 200) {
-                    logger.log('debug', `API call failed with code ${res.statusCode} (${res.statusMessage})`);
-                    reject(`${res.statusCode} (${res.statusMessage})`);
+                    logger.log('debug', misc_1.inspect `API call failed with error    code: ${res.statusCode} (${res.statusMessage})`);
+                    try {
+                        const { error } = JSON.parse(buffer);
+                        if (error)
+                            logger.log('error', misc_1.inspect `API call failed with error message: ${error}`);
+                    }
+                    catch (err) { /*fail silently*/ }
+                    reject(misc_1.inspect `${res.statusCode} (${res.statusMessage})`);
                     return;
                 }
                 try {

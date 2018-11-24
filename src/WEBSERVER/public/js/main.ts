@@ -801,7 +801,7 @@ function validateEditDialog(formId){
 			},
 			pin: {
 				required: true,
-				max: 65536,
+				max: 65535,
 
 			},
 			extension: {
@@ -815,7 +815,7 @@ function validateEditDialog(formId){
 						return type !== "email";
 					},
 				},
-				max: 65536,
+				max: 65535,
 				digits: true,
 			},
 			name: {
@@ -877,7 +877,7 @@ function validateNewDialog(formId){
 		rules: {
 			pin: {
 				required: true,
-				max: 65536,
+				max: 65535,
 			},
 			extension: {
 				digits: true,
@@ -890,7 +890,7 @@ function validateNewDialog(formId){
 						return (type !== "email");
 					},
 				},
-				max: 65536,
+				max: 65535,
 				digits: true,
 			},
 			name: {
