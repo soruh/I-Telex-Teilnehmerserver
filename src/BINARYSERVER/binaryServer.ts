@@ -4,7 +4,7 @@ import * as util from 'util';
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import * as constants from "../BINARYSERVER/constants.js";
+import * as constants from "../SHARED/constants.js";
 
 import { Client, clientName, inspect, normalizeIp, sendPackage} from '../SHARED/misc.js';
 import { asciiLookup, checkIp } from './ascii.js';
@@ -41,7 +41,7 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 	let binaryListener = (pkg: Buffer): void => {
 		if(client){
 			logger.log('verbose network', inspect`recieved package: ${pkg}`);
-			logger.log('verbose network', inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
+			logger.log('verbose network', inspect`${pkg.toString().replace(/\u0000/g, '–').replace(/[^ -~–]/g, "·")}`);
 			
 			handlePackage(ITelexCom.decPackage(pkg), client)
 			.catch(err=>{logger.log('error', inspect`${err}`);}); 

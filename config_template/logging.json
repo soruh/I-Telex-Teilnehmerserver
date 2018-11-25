@@ -1,6 +1,7 @@
 {
-    "binaryserverLoggingLevel":2,
-    "webserverLoggingLevel":2,
+    "binaryserverLoggingLevel": 3,
+    "webserverLoggingLevel": 3,
+    "RESTserverLoggingLevel": 5,
 
     "logFullBuffer": false,
     "highlightSqlQueries": true,
@@ -16,6 +17,10 @@
     "webserverLog": null,
     "webserverErrorLog": null,
     "logWebserverToConsole": true,
+
+    "RESTserverLog":null,
+    "RESTserverErrorLog":null,
+    "logRESTserverToConsole":true,
 
     "scientistNames":true
 }

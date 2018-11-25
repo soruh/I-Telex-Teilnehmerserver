@@ -3,9 +3,9 @@
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import * as constants from "../BINARYSERVER/constants.js";
-import {Client, sendEmail, getTimezone, inspect, printDate, timestamp, increaseErrorCounter} from '../SHARED/misc.js';
-import {SqlQuery} from '../SHARED/misc.js';
+import * as constants from "../SHARED/constants.js";
+import {Client, sendEmail, inspect, timestamp, increaseErrorCounter, printDate, getTimezone} from '../SHARED/misc.js';
+import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from '../SHARED/SQL';
 import sendQueue from "./sendQueue.js";
 // import { lookup } from "dns";
 
@@ -65,14 +65,12 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		return;
 	}
 
-	const entries: ITelexCom.peerList = await SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
-	if (!entries) return;
+	const entry = await SqlGet<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
 
-	const [entry] = entries;
 	if (!entry) {
-		await SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-		const result = await SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
-		if (!(result && result.affectedRows)) {
+		await SqlRun(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
+		const result = await SqlRun(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+		if (!(result && result.changes)) {
 			logger.log('error', inspect`could not create entry`);
 			return;
 		}
@@ -109,9 +107,11 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		return;
 	}
 
-	if (entry.pin === '0') {
-		logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
-		await SqlQuery(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
+	if (entry.pin === 0) {
+		if(pin !== 0){
+			logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
+			await SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
+		}
 	}else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
 		client.connection.end();
@@ -136,7 +136,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		return;
 	}
 	
-	await SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+	await SqlRun(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
 		port, client.ipAddress, timestamp(), number,
 		config.DynIpUpdateNameDifference, entry.name, config.DynIpUpdateNameDifference, entry.port, entry.pin,
 	]);
@@ -146,8 +146,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 			ipaddress: client.ipAddress,
 		},
 	});
-	await sendQueue();
-	return;
+	// await sendQueue();
 };
 handles[3][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_3, client: Client) => {
 	if (!client) return;
@@ -158,13 +157,12 @@ handles[3][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_3, 
 		return;
 	}
 
-	const result:ITelexCom.peerList = await SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number]);
-	if (result && result.length === 1) {
-		const [data] = result;
-		data.pin = "0";
+	const result = await SqlGet<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number]);
+	if (result) {
+		result.pin = 0;
 		await client.sendPackage({
 			type: 5,
-			data,
+			data: result,
 		});
 		return;
 	} else {
@@ -178,15 +176,12 @@ handles[5][constants.states.FULLQUERY] =
 handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, client: Client) => {
 	if (!client) return;
 
-	let names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
-	names = names.filter(name => pkg.data[name] !== undefined);
+	const names = constants.peerProperties.filter(name => pkg.data.hasOwnProperty(name));
 	const values = names.map(name => pkg.data[name]);
 
 	logger.log('verbose network', inspect`got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
-	const entries:ITelexCom.peerList = await SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
-	if (!entries) return;
 
-	const [entry] = entries;
+	const entry = await SqlGet<teilnehmerRow>(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
 	if (entry) {
 		if (typeof client.newEntries !== "number") client.newEntries = 0;
 		if (pkg.data.timestamp <= entry.timestamp) {
@@ -200,7 +195,7 @@ handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, cl
 		logger.log('debug', inspect`recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
 
 
-		await SqlQuery(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
+		await SqlRun(`UPDATE teilnehmer SET ${names.map(name=>name+" = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
 		await client.sendPackage({type: 8});
 		return;
 	} else if(pkg.data.type === 0) {
@@ -208,7 +203,7 @@ handles[5][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_5, cl
 		await client.sendPackage({type: 8});
 		return;
 	}else{
-		await SqlQuery(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
+		await SqlRun(`INSERT INTO teilnehmer (${names.join(",")+(names.length>0?",":"")} changed) VALUES (${"?,".repeat(names.length+1).slice(0,-1)});`, values.concat([config.setChangedOnNewerEntry ? 1 : 0,]));
 		await client.sendPackage({type: 8});
 		return;
 	}
@@ -231,8 +226,9 @@ handles[6][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_6, 
 
 	logger.log('debug', inspect`serverpin is correct!`);
 
-	let result:ITelexCom.peerList = await SqlQuery("SELECT  * FROM teilnehmer;");
+	let result = await SqlAll<teilnehmerRow>("SELECT  * FROM teilnehmer;", []);
 	if (!result) result = [];
+
 
 	client.writebuffer = result;
 	client.state = constants.states.RESPONDING;
@@ -307,16 +303,18 @@ handles[10][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_10
 	}
 
 	const searchWords = pattern.split(" ").map(q => `%${q}%`);
-	const searchstring = `SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`;
 
-	let result:ITelexCom.peerList = await SqlQuery(searchstring, searchWords);
+	let result = await SqlAll<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
 	if (!result) result = [];
 
 	logger.log('network', inspect`found ${result.length} public entries matching pattern ${pattern}`);
 	logger.log('debug', inspect`entries matching pattern ${pattern}:\n${result}`);
 
 	client.state = constants.states.RESPONDING;
-	client.writebuffer = result.map(peer=>{peer.pin="0";return peer;});
+	client.writebuffer = result.map(peer=>{
+		peer.pin=0;
+		return peer;
+	});
 
 	await handlePackage({type: 8}, client);
 	return;

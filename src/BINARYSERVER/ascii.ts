@@ -4,21 +4,20 @@ import config from '../SHARED/config';
 import * as util from 'util';
 import * as dns from 'dns';
 import * as ip from 'ip';
-import { SqlQuery, inspect, Client } from '../SHARED/misc';
-import { peerList, Peer } from './ITelexCom';
+import { inspect, Client, decodeExt } from '../SHARED/misc';
+import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow } from '../SHARED/SQL';
+
+
 import serialEachPromise from '../SHARED/serialEachPromise';
 
-function asciiLookup(data: number[] | Buffer, client: Client): void {
-	let number: string = "";
-	for (let byte of data) {
-		let char = String.fromCharCode(byte);
-		if (/([0-9])/.test(char)) number += char;
-	}
-	if (number !== ""&&(!isNaN(parseInt(number)))) {
+async function asciiLookup(data: Buffer, client: Client) {
+	const match = /q([0-9]+)/.exec(data.toString());
+	const number: string = match[1];
+	if (number&&(!isNaN(parseInt(number)))) {
 		logger.log('debug', inspect`starting lookup for: ${number}`);
-		SqlQuery(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number])
-		.then(function(result: peerList) {
-			if (!result || result.length === 0) {
+		try {
+			let result = await SqlGet<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number]);
+			if (!result) {
 				let send: string = "";
 				send += "fail\r\n";
 				send += number + "\r\n";
@@ -30,7 +29,7 @@ function asciiLookup(data: number[] | Buffer, client: Client): void {
 				});
 			} else {
 				let send: string = "";
-				let res = result[0];
+				let res = result;
 				send += "ok\r\n";
 				send += res.number + "\r\n";
 				send += res.name + "\r\n";
@@ -41,8 +40,8 @@ function asciiLookup(data: number[] | Buffer, client: Client): void {
 					send += res.hostname + "\r\n";
 				}
 				/* else if (res.type == 6) {
-										send += res.hostname + "\r\n";
-									}*/
+					send += res.hostname + "\r\n";
+				}*/
 				else {
 					send += "ERROR\r\n";
 				}
@@ -55,8 +54,9 @@ function asciiLookup(data: number[] | Buffer, client: Client): void {
 
 				});
 			}
-		})
-		.catch(err=>{logger.log('error', inspect`${err}`);}); 
+		}catch(err){
+			logger.log('error', inspect`${err}`);
+		}
 	} else {
 		client.connection.end();
 	}
@@ -86,50 +86,49 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 		}
 
 		if (ip.isV4Format(ipAddr) || ip.isV6Format(ipAddr)) {
-			SqlQuery("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", [])
-				.then((peers: peerList) => {
-					let ipPeers: Array<{
-						peer: Peer,
-						ipaddress: string
-					}> = [];
-					serialEachPromise(peers, peer =>
-						new Promise((resolve, reject) => {
-							if ((!peer.ipaddress) && peer.hostname) {
-								// logger.log('debug', inspect`hostname: ${peer.hostname}`)
-								dns.lookup(peer.hostname, {}, function(err, address, family) {
-									// if (err) logger.log('debug', inspect`${err}`);
-									if (address) {
-										ipPeers.push({
-											peer,
-											ipaddress: address,
-										});
-										// logger.log('debug', inspect`${peer.hostname} resolved to ${address}`);
-									}
-									resolve();
-								});
-							} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
-								// logger.log('debug', inspect`ip: ${peer.ipaddress}`);
-								ipPeers.push({
-									peer,
-									ipaddress: peer.ipaddress,
-								});
+			try{
+				let peers = await SqlAll<teilnehmerRow>("SELECT  * FROM teilnehmer WHERE disabled != 1 AND type != 0;", []);
+				let ipPeers: Array<{
+					peer: teilnehmerRow,
+					ipaddress: string
+				}> = [];
+				await serialEachPromise(peers, peer =>
+					new Promise((resolve, reject) => {
+						if ((!peer.ipaddress) && peer.hostname) {
+							// logger.log('debug', inspect`hostname: ${peer.hostname}`)
+							dns.lookup(peer.hostname, {}, function(err, address, family) {
+								// if (err) logger.log('debug', inspect`${err}`);
+								if (address) {
+									ipPeers.push({
+										peer,
+										ipaddress: address,
+									});
+									// logger.log('debug', inspect`${peer.hostname} resolved to ${address}`);
+								}
 								resolve();
-							} else {
-								resolve();
-							}
-						})
-					)
-					.then(() => {
-						let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
-						logger.log('debug', inspect`matching peers: ${matches}`);
-						if (matches.length > 0) {
-							client.connection.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
+							});
+						} else if (peer.ipaddress && (ip.isV4Format(peer.ipaddress) || ip.isV6Format(peer.ipaddress))) {
+							// logger.log('debug', inspect`ip: ${peer.ipaddress}`);
+							ipPeers.push({
+								peer,
+								ipaddress: peer.ipaddress,
+							});
+							resolve();
 						} else {
-							client.connection.end("fail\r\n+++\r\n");
+							resolve();
 						}
 					})
-					.catch(err=>{logger.log('error', inspect`${err}`);}); 
-				});
+				);
+				let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
+				logger.log('debug', inspect`matching peers: ${matches}`);
+				if (matches.length > 0) {
+					client.connection.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
+				} else {
+					client.connection.end("fail\r\n+++\r\n");
+				}
+			}catch(err){
+				logger.log('error', inspect`${err}`);
+			}
 		} else {
 			client.connection.end("error\r\nnot a valid host or ip\r\n");
 		}

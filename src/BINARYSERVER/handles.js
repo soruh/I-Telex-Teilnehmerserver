@@ -10,9 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const config_js_1 = require("../SHARED/config.js");
-const constants = require("../BINARYSERVER/constants.js");
+const constants = require("../SHARED/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
-const misc_js_2 = require("../SHARED/misc.js");
+const SQL_1 = require("../SHARED/SQL");
 const sendQueue_js_1 = require("./sendQueue.js");
 // import { lookup } from "dns";
 //#endregion
@@ -62,14 +62,11 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         });
         return;
     }
-    const entries = yield misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
-    if (!entries)
-        return;
-    const [entry] = entries;
+    const entry = yield SQL_1.SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
     if (!entry) {
-        yield misc_js_2.SqlQuery(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-        const result = yield misc_js_2.SqlQuery(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', misc_js_1.timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
-        if (!(result && result.affectedRows)) {
+        yield SQL_1.SqlRun(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
+        const result = yield SQL_1.SqlRun(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', misc_js_1.timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+        if (!(result && result.changes)) {
             logger.log('error', misc_js_1.inspect `could not create entry`);
             return;
         }
@@ -100,9 +97,11 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         });
         return;
     }
-    if (entry.pin === '0') {
-        logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
-        yield misc_js_2.SqlQuery(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, misc_js_1.timestamp(), entry.uid]);
+    if (entry.pin === 0) {
+        if (pin !== 0) {
+            logger.log('warning', misc_js_1.inspect `reset pin for ${entry.name} (${entry.number})`);
+            yield SQL_1.SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, misc_js_1.timestamp(), entry.uid]);
+        }
     }
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
@@ -125,7 +124,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         });
         return;
     }
-    yield misc_js_2.SqlQuery(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (Left(name, ?) = Left(?, ?) AND port = ? AND pin = ? AND type = 5)`, [
+    yield SQL_1.SqlRun(`UPDATE teilnehmer SET port = ?, ipaddress = ?, changed = 1, timestamp = ? WHERE number = ? OR (SUBSTR(name, 0, ?) = SUBSTR(?, 0, ?) AND port = ? AND pin = ? AND type = 5)`, [
         port, client.ipAddress, misc_js_1.timestamp(), number,
         config_js_1.default.DynIpUpdateNameDifference, entry.name, config_js_1.default.DynIpUpdateNameDifference, entry.port, entry.pin,
     ]);
@@ -135,8 +134,7 @@ handles[1][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
             ipaddress: client.ipAddress,
         },
     });
-    yield sendQueue_js_1.default();
-    return;
+    // await sendQueue();
 });
 handles[3][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, void 0, function* () {
     if (!client)
@@ -146,13 +144,12 @@ handles[3][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         yield client.sendPackage({ type: 4 });
         return;
     }
-    const result = yield misc_js_2.SqlQuery(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number]);
-    if (result && result.length === 1) {
-        const [data] = result;
-        data.pin = "0";
+    const result = yield SQL_1.SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0 AND disabled != 1;`, [pkg.data.number]);
+    if (result) {
+        result.pin = 0;
         yield client.sendPackage({
             type: 5,
-            data,
+            data: result,
         });
         return;
     }
@@ -167,14 +164,10 @@ handles[5][constants.states.FULLQUERY] =
     handles[5][constants.states.LOGIN] = (pkg, client) => __awaiter(this, void 0, void 0, function* () {
         if (!client)
             return;
-        let names = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
-        names = names.filter(name => pkg.data[name] !== undefined);
+        const names = constants.peerProperties.filter(name => pkg.data.hasOwnProperty(name));
         const values = names.map(name => pkg.data[name]);
         logger.log('verbose network', misc_js_1.inspect `got dataset for: ${pkg.data.name} (${pkg.data.number}) by server ${client.name}`);
-        const entries = yield misc_js_2.SqlQuery(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
-        if (!entries)
-            return;
-        const [entry] = entries;
+        const entry = yield SQL_1.SqlGet(`SELECT * from teilnehmer WHERE number = ?;`, [pkg.data.number]);
         if (entry) {
             if (typeof client.newEntries !== "number")
                 client.newEntries = 0;
@@ -186,7 +179,7 @@ handles[5][constants.states.FULLQUERY] =
             client.newEntries++;
             logger.log('network', misc_js_1.inspect `got new dataset for: ${pkg.data.name}`);
             logger.log('debug', misc_js_1.inspect `recieved entry is ${+pkg.data.timestamp - entry.timestamp} seconds newer  > ${entry.timestamp}`);
-            yield misc_js_2.SqlQuery(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
+            yield SQL_1.SqlRun(`UPDATE teilnehmer SET ${names.map(name => name + " = ?,").join("")} changed = ? WHERE number = ?;`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0, pkg.data.number]));
             yield client.sendPackage({ type: 8 });
             return;
         }
@@ -196,7 +189,7 @@ handles[5][constants.states.FULLQUERY] =
             return;
         }
         else {
-            yield misc_js_2.SqlQuery(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0,]));
+            yield SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(",") + (names.length > 0 ? "," : "")} changed) VALUES (${"?,".repeat(names.length + 1).slice(0, -1)});`, values.concat([config_js_1.default.setChangedOnNewerEntry ? 1 : 0,]));
             yield client.sendPackage({ type: 8 });
             return;
         }
@@ -215,7 +208,7 @@ handles[6][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0, 
         return;
     }
     logger.log('debug', misc_js_1.inspect `serverpin is correct!`);
-    let result = yield misc_js_2.SqlQuery("SELECT  * FROM teilnehmer;");
+    let result = yield SQL_1.SqlAll("SELECT  * FROM teilnehmer;", []);
     if (!result)
         result = [];
     client.writebuffer = result;
@@ -281,14 +274,16 @@ handles[10][constants.states.STANDBY] = (pkg, client) => __awaiter(this, void 0,
         return;
     }
     const searchWords = pattern.split(" ").map(q => `%${q}%`);
-    const searchstring = `SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`;
-    let result = yield misc_js_2.SqlQuery(searchstring, searchWords);
+    let result = yield SQL_1.SqlAll(`SELECT * FROM teilnehmer WHERE disabled != 1 AND type != 0${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
     if (!result)
         result = [];
     logger.log('network', misc_js_1.inspect `found ${result.length} public entries matching pattern ${pattern}`);
     logger.log('debug', misc_js_1.inspect `entries matching pattern ${pattern}:\n${result}`);
     client.state = constants.states.RESPONDING;
-    client.writebuffer = result.map(peer => { peer.pin = "0"; return peer; });
+    client.writebuffer = result.map(peer => {
+        peer.pin = 0;
+        return peer;
+    });
     yield handlePackage({ type: 8 }, client);
     return;
 });

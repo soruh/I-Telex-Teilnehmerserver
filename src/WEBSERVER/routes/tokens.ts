@@ -2,12 +2,12 @@ import config from "../../SHARED/config";
 import * as crypto from "crypto";
 import { inspect } from "../../SHARED/misc";
 
-let salts = [];
+let salts = {};
 
 function removeOldSalts(){
 	for(let i in salts){
 		if(Date.now()-new Date(salts[i]).getTime()>config.webServerTokenLifeTime){
-			salts.splice(+i, 1);
+			delete salts[i];
 		}
 	}
 }
@@ -15,9 +15,9 @@ function removeOldSalts(){
 function createSalt(req, res) {
 	try{
 		removeOldSalts();
-
-		const salt = new Date().toJSON();
-		salts.push(salt);
+		
+		const salt = crypto.randomBytes(32).toString('base64').slice(0,-1);
+		salts[salt] = new Date().toJSON();
 		
 		logger.log('debug', inspect`created new salt: ${salt}`);
 
@@ -37,19 +37,17 @@ function isValidToken(suppliedToken:string, data:string, salt:string){
 	logger.log('debug', inspect`checking if token ${suppliedToken} is valid for data: ${data}`);
 	removeOldSalts();
 
-	const saltIndex = salts.indexOf(salt);
-
-	if(saltIndex === -1){
+	if(!salts.hasOwnProperty(salt)){
 		logger.log('debug', inspect`salt is invalid`);
 		return false;
 	}
 
 	const hash = crypto.createHash('sha256').update(salt+config.webInterfacePassword+data).digest();
-	const correctToken = Array.from(hash).map(x=>x.toString(16).padStart(2, '0')).join('');
+	const correctToken = hash.toString('hex');
 
 	if(suppliedToken === correctToken){
 		logger.log('debug', inspect`token is valid`);
-		salts.splice(saltIndex, 1);
+		delete salts[salt];
 		return true;
 	}else{
 		logger.log('debug', inspect`${correctToken} !=\n${suppliedToken}`);

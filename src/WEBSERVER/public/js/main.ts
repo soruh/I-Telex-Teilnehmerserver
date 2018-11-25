@@ -36,12 +36,10 @@ interface listItem {
 	address:string;
 	name: string;
 	number: number;
-	port: string;
+	port: number;
 	timestamp: number;
 	type: number;
 	uid: number;
-	changed: 0;
-
 	disabled?: number;
 	// pin?: number
 }
@@ -77,7 +75,7 @@ $(document).ready(function() {
 	});
 	$.fn.extend({
 		// tslint:disable-next-line:object-literal-shorthand
-		center: function(){
+		center: function():JQuery<HTMLElement> {
 			return this.each(function() {
 				let top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2); // (($(window).height() - $(this).outerHeight()) / 2);
 				let left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
@@ -98,9 +96,12 @@ $(document).ready(function() {
 	$(document).ajaxStop(() => {
 		$("#waitpop").hide();
 	});
+
 	login("", () => {
 		initloc();
+		$("#table_th_arrow_name").click();
 	});
+
 	$("input,select,textarea")
 	.bind("checkval", function() {
 		if ($(this).val() !== "" /*||$(this).next("label.validate_error").length==1*/) {
@@ -312,19 +313,31 @@ $(document).ready(function() {
 		// getList(updateTable);
 	});
 });
+
+
+const FIELD_ORDER = ["number","name","extension","address","port","type","disabled","timestamp"];
+function sortFields(a, b){
+	return FIELD_ORDER.indexOf(a[0])-FIELD_ORDER.indexOf(b[0]);
+}
 function checkUnique(number:number, element:JQuery<HTMLElement>/*|HTMLElement*/) {
-	console.log("checking if "+number+"is unique");
+	console.log("checking if "+number+" is unique");
 	
 	let uid = $($(element).parents()[2]).data("uid");
+	console.log('uid: '+uid);
 	
-	for (let k in global_list) {
+	for (let entry of global_list) {
 		if (
-			global_list[k].type !== 0 &&
-			global_list[k].number === number &&
-			global_list[k].uid !== uid
-		)
-		return false;
+			// tslint:disable:triple-equals
+			entry.type != 0 &&
+			entry.number == number &&
+			entry.uid != uid
+			// tslint:enable:triple-equals
+		){
+			console.log('number is not unique');
+			return false;
+		}
 	}
+	console.log('number is unique');
 	return true;
 }
 function editOrCopy(action:"edit"|"copy"){
@@ -474,12 +487,20 @@ function getList(callback?:(list:list)=>void) {
 				if (response.successful) {
 					let {result} = response;
 	
-					for(let row of result){ // combine hostname and ipaddress into address
-						let address = row.hostname||row.ipaddress;
-						
+					for(let key in result){ // combine hostname and ipaddress into address
+						const row = result[key];
+						const address = row.hostname||row.ipaddress;
 						row.address = address;
+
 						delete row.hostname;
 						delete row.ipaddress;
+
+						const sortedEntries = Object.entries(row).sort(sortFields);
+						let sortedRow = {};
+						for(const field of sortedEntries){
+							sortedRow[field[0]] = field[1];
+						}
+						result[key] = sortedRow;
 					}
 	
 					global_list = result;
@@ -499,7 +520,7 @@ function getList(callback?:(list:list)=>void) {
 function findByUid(uid:number,list:list=global_list){
 	return list.find((value)=>value.uid === uid);
 }
-function updateTable(list:list) {
+function updateTable(list:list, callback?:()=>void) {
 	let table = $("#table");
 	
 	table.children().filter(".tr.hr").remove();
@@ -548,9 +569,11 @@ function updateTable(list:list) {
 	}
 	table.append(headerRow);
 
-	updateContent(list);
+	updateContent(list, ()=>{
+		if(callback) callback();
+	});
 }
-function updateContent(unSortedList:list) {
+function updateContent(unSortedList:list, callback?:()=>void) {
 	let list = search(sort(unSortedList), $("#search-box").val().toString());
 	let table = $("#table");
 	table.children().filter(".tr").not(".hr").remove();
@@ -597,6 +620,9 @@ function updateContent(unSortedList:list) {
 						link.addClass('link');
 						link.attr('href', 'http://'+entry[key]);
 						cell.append(link);
+						break;
+					case "extension":
+						cell.text(entry[key]);
 						break;
 					default:
 						cell.text(entry[key]);
@@ -652,6 +678,8 @@ function updateContent(unSortedList:list) {
 		$(".admin_only").hide();
 		$(".user_only").show();
 	}
+
+	if(callback) callback();
 }
 function editButtonClick() {
 	$("#type_edit_dialog").trigger('change');
@@ -771,12 +799,12 @@ function validateEditDialog(formId){
 			},
 			pin: {
 				required: true,
-				max: 65536,
+				max: 65535,
 
 			},
 			extension: {
 				digits: true,
-				max: 100,
+				max: 99,
 			},
 			port: {
 				required: {
@@ -785,18 +813,18 @@ function validateEditDialog(formId){
 						return type !== "email";
 					},
 				},
-				max: 65536,
+				max: 65535,
 				digits: true,
 			},
 			name: {
 				required: true,
 				maxlength: 40,
 			},
-			number: {
+			number: {		
 				unique: true,
 				required: true,
 				digits: true,
-				max: 4294967296,
+				max: 4294967295,
 			},
 			email: {
 				email: true,
@@ -847,11 +875,11 @@ function validateNewDialog(formId){
 		rules: {
 			pin: {
 				required: true,
-				max: 65536,
+				max: 65535,
 			},
 			extension: {
 				digits: true,
-				max: 100,
+				max: 99,
 			},
 			port: {
 				required: {
@@ -860,7 +888,7 @@ function validateNewDialog(formId){
 						return (type !== "email");
 					},
 				},
-				max: 65536,
+				max: 65535,
 				digits: true,
 			},
 			name: {
@@ -871,7 +899,7 @@ function validateNewDialog(formId){
 				unique: true,
 				required: true,
 				digits: true,
-				max: 4294967296,
+				max: 4294967295,
 			},
 			email: {
 				email: true,
@@ -924,8 +952,12 @@ function validatePasswordDialog(formId){
 		},
 	});
 }
-function refresh() {
-	getList(updateTable);
+function refresh(callback?:()=>void) {
+	getList(list=>{
+		updateTable(list, ()=>{
+			if(callback) callback();
+		});
+	});
 }
 function edit(values, callback) {
 	console.log('edit', values);
@@ -941,14 +973,16 @@ function edit(values, callback) {
 				salt,
 			},
 			success(response) {
-				refresh();
-				if (callback)
-					callback(null, response.message);
 				if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
 					$("#log").text(JSON.stringify(response.message));
 				if (!response.successful) {
 					console.log(response.message);
 				}
+
+				refresh(()=>{
+					if (callback)
+						callback(null, response.message);
+				});
 			},
 			error(error) {
 				console.error(error);
@@ -968,7 +1002,7 @@ function search(list:list, pattern:string) {
 	.filter(row =>{
 		return pattern.split(" ")
 		.map(word=>{
-			for(let [key, value] of (Object as any).entries(row)){
+			for(let [key, value] of Object.entries(row)){
 				if(new RegExp(word, "gi").test(
 					(key === "timestamp") && (!UNIXTIMEDATE)?
 					UNIXTIMEToString(row[key]):

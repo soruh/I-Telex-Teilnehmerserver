@@ -13,6 +13,13 @@ module.exports = {
       output: 'logs/webserver/out.log',
       error: 'logs/webserver/error.log',
       merge_logs: true
+    },
+    {
+      name: "RESTapi",
+      script: "src/RESTSERVER/main.js",
+      output: 'logs/restserver/out.log',
+      error: 'logs/restserver/error.log',
+      merge_logs: true
     }
   ]
 };

@@ -1,6 +1,5 @@
 //#region imports
 import * as util from "util";
-import * as mysql from "mysql";
 import * as ip from "ip";
 import * as net from "net";
 import * as nodemailer from "nodemailer";
@@ -9,7 +8,7 @@ import colors from "../SHARED/colors.js";
 
 
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
-import { states } from "../BINARYSERVER/constants.js";
+import { states } from "./constants.js";
 // import * as winston from "winston";
 //#endregion
 
@@ -17,7 +16,6 @@ import { states } from "../BINARYSERVER/constants.js";
 const textColor = colors.Reset;
 const stringColor = colors.FgGreen;
 const errorColor = colors.FgRed;
-const sqlColor = colors.Reverse;
 
 
 function timestamp() {
@@ -63,7 +61,7 @@ function inspect(substrings:TemplateStringsArray, ...values:any[]):string{
 
 function getTimezone(date: Date) {
 	let offset = -1 * date.getTimezoneOffset();
-	let offsetStr = ((Math.floor(offset / 60)).toString() as any).padStart(2, "0") + ":" + ( (offset % 60).toString() as any).padStart(2, "0");
+	let offsetStr = (Math.floor(offset / 60)).toString().padStart(2, "0") + ":" + (offset % 60).toString().padStart(2, "0");
 	return `UTC${(offset < 0 ? "" : "+")}${offsetStr}`;
 }
 
@@ -147,46 +145,6 @@ function resetErrorCounter(type, identifier):void {
 		}
 	}
 }
-
-function SqlQuery(query: string, options ? : any[], verbose?:boolean): Promise < any > {
-	return new Promise((resolve, reject) => {
-		query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-
-		logger.log('debug', inspect`${query} ${options||[]}`);
-		
-		{
-			let formatted = mysql.format(query, options || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
-			if(verbose === undefined){
-				if (query.indexOf("teilnehmer") > -1) {
-					logger.log('sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-				} else {
-					logger.log('verbose sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-				}
-			}else if(verbose === true){
-				logger.log('verbose sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-			}else if(verbose === false){
-				logger.log('sql', inspect`${(config.highlightSqlQueries?sqlColor:"")+formatted+colors.Reset}`);
-			}
-		}
-
-		if (global.sqlPool) {
-			global.sqlPool.query(query, options, function(err, res) {
-				if (global.sqlPool["_allConnections"] && global.sqlPool["_allConnections"].length)
-					logger.log('silly', inspect`number of open connections: ${global.sqlPool["_allConnections"].length}`);
-
-				if (err) {
-					logger.log('error', inspect`${err}`);
-					reject(err);
-				} else {
-					// logger.log('debug', inspect`result:\n${res}`);
-					resolve(res);
-				}
-			});
-		} else {
-			logger.log('error', inspect`sql pool is not set!`);
-		}
-	});
-}
 function normalizeIp(ipAddr:string){
 	if(ip.isV4Format(ipAddr)){
 		return {family: 4, address: ipAddr};
@@ -205,71 +163,71 @@ function normalizeIp(ipAddr:string){
 	}
 }
 
-interface mail_ipV6DynIpUpdate_options {
-	Ip: string;
-	number: string;
-	date: string;
-	timeZone: string;
-}
-interface mail_invalidNumber_options {
-	Ip: string;
-	number: string;
-	date: string;
-	timeZone: string;
-}
-interface mail_wrongDynIpType_options {
-	type: string;
-	Ip: string;
-	number: string;
-	name: string;
-	date: string;
-	timeZone: string;
-}
-interface mail_wrongDynIpPin_options {
-	Ip: string;
-	number: string;
-	name: string;
-	date: string;
-	timeZone: string;
-	counter: number;
-}
-interface mail_new_options {
-	Ip: string;
-	number: string;
-	date: string;
-	timeZone: string;
-}
-interface mail_wrongServerPin_options {
-	Ip: string;
-	date: string;
-	timeZone: string;
-}
-interface mail_ServerError_options {
-	host: string;
-	port: string;
-	errorCounter: string;
-	lastError: string;
-	date: string;
-	timeZone: string;
-}
-interface mail_ServerErrorOver_options {
-	host: string;
-	port: string;
-	errorCounter: string;
+interface mail_options {
 	date: string;
 	timeZone: string;
 }
 
-function sendEmail(messageName:'invalidNumber',   values:mail_invalidNumber_options);
-function sendEmail(messageName:'wrongDynIpType',  values:mail_wrongDynIpType_options);
-function sendEmail(messageName:'wrongDynIpPin',   values:mail_wrongDynIpPin_options);
-function sendEmail(messageName:'new',             values:mail_new_options);
-function sendEmail(messageName:'wrongServerPin',  values:mail_wrongServerPin_options);
-function sendEmail(messageName:'ServerError',     values:mail_ServerError_options);
-function sendEmail(messageName:'ServerErrorOver', values:mail_ServerErrorOver_options);
-function sendEmail(messageName:'ipV6DynIpUpdate', values:mail_ipV6DynIpUpdate_options);
+interface mail_ipV6DynIpUpdate_options extends mail_options{
+	Ip: string;
+	number: string;
+}
+interface mail_invalidNumber_options extends mail_options {
+	Ip: string;
+	number: string;
+}
+interface mail_wrongDynIpType_options extends mail_options {
+	type: string;
+	Ip: string;
+	number: string;
+	name: string;
+}
+interface mail_wrongDynIpPin_options extends mail_options {
+	Ip: string;
+	number: string;
+	name: string;
+	counter: number;
+}
+interface mail_new_options extends mail_options {
+	Ip: string;
+	number: string;
+}
+interface mail_wrongServerPin_options extends mail_options {
+	Ip: string;
+}
+interface mail_ServerError_options extends mail_options {
+	host: string;
+	port: string;
+	errorCounter: string;
+	lastError: string;
+}
+interface mail_ServerErrorOver_options extends mail_options {
+	host: string;
+	port: string;
+	errorCounter: string;
+}
+
+interface mail_uncaughtException_options extends mail_options {
+	exception:string;
+}
+
+function sendEmail(messageName:'invalidNumber',     values:mail_invalidNumber_options);
+function sendEmail(messageName:'wrongDynIpType',    values:mail_wrongDynIpType_options);
+function sendEmail(messageName:'wrongDynIpPin',     values:mail_wrongDynIpPin_options);
+function sendEmail(messageName:'new',               values:mail_new_options);
+function sendEmail(messageName:'wrongServerPin',    values:mail_wrongServerPin_options);
+function sendEmail(messageName:'ServerError',       values:mail_ServerError_options);
+function sendEmail(messageName:'ServerErrorOver',   values:mail_ServerErrorOver_options);
+function sendEmail(messageName:'ipV6DynIpUpdate',   values:mail_ipV6DynIpUpdate_options);
+function sendEmail(messageName:'uncaughtException', values:mail_uncaughtException_options);
+
 function sendEmail(messageName, values) {
 	return new Promise((resolve, reject) => {
+		Object.assign(values, {
+			date: printDate(),
+			timeZone: getTimezone(new Date()),
+		});
+
 		let message: {
 			"subject": string,
 			"html" ? : string,
@@ -343,7 +301,7 @@ interface Client {
 	state: symbol;
 	ipAddress:string;
 	ipFamily:number;
-	writebuffer: ITelexCom.Peer[];
+	writebuffer: ITelexCom.PackageData_decoded_5[];
 	handleTimeout ? : NodeJS.Timer;
 	cb ? : () => void;
 	servernum ? : number;
@@ -578,9 +536,35 @@ if(config.scientistNames){
 	};
 }
 
+function sleep(millis:number):Promise<number>{
+	return new Promise((resolve,reject)=>{
+		setTimeout(()=>{
+			resolve(millis);
+		}, millis);
+	});
+}
+
+function decodeExt(ext:number):string{
+	if(ext === 0) return '';
+	if(ext>=1&&ext<=99) return ext.toString().padStart(2,'0');
+	if(ext===100) return '00';
+	if(ext>100&&ext<110) return ext.toString()[2];
+	if(ext===110) return '0';
+	if(ext>110||ext<0) return ''; // invalid
+}
+
+function encodeExt(ext:string):number{
+	if (!ext)                return 0;
+	if(isNaN(parseInt(ext))) return 0;
+	if (ext === "0")         return 110;
+	if (ext === "00")        return 100;
+	if (ext.length === 1)    return parseInt(ext) + 100;
+
+	return parseInt(ext);
+}
 
 export {
-	SqlQuery,
+	sleep,
 	sendEmail,
 	increaseErrorCounter,
 	resetErrorCounter,
@@ -592,5 +576,7 @@ export {
 	normalizeIp,
 	sendPackage,
 	printDate,
-	timestamp
+	timestamp,
+	decodeExt,
+	encodeExt
 };

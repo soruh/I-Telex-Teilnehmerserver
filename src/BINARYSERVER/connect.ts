@@ -4,7 +4,7 @@
 import * as net from "net";
 import config from '../SHARED/config.js';
 // import colors from "../SHARED/colors.js";
-import * as constants from "../BINARYSERVER/constants.js";
+import * as constants from "../SHARED/constants.js";
 import * as ITelexCom from "../BINARYSERVER/ITelexCom.js";
 import {increaseErrorCounter, serverErrorCounters, resetErrorCounter, Client, clientName, inspect, normalizeIp, sendPackage} from "../SHARED/misc.js";
 import { handlePackage } from "./handles.js";
@@ -35,7 +35,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 		chunker.on('data', (pkg: Buffer) => {
 			if(client){
 				logger.log('verbose network', inspect`recieved package: ${pkg}`);
-				logger.log('verbose network', inspect`${pkg.toString().replace(/[^ -~]/g, "·")}`);
+				logger.log('verbose network', inspect`${pkg.toString().replace(/\u0000/g, '–').replace(/[^ -~–]/g, "·")}`);
 
 				handlePackage(ITelexCom.decPackage(pkg), client)
 				.catch(err=>{logger.log('error', inspect`${err}`);});

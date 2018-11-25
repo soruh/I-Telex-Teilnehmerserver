@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const net = require("net");
 const config_js_1 = require("../SHARED/config.js");
 // import colors from "../SHARED/colors.js";
-const constants = require("../BINARYSERVER/constants.js");
+const constants = require("../SHARED/constants.js");
 const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const handles_js_1 = require("./handles.js");
@@ -29,7 +29,7 @@ function connect(options, onClose = () => { }) {
         chunker.on('data', (pkg) => {
             if (client) {
                 logger.log('verbose network', misc_js_1.inspect `recieved package: ${pkg}`);
-                logger.log('verbose network', misc_js_1.inspect `${pkg.toString().replace(/[^ -~]/g, "·")}`);
+                logger.log('verbose network', misc_js_1.inspect `${pkg.toString().replace(/\u0000/g, '–').replace(/[^ -~–]/g, "·")}`);
                 handles_js_1.handlePackage(ITelexCom.decPackage(pkg), client)
                     .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
             }

@@ -4,13 +4,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ip = require("ip");
 const config_js_1 = require("../SHARED/config.js");
 const colors_js_1 = require("../SHARED/colors.js");
-const constants = require("../BINARYSERVER/constants.js");
+const constants = require("../SHARED/constants.js");
 const misc_js_1 = require("../SHARED/misc.js");
 const stream_1 = require("stream");
 //#endregion
 Buffer.prototype.readNullTermString = function readNullTermString(encoding = "utf8", start = 0, end = this.length) {
-    let firstZero = this.indexOf(0, start);
-    let stop = firstZero >= start && firstZero <= end ? firstZero : end;
+    const firstZero = this.indexOf(0, start);
+    const stop = firstZero >= start && firstZero <= end ? firstZero : end;
     return this.toString(encoding, start, stop);
 };
 function inspectBuffer(buffer) {
@@ -26,8 +26,8 @@ function explainPackagePart(buffer, name, color) {
 }
 function explainPackage(pkg) {
     let res = (config_js_1.default.explainBuffers > 1 ? colors_js_1.default.Reset : "") + "<Buffer";
-    let type = pkg[0];
-    let datalength = pkg[1];
+    const type = pkg[0];
+    const datalength = pkg[1];
     res += explainPackagePart(Buffer.from([type]), "type", "\x1b[036m");
     res += explainPackagePart(Buffer.from([datalength]), "datalength", "\x1b[032m");
     switch (type) {
@@ -83,7 +83,6 @@ function explainPackage(pkg) {
     return res;
 }
 exports.explainPackage = explainPackage;
-//#endregion
 class ChunkPackages extends stream_1.Transform {
     constructor(options) {
         super(options);
@@ -102,7 +101,7 @@ class ChunkPackages extends stream_1.Transform {
 }
 exports.ChunkPackages = ChunkPackages;
 function encPackage(pkg) {
-    logger.log('iTelexCom', misc_js_1.inspect `encoding package : ${pkg}`);
+    logger.log('iTelexCom', misc_js_1.inspect `encoding package: ${pkg}`);
     if (pkg.datalength == null) {
         if (pkg.type === 255) {
             if (pkg.data.message != null)
@@ -125,7 +124,7 @@ function encPackage(pkg) {
             {
                 let normalizedIp = misc_js_1.normalizeIp(pkg.data.ipaddress);
                 if (normalizedIp && normalizedIp.family === 4) {
-                    ip.toBuffer(normalizedIp.address, buffer, 2);
+                    ip.toBuffer(normalizedIp.address, buffer, 2); // error in @types/ip: buffer should be of type Buffer
                 }
             }
             break;
@@ -137,23 +136,6 @@ function encPackage(pkg) {
             break;
         case 5:
             let flags = pkg.data.disabled ? 2 : 0;
-            // TODO:extract into function
-            let ext = 0;
-            if (!pkg.data.extension) {
-                ext = 0;
-            }
-            else if (pkg.data.extension === "0") {
-                ext = 110;
-            }
-            else if (pkg.data.extension === "00") {
-                ext = 100;
-            }
-            else if (pkg.data.extension.toString().length === 1) {
-                ext = parseInt(pkg.data.extension) + 100;
-            }
-            else {
-                ext = parseInt(pkg.data.extension);
-            }
             buffer.writeUIntLE(pkg.data.number || 0, 2, 4);
             buffer.write(pkg.data.name || "", 6, 40);
             buffer.writeUIntLE(flags || 0, 46, 2);
@@ -165,10 +147,10 @@ function encPackage(pkg) {
                     ip.toBuffer(normalizedIp.address, buffer, 89);
                 }
             }
-            buffer.writeUIntLE(+pkg.data.port || 0, 93, 2);
-            buffer.writeUIntLE(ext || 0, 95, 1);
-            buffer.writeUIntLE(+pkg.data.pin || 0, 96, 2);
-            buffer.writeUIntLE((+pkg.data.timestamp || 0) + 2208988800, 98, 4);
+            buffer.writeUIntLE(pkg.data.port || 0, 93, 2);
+            buffer.writeUIntLE(misc_js_1.encodeExt(pkg.data.extension) || 0, 95, 1);
+            buffer.writeUIntLE(pkg.data.pin || 0, 96, 2);
+            buffer.writeUIntLE((pkg.data.timestamp || 0) + 2208988800, 98, 4);
             break;
         case 6:
             buffer.writeUIntLE(pkg.data.version || 0, 2, 1);
@@ -205,8 +187,8 @@ function decPackage(buffer) {
         case 1:
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
-                pin: buffer.readUIntLE(6, 2).toString(),
-                port: buffer.readUIntLE(8, 2).toString(),
+                pin: buffer.readUIntLE(6, 2),
+                port: buffer.readUIntLE(8, 2),
             };
             break;
         case 2:
@@ -240,42 +222,17 @@ function decPackage(buffer) {
             pkg.data = {
                 number: buffer.readUIntLE(2, 4),
                 name: buffer.readNullTermString("utf8", 6, 46),
-                disabled: (flags & 2) === 2 ? 1 : 0,
+                disabled: (flags & 2) / 2,
                 type: buffer.readUIntLE(48, 1),
                 hostname: buffer.readNullTermString("utf8", 49, 89),
                 ipaddress: ip.toString(buffer, 89, 4),
-                port: buffer.readUIntLE(93, 2).toString(),
-                pin: buffer.readUIntLE(96, 2).toString(),
+                port: buffer.readUIntLE(93, 2),
+                pin: buffer.readUIntLE(96, 2),
                 timestamp: buffer.readUIntLE(98, 4) - 2208988800,
-                extension: null,
+                extension: misc_js_1.decodeExt(buffer.readUIntLE(95, 1)),
             };
             if (pkg.data.ipaddress === "0.0.0.0")
                 pkg.data.ipaddress = "";
-            if (pkg.data.hostname === "")
-                pkg.data.hostname = "";
-            // TODO: extract into function
-            let extension = buffer.readUIntLE(95, 1);
-            if (extension === 0) {
-                pkg.data.extension = null;
-            }
-            else if (extension === 110) {
-                pkg.data.extension = "0";
-            }
-            else if (extension === 100) {
-                pkg.data.extension = "00";
-            }
-            else if (extension > 110) {
-                pkg.data.extension = null;
-            }
-            else if (extension > 100) {
-                pkg.data.extension = (extension - 100).toString();
-            }
-            else if (extension < 10) {
-                pkg.data.extension = "0" + extension;
-            }
-            else {
-                pkg.data.extension = extension.toString();
-            }
             break;
         case 6:
             pkg.data = {
