@@ -28,6 +28,13 @@ function editEntry(req, res, data) {
         if (!existing)
             return;
         logger.log('debug', misc_1.inspect `exising entry: ${existing}`);
+        if (!existing) {
+            res.json({
+                successful: false,
+                message: "can't edit nonexisting entry",
+            });
+            return;
+        }
         // tslint:disable-next-line:triple-equals
         if (existing.number == data.number) {
             logger.log('debug', misc_1.inspect `number wasn't changed updating`);

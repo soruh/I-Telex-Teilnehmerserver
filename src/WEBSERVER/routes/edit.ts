@@ -19,6 +19,14 @@ async function editEntry(req, res, data){
 
 	logger.log('debug', inspect`exising entry: ${existing}`);
 	
+	if (!existing) {
+		res.json({
+			successful: false,
+			message: "can't edit nonexisting entry",
+		});
+		return;
+	}
+
 	// tslint:disable-next-line:triple-equals
 	if(existing.number == data.number){
 		logger.log('debug', inspect`number wasn't changed updating`);
