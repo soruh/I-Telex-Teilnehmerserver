@@ -68,6 +68,7 @@ $(document).ready(function () {
     });
     login("", () => {
         initloc();
+        $("#table_th_arrow_name").click();
     });
     $("input,select,textarea")
         .bind("checkval", function () {
@@ -479,7 +480,7 @@ function getList(callback) {
 function findByUid(uid, list = global_list) {
     return list.find((value) => value.uid === uid);
 }
-function updateTable(list) {
+function updateTable(list, callback) {
     let table = $("#table");
     table.children().filter(".tr.hr").remove();
     let headerRow = $("<div></div>");
@@ -527,9 +528,12 @@ function updateTable(list) {
         }
     }
     table.append(headerRow);
-    updateContent(list);
+    updateContent(list, () => {
+        if (callback)
+            callback();
+    });
 }
-function updateContent(unSortedList) {
+function updateContent(unSortedList, callback) {
     let list = search(sort(unSortedList), $("#search-box").val().toString());
     let table = $("#table");
     table.children().filter(".tr").not(".hr").remove();
@@ -630,6 +634,8 @@ function updateContent(unSortedList) {
         $(".admin_only").hide();
         $(".user_only").show();
     }
+    if (callback)
+        callback();
 }
 function editButtonClick() {
     $("#type_edit_dialog").trigger('change');
@@ -893,8 +899,13 @@ function validatePasswordDialog(formId) {
         },
     });
 }
-function refresh() {
-    getList(updateTable);
+function refresh(callback) {
+    getList(list => {
+        updateTable(list, () => {
+            if (callback)
+                callback();
+        });
+    });
 }
 function edit(values, callback) {
     console.log('edit', values);
@@ -910,14 +921,15 @@ function edit(values, callback) {
                 salt,
             },
             success(response) {
-                refresh();
-                if (callback)
-                    callback(null, response.message);
                 if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
                     $("#log").text(JSON.stringify(response.message));
                 if (!response.successful) {
                     console.log(response.message);
                 }
+                refresh(() => {
+                    if (callback)
+                        callback(null, response.message);
+                });
             },
             error(error) {
                 console.error(error);
