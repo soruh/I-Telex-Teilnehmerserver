@@ -268,7 +268,13 @@ function encPackage(pkg: Package_decoded): Buffer {
 		if (pkg.type === 255){
 			if(pkg.data.message!=null) pkg.datalength = pkg.data.message.length;
 		}else{
-			pkg.datalength = constants.PackageSizes[pkg.type];
+			const length = constants.PackageSizes[pkg.type];
+			if(typeof length === "number"){
+				pkg.datalength = length as typeof pkg.datalength;
+			}else{
+				// use the largest known package size, as all excess data is discarded anyways.
+				pkg.datalength = Math.max(...length) as typeof pkg.datalength;
+			}
 		}
 	}
 	let buffer: PackageData_encoded = Buffer.alloc(pkg.datalength + 2);
@@ -349,6 +355,18 @@ function decPackage(buffer: Buffer): Package_decoded {
 		data: null,
 	};
 	logger.log('iTelexCom', inspect`decoding package: ${(config.explainBuffers > 0 ? explainPackage(buffer) : buffer)}`);
+
+	let minSize:number|number[] = constants.PackageSizes[pkg.type];
+	if(minSize instanceof Array){
+		minSize = Math.min(...minSize);
+	}
+
+	if (pkg.datalength < minSize){
+		logger.log('iTelexCom', `discarded package, which was too small (${pkg.datalength} < ${minSize})`);
+		return null;
+	}
+	
+
 	switch (pkg.type) {
 		case 1:
 			pkg.data = {
@@ -366,8 +384,8 @@ function decPackage(buffer: Buffer): Package_decoded {
 		case 3:
 			pkg.data = {
 				number: buffer.readUIntLE(2, 4),
-				version: buffer.slice(6, 7).length > 0 ? buffer.readUIntLE(6, 1) : 1, // some clients don't provide a version
-				// TODO: change package length accordingly
+				version: buffer.slice(6, 7).length > 0 ? buffer.readUIntLE(6, 1) : 1,
+				// some clients don't provide a version
 			};
 			break;
 		case 4:

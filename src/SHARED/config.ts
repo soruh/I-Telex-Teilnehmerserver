@@ -7,7 +7,6 @@ interface configFile {
 	DynIpUpdateNameDifference: number;
 
 	setChangedOnNewerEntry: boolean;
-	allowInvalidPackageSizes: boolean;
 
 	logLineNumbers: boolean;
 	logDate: boolean;

@@ -17,7 +17,8 @@ exports.PackageNames = PackageNames;
 const PackageSizes = {
     1: 8,
     2: 4,
-    3: 5,
+    3: [4, 5],
+    // some clients don't send a version
     4: 0,
     5: 100,
     6: 5,

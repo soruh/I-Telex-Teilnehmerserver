@@ -11,12 +11,11 @@ const PackageNames = {
 	10: "Peer_search",
 	255: "Error",
 };
-const PackageSizes:{
-	[index:number]: 0|4|5|8|41|100
-} = {
+const PackageSizes = {
 	1: 8,
 	2: 4,
-	3: 5,
+	3: [4, 5],
+	// some clients don't send a version
 	4: 0,
 	5: 100,
 	6: 5,
