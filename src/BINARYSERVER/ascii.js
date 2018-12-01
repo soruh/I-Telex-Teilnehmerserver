@@ -36,7 +36,7 @@ function asciiLookup(data, client) {
                 }
                 else {
                     let send = "";
-                    let res = result;
+                    const res = result;
                     send += "ok\r\n";
                     send += res.number + "\r\n";
                     send += res.name + "\r\n";
@@ -46,12 +46,21 @@ function asciiLookup(data, client) {
                     }
                     else if ([1, 3, 6].indexOf(res.type) > -1) {
                         send += res.hostname + "\r\n";
-                    }
-                    /* else if (res.type == 6) {
+                    } /* else if (res.type == 6) {
                         send += res.hostname + "\r\n";
                     }*/
                     else {
-                        send += "ERROR\r\n";
+                        // send fail if entry has wrong type
+                        send = "";
+                        send += "fail\r\n";
+                        send += number + "\r\n";
+                        send += "wrong type\r\n";
+                        send += "+++\r\n";
+                        client.connection.end(send, function () {
+                            logger.log('debug', misc_1.inspect `Entry had invalid type`);
+                            logger.log('debug', misc_1.inspect `sent:\n${send}`);
+                        });
+                        return;
                     }
                     send += res.port + "\r\n";
                     send += (res.extension || "-") + "\r\n";

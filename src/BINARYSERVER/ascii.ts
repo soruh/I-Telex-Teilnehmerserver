@@ -12,13 +12,13 @@ import serialEachPromise from '../SHARED/serialEachPromise';
 
 async function asciiLookup(data: Buffer, client: Client) {
 	const match = /q([0-9]+)/.exec(data.toString());
-	const number: string = match[1];
+	const number = match[1];
 	if (number&&(!isNaN(parseInt(number)))) {
 		logger.log('debug', inspect`starting lookup for: ${number}`);
 		try {
 			let result = await SqlGet<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number]);
 			if (!result) {
-				let send: string = "";
+				let send = "";
 				send += "fail\r\n";
 				send += number + "\r\n";
 				send += "unknown\r\n";
@@ -28,8 +28,8 @@ async function asciiLookup(data: Buffer, client: Client) {
 					logger.log('debug', inspect`sent:\n${send}`);
 				});
 			} else {
-				let send: string = "";
-				let res = result;
+				let send = "";
+				const res = result;
 				send += "ok\r\n";
 				send += res.number + "\r\n";
 				send += res.name + "\r\n";
@@ -38,12 +38,23 @@ async function asciiLookup(data: Buffer, client: Client) {
 					send += res.ipaddress + "\r\n";
 				} else if ([1, 3, 6].indexOf(res.type) > -1) {
 					send += res.hostname + "\r\n";
-				}
-				/* else if (res.type == 6) {
+				} /* else if (res.type == 6) {
 					send += res.hostname + "\r\n";
-				}*/
-				else {
-					send += "ERROR\r\n";
+				}*/ else {
+					// send fail if entry has wrong type
+					send = "";
+					send += "fail\r\n";
+					send += number + "\r\n";
+					send += "wrong type\r\n";
+					send += "+++\r\n";
+
+					client.connection.end(send, function() {
+						logger.log('debug', inspect`Entry had invalid type`);
+						logger.log('debug', inspect`sent:\n${send}`);
+	
+					});
+
+					return;
 				}
 				send += res.port + "\r\n";
 				send += (res.extension || "-") + "\r\n";
