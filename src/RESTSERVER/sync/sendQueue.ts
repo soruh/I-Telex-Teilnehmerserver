@@ -13,7 +13,7 @@ const readonly = (config.serverPin == null);
 async function sendQueue(){
 	await updateQueue();
 
-	logger.log('admin', inspect`sending Queue`);
+	logger.log('queue', inspect`sending Queue`);
 	if (readonly) {
 		logger.log('warning', inspect`Read-only mode -> aborting sendQueue`);
 		return;
@@ -21,7 +21,7 @@ async function sendQueue(){
 
 	const queue = await SqlAll<queueRow>("SELECT * FROM queue;", []);
 	if (queue.length === 0) {
-		logger.log('debug', inspect`No queue!`);
+		logger.log('queue', inspect`No queue!`);
 		return;
 	}
 	let entriesByServer: {
@@ -37,10 +37,10 @@ async function sendQueue(){
 
 		let serverinf = await SqlGet<serversRow>("SELECT * FROM servers WHERE uid=?;", [server]);
 		
-		logger.log('debug', inspect`sending queue for ${serverinf}`);
+		logger.log('queue', inspect`sending queue for ${serverinf}`);
 
 		if(serverinf.version !== 2){
-			logger.log('debug', inspect`entries for server ${serverinf.address}:${serverinf.port} will be ignored, because it's version is ${serverinf.version} not ${2}`);
+			logger.log('queue', inspect`entries for server ${serverinf.address}:${serverinf.port} will be ignored, because it's version is ${serverinf.version} not ${2}`);
 			return;
 		}
 

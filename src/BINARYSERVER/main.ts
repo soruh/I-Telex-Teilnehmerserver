@@ -26,7 +26,7 @@ declare global {
 		}
 	}
 	interface Buffer {
-		readNullTermString:(string?, start?, end?)=>string;
+		readNullTermString:(offset?: number, byteLength?: number, encoding?: string)=>string;
 	}
 	interface ObjectConstructor {
 		entries:(Object)=>Array<[string, any]>;

@@ -5,7 +5,7 @@ const entries_1 = require("./entries");
 const config_1 = require("../../../SHARED/config");
 const PASSWORD = config_1.default.serverPin + '';
 const adminRouter = express.Router();
-// Test Authorization header of all requests to /private/*
+// Test Authorization header of all requests to /admin/*
 adminRouter.all('*', function (req, res, next) {
     if (!(req.header('Authorization') && /Basic (.*)/.test(req.header('Authorization')))) {
         res.status(401);

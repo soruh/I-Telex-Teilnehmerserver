@@ -10,7 +10,7 @@ const PASSWORD = config.serverPin+'';
 const adminRouter = express.Router();
 
 
-// Test Authorization header of all requests to /private/*
+// Test Authorization header of all requests to /admin/*
 adminRouter.all('*', function(req, res, next) {
 	if(!(req.header('Authorization')&&/Basic (.*)/.test(req.header('Authorization')))){
 		res.status(401);

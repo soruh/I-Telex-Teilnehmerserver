@@ -5,7 +5,7 @@ import { inspect } from "../../SHARED/misc";
 
 function APIcall(method:string, host:string, port:number, path:string, data?:any):Promise<any>{
 	return new Promise((resolve, reject)=>{
-		logger.log('debug', `making ${method} request to ${host}:${port}${path[0]==='/'?'':'/'}${path}`);
+		logger.log('admin', `making ${method} request to ${host}:${port}${path[0]==='/'?'':'/'}${path}`);
 
 		let headers = {};
 		let stringifiedData;

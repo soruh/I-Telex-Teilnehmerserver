@@ -163,10 +163,11 @@ interface rawPackage {
 
 
 
-Buffer.prototype.readNullTermString = function readNullTermString(encoding: string = "utf8", start: number = 0, end: number = this.length):string {
-	const firstZero = this.indexOf(0, start);
-	const stop = firstZero >= start && firstZero <= end ? firstZero : end;
-	return this.toString(encoding, start, stop);
+Buffer.prototype.readNullTermString = function readNullTermString(offset = 0, byteLength = this.length-offset, encoding = "utf8"):string {
+	const end = offset+byteLength;
+	const firstZero = this.indexOf(0, offset);
+	const stop = firstZero >= offset && firstZero <= end ? firstZero : end;
+	return this.toString(encoding, offset, stop);
 };
 
 function inspectBuffer(buffer: Buffer): string {
@@ -393,7 +394,7 @@ function decPackage(buffer: Buffer): Package_decoded {
 			break;
 		case 5:
 
-			let flags = buffer.readUIntLE(46, 2);
+			const flags = buffer.readUIntLE(46, 2);
 
 			// <Call-number 4b> 0,4
 			// <Name 40b> 		4,44
@@ -407,10 +408,10 @@ function decPackage(buffer: Buffer): Package_decoded {
 			// <Date 4b>		96,100
 			pkg.data = {
 				number: buffer.readUIntLE(2, 4),
-				name: buffer.readNullTermString("utf8", 6, 46),
+				name: buffer.readNullTermString(6, 40),
 				disabled: (flags & 2)/2,
 				type: buffer.readUIntLE(48, 1),
-				hostname: buffer.readNullTermString("utf8", 49, 89),
+				hostname: buffer.readNullTermString(49, 40),
 				ipaddress: ip.toString(buffer, 89, 4),
 				port: buffer.readUIntLE(93, 2),
 				pin: buffer.readUIntLE(96, 2),
@@ -440,12 +441,12 @@ function decPackage(buffer: Buffer): Package_decoded {
 		case 10:
 			pkg.data = {
 				version: buffer.readUIntLE(2, 1),
-				pattern: buffer.readNullTermString("utf8", 3, 43),
+				pattern: buffer.readNullTermString(3, 40),
 			};
 			break;
 		case 255:
 			pkg.data = {
-				message: buffer.readNullTermString("utf8", 2),
+				message: buffer.readNullTermString(2),
 			};
 			break;
 		default:

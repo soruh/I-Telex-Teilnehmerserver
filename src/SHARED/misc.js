@@ -479,3 +479,9 @@ function encodeExt(ext) {
     return parseInt(ext);
 }
 exports.encodeExt = encodeExt;
+function symbolName(symbol) {
+    if (symbol.description)
+        return symbol.description;
+    return /^Symbol\((.*)\)$/.exec(symbol.toString())[1];
+}
+exports.symbolName = symbolName;

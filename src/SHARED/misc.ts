@@ -563,7 +563,13 @@ function encodeExt(ext:string):number{
 	return parseInt(ext);
 }
 
+function symbolName(symbol:symbol){
+	if(symbol.description) return symbol.description;
+	return /^Symbol\((.*)\)$/.exec(symbol.toString())[1];
+}
+
 export {
+	symbolName,
 	sleep,
 	sendEmail,
 	increaseErrorCounter,
