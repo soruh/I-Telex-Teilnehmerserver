@@ -20,10 +20,10 @@ function connectToDb() {
     });
 }
 exports.connectToDb = connectToDb;
-function prepareQuery(query, values, verbose = false) {
+function prepareQuery(query, values, verbose) {
     query = query.replace(/\n/g, "").replace(/\s+/g, " ");
     logger.log('debug', misc_1.inspect `${query} ${values || []}`);
-    let formatted = sqlstring.format(query, values || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
+    const formatted = sqlstring.format(query, values || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
     if (verbose === undefined) {
         if (query.indexOf("teilnehmer") > -1) {
             logger.log('sql', misc_1.inspect `${(config_1.default.highlightSqlQueries ? colors_1.default.Reverse : "") + formatted + colors_1.default.Reset}`);
@@ -40,7 +40,7 @@ function prepareQuery(query, values, verbose = false) {
     }
     return formatted;
 }
-function SqlEach(query, values, callback, verbose = false) {
+function SqlEach(query, values, callback, verbose) {
     return new Promise((resolve, reject) => {
         db.each(prepareQuery(query, values, verbose), callback, (err, count) => {
             if (err) {
@@ -52,7 +52,7 @@ function SqlEach(query, values, callback, verbose = false) {
     });
 }
 exports.SqlEach = SqlEach;
-function SqlAll(query, values, verbose = false) {
+function SqlAll(query, values, verbose) {
     return new Promise((resolve, reject) => {
         db.all(prepareQuery(query, values, verbose), (err, rows) => {
             if (err) {
@@ -64,7 +64,7 @@ function SqlAll(query, values, verbose = false) {
     });
 }
 exports.SqlAll = SqlAll;
-function SqlGet(query, values, verbose = false) {
+function SqlGet(query, values, verbose) {
     return new Promise((resolve, reject) => {
         db.get(prepareQuery(query, values, verbose), (err, row) => {
             if (err) {
@@ -76,7 +76,7 @@ function SqlGet(query, values, verbose = false) {
     });
 }
 exports.SqlGet = SqlGet;
-function SqlRun(query, values, verbose = false) {
+function SqlRun(query, values, verbose) {
     return new Promise((resolve, reject) => {
         db.run(prepareQuery(query, values, verbose), function (err) {
             if (err) {

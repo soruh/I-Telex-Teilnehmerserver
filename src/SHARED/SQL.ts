@@ -53,11 +53,11 @@ function connectToDb(){
 	});
 }
 
-function prepareQuery(query: string, values?: any[], verbose=false):string{
+function prepareQuery(query: string, values?: any[], verbose?:boolean):string{
 	query = query.replace(/\n/g, "").replace(/\s+/g, " ");
 	logger.log('debug', inspect`${query} ${values||[]}`);
 
-	let formatted = sqlstring.format(query, values || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
+	const formatted = sqlstring.format(query, values || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
 	if(verbose === undefined){
 		if (query.indexOf("teilnehmer") > -1) {
 			logger.log('sql', inspect`${(config.highlightSqlQueries?colors.Reverse:"")+formatted+colors.Reset}`);
@@ -73,7 +73,7 @@ function prepareQuery(query: string, values?: any[], verbose=false):string{
 	return formatted;
 }
 
-function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>void, verbose=false):Promise<number>{
+function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>void, verbose?:boolean):Promise<number>{
 	return new Promise((resolve, reject) => {
 		db.each(prepareQuery(query, values, verbose), callback, (err:Error, count:number)=>{
 			if(err){
@@ -85,7 +85,7 @@ function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>v
 	});
 }
 
-function SqlAll<T>(query: string, values: any[], verbose=false):Promise<T[]>{
+function SqlAll<T>(query: string, values: any[], verbose?:boolean):Promise<T[]>{
 	return new Promise((resolve, reject) => {
 		db.all(prepareQuery(query, values, verbose), (err:Error, rows)=>{
 			if(err){
@@ -97,7 +97,7 @@ function SqlAll<T>(query: string, values: any[], verbose=false):Promise<T[]>{
 	});
 }
 
-function SqlGet<T>(query: string, values: any[], verbose=false):Promise<T>{
+function SqlGet<T>(query: string, values: any[], verbose?:boolean):Promise<T>{
 	return new Promise((resolve, reject) => {
 		db.get(prepareQuery(query, values, verbose), (err:Error, row)=>{
 			if(err){
@@ -109,7 +109,7 @@ function SqlGet<T>(query: string, values: any[], verbose=false):Promise<T>{
 	});
 }
 
-function SqlRun(query: string, values: any[], verbose=false):Promise<sqlite.RunResult>{
+function SqlRun(query: string, values: any[], verbose?:boolean):Promise<sqlite.RunResult>{
 	return new Promise((resolve, reject) => {
 		db.run(prepareQuery(query, values, verbose), function(err:Error){
 			if(err){
