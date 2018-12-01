@@ -11,6 +11,7 @@ import binaryServer from './binaryServer.js';
 import cleanUp from "./cleanUp.js";
 import createLogger from "../SHARED/createLogger.js";
 import { connectToDb } from '../SHARED/SQL.js';
+import { loggingLevels } from '../SHARED/constants.js';
 
 type MailTransporter = nodemailer.Transporter | {
 	sendMail: (...rest: any[]) => void,
@@ -53,32 +54,7 @@ async function createWinstonLogger(){
 			config.binaryserverLog,
 			config.binaryserverErrorLog,
 			config.logBinaryserverToConsole,
-			{
-				levels:{
-					"error": 0,
-					"warning": 1,
-					"sql": 2,
-					"network": 3,			
-					"verbose sql": 4,
-					"verbose network": 5,
-					"debug": 6,
-					"queue": 7,
-					"iTelexCom": 8,
-					"silly":9,
-				},
-				colors:{
-					"error": "red",
-					"warning": "yellow",
-					"sql": "green",
-					"network": "cyan",
-					"verbose sql": "green",
-					"verbose network": "blue",
-					"debug": "magenta",
-					"queue": "gray",
-					"iTelexCom": "underline",
-					"silly": "bold",
-				},
-			}
+			loggingLevels.BIN,
 		);
 	}catch(err){
 		logInitilisation(inspect`createWinstonLogger: \x1b[031mfail\x1b[000m`);

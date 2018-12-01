@@ -18,34 +18,8 @@ const SQL_js_1 = require("../SHARED/SQL.js");
 const timers_js_1 = require("../BINARYSERVER/timers.js");
 const FullQuery_1 = require("./sync/FullQuery");
 const sendQueue_1 = require("./sync/sendQueue");
-createLogger_js_1.default(config_js_1.default.RESTserverLoggingLevel, config_js_1.default.RESTserverLog, config_js_1.default.RESTserverErrorLog, config_js_1.default.logRESTserverToConsole, {
-    levels: {
-        "error": 0,
-        "warning": 1,
-        "admin": 2,
-        "private": 3,
-        "public": 4,
-        "others": 5,
-        "sql": 6,
-        "verbose sql": 7,
-        "queue": 8,
-        "debug": 9,
-        "silly": 10,
-    },
-    colors: {
-        "error": "red",
-        "warning": "yellow",
-        "admin": "magenta",
-        "private": "blue",
-        "public": "green",
-        "others": "gray",
-        "sql": "cyan",
-        "verbose sql": "cyan",
-        "queue": "gray",
-        "debug": "magenta",
-        "silly": 'bold',
-    },
-});
+const constants_js_1 = require("../SHARED/constants.js");
+createLogger_js_1.default(config_js_1.default.RESTserverLoggingLevel, config_js_1.default.RESTserverLog, config_js_1.default.RESTserverErrorLog, config_js_1.default.logRESTserverToConsole, constants_js_1.loggingLevels.REST);
 SQL_js_1.connectToDb();
 timers_js_1.TimeoutWrapper(FullQuery_1.default, config_js_1.default.fullQueryInterval);
 timers_js_1.TimeoutWrapper(sendQueue_1.default, config_js_1.default.queueSendInterval);

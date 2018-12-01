@@ -14,28 +14,8 @@ const http = require("http");
 const misc_js_1 = require("../SHARED/misc.js");
 const createLogger_js_1 = require("../SHARED/createLogger.js");
 const SQL_js_1 = require("../SHARED/SQL.js");
-createLogger_js_1.default(config_js_1.default.webserverLoggingLevel, config_js_1.default.webserverLog, config_js_1.default.webserverErrorLog, config_js_1.default.logWebserverToConsole, {
-    levels: {
-        "error": 0,
-        "warning": 1,
-        "sql": 2,
-        "http": 3,
-        "verbose sql": 4,
-        "verbose http": 5,
-        "debug": 6,
-        "silly": 7,
-    },
-    colors: {
-        "error": "red",
-        "warning": "yellow",
-        "sql": "green",
-        "http": "cyan",
-        "verbose sql": "green",
-        "verbose http": "blue",
-        "debug": "magenta",
-        "silly": "bold",
-    },
-});
+const constants_js_1 = require("../SHARED/constants.js");
+createLogger_js_1.default(config_js_1.default.webserverLoggingLevel, config_js_1.default.webserverLog, config_js_1.default.webserverErrorLog, config_js_1.default.logWebserverToConsole, constants_js_1.loggingLevels.WEB);
 SQL_js_1.connectToDb();
 const app_1 = require("./app");
 const server = http.createServer(app_1.default);

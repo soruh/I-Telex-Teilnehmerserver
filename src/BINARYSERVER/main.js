@@ -19,38 +19,14 @@ const binaryServer_js_1 = require("./binaryServer.js");
 const cleanUp_js_1 = require("./cleanUp.js");
 const createLogger_js_1 = require("../SHARED/createLogger.js");
 const SQL_js_1 = require("../SHARED/SQL.js");
+const constants_js_1 = require("../SHARED/constants.js");
 function logInitilisation(message) {
     process.stdout.write(`${new Date().toISOString().replace(/[TZ]*/, " ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
 }
 function createWinstonLogger() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            createLogger_js_1.default(config_js_1.default.binaryserverLoggingLevel, config_js_1.default.binaryserverLog, config_js_1.default.binaryserverErrorLog, config_js_1.default.logBinaryserverToConsole, {
-                levels: {
-                    "error": 0,
-                    "warning": 1,
-                    "sql": 2,
-                    "network": 3,
-                    "verbose sql": 4,
-                    "verbose network": 5,
-                    "debug": 6,
-                    "queue": 7,
-                    "iTelexCom": 8,
-                    "silly": 9,
-                },
-                colors: {
-                    "error": "red",
-                    "warning": "yellow",
-                    "sql": "green",
-                    "network": "cyan",
-                    "verbose sql": "green",
-                    "verbose network": "blue",
-                    "debug": "magenta",
-                    "queue": "gray",
-                    "iTelexCom": "underline",
-                    "silly": "bold",
-                },
-            });
+            createLogger_js_1.default(config_js_1.default.binaryserverLoggingLevel, config_js_1.default.binaryserverLog, config_js_1.default.binaryserverErrorLog, config_js_1.default.logBinaryserverToConsole, constants_js_1.loggingLevels.BIN);
         }
         catch (err) {
             logInitilisation(misc_js_1.inspect `createWinstonLogger: \x1b[031mfail\x1b[000m`);

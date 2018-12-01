@@ -7,33 +7,14 @@ import { inspect, sendEmail, getTimezone, printDate } from "../SHARED/misc.js";
 
 import createLogger from '../SHARED/createLogger.js';
 import { connectToDb } from '../SHARED/SQL.js';
+import { loggingLevels } from '../SHARED/constants.js';
+
 createLogger(
 	config.webserverLoggingLevel,
 	config.webserverLog,
 	config.webserverErrorLog,
 	config.logWebserverToConsole,
-	{
-		levels:{
-			"error": 0,
-			"warning": 1,
-			"sql": 2,
-			"http": 3,			
-			"verbose sql": 4,
-			"verbose http": 5,
-			"debug": 6,
-			"silly":7,
-		},
-		colors:{
-			"error": "red",
-			"warning": "yellow",
-			"sql": "green",
-			"http": "cyan",
-			"verbose sql": "green",
-			"verbose http": "blue",
-			"debug": "magenta",
-			"silly": "bold",
-		},
-	}
+	loggingLevels.WEB
 );
 
 connectToDb();

@@ -12,40 +12,15 @@ import { TimeoutWrapper } from '../BINARYSERVER/timers.js';
 
 import getFullQuery from './sync/FullQuery';
 import sendQueue from './sync/sendQueue';
+import { loggingLevels } from '../SHARED/constants.js';
+
 
 createLogger(
 	config.RESTserverLoggingLevel,
 	config.RESTserverLog,
 	config.RESTserverErrorLog,
 	config.logRESTserverToConsole,
-	{
-		levels:{
-			"error": 0,
-			"warning": 1,
-			"admin": 2,
-			"private": 3,
-			"public": 4,			
-			"others": 5,
-			"sql": 6,
-			"verbose sql": 7,
-			"queue": 8,
-			"debug": 9,
-			"silly": 10,
-		},
-		colors:{
-			"error": "red",
-			"warning": "yellow",
-			"admin": "magenta",
-			"private": "blue",
-			"public": "green",
-			"others": "gray",
-			"sql": "cyan",
-			"verbose sql": "cyan",
-			"queue": "gray",
-			"debug": "magenta",
-			"silly": 'bold',
-		},
-	}
+	loggingLevels.REST
 );
 connectToDb();
 
@@ -55,7 +30,6 @@ TimeoutWrapper(sendQueue, config.queueSendInterval);
 
 
 import app from './app';
-
 const server = https.createServer({
 	key: config.RESTKey,
 	cert: config.RESTCert,
