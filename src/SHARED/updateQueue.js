@@ -13,7 +13,7 @@ const SQL_1 = require("./SQL");
 function updateQueue() {
     return __awaiter(this, void 0, void 0, function* () {
         logger.log('debug', misc_js_1.inspect `updating Queue`);
-        const changed = yield SQL_1.SqlAll("SELECT  * FROM teilnehmer WHERE changed = 1;", []);
+        const changed = yield SQL_1.SqlAll("SELECT  * FROM teilnehmer WHERE changed = 1;", [], true);
         if (changed.length > 0) {
             logger.log('queue', misc_js_1.inspect `${changed.length} numbers to enqueue`);
             const servers = yield SQL_1.SqlAll("SELECT * FROM servers;", []);

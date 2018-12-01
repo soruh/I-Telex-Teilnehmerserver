@@ -53,7 +53,7 @@ function connectToDb(){
 	});
 }
 
-function prepareQuery(query: string, values?: any[], verbose?:boolean):string{
+function prepareQuery(query: string, values?: any[], verbose=false):string{
 	query = query.replace(/\n/g, "").replace(/\s+/g, " ");
 	logger.log('debug', inspect`${query} ${values||[]}`);
 
@@ -73,9 +73,9 @@ function prepareQuery(query: string, values?: any[], verbose?:boolean):string{
 	return formatted;
 }
 
-function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>void):Promise<number>{
+function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>void, verbose=false):Promise<number>{
 	return new Promise((resolve, reject) => {
-		db.each(prepareQuery(query, values), callback, (err:Error, count:number)=>{
+		db.each(prepareQuery(query, values, verbose), callback, (err:Error, count:number)=>{
 			if(err){
 				reject(err);
 				return;
@@ -85,9 +85,9 @@ function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>v
 	});
 }
 
-function SqlAll<T>(query: string, values: any[]):Promise<T[]>{
+function SqlAll<T>(query: string, values: any[], verbose=false):Promise<T[]>{
 	return new Promise((resolve, reject) => {
-		db.all(prepareQuery(query, values), (err:Error, rows)=>{
+		db.all(prepareQuery(query, values, verbose), (err:Error, rows)=>{
 			if(err){
 				reject(err);
 				return;
@@ -97,9 +97,9 @@ function SqlAll<T>(query: string, values: any[]):Promise<T[]>{
 	});
 }
 
-function SqlGet<T>(query: string, values: any[]):Promise<T>{
+function SqlGet<T>(query: string, values: any[], verbose=false):Promise<T>{
 	return new Promise((resolve, reject) => {
-		db.get(prepareQuery(query, values), (err:Error, row)=>{
+		db.get(prepareQuery(query, values, verbose), (err:Error, row)=>{
 			if(err){
 				reject(err);
 				return;
@@ -109,9 +109,9 @@ function SqlGet<T>(query: string, values: any[]):Promise<T>{
 	});
 }
 
-function SqlRun(query: string, values: any[]):Promise<sqlite.RunResult>{
+function SqlRun(query: string, values: any[], verbose=false):Promise<sqlite.RunResult>{
 	return new Promise((resolve, reject) => {
-		db.run(prepareQuery(query, values), function(err:Error){
+		db.run(prepareQuery(query, values, verbose), function(err:Error){
 			if(err){
 				reject(err);
 				return;

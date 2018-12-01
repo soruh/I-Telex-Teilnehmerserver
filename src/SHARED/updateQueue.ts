@@ -6,7 +6,7 @@ import { SqlAll, SqlEach, SqlGet, SqlRun, teilnehmerRow, serversRow, queueRow } 
 
 async function updateQueue() {
 	logger.log('debug', inspect`updating Queue`);
-	const changed = await SqlAll<teilnehmerRow>("SELECT  * FROM teilnehmer WHERE changed = 1;", []);
+	const changed = await SqlAll<teilnehmerRow>("SELECT  * FROM teilnehmer WHERE changed = 1;", [], true);
 	if (changed.length > 0) {
 		logger.log('queue', inspect`${changed.length} numbers to enqueue`);
 
