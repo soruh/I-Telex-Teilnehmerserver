@@ -54,7 +54,7 @@ async function createWinstonLogger(){
 			config.binaryserverLog,
 			config.binaryserverErrorLog,
 			config.logBinaryserverToConsole,
-			loggingLevels.BIN,
+			loggingLevels.BIN
 		);
 	}catch(err){
 		logInitilisation(inspect`createWinstonLogger: \x1b[031mfail\x1b[000m`);

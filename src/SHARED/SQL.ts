@@ -41,8 +41,9 @@ interface teilnehmerRow {
 
 
 function connectToDb(){
-	return new Promise((resolve, reject)=>{
-		db = new sqlite.Database(path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, '../..', config.DBPath), err=>{
+	return new Promise<sqlite.Database>((resolve, reject)=>{
+		const dbPath = path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, '../..', config.DBPath);
+		db = new sqlite.Database(dbPath, err=>{
 			if (err){
 				reject(err);
 				return;

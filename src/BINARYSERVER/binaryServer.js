@@ -42,7 +42,7 @@ let binaryServer = net.createServer(function (socket) {
                 .catch(err => { logger.log('error', misc_js_1.inspect `${err}`); });
         }
     };
-    socket.on('close', function () {
+    socket.on('close', () => {
         if (client) {
             if (client.newEntries != null)
                 logger.log('network', misc_js_1.inspect `recieved ${client.newEntries} new entries`);
@@ -51,15 +51,23 @@ let binaryServer = net.createServer(function (socket) {
             client = null;
         }
     });
-    socket.on('timeout', function () {
+    socket.on('timeout', () => {
         logger.log('network', misc_js_1.inspect `client ${client.name} timed out`);
         socket.end();
     });
-    socket.on('error', function (err) {
-        logger.log('error', misc_js_1.inspect `${err}`);
+    socket.on('error', (error) => {
+        if (error.code === "ECONNRESET") {
+            logger.log('network', misc_js_1.inspect `client ${client.name} reset the connection`);
+        }
+        else if (error.code === "EPIPE") {
+            logger.log('warning', misc_js_1.inspect `tried to write data to a closed socket`);
+        }
+        else {
+            logger.log('error', misc_js_1.inspect `${error}`);
+        }
         socket.end();
     });
-    let chunker = new ITelexCom.ChunkPackages();
+    const chunker = new ITelexCom.ChunkPackages();
     socket.once('data', asciiListener);
     socket.pipe(chunker);
     chunker.on('data', binaryListener);

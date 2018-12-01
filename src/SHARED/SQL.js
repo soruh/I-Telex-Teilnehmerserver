@@ -9,7 +9,8 @@ const misc_1 = require("./misc");
 let db;
 function connectToDb() {
     return new Promise((resolve, reject) => {
-        db = new sqlite.Database(path.isAbsolute(config_1.default.DBPath) ? config_1.default.DBPath : path.join(__dirname, '../..', config_1.default.DBPath), err => {
+        const dbPath = path.isAbsolute(config_1.default.DBPath) ? config_1.default.DBPath : path.join(__dirname, '../..', config_1.default.DBPath);
+        db = new sqlite.Database(dbPath, err => {
             if (err) {
                 reject(err);
                 return;

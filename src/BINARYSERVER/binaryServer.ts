@@ -48,7 +48,7 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 		}
 	};
 	
-	socket.on('close', function(): void {
+	socket.on('close', () => {
 		if (client) {
 			if (client.newEntries != null) logger.log('network', inspect`recieved ${client.newEntries} new entries`);
 			logger.log('network', inspect`client ${client.name} disconnected!`);
@@ -56,16 +56,22 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 			client = null;
 		}
 	});
-	socket.on('timeout', function(): void {
+	socket.on('timeout', () => {
 		logger.log('network', inspect`client ${client.name} timed out`);
 		socket.end();
 	});
-	socket.on('error', function(err: Error): void {
-		logger.log('error', inspect`${err}`);
+	socket.on('error', (error:Error&{code:string}) => {
+		if (error.code === "ECONNRESET") {
+			logger.log('network', inspect`client ${client.name} reset the connection`);
+		}else if(error.code === "EPIPE"){
+			logger.log('warning', inspect`tried to write data to a closed socket`);
+		}else{
+			logger.log('error', inspect`${error}`);
+		}
 		socket.end();
 	});
 
-	let chunker = new ITelexCom.ChunkPackages();
+	const chunker = new ITelexCom.ChunkPackages();
 
 	socket.once('data', asciiListener);
 	socket.pipe(chunker);

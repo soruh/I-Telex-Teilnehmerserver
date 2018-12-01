@@ -54,14 +54,16 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 			increaseErrorCounter('server', serverkey, "TIMEOUT");
 			socket.end();
 		});
-		socket.on('error', error => {
-			if (error["code"] !== "ECONNRESET") {
+		socket.on('error', (error:Error&{code:string}) => {
+			if (error.code === "ECONNRESET") {
+				logger.log('network', inspect`server ${client.name} reset the connection`);
+			}else if(error.code === "EPIPE"){
+				logger.log('warning', inspect`tried to write data to a closed socket`);
+			}else{
 				logger.log('debug', inspect`${error}`);
 
 				logger.log('network', inspect`server ${client.name} had an error`);
 				increaseErrorCounter('server', serverkey, error["code"]);
-			}else{
-				logger.log('silly', inspect`${error}`);
 			}
 		});
 		socket.once('connect', ()=>{
