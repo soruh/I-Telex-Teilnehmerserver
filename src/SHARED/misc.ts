@@ -564,7 +564,8 @@ function encodeExt(ext:string):number{
 }
 
 function symbolName(symbol:symbol){
-	if(symbol.description) return symbol.description;
+	// tslint:disable-next-line:triple-equals
+	if(symbol.description != undefined) return symbol.description;
 	return /^Symbol\((.*)\)$/.exec(symbol.toString())[1];
 }
 

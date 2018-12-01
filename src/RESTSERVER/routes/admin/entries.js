@@ -56,7 +56,12 @@ function putEntries(req, res, next) {
             for (let entry of entries) {
                 const names = constants_1.peerProperties.filter(name => entry.hasOwnProperty(name));
                 const values = names.map(name => entry[name]);
-                // TODO check if number is set and a valid integer
+                // tslint:disable-next-line:triple-equals
+                if (entry.number == undefined || isNaN(parseInt(entry.number)) || parseInt(entry.number).toString() != entry.number) {
+                    res.status(400);
+                    res.json({ success: false, error: "the 'number' property must be a valid integer" });
+                    return;
+                }
                 // logger.log('admin', inspect`got dataset for: ${entry.name} (${entry.number})`);
                 const existing = yield SQL_1.SqlGet(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);
                 if (existing) {

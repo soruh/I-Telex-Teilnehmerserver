@@ -49,7 +49,12 @@ async function putEntries(req:Request, res:Response, next:NextFunction){
 			const names = peerProperties.filter(name => entry.hasOwnProperty(name));
 			const values = names.map(name => entry[name]);
 
-			// TODO check if number is set and a valid integer
+			// tslint:disable-next-line:triple-equals
+			if(entry.number == undefined||isNaN(parseInt(entry.number))||parseInt(entry.number).toString()!=entry.number){
+				res.status(400);
+				res.json({success:false, error:"the 'number' property must be a valid integer"});
+				return;
+			}
 
 			// logger.log('admin', inspect`got dataset for: ${entry.name} (${entry.number})`);
 			const existing = await SqlGet<teilnehmerRow>(`SELECT * from teilnehmer WHERE number = ?;`, [entry.number]);

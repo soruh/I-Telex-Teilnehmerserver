@@ -480,7 +480,8 @@ function encodeExt(ext) {
 }
 exports.encodeExt = encodeExt;
 function symbolName(symbol) {
-    if (symbol.description)
+    // tslint:disable-next-line:triple-equals
+    if (symbol.description != undefined)
         return symbol.description;
     return /^Symbol\((.*)\)$/.exec(symbol.toString())[1];
 }

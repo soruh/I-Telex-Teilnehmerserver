@@ -453,10 +453,10 @@ function logout() {
 	login();
 	resetforms();
 }
-function twodigit(n) {
+function twodigit(n:number) {
 	// n = n.toString();
 	// return n.length < 2?"0"+n:n;
-	return n.toString().padStart(2, 0);
+	return n.toString().padStart(2, '0');
 }
 function UNIXTIMEToString(UNIXTIME) {
 	let d = new Date(parseInt(UNIXTIME) * 1000);
@@ -464,7 +464,7 @@ function UNIXTIMEToString(UNIXTIME) {
 		return (d.toString());
 	}
 	else {
-		if (language === "english") // TODO remove?
+		if (language === "english")
 			return (twodigit(d.getMonth() + 1) + "." + twodigit(d.getDate()) + "." + d.getFullYear() + " " +
 				twodigit(((d.getHours() > 12) ? (d.getHours() - 12) : d.getHours())) +
 				":" + twodigit(d.getMinutes()) +
