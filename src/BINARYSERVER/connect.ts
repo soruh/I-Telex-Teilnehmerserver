@@ -56,7 +56,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 		});
 		socket.on('error', (error:Error&{code:string}) => {
 			if (error.code === "ECONNRESET") {
-				logger.log('network', inspect`server ${client.name} reset the connection`);
+				logger.log('warning', inspect`server ${client.name} reset the connection`);
 			}else if(error.code === "EPIPE"){
 				logger.log('warning', inspect`tried to write data to a closed socket`);
 			}else{
