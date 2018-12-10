@@ -3,20 +3,30 @@ const UNIXTIMEDATE = false;
 const SHOWALLDATEINFO = false;
 const DEFAULTLANGUAGE = "german";
 const SORTNUMERIC = false;
+let global_list = [];
+let pwdcorrect = false;
+let global_password = null;
+let sortby = "";
+let reverseSort = false;
+let language;
 // tslint:disable:no-var-keyword
 var english;
 var german;
 // tslint:enable:no-var-keyword
-let global_list = [];
-let pwdcorrect = false;
-let sortby = "";
-let reverseSort = false;
-let language;
 const languages = {
     german,
     english,
 };
 $(document).ready(function () {
+    $('#cookie-prompt-buttons').children().click(function () {
+        $("#cookie-prompt").hide();
+        setCookieAllowed($(this).hasClass('yes'));
+        processCookieQueue();
+    });
+    if (getCookie('allow-cookies') === '1') {
+        console.log('cookies are allowed');
+        allowCookies = true;
+    }
     setLanguage(getCookie("language") || DEFAULTLANGUAGE);
     /*$.validator.setDefaults({
           errorLabelContainer: "#errorpop_errmsg",
@@ -402,7 +412,7 @@ function resetforms() {
 }
 function login(pwd, callback) {
     if (pwd)
-        setCookie("pwd", btoa(pwd));
+        global_password = pwd;
     edit({
         job: "confirm password",
     }, function (err, res) {
@@ -414,7 +424,7 @@ function login(pwd, callback) {
     });
 }
 function logout() {
-    setCookie("pwd", "");
+    global_password = null;
     login();
     resetforms();
 }
@@ -457,6 +467,7 @@ function getList(callback) {
                         row.address = address;
                         delete row.hostname;
                         delete row.ipaddress;
+                        // TODO: replace with better solution, beacuse objects don't have a key order
                         const sortedEntries = Object.entries(row).sort(sortFields);
                         let sortedRow = {};
                         for (const field of sortedEntries) {
@@ -1006,7 +1017,8 @@ function initloc() {
 function setLanguage(lang) {
     if (languages.hasOwnProperty(lang)) {
         language = lang;
-        setCookie("language", lang, 365 * 10);
+        if (getCookie("language") !== "" || language !== DEFAULTLANGUAGE)
+            setCookie("language", lang, 365 * 10);
         $("#loc-dropdown-parent").css("background-image", "url(/images/" + lang + ".svg)");
         updateContent(global_list);
     }
@@ -1031,21 +1043,9 @@ function updateLoc() {
     }
     $.extend($.validator.messages, currentLanguage.verify);
 }
-function getPasswordCookie() {
-    let password;
-    try {
-        password = atob(getCookie("pwd"));
-    }
-    catch (e) {
-        console.error(e);
-        setCookie("pwd", "");
-        password = "";
-    }
-    return password;
-}
 function createHash(salt, data) {
-    // console.log('creating Hash: salt='+salt+' password='+getPasswordCookie()+' data='+data);
-    const hash = window['forge_sha256'](salt + getPasswordCookie() + data);
+    // console.log('creating Hash: salt='+salt+' password='+global_password+' data='+data);
+    const hash = window['forge_sha256'](salt + global_password + data);
     // console.log('created Hash: '+hash);
     return hash;
 }
@@ -1073,7 +1073,36 @@ function getToken(data, callback) {
         },
     });
 }
-function setCookie(c_name, value, exdays) {
+let cookieQueue = [];
+function processCookieQueue() {
+    while (cookieQueue.length > 0) {
+        setCookie(...cookieQueue.pop());
+    }
+}
+let allowCookies = null;
+function setCookieAllowed(allowed) {
+    if (allowed) {
+        allowCookies = true;
+        setCookie('allow-cookies', '1', 365 * 10);
+    }
+    else {
+        allowCookies = false;
+    }
+}
+const setCookie = function setCookieWrapper(c_name, value, exdays) {
+    if (allowCookies === true) {
+        console.log(`setting cookie: "${c_name}"="${value}" exdays:${exdays}`);
+        _setCookie(c_name, value, exdays);
+    }
+    else if (allowCookies === null) {
+        cookieQueue.push([c_name, value, exdays]);
+        $('#cookie-prompt').show();
+    }
+    else {
+        console.warn(`not setting cookie: "${c_name}"="${value}" exdays:${exdays}`);
+    }
+};
+function _setCookie(c_name, value, exdays) {
     let exdate = new Date();
     exdate.setDate(exdate.getDate() + exdays);
     let c_value = escape(value) + (exdays == null ? "" : "; expires=" + exdate.toUTCString());

@@ -5,6 +5,7 @@ import * as favicon from "serve-favicon";
 import * as cookieParser from "cookie-parser";
 import * as bodyParser from "body-parser";
 import * as path from "path";
+import * as fs from "fs";
 import { inspect } from "../SHARED/misc.js";
 import router from "./routes/index.js";
 import httpLogger from "../SHARED/httpLogger.js";
@@ -32,6 +33,26 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 
 app.use(favicon(path.join(__dirname, 'public/images', 'favicon.ico')));
+
+// hide impressum_template.html
+app.get("/html/impressum_template.html", function(req, res, next) {
+	let err = new Error('Not Found') as Error&{status:number};
+	err.status = 404;
+	next(err);
+});
+
+
+// print message if no impressum was configured
+app.get("/html/impressum.html", function(req, res, next) {
+	if(fs.existsSync(path.join(__dirname, '../WEBSERVER/public', 'html/impressum.html'))){
+		next();
+	}else{
+		res.status(200);
+		res.write('<!DOCTYPE html><meta charset="utf-8">');
+		res.end("Der Websitebetreiber stellt kein Impressum zur Verfügung.");
+	}
+});
+
 app.use(express.static(path.join(__dirname, '../WEBSERVER/public')));
 app.use('/', router);
 

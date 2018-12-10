@@ -90,6 +90,35 @@ body{
 label{
 	font-weight: normal;
 }
+
+#cookie-prompt{
+	border-top: 1px solid black;
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	z-index: 20000;
+	background-color: white;
+	display: none;
+	text-align: right;
+	padding: 12px 100px;
+}
+
+#cookie-prompt-text{
+	display: inline-block;
+}
+
+#cookie-prompt-buttons{
+	display: inline-block;
+}
+
+#cookie-prompt-buttons .yes{
+
+}
+
+#cookie-prompt-buttons .no{
+
+}
+
 .link:link, .link:visited {
   color: #343434;
   text-decoration: none;
@@ -109,10 +138,9 @@ label{
 }
 #waitpop {
     display: none;
-    left: 334px;
-    padding: 160px;
-    position: fixed;
-    top: 10%;
+	position: absolute;
+	top: -23px;
+	left: 393px;
     z-index: 20000;
 }
 .table-th-label{
@@ -342,6 +370,9 @@ input.field_error{
 }
 .delete_dialog_label{
 	xdisplay: block;
+}
+.clear{
+	clear: both;
 }
 .popup h2{
 

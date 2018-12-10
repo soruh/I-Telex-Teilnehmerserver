@@ -1,5 +1,14 @@
 /* jshint -W079 */
 var german = {
+  ".yes":{
+    text: "Ja"
+  },
+  ".no":{
+    text: "Nein"
+  },
+  "#cookie-prompt-text":{
+    text: "Cookies erlauben?"
+  },
   "#copy_edit_dialog":{
     text: "Kopieren"
   },
