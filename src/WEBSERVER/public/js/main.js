@@ -407,8 +407,10 @@ function login(pwd, callback) {
         job: "confirm password",
     }, function (err, res) {
         pwdcorrect = (res.code === 1);
-        if (typeof callback === "function")
-            callback(res.code === 1);
+        refresh(() => {
+            if (typeof callback === "function")
+                callback(res.code === 1);
+        });
     });
 }
 function logout() {

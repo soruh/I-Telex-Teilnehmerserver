@@ -438,14 +438,14 @@ function resetforms() {
 	showpopup("");
 }
 function login(pwd?:string, callback?:(success:boolean)=>void) {
-	if (pwd)
-		setCookie("pwd", btoa(pwd));
+	if (pwd) setCookie("pwd", btoa(pwd));
 	edit({
 		job: "confirm password",
 	}, function(err, res) {
 		pwdcorrect = (res.code === 1);
-		if (typeof callback === "function")
-			callback(res.code === 1);
+		refresh(()=>{
+			if (typeof callback === "function") callback(res.code === 1);
+		});
 	});
 }
 function logout() {
