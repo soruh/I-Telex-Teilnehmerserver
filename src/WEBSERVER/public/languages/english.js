@@ -77,25 +77,25 @@ var english = {
     text: "Wrong password!"
   },
   ".type_option_0": {
-    text: "deleted (0)"
+    text: "deleted"
   },
   ".type_option_1": {
-    text: "hostname baudot (1)"
+    text: "hostname i-Telex"
   },
   ".type_option_2": {
-    text: "ip baudot (2)"
+    text: "fixed IP i-Telex"
   },
   ".type_option_3": {
-    text: "hostname ascii (3)"
+    text: "hostname ASCII"
   },
   ".type_option_4": {
-    text: "ip ascii (4)"
+    text: "fixed IP ASCII"
   },
   ".type_option_5": {
-    text: "DynIp baudot (5)"
+    text: "dyn. IP i-Telex"
   },
   ".type_option_6": {
-    text: "official e-mail (6)"
+    text: "email"
   },
   "#passwordfield_label": {
     text: "password"

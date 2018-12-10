@@ -77,25 +77,25 @@ var german = {
     text: "Falsches Passwort!"
   },
   ".type_option_0": {
-    text: "gelöscht (0)"
+    text: "gelöscht"
   },
   ".type_option_1": {
-    text: "Hostname Baudot (1)"
+    text: "Hostname i-Telex"
   },
   ".type_option_2": {
-    text: "Ip Baudot (2)"
+    text: "feste IP i-Telex"
   },
   ".type_option_3": {
-    text: "Hostname Ascii (3)"
+    text: "Hostname ASCII"
   },
   ".type_option_4": {
-    text: "Ip Ascii (4)"
+    text: "feste IP ASCII"
   },
   ".type_option_5": {
-    text: "DynIp Baudot (5)"
+    text: "Dyn. IP i-Telex"
   },
   ".type_option_6": {
-    text: "offizielle E-mail (6)"
+    text: "E-Mail"
   },
   "#passwordfield_label": {
     text: "passwort"
