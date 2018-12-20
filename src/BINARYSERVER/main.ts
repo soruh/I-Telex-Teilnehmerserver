@@ -28,16 +28,9 @@ declare global {
 	interface Buffer {
 		readNullTermString:(offset?: number, byteLength?: number, encoding?: string)=>string;
 	}
-	interface ObjectConstructor {
-		entries:(Object)=>Array<[string, any]>;
-		values:(Object)=>any[];
-	}
 	interface String {
 		padStart:(paddingSize:number, padWith?:string)=>string;
 		padEnd:  (paddingSize:number, padWith?:string)=>string;
-	}
-	interface Symbol {
-		description:string;
 	}
 	const transporter:MailTransporter;
 	const logger:winston.Logger;

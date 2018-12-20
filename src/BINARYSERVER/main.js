@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_js_1 = require("../SHARED/config.js");
 const util = require("util");
@@ -23,17 +15,15 @@ const constants_js_1 = require("../SHARED/constants.js");
 function logInitilisation(message) {
     process.stdout.write(`${new Date().toISOString().replace(/[TZ]*/, " ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
 }
-function createWinstonLogger() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            createLogger_js_1.default(config_js_1.default.binaryserverLoggingLevel, config_js_1.default.binaryserverLog, config_js_1.default.binaryserverErrorLog, config_js_1.default.logBinaryserverToConsole, constants_js_1.loggingLevels.BIN);
-        }
-        catch (err) {
-            logInitilisation(misc_js_1.inspect `createWinstonLogger: \x1b[031mfail\x1b[000m`);
-            throw (err);
-        }
-        logInitilisation(misc_js_1.inspect `createWinstonLogger: \x1b[032mdone\x1b[000m`);
-    });
+async function createWinstonLogger() {
+    try {
+        createLogger_js_1.default(config_js_1.default.binaryserverLoggingLevel, config_js_1.default.binaryserverLog, config_js_1.default.binaryserverErrorLog, config_js_1.default.logBinaryserverToConsole, constants_js_1.loggingLevels.BIN);
+    }
+    catch (err) {
+        logInitilisation(misc_js_1.inspect `createWinstonLogger: \x1b[031mfail\x1b[000m`);
+        throw (err);
+    }
+    logInitilisation(misc_js_1.inspect `createWinstonLogger: \x1b[032mdone\x1b[000m`);
 }
 function listenBinaryserver() {
     return new Promise((resolve, reject) => {
@@ -53,17 +43,15 @@ function startTimeouts() {
         resolve();
     });
 }
-function connectToDatabase() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield SQL_js_1.connectToDb();
-        }
-        catch (err) {
-            logInitilisation(misc_js_1.inspect `connectToDatabase: \x1b[031mfail\x1b[000m`);
-            throw (err);
-        }
-        logInitilisation(misc_js_1.inspect `connectToDatabase: \x1b[032mdone\x1b[000m`);
-    });
+async function connectToDatabase() {
+    try {
+        await SQL_js_1.connectToDb();
+    }
+    catch (err) {
+        logInitilisation(misc_js_1.inspect `connectToDatabase: \x1b[031mfail\x1b[000m`);
+        throw (err);
+    }
+    logInitilisation(misc_js_1.inspect `connectToDatabase: \x1b[032mdone\x1b[000m`);
 }
 function setupEmailTransport() {
     return new Promise((resolve, reject) => {
@@ -114,13 +102,13 @@ Promise.all([createWinstonLogger(), setupEmailTransport(), connectToDatabase(), 
     logger.log('error', misc_js_1.inspect `error in startup sequence: ${err}`);
 });
 // write uncaught exceptions to all logs
-process.on('uncaughtException', (err) => __awaiter(this, void 0, void 0, function* () {
+process.on('uncaughtException', async (err) => {
     logger.log('error', misc_js_1.inspect `uncaught exception ${err}`);
-    yield misc_js_1.sendEmail('uncaughtException', {
+    await misc_js_1.sendEmail('uncaughtException', {
         exception: util.inspect(err),
         date: misc_js_1.printDate(),
         timeZone: misc_js_1.getTimezone(new Date()),
     });
     if (config_js_1.default.exitOnUncaughtException)
         process.exit(1);
-}));
+});

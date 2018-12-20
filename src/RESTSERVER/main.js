@@ -1,12 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_js_1 = require("../SHARED/config.js");
 const util = require("util");
@@ -41,13 +33,13 @@ server.listen(config_js_1.default.RESTServerPort, () => {
 FullQuery_1.default();
 // sendQueue();
 // write uncaught exceptions to all logs
-process.on('uncaughtException', (err) => __awaiter(this, void 0, void 0, function* () {
+process.on('uncaughtException', async (err) => {
     logger.log('error', misc_js_1.inspect `uncaught exception ${err}`);
-    yield misc_js_1.sendEmail('uncaughtException', {
+    await misc_js_1.sendEmail('uncaughtException', {
         exception: util.inspect(err),
         date: misc_js_1.printDate(),
         timeZone: misc_js_1.getTimezone(new Date()),
     });
     if (config_js_1.default.exitOnUncaughtException)
         process.exit(1);
-}));
+});
