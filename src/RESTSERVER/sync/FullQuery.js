@@ -20,9 +20,20 @@ async function getFullQuery() {
             const endPoint = config_js_1.default.serverPin === null ? 'public' : 'admin';
             const entries = await APICall_js_1.default('GET', server.address, server.port, `/${endPoint}/entries`);
             for (const entry of entries) {
-                const names = constants.peerProperties.filter(name => entry.hasOwnProperty(name));
-                const values = names.map(name => entry[name]);
-                await SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(() => '?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name => name + "=?").join(', ')};`, [...values, ...values]);
+                let names = constants.peerProperties.filter(name => entry.hasOwnProperty(name));
+                let values = names.map(name => entry[name]);
+                const existing = await SQL_1.SqlGet(`SELECT number, timestamp FROM teilnehmer WHERE number=?;`, [entry.number]);
+                if (existing) {
+                    if (existing.timestamp < entry.timestamp) {
+                        await SQL_1.SqlRun(`UPDATE teilnehmer SET ${names.map(name => name + "=?").join(', ')} WHERE number=?;`, [...values, existing.number]);
+                    }
+                    else {
+                        logger.log('debug', misc_js_1.inspect `entry ${existing.number} didn't change`);
+                    }
+                }
+                else {
+                    await SQL_1.SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(() => '?').join(', ')});`, [...values]);
+                }
             }
         }
         catch (err) {

@@ -8,7 +8,7 @@ function APIcall(method:string, host:string, port:number, path:string, data?:any
 		logger.log('admin', `making ${method} request to ${host}:${port}${path[0]==='/'?'':'/'}${path}`);
 
 		let headers = {};
-		let stringifiedData;
+		let stringifiedData:string;
 		if(data){
 			try{
 				stringifiedData = JSON.stringify({data});
@@ -44,7 +44,7 @@ function APIcall(method:string, host:string, port:number, path:string, data?:any
 			});
 			res.once('end', ()=>{
 				logger.log('debug', 'API request ended');
-				logger.log('silly', buffer);
+				logger.log('silly', inspect`ApiCall recieved data: ${buffer}`);
 
 				if(res.statusCode !== 200){
 					logger.log('debug', inspect`API call failed with error    code: ${res.statusCode} (${res.statusMessage})`);

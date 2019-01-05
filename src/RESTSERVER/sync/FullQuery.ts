@@ -25,9 +25,19 @@ async function getFullQuery(){
 			const endPoint = config.serverPin===null?'public':'admin';
 			const entries:teilnehmerRow[] = await APIcall('GET', server.address, server.port, `/${endPoint}/entries`);
 			for(const entry of entries){
-				const names = constants.peerProperties.filter(name=>entry.hasOwnProperty(name));
-				const values = names.map(name=>entry[name]);
-				await SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(()=>'?').join(', ')}) ON CONFLICT (number) DO UPDATE SET ${names.map(name=>name+"=?").join(', ')};`, [...values,...values]);
+				let names = constants.peerProperties.filter(name=>entry.hasOwnProperty(name));
+				let values = names.map(name=>entry[name]);
+
+				const existing = await SqlGet<{number:number, timestamp:number}>(`SELECT number, timestamp FROM teilnehmer WHERE number=?;`, [entry.number]);
+				if(existing){
+					if(existing.timestamp < entry.timestamp){
+						await SqlRun(`UPDATE teilnehmer SET ${names.map(name=>name+"=?").join(', ')} WHERE number=?;`, [...values, existing.number]);
+					}else{
+						logger.log('debug', inspect`entry ${existing.number} didn't change`);
+					}
+				}else{
+					await SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(()=>'?').join(', ')});`, [...values]);
+				}
 			}
 		}catch(err){
 			logger.log('error', inspect`${err}`);
