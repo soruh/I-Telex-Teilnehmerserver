@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css" >
+  <link rel="stylesheet" href="/css/input.css">
+  <link rel="stylesheet" href="/css/main.css">
+
+  <script src="/js/jquery-3.3.1.min.js"></script>
+  <script src="/js/jquery.validate.min.js"></script>
+
+  <script src='/js/forge-sha256.min.js'></script>
+
+  <script src="/bootstrap-3.3.7-dist/js/bootstrap.min.js" ></script>
+
+
+  <script src="/languages/german.js"></script>
+  <script src="/languages/english.js"></script>
+
+  <script src="/js/main.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">Teilnehmerserver</a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <!--<li class="inactive"><a href="/">Home</a></li>-->
+          <li class="inactive"><a href="/html/impressum.html">Impressum & Datenschutz</a></li>
+          <li class="inactive"><a href="http://telexgateway.de/">Nachrichtendienst</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <div id="search-container" class="panel">
+              <input id="search-box"></input>
+              <!--style="display:none;"-->
+              <!--<button id="search-button" class="glyphicon glyphicon-search btn btn-primary btn-sm"></button>-->
+            </div>
+          </li>
+          <li>
+            <div id="download-container" class="panel">
+              <button id="download-button" onclick="window.location.href='/download?type=csv&version=1'" class="glyphicon glyphicon glyphicon-download-alt btn btn-primary btn-sm"></button>
+            </div>
+          </li>
+          <li>
+            <div id="refresh-container" class="panel">
+              <button id="refresh-button" class="glyphicon glyphicon-refresh btn btn-warning btn-sm"></button>
+            </div>
+          </li>
+          <li>
+            <button id="new" style="display: none;" class="btn btn-primary btn-sm admin_only"></button>
+          </li>
+          <li>
+            <div id="loc-container">
+              <div id="loc-dropdown-parent"></div>
+              <div id="loc-dropdown-children" style="display:none;"></div>
+            </div>
+          </li>
+          <li>
+            <div id="loginout">
+              <button id="logout" onclick="logout();"; style="display: none;" class="btn btn-danger btn-sm admin_only"></button>
+              <button id="login" style="display: none;" class="btn btn-primary btn-sm user_only"></button>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <!--/.nav-collapse -->
+    </div>
+  </nav>
+  <div id="waitpop">
+    <div id="waitpop_inner" class="panel panel-default" role="alert">
+      <div id="waitpop_content">
+        <div id="waitpop_message"><p style="margin-bottom:8px">Processing...</p></div>
+        <!--<img src="/fileadmin/templates/img/gears_w.gif" alt="" border="0">-->
+      </div>
+    </div>
+  </div>
+  <div id="cookie-prompt">
+    <a id="cookie-prompt-text" href="/html/impressum.html"></a>
+    <div id="cookie-prompt-buttons">
+      <button class="yes"></button>
+      <button class="no"></button>
+    </div>
+    <div class="clear"></div>
+  </div>
+  <!--
+  <div id="errorpop">
+    <div id="errorpop_inner" class="alert alert-danger" role="alert">
+      <span class="close" onclick="closeError();" aria-label="close">×</span>
+      <div id="errorpop_content">
+      	<div id="errorpop_errmsg">Error!!</div>
+      </div>
+  	</div>
+  </div>-->
+  <div class="container">
+    <div id="table"></div>
+  </div>
+
+  <div style="display: none;" id="password_dialog" class="popup">
+    <h2 id="hl_password"></h2>
+    <form id="password_form">
+      <div class="field--wrapper">
+        <label for="passwordfield" id="passwordfield_label">passwordfield</label>
+        <input id="passwordfield" type="password" name="password">
+      </div>
+      <div class="button_container">
+        <button id="submit_password_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
+        <button id="abort_password_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
+      </div>
+    </form>
+  </div>
+  <div style="display: none;" id="newentry_dialog" class="popup">
+    <h2 id="hl_newentry"></h2>
+    <form id="newentry_form">
+      <div class="field--wrapper">
+      <label for="number_newentry_dialog" id="number_newentry_dialog_label">number_newentry_dialog</label>
+      <input id="number_newentry_dialog" type="text" name="number">
+    </div>
+      <div class="field--wrapper">
+        <label for="name_newentry_dialog" id="name_newentry_dialog_label">name_newentry_dialog</label>
+        <input id="name_newentry_dialog" type="text" name="name">
+      </div>
+      <div class="field--wrapper">
+        <label for="type_newentry_dialog" id="type_newentry_dialog_label">type_newentry_dialog</label>
+        <select class="input" id=type_newentry_dialog name="type">
+          <option class="type_option_1" value="1"></option>
+          <option class="type_option_2" value="2"></option>
+          <option class="type_option_3" value="3"></option>
+          <option class="type_option_4" value="4"></option>
+          <option class="type_option_5" value="5"></option>
+          <option class="type_option_6" value="6"></option>
+        </select>
+      </div>
+      <div class="field--wrapper">
+        <label for="email_newentry_dialog" id="email_newentry_dialog_label">email_newentry_dialog</label>
+        <input id="email_newentry_dialog" type="text" name="email">
+      </div>
+      <div class="field--wrapper">
+        <label for="hostname_newentry_dialog" id="hostname_newentry_dialog_label">hostname_newentry_dialog</label>
+        <input id="hostname_newentry_dialog" type="text" name="hostname">
+      </div>
+      <div class="field--wrapper">
+        <label for="ipaddress_newentry_dialog" id="ipaddress_newentry_dialog_label">ipaddress_newentry_dialog</label>
+        <input id="ipaddress_newentry_dialog" type="text" name="ipaddress">
+      </div>
+      <div class="field--wrapper">
+        <label for="port_newentry_dialog" id="port_newentry_dialog_label">port_newentry_dialog</label>
+        <input id="port_newentry_dialog" type="text" name="port">
+      </div>
+      <div class="field--wrapper">
+        <label for="extension_newentry_dialog" id="extension_newentry_dialog_label">extension_newentry_dialog</label>
+        <input id="extension_newentry_dialog" type="text" name="extension">
+      </div>
+      <div class="field--wrapper">
+        <label for="pin_newentry_dialog" id="pin_newentry_dialog_label">pin_newentry_dialog</label>
+        <input id="pin_newentry_dialog" type="text" name="pin">
+      </div>
+      <label for="disabled_newentry_dialog" id="disabled_newentry_dialog_label">disabled_newentry_dialog</label>
+      <input type="checkbox" id="disabled_newentry_dialog" name="disabled"></input>
+      <div class="button_container">
+      <button id="submit_newentry_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
+      <button id="abort_newentry_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
+    </div>
+    </form>
+  </div>
+  <div style="display: none;" id="edit_dialog" class="popup">
+    <form id="edit_form">
+      <h2 id="hl_edit"></h2>
+      <div class="field--wrapper">
+      <label for="number_edit_dialog" id="number_edit_dialog_label">number_edit_dialog</label>
+      <input id="number_edit_dialog" type="text" name="number">
+    </div>
+      <div class="field--wrapper">
+        <label for="name_edit_dialog" id="name_edit_dialog_label">name_edit_dialog</label>
+        <input id="name_edit_dialog" type="text" name="name">
+      </div>
+      <div class="field--wrapper">
+        <label for="type_edit_dialog" id="type_edit_dialog_label">type_edit_dialog</label>
+        <select class="input" id=type_edit_dialog name="type">
+          <option class="type_option_1" value="1"></option>
+          <option class="type_option_2" value="2"></option>
+          <option class="type_option_3" value="3"></option>
+          <option class="type_option_4" value="4"></option>
+          <option class="type_option_5" value="5"></option>
+          <option class="type_option_6" value="6"></option>
+        </select>
+      </div>
+      <div class="field--wrapper">
+        <label for="email_edit_dialog" id="email_edit_dialog_label">email_edit_dialog</label>
+        <input id="email_edit_dialog" type="text" name="email">
+      </div>
+      <div class="field--wrapper">
+        <label for="hostname_edit_dialog" id="hostname_edit_dialog_label">hostname_edit_dialog</label>
+        <input id="hostname_edit_dialog" type="text" name="hostname">
+      </div>
+      <div class="field--wrapper">
+        <label for="ipaddress_edit_dialog" id="ipaddress_edit_dialog_label">ipaddress_edit_dialog</label>
+        <input id="ipaddress_edit_dialog" type="text" name="ipaddress">
+      </div>
+      <div class="field--wrapper">
+        <label for="port_edit_dialog" id="port_edit_dialog_label">port_edit_dialog</label>
+        <input id="port_edit_dialog" type="text" name="port">
+      </div>
+      <div class="field--wrapper">
+        <label for="extension_edit_dialog" id="extension_edit_dialog_label">extension_edit_dialog</label>
+        <input id="extension_edit_dialog" type="text" name="extension">
+      </div>
+      <!--<div class="field--wrapper">
+        <label for="pin_edit_dialog" id="pin_edit_dialog_label">pin_edit_dialog</label>
+        <input id="pin_edit_dialog" type="text">
+      </div>-->
+      <label for="disabled_edit_dialog" id="disabled_edit_dialog_label">disabled_edit_dialog</label>
+      <input type="checkbox" id="disabled_edit_dialog" name="disabled"></input>
+      <div class="button_container">
+        <button id="submit_edit_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
+        <button id="copy_edit_dialog" class="btn btn-warning btn-sm" type="button"></button>
+        <button id="abort_edit_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
+      </div>
+    </form>
+  </div>
+  <div style="display: none;" id="delete_dialog" class="popup">
+    <h2 id="hl_delete"></h2>
+    <div id="delete_dialog_label_container"></div>
+    <div class="button_container">
+      <button id="submit_delete_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
+      <button id="abort_delete_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
+    </div>
+  </div>
+  <div style="display: none;" id="resetPin_dialog" class="popup">
+    <h2 id="hl_resetPin"></h2>
+    <div id="resetPin_dialog_label_container"></div>
+    <div class="button_container">
+      <button id="submit_resetPin_dialog" class="btn btn-primary btn-sm submit_dialog" type="button"></button>
+      <button id="abort_resetPin_dialog" class="btn btn-danger btn-sm abort_dialog" type="button"></button>
+    </div>
+  </div>
+  <br/>
+  <span id="log" style="display: none;"></span>
+</body>
+</html>
