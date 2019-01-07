@@ -1,5 +1,5 @@
-# Use an official node runtime as a parent image
-FROM node:10.13.0
+# Use an official node (current lts) runtime as a parent image
+FROM node:10.13.0 
 
 # Set the working directory to /app
 WORKDIR /app
@@ -39,4 +39,4 @@ RUN npm remove node-pre-gyp -g
 
 
 # start all processes
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+CMD ["bash", "-c", "node tools/createDb.js 2>/dev/null;exec pm2-runtime start ecosystem.config.js"]

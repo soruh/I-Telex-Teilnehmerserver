@@ -11,14 +11,14 @@ const dbPathExists = fs.existsSync(path.dirname(dbPath));
 
 
 if(dbPathExists){
-	console.log('database directory already exists');
+	console.error('database directory already exists');
 }else{
 	fs.mkdirSync(path.dirname(dbPath), {recursive: true});
 	console.log('created database directory');
 }
 
 if(dbExists){
-	console.log('database file already exists');
+	console.error('database file already exists');
 }
 
 connectToDb()

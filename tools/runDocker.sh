@@ -11,10 +11,14 @@ fi
 # go to project directory
 dir="`pwd`/`dirname "$0"`/.."
 
+
+mkdir logs 2>/dev/null
+mkdir db 2>/dev/null
+
 if [[ $1 == "-d" ]]
 then
 	echo "detatching"
-	docker run \
+	exec docker run \
 		--mount type=bind,source=$dir/db,target=/app/db \
 		--mount type=bind,source=$dir/logs,target=/app/logs \
 		--name teilnehmerserver \
@@ -23,7 +27,7 @@ then
 		teilnehmerserver
 else
 	echo "not detatching"
-	docker run \
+	exec docker run \
 		--mount type=bind,source=$dir/db,target=/app/db \
 		--mount type=bind,source=$dir/logs,target=/app/logs \
 		--name teilnehmerserver \
