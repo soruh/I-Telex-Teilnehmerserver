@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #check if docker is installed
 DOCKER_PATH=`which docker`
