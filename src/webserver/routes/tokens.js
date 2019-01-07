@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_1 = require("../../SHARED/config");
+const config_1 = require("../../shared/config");
 const crypto = require("crypto");
-const misc_1 = require("../../SHARED/misc");
+const misc_1 = require("../../shared/misc");
 let salts = {};
 function removeOldSalts() {
     for (let i in salts) {

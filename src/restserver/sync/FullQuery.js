@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("../../SHARED/config.js");
-const misc_js_1 = require("../../SHARED/misc.js");
-const SQL_1 = require("../../SHARED/SQL");
+const config_js_1 = require("../../shared/config.js");
+const misc_js_1 = require("../../shared/misc.js");
+const SQL_1 = require("../../shared/SQL");
 const APICall_js_1 = require("./APICall.js");
-const constants = require("../../SHARED/constants");
+const constants = require("../../shared/constants");
 async function getFullQuery() {
     logger.log('admin', misc_js_1.inspect `getting FullQuery`);
     let servers = await SQL_1.SqlAll('SELECT * from servers WHERE version=2;', []);

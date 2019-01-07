@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("../SHARED/config.js");
+const config_js_1 = require("../shared/config.js");
 const util = require("util");
-const timers_1 = require("../BINARYSERVER/timers");
+const timers_1 = require("../binaryserver/timers");
 const nodemailer = require("nodemailer");
-const misc_js_1 = require("../SHARED/misc.js");
+const misc_js_1 = require("../shared/misc.js");
 const FullQuery_js_1 = require("./FullQuery.js");
 const sendQueue_js_1 = require("./sendQueue.js");
 const binaryServer_js_1 = require("./binaryServer.js");
 const cleanUp_js_1 = require("./cleanUp.js");
-const createLogger_js_1 = require("../SHARED/createLogger.js");
-const SQL_js_1 = require("../SHARED/SQL.js");
-const constants_js_1 = require("../SHARED/constants.js");
+const createLogger_js_1 = require("../shared/createLogger.js");
+const SQL_js_1 = require("../shared/SQL.js");
+const constants_js_1 = require("../shared/constants.js");
 function logInitilisation(message) {
     process.stdout.write(`${new Date().toISOString().replace(/[TZ]*/, " ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
 }

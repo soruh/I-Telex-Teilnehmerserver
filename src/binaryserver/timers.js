@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-// import colors from "../SHARED/colors.js";
-const misc_js_1 = require("../SHARED/misc.js");
+// import colors from "../shared/colors.js";
+const misc_js_1 = require("../shared/misc.js");
 //#endregion
 function timeDiff(date1, date2 = Date.now()) {
     return date2 - date1;

@@ -6,8 +6,8 @@ const index_1 = require("./routes/admin/index");
 const index_2 = require("./routes/public/index");
 const index_3 = require("./routes/private/index");
 const logger = global.logger;
-const misc_js_1 = require("../SHARED/misc.js");
-const httpLogger_1 = require("../SHARED/httpLogger");
+const misc_js_1 = require("../shared/misc.js");
+const httpLogger_1 = require("../shared/httpLogger");
 let app = express();
 app.use(httpLogger_1.default.bind(null, (message, req, res) => {
     if (/^\/private/.test(req.originalUrl)) {

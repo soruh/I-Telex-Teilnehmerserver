@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const misc_1 = require("../../SHARED/misc");
-const SQL_1 = require("../../SHARED/SQL");
+const misc_1 = require("../../shared/misc");
+const SQL_1 = require("../../shared/SQL");
 const tokens_1 = require("./tokens");
 async function resetPinEntry(req, res, data) {
     let result = await SQL_1.SqlRun("UPDATE teilnehmer SET pin=0, changed=1, timestamp=? WHERE uid=?;", [misc_1.timestamp(), data.uid]);

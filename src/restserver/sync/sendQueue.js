@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("../../SHARED/config.js");
-const misc_js_1 = require("../../SHARED/misc.js");
-const SQL_1 = require("../../SHARED/SQL");
+const config_js_1 = require("../../shared/config.js");
+const misc_js_1 = require("../../shared/misc.js");
+const SQL_1 = require("../../shared/SQL");
 const APICall_1 = require("./APICall");
-const constants = require("../../SHARED/constants");
-const updateQueue_js_1 = require("../../SHARED/updateQueue.js");
+const constants = require("../../shared/constants");
+const updateQueue_js_1 = require("../../shared/updateQueue.js");
 const readonly = (config_js_1.default.serverPin == null);
 async function sendQueue() {
     await updateQueue_js_1.default();

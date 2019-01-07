@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
-const config_js_1 = require("../SHARED/config.js");
-const constants = require("../SHARED/constants.js");
-const misc_js_1 = require("../SHARED/misc.js");
-const SQL_1 = require("../SHARED/SQL");
+const config_js_1 = require("../shared/config.js");
+const constants = require("../shared/constants.js");
+const misc_js_1 = require("../shared/misc.js");
+const SQL_1 = require("../shared/SQL");
 const sendQueue_js_1 = require("./sendQueue.js");
 // import { lookup } from "dns";
 //#endregion

@@ -6,13 +6,13 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const path = require("path");
 const fs = require("fs");
-const misc_js_1 = require("../SHARED/misc.js");
+const misc_js_1 = require("../shared/misc.js");
 const index_js_1 = require("./routes/index.js");
-const httpLogger_js_1 = require("../SHARED/httpLogger.js");
+const httpLogger_js_1 = require("../shared/httpLogger.js");
 const logger = global.logger;
 let app = express();
 // view engine setup
-app.set('views', path.join(__dirname, '../WEBSERVER/views'));
+app.set('views', path.join(__dirname, '../webserver/views'));
 app.set('view engine', 'pug');
 app.use(httpLogger_js_1.default.bind(null, (message, req, res) => {
     if (req.originalUrl === '/') {
@@ -34,7 +34,7 @@ app.get("/html/impressum_template.html", function (req, res, next) {
 });
 // print message if no impressum was configured
 app.get("/html/impressum.html", function (req, res, next) {
-    if (fs.existsSync(path.join(__dirname, '../WEBSERVER/public', 'html/impressum.html'))) {
+    if (fs.existsSync(path.join(__dirname, '../webserver/public', 'html/impressum.html'))) {
         next();
     }
     else {
@@ -43,7 +43,7 @@ app.get("/html/impressum.html", function (req, res, next) {
         res.end("Der Websitebetreiber stellt kein Impressum zur Verfügung.");
     }
 });
-app.use(express.static(path.join(__dirname, '../WEBSERVER/public')));
+app.use(express.static(path.join(__dirname, '../webserver/public')));
 app.use('/', index_js_1.default);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

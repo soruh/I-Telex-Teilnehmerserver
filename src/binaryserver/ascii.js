@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_1 = require("../SHARED/config");
+const config_1 = require("../shared/config");
 const util = require("util");
 const dns = require("dns");
 const ip = require("ip");
-const misc_1 = require("../SHARED/misc");
-const SQL_1 = require("../SHARED/SQL");
-const serialEachPromise_1 = require("../SHARED/serialEachPromise");
+const misc_1 = require("../shared/misc");
+const SQL_1 = require("../shared/SQL");
+const serialEachPromise_1 = require("../shared/serialEachPromise");
 async function asciiLookup(data, client) {
     const match = /q([0-9]+)/.exec(data.toString());
     const number = match[1];

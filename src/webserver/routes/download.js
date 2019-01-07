@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const SQL_1 = require("../../SHARED/SQL");
+const SQL_1 = require("../../shared/SQL");
 async function download(req, res, next) {
     switch (req.query.type) {
         case "csv":

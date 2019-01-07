@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const SQL_1 = require("../../../SHARED/SQL");
-const constants_1 = require("../../../SHARED/constants");
+const SQL_1 = require("../../../shared/SQL");
+const constants_1 = require("../../../shared/constants");
 async function entries(req, res, next) {
     try {
         let entries = await SQL_1.SqlAll(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1;`, []);

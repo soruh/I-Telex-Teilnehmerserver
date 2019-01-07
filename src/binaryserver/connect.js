@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const net = require("net");
-const config_js_1 = require("../SHARED/config.js");
-// import colors from "../SHARED/colors.js";
-const constants = require("../SHARED/constants.js");
-const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
-const misc_js_1 = require("../SHARED/misc.js");
+const config_js_1 = require("../shared/config.js");
+// import colors from "../shared/colors.js";
+const constants = require("../shared/constants.js");
+const ITelexCom = require("../binaryserver/ITelexCom.js");
+const misc_js_1 = require("../shared/misc.js");
 const handles_js_1 = require("./handles.js");
 //#endregion
 // tslint:disable-next-line:no-empty

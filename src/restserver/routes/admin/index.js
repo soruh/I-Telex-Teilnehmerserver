@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const entries_1 = require("./entries");
-const config_1 = require("../../../SHARED/config");
+const config_1 = require("../../../shared/config");
 const PASSWORD = config_1.default.serverPin + '';
 const adminRouter = express.Router();
 // Test Authorization header of all requests to /admin/*

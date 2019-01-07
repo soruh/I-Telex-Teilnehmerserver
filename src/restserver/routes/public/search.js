@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const SQL_1 = require("../../../SHARED/SQL");
-const constants_1 = require("../../../SHARED/constants");
+const SQL_1 = require("../../../shared/SQL");
+const constants_1 = require("../../../shared/constants");
 async function search(req, res, next) {
     try {
         const pattern = req.query.q;

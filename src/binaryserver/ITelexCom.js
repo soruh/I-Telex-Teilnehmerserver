@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const ip = require("ip");
-const config_js_1 = require("../SHARED/config.js");
-const colors_js_1 = require("../SHARED/colors.js");
-const constants = require("../SHARED/constants.js");
-const misc_js_1 = require("../SHARED/misc.js");
+const config_js_1 = require("../shared/config.js");
+const colors_js_1 = require("../shared/colors.js");
+const constants = require("../shared/constants.js");
+const misc_js_1 = require("../shared/misc.js");
 const stream_1 = require("stream");
 //#endregion
 Buffer.prototype.readNullTermString = function readNullTermString(offset = 0, byteLength = this.length - offset, encoding = "utf8") {

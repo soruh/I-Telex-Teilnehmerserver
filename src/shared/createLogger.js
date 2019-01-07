@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const winston = require("winston");
 const path = require("path");
-const config_1 = require("../SHARED/config");
-const colors_1 = require("../SHARED/colors");
+const config_1 = require("../shared/config");
+const colors_1 = require("../shared/colors");
 function createLogger(loggingLevel, standartLog, errorLog, logToConsole, customLevels) {
     colors_1.default.disable(config_1.default.disableColors);
     let levels = winston.config.npm.levels;

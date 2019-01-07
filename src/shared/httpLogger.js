@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const misc_js_1 = require("../SHARED/misc.js");
-const colors_js_1 = require("../SHARED/colors.js");
+const misc_js_1 = require("../shared/misc.js");
+const colors_js_1 = require("../shared/colors.js");
 async function httpLogger(callback, req, res, next) {
     let ip = misc_js_1.normalizeIp(req.connection.remoteAddress);
     next();

@@ -4,9 +4,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util = require("util");
 const ip = require("ip");
 const nodemailer = require("nodemailer");
-const config_js_1 = require("../SHARED/config.js");
-const colors_js_1 = require("../SHARED/colors.js");
-const ITelexCom = require("../BINARYSERVER/ITelexCom.js");
+const config_js_1 = require("../shared/config.js");
+const colors_js_1 = require("../shared/colors.js");
+const ITelexCom = require("../binaryserver/ITelexCom.js");
 // import * as winston from "winston";
 //#endregion
 const textColor = colors_js_1.default.Reset;

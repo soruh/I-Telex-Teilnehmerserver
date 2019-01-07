@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const misc_1 = require("../SHARED/misc");
-const SQL_1 = require("../SHARED/SQL");
-const config_1 = require("../SHARED/config");
+const misc_1 = require("../shared/misc");
+const SQL_1 = require("../shared/SQL");
+const config_1 = require("../shared/config");
 function cleanUp() {
     return new Promise((resolve, reject) => {
         if (config_1.default.keepDeletedFor != null) {

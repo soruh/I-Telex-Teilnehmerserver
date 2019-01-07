@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
-const SQL_1 = require("../../../SHARED/SQL");
+const SQL_1 = require("../../../shared/SQL");
 const clientUpdate_1 = require("./clientUpdate");
-const misc_1 = require("../../../SHARED/misc");
+const misc_1 = require("../../../shared/misc");
 const privateRouter = express.Router();
 // Test Authorization header of all requests to /private/*
 privateRouter.all('*', async function (req, res, next) {

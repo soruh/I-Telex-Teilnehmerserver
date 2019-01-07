@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("../SHARED/config.js");
+const config_js_1 = require("../shared/config.js");
 const util = require("util");
 const http = require("http");
-const misc_js_1 = require("../SHARED/misc.js");
-const createLogger_js_1 = require("../SHARED/createLogger.js");
-const SQL_js_1 = require("../SHARED/SQL.js");
-const constants_js_1 = require("../SHARED/constants.js");
+const misc_js_1 = require("../shared/misc.js");
+const createLogger_js_1 = require("../shared/createLogger.js");
+const SQL_js_1 = require("../shared/SQL.js");
+const constants_js_1 = require("../shared/constants.js");
 createLogger_js_1.default(config_js_1.default.webserverLoggingLevel, config_js_1.default.webserverLog, config_js_1.default.webserverErrorLog, config_js_1.default.logWebserverToConsole, constants_js_1.loggingLevels.WEB);
 SQL_js_1.connectToDb();
 const app_1 = require("./app");

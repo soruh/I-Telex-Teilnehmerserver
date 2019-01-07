@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const SQL_1 = require("../../SHARED/SQL");
+const SQL_1 = require("../../shared/SQL");
 const tokens_1 = require("./tokens");
 async function list(req, res) {
     // tslint:disable:no-var-keyword

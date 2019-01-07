@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const misc_1 = require("../../../SHARED/misc");
-const SQL_1 = require("../../../SHARED/SQL");
-const constants_1 = require("../../../SHARED/constants");
-const config_1 = require("../../../SHARED/config");
+const misc_1 = require("../../../shared/misc");
+const SQL_1 = require("../../../shared/SQL");
+const constants_1 = require("../../../shared/constants");
+const config_1 = require("../../../shared/config");
 async function getEntries(req, res, next) {
     try {
         let entries = await SQL_1.SqlAll(`SELECT ${constants_1.peerProperties.join(',')} from teilnehmer;`, []);

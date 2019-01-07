@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const https = require("https");
-const config_1 = require("../../SHARED/config");
-const misc_1 = require("../../SHARED/misc");
+const config_1 = require("../../shared/config");
+const misc_1 = require("../../shared/misc");
 function APIcall(method, host, port, path, data) {
     return new Promise((resolve, reject) => {
         logger.log('admin', `making ${method} request to ${host}:${port}${path[0] === '/' ? '' : '/'}${path}`);
