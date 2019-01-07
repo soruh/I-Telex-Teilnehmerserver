@@ -8,8 +8,12 @@
   },
   "scripts": {
     "start": "pm2 start ecosystem.config.js",
+    "stop": "pm2 delete ecosystem.config.js",
     "restart": "pm2 reload ecosystem.config.js",
-    "stop": "pm2 delete ecosystem.config.js"
+    "docker_init": "tools/initDocker.sh",
+    "docker_build": "tools/compileDocker.sh",
+    "docker_run": "tools/runDocker.sh -d",
+    "docker_run_once": "tools/runDocker.sh"
   },
   "dependencies": {
     "body-parser": "^1.18.3",

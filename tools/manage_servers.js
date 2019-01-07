@@ -2,12 +2,14 @@
 "use strict";
 const path = require("path");
 const sqlite = require("sqlite3");
-const sqlstring = require("sqlstring");
+const config = require("../src/shared/config.js").default;
+
+const dbPath = path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, '..', config.DBPath);
 
 if (process.argv[2] == "--help") {
 	printUsage();
 } else {
-	const db = new sqlite.Database(path.join(__dirname, 'db/telefonbuch.db'), err=>{
+	const db = new sqlite.Database(dbPath, err=>{
 		if(err) throw(err);
 
 		switch (process.argv[2]) {
