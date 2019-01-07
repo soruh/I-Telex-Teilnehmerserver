@@ -5,6 +5,7 @@ DOCKER_PATH=`which docker`
 if [ $? -eq 1 ]
 then
 	echo "please install docker"
+	exit 1
 fi
 
 # go to project directory
