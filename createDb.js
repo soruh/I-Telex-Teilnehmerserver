@@ -3,7 +3,7 @@
 const sqlite = require("sqlite3").verbose();
 const path = require("path");
 const fs = require("fs");
-const config = require("./src/SHARED/config.js").default;
+const config = require("./src/shared/config.js").default;
 
 const dbPath = path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, config.DBPath);
 const dbExists = fs.existsSync(dbPath);
