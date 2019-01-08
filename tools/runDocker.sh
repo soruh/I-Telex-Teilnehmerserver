@@ -15,24 +15,26 @@ dir="`pwd`/`dirname "$0"`/.."
 mkdir logs 2>/dev/null
 mkdir db 2>/dev/null
 
+
+function runContainer {
+	exec docker run \
+		--mount type=bind,source=$dir/db,target=/app/db \
+		--mount type=bind,source=$dir/logs,target=/app/logs \
+		--mount type=bind,source=$dir/config,target=/app/config \
+		--mount type=bind,source=$dir/cert,target=/app/cert \
+		--name teilnehmerserver \
+		`cat $dir/tools/exposed_ports` \
+		$@ \
+		soruh/teilnehmerserver
+}
+
 if [[ $1 == "-d" ]]
 then
 	echo "detatching"
-	exec docker run \
-		--mount type=bind,source=$dir/db,target=/app/db \
-		--mount type=bind,source=$dir/logs,target=/app/logs \
-		--name teilnehmerserver \
-		--restart always \
-		-d \
-		teilnehmerserver
+	runContainer -d --restart always	
 else
 	echo "not detatching"
-	exec docker run \
-		--mount type=bind,source=$dir/db,target=/app/db \
-		--mount type=bind,source=$dir/logs,target=/app/logs \
-		--name teilnehmerserver \
-		--rm \
-		teilnehmerserver
+	runContainer --rm
 fi
 
 if [ $? -eq 125 ]

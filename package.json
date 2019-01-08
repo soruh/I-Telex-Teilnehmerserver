@@ -19,7 +19,6 @@
     "docker_logs": "tools/containerExec.sh pm2 logs",
     "docker_list": "tools/containerExec.sh pm2 list",
 
-    "docker_init": "tools/initDocker.sh",
     "docker_build": "tools/compileDocker.sh",
     "docker_run": "tools/runDocker.sh -d",
     "docker_run_once": "tools/runDocker.sh",
@@ -27,6 +26,7 @@
     "docker_exec": "tools/containerExec.sh",
     "docker_top": "docker top teilnehmerserver",
     "docker_stats": "docker stats teilnehmerserver"
+
   },
   "dependencies": {
     "body-parser": "^1.18.3",

@@ -4,18 +4,19 @@ FROM node:10.13.0
 # Set the working directory to /app
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy all needed files to the container at /app
 
+COPY src /app/src
+RUN find /app/src -iname \*.ts -exec rm {} +
 
-# delete existing logs
-RUN rm -rf logs
+COPY tools/createDb.js /app/tools/
+COPY ecosystem.config.js /app
+COPY tables.sql /app
+COPY package.json /app
+COPY package-lock.json /app
 
-# delete existing database
-RUN rm -rf db
+COPY LICENSE /app
 
-# delete existing node_modules
-RUN rm -rf node_modules
 
 # install up-to-date versions of node-gyp and node-pre-gyp
 RUN npm install node-gyp -g
@@ -26,11 +27,6 @@ RUN npm install
 
 # Install pm2
 RUN npm install pm2 -g
-
-# expose needed Ports
-EXPOSE 11812
-EXPOSE 11811
-EXPOSE 3030
 
 # remove node-gyp and node-pre-gyp again since they are no longer needed
 RUN npm remove node-gyp -g
