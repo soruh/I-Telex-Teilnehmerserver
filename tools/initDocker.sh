@@ -13,7 +13,7 @@ dir="`pwd`/`dirname "$0"`/.."
 cd $dir;
 
 
-tools/compileDocker.sh
+tools/compileDocker.sh &&
 echo
 echo "running docker image..."
 tools/runDocker.sh -d
