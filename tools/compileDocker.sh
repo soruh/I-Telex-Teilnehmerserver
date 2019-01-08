@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #check if docker is installed
-`which docker`>/dev/null
+which docker>/dev/null
 if [ $? -eq 1 ]
 then
 	echo "please install docker"
@@ -13,7 +13,7 @@ dir="`pwd`/`dirname "$0"`"
 cd $dir;
 cd '..';
 
-`which node`>/dev/null
+which node>/dev/null
 if [ $? -eq 0 ]
 then
     echo -n "rebuilding Dockerfile..."
