@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #check if docker is installed
-DOCKER_PATH=`which docker`
+`which docker`>/dev/null
 if [ $? -eq 1 ]
 then
 	echo "please install docker"

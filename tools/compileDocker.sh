@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #check if docker is installed
-DOCKER_PATH=`which docker`
+`which docker`>/dev/null
 if [ $? -eq 1 ]
 then
 	echo "please install docker"
@@ -13,10 +13,15 @@ dir="`pwd`/`dirname "$0"`"
 cd $dir;
 cd '..';
 
-
-echo -n "rebuilding Dockerfile..."
-node tools/buildDockerfile.js
-echo "done"
+`which node`>/dev/null
+if [ $? -eq 0 ]
+then
+    echo -n "rebuilding Dockerfile..."
+    node tools/buildDockerfile.js
+    echo "done"
+else
+    echo please install node if you want to rebuild the Dockerfile
+fi
 
 docker build . --tag=teilnehmerserver
 
