@@ -13,7 +13,6 @@ dir="`pwd`/`dirname "$0"`/.."
 
 
 mkdir logs 2>/dev/null
-mkdir db 2>/dev/null
 
 
 function runContainer {

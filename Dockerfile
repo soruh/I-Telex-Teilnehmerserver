@@ -32,7 +32,5 @@ RUN npm install pm2 -g
 RUN npm remove node-gyp -g
 RUN npm remove node-pre-gyp -g
 
-
-
 # start all processes
-CMD ["bash", "-c", "node tools/createDb.js 2>/dev/null;exec pm2-runtime start ecosystem.config.js"]
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]
