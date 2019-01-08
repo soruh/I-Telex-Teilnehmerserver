@@ -23,6 +23,6 @@ else
     echo please install node if you want to rebuild the Dockerfile
 fi
 
-docker build . --tag=teilnehmerserver
+docker build --tag=teilnehmerserver .
 
 echo "finished compiling Docker image"
