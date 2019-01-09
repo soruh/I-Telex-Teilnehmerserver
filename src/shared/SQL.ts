@@ -1,126 +1,41 @@
-import config from "./config";
-import colors from "./colors";
-import * as sqlite from "sqlite3";
-import * as sqlstring from "sqlstring";
-import * as path from "path";
-import { inspect, sleep } from "./misc";
+import * as sqlite3 from './sql/sqlite3';
+import * as mysql from './sql/mysql';
+import {queueRow, serversRow, teilnehmerRow} from "./sql/sql";
+/*
 
 
-let db:sqlite.Database;
+import config from './config';
+let isSqlite3 = false;
 
 
-interface queueRow {
-	uid: number;
-	server: number;
-	message: number;
-	timestamp: number;
+// tslint:disable:no-var-requires
+if(require('mysql')){
+	isSqlite3 = false;
+}else if(require('sqlite3')&&config.DBPath){
+	isSqlite3 = true;
+}else{
+	throw new Error("database type is inconclusive");
 }
+// tslint:enable:no-var-requires
 
-interface serversRow {
-	 uid: number;
-	 address: string;
-	 port: number;
-	 version: number;
+
+let sql:typeof mysql|typeof sqlite3;
+if (isSqlite3){
+	sql = sqlite3;
+}else{
+	sql = mysql;
 }
+*/
 
-interface teilnehmerRow {
-	uid: number;
-	number: number;
-	name: string;
-	type: number;
-	hostname: string;
-	ipaddress: string;
-	port: number;
-	extension: string;
-	pin: number;
-	disabled: number;
-	timestamp: number;
-	changed: number;
-}
+const sql = mysql;
 
-
-
-function connectToDb(){
-	return new Promise<sqlite.Database>((resolve, reject)=>{
-		const dbPath = path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, '../..', config.DBPath);
-		db = new sqlite.Database(dbPath, err=>{
-			if (err){
-				reject(err);
-				return;
-			}
-			resolve(db);
-		});
-	});
-}
-
-function prepareQuery(query: string, values?: any[], verbose?:boolean):string{
-	query = query.replace(/\n/g, "").replace(/\s+/g, " ");
-	logger.log('debug', inspect`${query} ${values||[]}`);
-
-	const formatted = sqlstring.format(query, values || []).replace(/\S*\s*/g, x => x.trim() + " ").trim();
-	if(verbose === undefined){
-		if (query.indexOf("teilnehmer") > -1) {
-			logger.log('sql', inspect`${(config.highlightSqlQueries?colors.Reverse:"")+formatted+colors.Reset}`);
-		} else {
-			logger.log('verbose sql', inspect`${(config.highlightSqlQueries?colors.Reverse:"")+formatted+colors.Reset}`);
-		}
-	}else if(verbose === true){
-		logger.log('verbose sql', inspect`${(config.highlightSqlQueries?colors.Reverse:"")+formatted+colors.Reset}`);
-	}else if(verbose === false){
-		logger.log('sql', inspect`${(config.highlightSqlQueries?colors.Reverse:"")+formatted+colors.Reset}`);
-	}
-
-	return formatted;
-}
-
-function SqlEach<T>(query: string, values: any[], callback:(err:Error, row:T)=>void, verbose?:boolean):Promise<number>{
-	return new Promise((resolve, reject) => {
-		db.each(prepareQuery(query, values, verbose), callback, (err:Error, count:number)=>{
-			if(err){
-				reject(err);
-				return;
-			}
-			resolve(count);
-		});
-	});
-}
-
-function SqlAll<T>(query: string, values: any[], verbose?:boolean):Promise<T[]>{
-	return new Promise((resolve, reject) => {
-		db.all(prepareQuery(query, values, verbose), (err:Error, rows)=>{
-			if(err){
-				reject(err);
-				return;
-			}
-			resolve(rows);
-		});
-	});
-}
-
-function SqlGet<T>(query: string, values: any[], verbose?:boolean):Promise<T>{
-	return new Promise((resolve, reject) => {
-		db.get(prepareQuery(query, values, verbose), (err:Error, row)=>{
-			if(err){
-				reject(err);
-				return;
-			}
-			resolve(row);
-		});
-	});
-}
-
-function SqlRun(query: string, values: any[], verbose?:boolean):Promise<sqlite.RunResult>{
-	return new Promise((resolve, reject) => {
-		db.run(prepareQuery(query, values, verbose), function(err:Error){
-			if(err){
-				reject(err);
-				return;
-			}
-			resolve(this);
-		});
-	});
-}
-
+const {
+	connectToDb,
+	SqlAll,
+	SqlEach,
+	SqlGet,
+	SqlRun,
+} = sql;
 
 export {
 	connectToDb,
@@ -128,7 +43,7 @@ export {
 	SqlEach,
 	SqlGet,
 	SqlRun,
-	serversRow,
 	queueRow,
-	teilnehmerRow
+	serversRow,
+	teilnehmerRow,
 };

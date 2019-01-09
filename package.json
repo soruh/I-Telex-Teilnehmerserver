@@ -1,7 +1,7 @@
 {
   "name": "i-telex-teilnehmerserver",
   "version": "5.0.0",
-  "description": "",
+  "description": "A subscribtion server for the I-Telex system",
   "repository": {
     "type": "git",
     "url": "https://github.com/soruh/I-Telex-Teilnehmerserver/"
@@ -12,22 +12,18 @@
     "restart": "pm2 reload ecosystem.config.js",
     "logs": "pm2 logs",
     "list": "pm2 list",
-
     "docker_start": "docker start teilnehmerserver",
     "docker_stop": "docker stop teilnehmerserver",
     "docker_restart": "docker restart teilnehmerserver",
     "docker_logs": "tools/containerExec.sh pm2 logs",
     "docker_list": "tools/containerExec.sh pm2 list",
-
-    "docker_init": "tools/compileDocker.sh&&tools/runDocker.sh -d",
+    "docker_init": "tools/startmysql.sh&&tools/compileDocker.sh&&tools/runDocker.sh -d",
     "docker_build": "tools/compileDocker.sh",
     "docker_run": "tools/runDocker.sh -d",
     "docker_run_once": "tools/runDocker.sh",
-
     "docker_exec": "tools/containerExec.sh",
     "docker_top": "docker top teilnehmerserver",
     "docker_stats": "docker stats teilnehmerserver"
-
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -35,14 +31,15 @@
     "express": "^4.16.3",
     "ip": "^1.1.5",
     "morgan": "^1.9.1",
+    "mysql": "^2.16.0",
     "nodemailer": "^4.4.1",
     "pug": "^2.0.0-rc.4",
     "serve-favicon": "~2.4.2",
-    "sqlite3": "^4.0.3",
     "sqlstring": "^2.3.1",
     "winston": "^3.0.0"
   },
   "devDependencies": {
+    "@types/mysql": "^2.15.5",
     "@types/sqlite3": "^3.1.3",
     "@types/sqlstring": "^2.2.0",
     "@types/cookie-parser": "^1.4.1",

@@ -8,12 +8,10 @@ then
 	exit 1
 fi
 
-# go to project directory
-dir="`pwd`/`dirname "$0"`"
-cd $dir;
-cd '..';
-
+# get project directory
+dir="`pwd`/`dirname "$0"`/.."
+cd $dir
 
 docker build --tag=soruh/teilnehmerserver .
 
-echo "finished compiling Docker image"
+echo "finished building Docker image"
