@@ -7,7 +7,7 @@ const misc_js_1 = require("../shared/misc.js");
 // import { TimeoutWrapper } from "../binaryserver/timers";
 const createLogger_js_1 = require("../shared/createLogger.js");
 const SQL_js_1 = require("../shared/SQL.js");
-const timers_js_1 = require("../binaryserver/timers.js");
+const timers_js_1 = require("../shared/timers.js");
 const FullQuery_1 = require("./sync/FullQuery");
 const sendQueue_1 = require("./sync/sendQueue");
 const constants_js_1 = require("../shared/constants.js");

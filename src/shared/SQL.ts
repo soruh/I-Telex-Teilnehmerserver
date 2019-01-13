@@ -1,41 +1,55 @@
-import * as sqlite3 from './sql/sqlite3';
-import * as mysql from './sql/mysql';
 import {queueRow, serversRow, teilnehmerRow} from "./sql/sql";
-/*
+import { inspect } from "./misc";
+import sql_types from "./sql/sql_types";
 
-
-import config from './config';
-let isSqlite3 = false;
-
-
-// tslint:disable:no-var-requires
-if(require('mysql')){
-	isSqlite3 = false;
-}else if(require('sqlite3')&&config.DBPath){
-	isSqlite3 = true;
-}else{
-	throw new Error("database type is inconclusive");
-}
-// tslint:enable:no-var-requires
-
-
-let sql:typeof mysql|typeof sqlite3;
-if (isSqlite3){
-	sql = sqlite3;
-}else{
-	sql = mysql;
-}
-*/
-
-const sql = mysql;
-
-const {
+let {
 	connectToDb,
 	SqlAll,
 	SqlEach,
 	SqlGet,
 	SqlRun,
-} = sql;
+} = {
+	connectToDb: _connectToDb,
+} as sql_types;
+
+function _connectToDb(){
+	try{
+		// tslint:disable-next-line:no-var-keyword no-var-requires
+		var sqlite3 = require('./sql/sqlite3');
+	}catch(err){/**/}
+
+	try{
+		// tslint:disable-next-line:no-var-keyword no-var-requires
+		var mysql = require('./sql/mysql');
+	}catch(err){/**/}
+
+
+	let useMysqlEnv:string|number = parseInt(process.env.USE_MYSQL);
+	if(isNaN(useMysqlEnv)) useMysqlEnv = process.env.USE_MYSQL;
+	let useMysql = Boolean(useMysqlEnv);
+
+	let sql:sql_types;
+	if (useMysql){
+		sql = mysql;
+	}else{
+		sql = sqlite3;
+	}
+
+	logger.log("warning", inspect`using ${useMysql?'mysql':'sqlite3'} database client`);
+
+	if(!sql){
+		logger.log("error", inspect`database client is not installed. please run "npm install ${useMysql?'mysql':'sqlite3'}"`);
+		throw new Error('database client missing');
+	}
+
+	SqlAll  = sql.SqlAll;
+	SqlEach = sql.SqlEach;
+	SqlGet  = sql.SqlGet;
+	SqlRun  = sql.SqlRun;
+
+	connectToDb = sql.connectToDb; 
+	return connectToDb();
+}
 
 export {
 	connectToDb,

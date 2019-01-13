@@ -9,13 +9,14 @@ WORKDIR /app
 COPY src /app/src
 RUN find /app/src -iname \*.ts -exec rm {} +
 
-#COPY tools/createDb.js /app/tools/
+COPY tools/manage_servers.js /app/tools/
 COPY ecosystem.config.js /app
 #COPY tables.sql /app
 COPY package.json /app
 COPY package-lock.json /app
 
 COPY LICENSE /app
+ENV USE_MYSQL 1
 
 
 # # install up-to-date versions of node-gyp and node-pre-gyp
@@ -24,6 +25,9 @@ COPY LICENSE /app
 
 # Install any needed packages specified in package.json
 RUN npm install
+
+# Install database client
+RUN npm install mysql
 
 # Install pm2
 RUN npm install pm2 -g

@@ -23,7 +23,10 @@
     "docker_run_once": "tools/runDocker.sh",
     "docker_exec": "tools/containerExec.sh",
     "docker_top": "docker top teilnehmerserver",
-    "docker_stats": "docker stats teilnehmerserver"
+    "docker_stats": "docker stats teilnehmerserver",
+    "docker_dump_db": "npm run docker_dump_db_stdout > dump.sql",
+    "docker_dump_db_stdout": "docker exec mysql mysqldump --all-databases -utelefonbuch -pxNig4esW",
+    "docker_manage_servers": "docker exec teilnehmerserver node tools/manage_servers.js"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -31,7 +34,6 @@
     "express": "^4.16.3",
     "ip": "^1.1.5",
     "morgan": "^1.9.1",
-    "mysql": "^2.16.0",
     "nodemailer": "^4.4.1",
     "pug": "^2.0.0-rc.4",
     "serve-favicon": "~2.4.2",

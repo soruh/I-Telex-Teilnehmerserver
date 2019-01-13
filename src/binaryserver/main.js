@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_js_1 = require("../shared/config.js");
 const util = require("util");
-const timers_1 = require("../binaryserver/timers");
+const timers_1 = require("../shared/timers");
 const nodemailer = require("nodemailer");
 const misc_js_1 = require("../shared/misc.js");
 const FullQuery_js_1 = require("./FullQuery.js");
@@ -13,7 +13,7 @@ const createLogger_js_1 = require("../shared/createLogger.js");
 const SQL_js_1 = require("../shared/SQL.js");
 const constants_js_1 = require("../shared/constants.js");
 function logInitilisation(message) {
-    process.stdout.write(`${new Date().toISOString().replace(/[TZ]*/, " ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
+    process.stdout.write(`${new Date().toISOString().replace(/[TZ]+/g, " ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
 }
 async function createWinstonLogger() {
     try {
@@ -92,7 +92,11 @@ function setupEmailTransport() {
         }
     });
 }
-Promise.all([createWinstonLogger(), setupEmailTransport(), connectToDatabase(), startTimeouts(), listenBinaryserver()])
+(async () => {
+    for (let func of [createWinstonLogger, setupEmailTransport, connectToDatabase, startTimeouts, listenBinaryserver]) {
+        await func();
+    }
+})()
     .then(() => {
     if (config_js_1.default.serverPin == null)
         logger.log('warning', misc_js_1.inspect `Starting in read-only mode!`);
@@ -100,6 +104,8 @@ Promise.all([createWinstonLogger(), setupEmailTransport(), connectToDatabase(), 
 })
     .catch(err => {
     logger.log('error', misc_js_1.inspect `error in startup sequence: ${err}`);
+    logger.log('warning', misc_js_1.inspect `exiting, because of failed startup sequence`);
+    process.exit(-1);
 });
 // write uncaught exceptions to all logs
 process.on('uncaughtException', async (err) => {

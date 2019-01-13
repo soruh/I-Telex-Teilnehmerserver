@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 // import colors from "../shared/colors.js";
-const misc_js_1 = require("../shared/misc.js");
+const misc_js_1 = require("./misc.js");
 //#endregion
 function timeDiff(date1, date2 = Date.now()) {
     return date2 - date1;

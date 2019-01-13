@@ -8,7 +8,7 @@ import { inspect, sendEmail, printDate, getTimezone } from "../shared/misc.js";
 
 import createLogger from '../shared/createLogger.js';
 import { connectToDb } from '../shared/SQL.js';
-import { TimeoutWrapper } from '../binaryserver/timers.js';
+import { TimeoutWrapper } from '../shared/timers.js';
 
 import getFullQuery from './sync/FullQuery';
 import sendQueue from './sync/sendQueue';

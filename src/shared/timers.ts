@@ -2,7 +2,7 @@
 
 //#region imports
 // import colors from "../shared/colors.js";
-import {inspect, symbolName} from "../shared/misc.js";
+import {inspect, symbolName} from "./misc.js";
 //#endregion
 
 

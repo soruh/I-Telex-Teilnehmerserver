@@ -5,3 +5,4 @@ logs/
 db/
 cert/
 .vscode/
+dump.sql

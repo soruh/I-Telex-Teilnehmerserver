@@ -2,15 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("../config");
 const colors_1 = require("../colors");
-const sqlite = require("sqlite3");
+const sqlite3 = require("sqlite3");
 const sqlstring = require("sqlstring");
 const path = require("path");
 const misc_1 = require("../misc");
 let db;
 function connectToDb() {
     return new Promise((resolve, reject) => {
-        const dbPath = path.isAbsolute(config_1.default.DBPath) ? config_1.default.DBPath : path.join(__dirname, '../..', config_1.default.DBPath);
-        db = new sqlite.Database(dbPath, err => {
+        const dbPath = path.isAbsolute(config_1.default.DBPath) ? config_1.default.DBPath : path.join(__dirname, '../../..', config_1.default.DBPath);
+        db = new sqlite3.Database(dbPath, err => {
             if (err) {
                 reject(err);
                 return;

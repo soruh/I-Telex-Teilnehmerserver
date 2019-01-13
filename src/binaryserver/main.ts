@@ -2,9 +2,9 @@
 import config from '../shared/config.js';
 import * as util from "util";
 import * as winston from "winston";
-import { TimeoutWrapper } from "../binaryserver/timers";
+import { TimeoutWrapper } from "../shared/timers";
 import * as nodemailer from "nodemailer";
-import {inspect, serverErrorCounters, printDate, sendEmail, getTimezone} from "../shared/misc.js";
+import {inspect, printDate, sendEmail, getTimezone} from "../shared/misc.js";
 import getFullQuery from './FullQuery.js';
 import sendQueue from './sendQueue.js';
 import binaryServer from './binaryServer.js';
@@ -37,7 +37,7 @@ declare global {
 }
 
 function logInitilisation(message:string){
-	process.stdout.write(`${new Date().toISOString().replace(/[TZ]*/," ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
+	process.stdout.write(`${new Date().toISOString().replace(/[TZ]+/g," ")}${' '.repeat(11)}\x1b[041minit\x1b[000m: ${message}\n`);
 }
 
 async function createWinstonLogger(){
@@ -120,13 +120,19 @@ function setupEmailTransport(){
 	});
 }
 
-Promise.all([createWinstonLogger(), setupEmailTransport(), connectToDatabase(), startTimeouts(), listenBinaryserver()])
+(async ()=>{
+	for (let func of [createWinstonLogger, setupEmailTransport, connectToDatabase, startTimeouts, listenBinaryserver]){
+		await func();
+	}
+})()
 .then(()=>{
 	if (config.serverPin == null) logger.log('warning', inspect`Starting in read-only mode!`);
 	getFullQuery();
 })
 .catch(err=>{
 	logger.log('error', inspect`error in startup sequence: ${err}`);
+	logger.log('warning', inspect`exiting, because of failed startup sequence`);
+	process.exit(-1);
 });
 
 // write uncaught exceptions to all logs

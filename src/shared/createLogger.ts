@@ -11,6 +11,7 @@ declare global {
 		}
 	}
 }
+
 function createLogger(loggingLevel:string|number, standartLog:string, errorLog:string, logToConsole:boolean, customLevels){
 	colors.disable(config.disableColors);
 	let levels = winston.config.npm.levels;
@@ -97,6 +98,8 @@ function createLogger(loggingLevel:string|number, standartLog:string, errorLog:s
 		exitOnError: false,
 		transports, // : transports
 	});
+
+	logger.log('warning', "created logger");
 }
 
 export default createLogger;

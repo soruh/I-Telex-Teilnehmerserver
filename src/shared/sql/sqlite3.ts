@@ -1,20 +1,20 @@
 import config from "../config";
 import colors from "../colors";
-import * as sqlite from "sqlite3";
+import * as sqlite3 from "sqlite3";
 import * as sqlstring from "sqlstring";
 import * as path from "path";
-import { inspect, sleep } from "../misc";
+import { inspect } from "../misc";
 
 
-let db:sqlite.Database;
+let db:sqlite3.Database;
 
 
 
 
-function connectToDb(){
-	return new Promise<sqlite.Database>((resolve, reject)=>{
-		const dbPath = path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, '../..', config.DBPath);
-		db = new sqlite.Database(dbPath, err=>{
+function connectToDb():Promise<sqlite3.Database>{
+	return new Promise<sqlite3.Database>((resolve, reject)=>{
+		const dbPath = path.isAbsolute(config.DBPath)?config.DBPath:path.join(__dirname, '../../..', config.DBPath);
+		db = new sqlite3.Database(dbPath, err=>{
 			if (err){
 				reject(err);
 				return;
@@ -80,7 +80,7 @@ function SqlGet<T>(query: string, values: any[], verbose?:boolean):Promise<T>{
 	});
 }
 
-function SqlRun(query: string, values: any[], verbose?:boolean):Promise<sqlite.RunResult>{
+function SqlRun(query: string, values: any[], verbose?:boolean):Promise<sqlite3.RunResult>{
 	return new Promise((resolve, reject) => {
 		db.run(prepareQuery(query, values, verbose), function(err:Error){
 			if(err){

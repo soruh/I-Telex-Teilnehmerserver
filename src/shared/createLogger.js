@@ -75,5 +75,6 @@ function createLogger(loggingLevel, standartLog, errorLog, logToConsole, customL
         exitOnError: false,
         transports,
     });
+    logger.log('warning', "created logger");
 }
 exports.default = createLogger;

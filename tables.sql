@@ -7,9 +7,9 @@ CREATE TABLE queue (
 
 CREATE TABLE servers (
 	uid INTEGER AUTO_INCREMENT PRIMARY KEY,
-	address tinytext,
+	address VARCHAR(40),
 	version tinyint unsigned,
-	port tinyint unsigned
+	port smallint unsigned
 );
 
 CREATE TABLE teilnehmer (

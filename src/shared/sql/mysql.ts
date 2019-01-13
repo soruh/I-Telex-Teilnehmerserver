@@ -22,7 +22,7 @@ function testConnection(){
 	});
 }
 
-async function connectToDb(){
+async function connectToDb():Promise<mysql.Pool>{
 	const retryInt = 10*1000;
 	let maxTries = (60*1000)/retryInt;
 	let tries = -1;
