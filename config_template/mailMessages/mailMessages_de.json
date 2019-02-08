@@ -1,40 +1,40 @@
 {
-  "messages":{
-    "new":{
-      "subject":"Neuer Teilnehmer",
-      "html":"Ein neuer Teilnehmer hat sich am <font color=\"blue\">[date] [timeZone]</font> mit Nummer <font color=\"blue\">[number]</font> und Ipaddresse <font color=\"blue\">[Ip]</font> angemeldet"
+  "messages": {
+    "new": {
+      "subject": "Neuer Teilnehmer",
+      "html": "Ein neuer Teilnehmer hat sich am <font color=\"blue\">[date] [timeZone]</font> mit Nummer <font color=\"blue\">[number]</font> und Ipaddresse <font color=\"blue\">[Ip]</font> angemeldet"
     },
-    "invalidNumber":{
-      "subject":"Ungültige Nummer",
-      "html":"Ein Teilnehmer hat am <font color=\"blue\">[date] [timeZone]</font> versucht sich mit der ungültigen Nummer <font color=\"blue\">[number]</font> und IpAddresse <font color=\"blue\">[Ip]</font> anzumelden"
+    "invalidNumber": {
+      "subject": "Ungültige Nummer",
+      "html": "Ein Teilnehmer hat am <font color=\"blue\">[date] [timeZone]</font> versucht sich mit der ungültigen Nummer <font color=\"blue\">[number]</font> und IpAddresse <font color=\"blue\">[Ip]</font> anzumelden"
     },
-    "wrongDynIpPin":{
-      "subject":"Falscher DynIp Pin",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> zum <font color=\"blue\">[counter]ten</font> mal mit einer falschen pin versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern"
+    "wrongDynIpPin": {
+      "subject": "Falscher DynIp Pin",
+      "html": "<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> zum <font color=\"blue\">[counter]ten</font> mal mit einer falschen pin versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern"
     },
-    "wrongDynIpType":{
-      "subject":"Falscher DynIp Typ",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern, welcher keine DynIp unterstützt (Typ: <font color=\"blue\">[type]</font>)"
+    "wrongDynIpType": {
+      "subject": "Falscher DynIp Typ",
+      "html": "<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) zu ändern, welcher keine DynIp unterstützt (Typ: <font color=\"blue\">[type]</font>)"
     },
-    "ipV6DynIpUpdate":{
-      "subject":"ipv6 DynIp Änderung",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) mit einer ipv6 zu ändern"
+    "ipV6DynIpUpdate": {
+      "subject": "ipv6 DynIp Änderung",
+      "html": "<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht die DynIp für <font color=\"blue\">[number]</font>(<font color=\"blue\">[name]</font>) mit einer ipv6 zu ändern"
     },
-    "wrongServerPin":{
-      "subject":"Falscher Serverpin",
-      "html":"<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht mit einer falschen Serverpin den Server zu syncronisieren"
+    "wrongServerPin": {
+      "subject": "Falscher Serverpin",
+      "html": "<font color=\"blue\">[Ip]</font> hat am <font color=\"blue\">[date] [timeZone]</font> versucht mit einer falschen Serverpin den Server zu syncronisieren"
     },
-    "ServerError":{
-      "subject":"Verbindung zum Server fehlgeschlagen",
-      "html":"Der Server <font color=\"blue\">[host]:[port]</font> konnte am <font color=\"blue\">[date] [timeZone]</font> nicht erreicht werden. Fehlerzähler: <font color=\"blue\">[errorCounter]</font> Fehlercode: <font color=\"blue\">[lastError]</font>"
+    "ServerError": {
+      "subject": "Verbindung zum Server fehlgeschlagen",
+      "html": "Der Server <font color=\"blue\">[host]: [port]</font> konnte am <font color=\"blue\">[date] [timeZone]</font> nicht erreicht werden. Fehlerzähler: <font color=\"blue\">[errorCounter]</font> Fehlercode: <font color=\"blue\">[lastError]</font>"
     },
-    "ServerErrorOver":{
-      "subject":"Störung Ende",
-      "html":"Der Server: <font color=\"blue\">[host]:[port]</font> konnte am <font color=\"blue\">[date] [timeZone]</font> wieder erreicht werden. Fehlerzähler war: <font color=\"blue\">[errorCounter]</font>"
+    "ServerErrorOver": {
+      "subject": "Störung Ende",
+      "html": "Der Server: <font color=\"blue\">[host]: [port]</font> konnte am <font color=\"blue\">[date] [timeZone]</font> wieder erreicht werden. Fehlerzähler war: <font color=\"blue\">[errorCounter]</font>"
     },
-    "uncaughtException":{
-      "subject":"Nicht abgefangener Ausnahmezustand",
-      "html":"Fehler\n[exception] am <font color=\"blue\">[date] [timeZone]</font>"
+    "uncaughtException": {
+      "subject": "Nicht abgefangener Ausnahmezustand",
+      "html": "Fehler\n[exception] am <font color=\"blue\">[date] [timeZone]</font>"
     }
   }
 }

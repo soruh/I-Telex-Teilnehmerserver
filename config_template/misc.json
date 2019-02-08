@@ -1,25 +1,26 @@
 {
   "DynIpUpdateNameDifference": 20,
 
-  "keepDeletedFor":200,
+  "keepDeletedFor": 200,
   
+  "useMysql": false,
   "DBPath": "db/telefonbuch.db",
 
-  "setChangedOnNewerEntry":true,
+  "setChangedOnNewerEntry": true,
 
-  "warnAtErrorCounts":[1,10],
-  "warnAtWrongDynIpPinCounts":[1,3,10],
-  "allowFullQueryInReadonly":true,
+  "warnAtErrorCounts": [1,10],
+  "warnAtWrongDynIpPinCounts": [1,3,10],
+  "allowFullQueryInReadonly": true,
   "allowLoginInReadonly": false,
-  "doDnsLookups":true,
+  "doDnsLookups": true,
   "exitOnUncaughtException": false,
 
-  "fullQueryServer":null,
+  "fullQueryServer": null,
 
-  "binaryPort":11811,
-  "webServerPort":3030,
-  "RESTServerPort":11812,
+  "binaryPort": 11811,
+  "webServerPort": 3030,
+  "RESTServerPort": 11812,
 
   "webServerTokenLifeTime": 5000,
-  "webInterfacePassword":"XXX"
+  "webInterfacePassword": "XXX"
 }

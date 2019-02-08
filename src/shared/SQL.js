@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const misc_1 = require("./misc");
+const config_1 = require("./config");
 let { connectToDb, SqlAll, SqlEach, SqlGet, SqlRun, } = {
     connectToDb: _connectToDb,
 };
@@ -20,20 +21,16 @@ function _connectToDb() {
         var mysql = require('./sql/mysql');
     }
     catch (err) { /**/ }
-    let useMysqlEnv = parseInt(process.env.USE_MYSQL);
-    if (isNaN(useMysqlEnv))
-        useMysqlEnv = process.env.USE_MYSQL;
-    let useMysql = Boolean(useMysqlEnv);
     let sql;
-    if (useMysql) {
+    if (config_1.default.useMysql) {
         sql = mysql;
     }
     else {
         sql = sqlite3;
     }
-    logger.log("warning", misc_1.inspect `using ${useMysql ? 'mysql' : 'sqlite3'} database client`);
+    logger.log("warning", misc_1.inspect `using ${config_1.default.useMysql ? 'mysql' : 'sqlite3'} database client`);
     if (!sql) {
-        logger.log("error", misc_1.inspect `database client is not installed. please run "npm install ${useMysql ? 'mysql' : 'sqlite3'}"`);
+        logger.log("error", misc_1.inspect `database client is not installed. please run "npm install ${config_1.default.useMysql ? 'mysql' : 'sqlite3'}"`);
         throw new Error('database client missing');
     }
     exports.SqlAll = SqlAll = sql.SqlAll;

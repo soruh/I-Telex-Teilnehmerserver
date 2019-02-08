@@ -107,6 +107,8 @@ interface configFile {
 		}
 	};
 
+	useMysql: boolean;
+	
 	mysql: {
 		host?: string,
 		port?: number,

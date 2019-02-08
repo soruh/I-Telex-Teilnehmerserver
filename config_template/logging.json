@@ -5,10 +5,10 @@
 
     "logFullBuffer": false,
     "highlightSqlQueries": true,
-    "explainBuffers":1,
+    "explainBuffers": 1,
 
-    "logDate":true,
-    "disableColors":false,
+    "logDate": true,
+    "disableColors": false,
 
     "binaryserverLog": null,
     "binaryserverErrorLog": null,
@@ -18,9 +18,9 @@
     "webserverErrorLog": null,
     "logWebserverToConsole": true,
 
-    "RESTserverLog":null,
-    "RESTserverErrorLog":null,
-    "logRESTserverToConsole":true,
+    "RESTserverLog": null,
+    "RESTserverErrorLog": null,
+    "logRESTserverToConsole": true,
 
-    "scientistNames":true
+    "scientistNames": true
 }

@@ -35,8 +35,8 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     function sendNotAllowed() {
         let buffer = Buffer.alloc(5);
         buffer[0] = 0xff;
-        buffer[1] = 0x03;
-        buffer.write('n a', 2);
+        buffer[1] = 0x02;
+        buffer.write('na', 2);
         client.connection.end(buffer);
     }
     if (client.ipFamily === 6) {
