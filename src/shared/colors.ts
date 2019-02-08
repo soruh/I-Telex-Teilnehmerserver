@@ -44,7 +44,7 @@ const COLORS = {
 };
 
 
-function disable(bool ? : boolean): void {
+function disable(bool ?: boolean): void {
 	if (bool) {
 		for (let i in COLORS) {
 			if (typeof COLORS[i] === "string") COLORS[i] = "";

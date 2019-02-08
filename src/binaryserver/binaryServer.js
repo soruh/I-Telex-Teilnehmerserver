@@ -5,20 +5,11 @@ const util = require("util");
 const config_js_1 = require("../shared/config.js");
 // import colors from "../shared/colors.js";
 const ITelexCom = require("../binaryserver/ITelexCom.js");
-const constants = require("../shared/constants.js");
 const misc_js_1 = require("../shared/misc.js");
 const ascii_js_1 = require("./ascii.js");
 const handles_js_1 = require("./handles.js");
 let binaryServer = net.createServer(function (socket) {
-    let client = {
-        name: misc_js_1.clientName(),
-        connection: socket,
-        ipAddress: null,
-        ipFamily: null,
-        state: constants.states.STANDBY,
-        writebuffer: [],
-        sendPackage: misc_js_1.sendPackage,
-    };
+    let client = new misc_js_1.Client(socket);
     let asciiListener = (data) => {
         if (client) {
             let command = String.fromCharCode(data[0]);
@@ -57,7 +48,7 @@ let binaryServer = net.createServer(function (socket) {
     });
     socket.on('error', (error) => {
         if (error.code === "ECONNRESET") {
-            logger.log('warning', misc_js_1.inspect `client ${client.name} reset the connection`);
+            logger.log('warning', misc_js_1.inspect `client ${client.name} reset the socket`);
         }
         else if (error.code === "EPIPE") {
             logger.log('warning', misc_js_1.inspect `tried to write data to a closed socket`);
@@ -80,7 +71,7 @@ let binaryServer = net.createServer(function (socket) {
         }
         else {
             logger.log('error', misc_js_1.inspect `client: ${client.name} had no ipAddress and was disconected`);
-            client.connection.destroy();
+            client.socket.destroy();
         }
     }
     logger.log('network', misc_js_1.inspect `client ${client.name} connected from ipaddress: ${client.ipAddress}`); // .replace(/^.*:/,'')

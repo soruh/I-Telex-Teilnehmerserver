@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const misc_js_1 = require("../shared/misc.js");
 const colors_js_1 = require("../shared/colors.js");
 async function httpLogger(callback, req, res, next) {
-    let ip = misc_js_1.normalizeIp(req.connection.remoteAddress);
+    let ip = misc_js_1.normalizeIp(req.socket.remoteAddress);
     next();
     await misc_js_1.sleep(0);
     let status = (res.statusCode || 500).toString();

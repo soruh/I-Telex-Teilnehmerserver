@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import colors from "../shared/colors.js";
 
 async function httpLogger(callback:(message:string, req:Request, res:Response)=>void, req:Request, res:Response, next:NextFunction){
-	let ip = normalizeIp(req.connection.remoteAddress);
+	let ip = normalizeIp(req.socket.remoteAddress);
 	next();
 	await sleep(0);
 	let status = (res.statusCode||500).toString();

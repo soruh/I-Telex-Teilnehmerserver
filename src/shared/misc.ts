@@ -9,6 +9,7 @@ import colors from "../shared/colors.js";
 
 import * as ITelexCom from "../binaryserver/ITelexCom.js";
 import { states } from "./constants.js";
+import { Socket } from "net";
 // import * as winston from "winston";
 //#endregion
 
@@ -230,8 +231,8 @@ function sendEmail(messageName, values) {
 
 		let message: {
 			"subject": string,
-			"html" ? : string,
-			"text" ? : string
+			"html" ?: string,
+			"text" ?: string
 		} = config.eMail.messages[messageName];
 		if (!message) {
 			resolve();
@@ -278,38 +279,52 @@ function sendEmail(messageName, values) {
 	});
 }
 
-function sendPackage(pkg:ITelexCom.Package_decoded) {
-	return new Promise((resolve, reject)=>{
-		let client = (this as Client);
 
-		logger.log('network', inspect`sending package of type ${pkg.type} to ${client.name}`);
-		logger.log('debug', inspect`sending package ${pkg} to ${client.name}`);
-		let encodeded = ITelexCom.encPackage(pkg);
-		client.connection.write(encodeded, resolve);
-	});
+
+class Client {
+	public name = clientName();
+	public socket: Socket;
+	public state:symbol = states.STANDBY;
+	public ipAddress: string;
+	public ipFamily: number;
+	public writebuffer: ITelexCom.PackageData_decoded_5[] = [];
+
+	public servernum ?: number;
+	public newEntries ?: number;
+
+	public handleTimeout ?: NodeJS.Timer;
+	public cb ?: () => void;
+	constructor(socket: Socket){
+		this.socket = socket;
+	}
+
+	public sendPackage(pkg:ITelexCom.Package_decoded) {
+		return new Promise((resolve, reject)=>{
+			logger.log('network', inspect`sending package of type ${pkg.type} to ${this.name}`);
+			logger.log('debug', inspect`sending package ${pkg} to ${this.name}`);
+			let encodeded = ITelexCom.encPackage(pkg);
+			this.socket.write(encodeded, resolve);
+		});
+	}
+
+	public sendError(message: string) {
+		return new Promise((resolve, reject)=>{
+			logger.log('network', inspect`sending error to ${this.name}: ${message}`);
+
+			const length = Buffer.byteLength(message);
+			const buffer = Buffer.alloc(length+2);
+
+			buffer[0] = 0xff;
+			buffer[1] = length;
+			buffer.write(message, 2);
+
+			// no communication should happen after an error
+			this.socket.end(buffer, resolve);
+		});
+	}
 }
 
-// interface connection extends net.Socket {
-
-// }
-type connection = net.Socket;
-
-
-interface Client {
-	name: string;
-	connection: connection;
-	state: symbol;
-	ipAddress:string;
-	ipFamily:number;
-	writebuffer: ITelexCom.PackageData_decoded_5[];
-	handleTimeout ? : NodeJS.Timer;
-	cb ? : () => void;
-	servernum ? : number;
-	newEntries ? : number;
-	sendPackage: typeof sendPackage;
-}
-
-let clientName;
+let clientName: ()=>string;
 
 if(config.scientistNames){
 	const names = [
@@ -581,7 +596,6 @@ export {
 	getTimezone,
 	inspect,
 	normalizeIp,
-	sendPackage,
 	printDate,
 	timestamp,
 	decodeExt,

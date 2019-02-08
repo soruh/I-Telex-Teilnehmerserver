@@ -31,7 +31,7 @@ Peer_search: 10
 let handles = {}; // functions for handeling packages
 for (let i = 1; i <= 10; i++) handles[i] = {};
 handles[255] = {};
-// handes[type][state of this client.connection]
+// handes[type][state of this client.socket]
 // handles[2][constants.states.STANDBY] = (pkg,client)=>{}; NOT RECIEVED BY SERVER
 // handles[4][WAITING] = (pkg,client)=>{}; NOT RECIEVED BY SERVER
 handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, client: Client) => {
@@ -40,19 +40,9 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	const {number, pin, port} = pkg.data;
 
 
-	function sendNotAllowed(){
-		let buffer = Buffer.alloc(5);
-
-		buffer[0] = 0xff;
-		buffer[1] = 0x02;
-		buffer.write('na', 2);
-
-		client.connection.end(buffer);
-	}
-
 	if(client.ipFamily  === 6){
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an ipv6 address`);
-		sendNotAllowed();
+		client.sendError('na');
 
 		sendEmail("ipV6DynIpUpdate", {
 			Ip: client.ipAddress,
@@ -64,8 +54,8 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	}
 
 	if (number < 10000) {
-		logger.log('warning', inspect`client ${client.name} tried to update ${number} which is too small(<10000)`);
-		sendNotAllowed();
+		logger.log('warning', inspect`client ${client.name} tried to update ${number} which is too small (<10000)`);
+		client.sendError('na');
 
 		sendEmail("invalidNumber", {
 			Ip: client.ipAddress,
@@ -105,7 +95,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 	if (entry.type !== 5) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} which is not of DynIp type`);
-		sendNotAllowed();
+		client.sendError('na');
 
 		sendEmail("wrongDynIpType", {
 			type: entry.type.toString(),
@@ -125,7 +115,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 		}
 	} else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
-		sendNotAllowed();
+		client.sendError('na');
 
 		increaseErrorCounter('client', {
 			clientName:client.name,
@@ -225,7 +215,7 @@ handles[6][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_6, 
 
 	if (pkg.data.serverpin !== config.serverPin && !(readonly && config.allowFullQueryInReadonly)) {
 		logger.log('warning', inspect`client ${client.name} tried to perform a FullQuery with an invalid serverpin`);
-		client.connection.end();
+		client.socket.end();
 
 		sendEmail("wrongServerPin", {
 			Ip: client.ipAddress,
@@ -252,7 +242,7 @@ handles[7][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_7, 
 
 	if (pkg.data.serverpin !== config.serverPin && !(readonly && config.allowLoginInReadonly)) {
 		logger.log('warning', inspect`client ${client.name} tried to perform a Login with an invalid serverpin`);
-		client.connection.end();
+		client.socket.end();
 
 		sendEmail("wrongServerPin", {
 			Ip: client.ipAddress,
@@ -297,7 +287,7 @@ handles[9][constants.states.LOGIN] = async (pkg: ITelexCom.Package_decoded_9, cl
 
 	client.state = constants.states.STANDBY;
 	if (typeof client.cb === "function") client.cb();
-	client.connection.end();
+	client.socket.end();
 	await sendQueue();
 	return;
 };

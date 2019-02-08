@@ -25,23 +25,16 @@ let handles = {}; // functions for handeling packages
 for (let i = 1; i <= 10; i++)
     handles[i] = {};
 handles[255] = {};
-// handes[type][state of this client.connection]
+// handes[type][state of this client.socket]
 // handles[2][constants.states.STANDBY] = (pkg,client)=>{}; NOT RECIEVED BY SERVER
 // handles[4][WAITING] = (pkg,client)=>{}; NOT RECIEVED BY SERVER
 handles[1][constants.states.STANDBY] = async (pkg, client) => {
     if (!client)
         return;
     const { number, pin, port } = pkg.data;
-    function sendNotAllowed() {
-        let buffer = Buffer.alloc(5);
-        buffer[0] = 0xff;
-        buffer[1] = 0x02;
-        buffer.write('na', 2);
-        client.connection.end(buffer);
-    }
     if (client.ipFamily === 6) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an ipv6 address`);
-        sendNotAllowed();
+        client.sendError('na');
         misc_js_1.sendEmail("ipV6DynIpUpdate", {
             Ip: client.ipAddress,
             number: number.toString(),
@@ -51,8 +44,8 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
         return;
     }
     if (number < 10000) {
-        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is too small(<10000)`);
-        sendNotAllowed();
+        logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is too small (<10000)`);
+        client.sendError('na');
         misc_js_1.sendEmail("invalidNumber", {
             Ip: client.ipAddress,
             number: number.toString(),
@@ -85,7 +78,7 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     }
     if (entry.type !== 5) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is not of DynIp type`);
-        sendNotAllowed();
+        client.sendError('na');
         misc_js_1.sendEmail("wrongDynIpType", {
             type: entry.type.toString(),
             Ip: client.ipAddress,
@@ -104,7 +97,7 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     }
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
-        sendNotAllowed();
+        client.sendError('na');
         misc_js_1.increaseErrorCounter('client', {
             clientName: client.name,
             ip: client.ipAddress,
@@ -198,7 +191,7 @@ handles[6][constants.states.STANDBY] = async (pkg, client) => {
         return;
     if (pkg.data.serverpin !== config_js_1.default.serverPin && !(readonly && config_js_1.default.allowFullQueryInReadonly)) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to perform a FullQuery with an invalid serverpin`);
-        client.connection.end();
+        client.socket.end();
         misc_js_1.sendEmail("wrongServerPin", {
             Ip: client.ipAddress,
             date: misc_js_1.printDate(),
@@ -220,7 +213,7 @@ handles[7][constants.states.STANDBY] = async (pkg, client) => {
         return;
     if (pkg.data.serverpin !== config_js_1.default.serverPin && !(readonly && config_js_1.default.allowLoginInReadonly)) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to perform a Login with an invalid serverpin`);
-        client.connection.end();
+        client.socket.end();
         misc_js_1.sendEmail("wrongServerPin", {
             Ip: client.ipAddress,
             date: misc_js_1.printDate(),
@@ -258,7 +251,7 @@ handles[9][constants.states.FULLQUERY] =
         client.state = constants.states.STANDBY;
         if (typeof client.cb === "function")
             client.cb();
-        client.connection.end();
+        client.socket.end();
         await sendQueue_js_1.default();
         return;
     };

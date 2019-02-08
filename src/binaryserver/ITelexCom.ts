@@ -42,57 +42,57 @@ type PackageData_decoded =
 
 interface Package_decoded_1 {
 	type: 1;
-	datalength ? : 8;
+	datalength ?: 8;
 	data: PackageData_decoded_1;
 }
 interface Package_decoded_2 {
 	type: 2;
-	datalength ? : 4;
+	datalength ?: 4;
 	data: PackageData_decoded_2;
 }
 interface Package_decoded_3 {
 	type: 3;
-	datalength ? : 5;
+	datalength ?: 5;
 	data: PackageData_decoded_3;
 }
 interface Package_decoded_4 {
 	type: 4;
-	datalength ? : 0;
-	data ? : PackageData_decoded_4;
+	datalength ?: 0;
+	data ?: PackageData_decoded_4;
 }
 interface Package_decoded_5 {
 	type: 5;
-	datalength ? : 100;
+	datalength ?: 100;
 	data: PackageData_decoded_5;
 }
 interface Package_decoded_6 {
 	type: 6;
-	datalength ? : 5;
+	datalength ?: 5;
 	data: PackageData_decoded_6;
 }
 interface Package_decoded_7 {
 	type: 7;
-	datalength ? : 5;
+	datalength ?: 5;
 	data: PackageData_decoded_7;
 }
 interface Package_decoded_8 {
 	type: 8;
-	datalength ? : 0;
-	data ? : PackageData_decoded_8;
+	datalength ?: 0;
+	data ?: PackageData_decoded_8;
 }
 interface Package_decoded_9 {
 	type: 9;
-	datalength ? : 0;
-	data ? : PackageData_decoded_9;
+	datalength ?: 0;
+	data ?: PackageData_decoded_9;
 }
 interface Package_decoded_10 {
 	type: 10;
-	datalength ? : 41;
+	datalength ?: 41;
 	data: PackageData_decoded_10;
 }
 interface Package_decoded_255 {
 	type: 255;
-	datalength ? : number;
+	datalength ?: number;
 	data: PackageData_decoded_255;
 }
 interface PackageData_decoded_1 {
@@ -148,9 +148,9 @@ interface PackageData_decoded_255 {
 type PackageData_encoded = number[] | Buffer;
 
 interface Package_encoded {
-	data ? : PackageData_encoded;
-	type ? : number;
-	datalength ? : number;
+	data ?: PackageData_encoded;
+	type ?: number;
+	datalength ?: number;
 }
 
 interface rawPackage {

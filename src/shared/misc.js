@@ -7,6 +7,7 @@ const nodemailer = require("nodemailer");
 const config_js_1 = require("../shared/config.js");
 const colors_js_1 = require("../shared/colors.js");
 const ITelexCom = require("../binaryserver/ITelexCom.js");
+const constants_js_1 = require("./constants.js");
 // import * as winston from "winston";
 //#endregion
 const textColor = colors_js_1.default.Reset;
@@ -209,16 +210,35 @@ function sendEmail(messageName, values) {
     });
 }
 exports.sendEmail = sendEmail;
-function sendPackage(pkg) {
-    return new Promise((resolve, reject) => {
-        let client = this;
-        logger.log('network', inspect `sending package of type ${pkg.type} to ${client.name}`);
-        logger.log('debug', inspect `sending package ${pkg} to ${client.name}`);
-        let encodeded = ITelexCom.encPackage(pkg);
-        client.connection.write(encodeded, resolve);
-    });
+class Client {
+    constructor(socket) {
+        this.name = clientName();
+        this.state = constants_js_1.states.STANDBY;
+        this.writebuffer = [];
+        this.socket = socket;
+    }
+    sendPackage(pkg) {
+        return new Promise((resolve, reject) => {
+            logger.log('network', inspect `sending package of type ${pkg.type} to ${this.name}`);
+            logger.log('debug', inspect `sending package ${pkg} to ${this.name}`);
+            let encodeded = ITelexCom.encPackage(pkg);
+            this.socket.write(encodeded, resolve);
+        });
+    }
+    sendError(message) {
+        return new Promise((resolve, reject) => {
+            logger.log('network', inspect `sending error to ${this.name}: ${message}`);
+            const length = Buffer.byteLength(message);
+            const buffer = Buffer.alloc(length + 2);
+            buffer[0] = 0xff;
+            buffer[1] = length;
+            buffer.write(message, 2);
+            // no communication should happen after an error
+            this.socket.end(buffer, resolve);
+        });
+    }
 }
-exports.sendPackage = sendPackage;
+exports.Client = Client;
 let clientName;
 exports.clientName = clientName;
 if (config_js_1.default.scientistNames) {

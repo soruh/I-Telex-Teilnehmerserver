@@ -3,8 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //#region imports
 const net = require("net");
 const config_js_1 = require("../shared/config.js");
-// import colors from "../shared/colors.js";
-const constants = require("../shared/constants.js");
 const ITelexCom = require("../binaryserver/ITelexCom.js");
 const misc_js_1 = require("../shared/misc.js");
 const handles_js_1 = require("./handles.js");
@@ -17,15 +15,7 @@ function connect(options, onClose = () => { }) {
         const socket = new net.Socket();
         const chunker = new ITelexCom.ChunkPackages();
         socket.pipe(chunker);
-        let client = {
-            name: misc_js_1.clientName(),
-            connection: socket,
-            ipAddress: null,
-            ipFamily: null,
-            state: constants.states.STANDBY,
-            writebuffer: [],
-            sendPackage: misc_js_1.sendPackage,
-        };
+        let client = new misc_js_1.Client(socket);
         chunker.on('data', (pkg) => {
             if (client) {
                 logger.log('verbose network', misc_js_1.inspect `recieved package: ${pkg}`);
@@ -50,7 +40,7 @@ function connect(options, onClose = () => { }) {
         });
         socket.on('error', (error) => {
             if (error.code === "ECONNRESET") {
-                logger.log('warning', misc_js_1.inspect `server ${client.name} reset the connection`);
+                logger.log('warning', misc_js_1.inspect `server ${client.name} reset the socket`);
             }
             else if (error.code === "EPIPE") {
                 logger.log('warning', misc_js_1.inspect `tried to write data to a closed socket`);

@@ -6,7 +6,7 @@ import config from '../shared/config.js';
 // import colors from "../shared/colors.js";
 import * as constants from "../shared/constants.js";
 import * as ITelexCom from "../binaryserver/ITelexCom.js";
-import {increaseErrorCounter, serverErrorCounters, resetErrorCounter, Client, clientName, inspect, normalizeIp, sendPackage} from "../shared/misc.js";
+import {increaseErrorCounter, serverErrorCounters, resetErrorCounter, Client, clientName, inspect, normalizeIp} from "../shared/misc.js";
 import { handlePackage } from "./handles.js";
 //#endregion
 
@@ -23,15 +23,9 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 		const chunker = new ITelexCom.ChunkPackages();
 		socket.pipe(chunker);
 		
-		let client: Client = {
-			name: clientName(),
-			connection: socket,
-			ipAddress: null,
-			ipFamily: null,
-			state: constants.states.STANDBY,
-			writebuffer: [],
-			sendPackage,
-		};
+		let client = new Client(socket);
+
+
 		chunker.on('data', (pkg: Buffer) => {
 			if(client){
 				logger.log('verbose network', inspect`recieved package: ${pkg}`);
@@ -56,7 +50,7 @@ function connect(options:{host: string, port: number}, onClose=()=>{}): Promise 
 		});
 		socket.on('error', (error:Error&{code:string}) => {
 			if (error.code === "ECONNRESET") {
-				logger.log('warning', inspect`server ${client.name} reset the connection`);
+				logger.log('warning', inspect`server ${client.name} reset the socket`);
 			}else if(error.code === "EPIPE"){
 				logger.log('warning', inspect`tried to write data to a closed socket`);
 			}else{

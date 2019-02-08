@@ -6,7 +6,7 @@ import config from '../shared/config.js';
 import * as ITelexCom from "../binaryserver/ITelexCom.js";
 import * as constants from "../shared/constants.js";
 
-import { Client, clientName, inspect, normalizeIp, sendPackage} from '../shared/misc.js';
+import { Client, inspect, normalizeIp} from '../shared/misc.js';
 import { asciiLookup, checkIp } from './ascii.js';
 import { handlePackage } from './handles.js';
 
@@ -14,15 +14,7 @@ import { handlePackage } from './handles.js';
 
 
 let binaryServer = net.createServer(function(socket: net.Socket) {
-	let client: Client = {
-		name: clientName(),
-		connection: socket,
-		ipAddress: null,
-		ipFamily: null,
-		state: constants.states.STANDBY,
-		writebuffer: [],
-		sendPackage,
-	};
+	let client = new Client(socket);
 	
 	let asciiListener = (data: Buffer): void => {
 		if(client){
@@ -62,7 +54,7 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 	});
 	socket.on('error', (error:Error&{code:string}) => {
 		if (error.code === "ECONNRESET") {
-			logger.log('warning', inspect`client ${client.name} reset the connection`);
+			logger.log('warning', inspect`client ${client.name} reset the socket`);
 		}else if(error.code === "EPIPE"){
 			logger.log('warning', inspect`tried to write data to a closed socket`);
 		}else{
@@ -87,7 +79,7 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 			client.ipFamily = ipAddress.family;
 		}else{
 			logger.log('error', inspect`client: ${client.name} had no ipAddress and was disconected`);
-			client.connection.destroy();
+			client.socket.destroy();
 		}
 	}
 	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); // .replace(/^.*:/,'')

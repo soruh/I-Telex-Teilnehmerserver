@@ -22,7 +22,7 @@ class Timer {
 
 	public complete: boolean = false;
 
-	constructor(fn: (...args: any[]) => any, duration: number, name ? : string) {
+	constructor(fn: (...args: any[]) => any, duration: number, name ?: string) {
 		this.fn = ()=>{
 			fn();
 			this.remaining = 0;

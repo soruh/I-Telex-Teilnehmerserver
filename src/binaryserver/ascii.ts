@@ -23,7 +23,7 @@ async function asciiLookup(data: Buffer, client: Client) {
 				send += number + "\r\n";
 				send += "unknown\r\n";
 				send += "+++\r\n";
-				client.connection.end(send, function() {
+				client.socket.end(send, function() {
 					logger.log('debug', inspect`Entry not found/visible`);
 					logger.log('debug', inspect`sent:\n${send}`);
 				});
@@ -48,7 +48,7 @@ async function asciiLookup(data: Buffer, client: Client) {
 					send += "wrong type\r\n";
 					send += "+++\r\n";
 
-					client.connection.end(send, function() {
+					client.socket.end(send, function() {
 						logger.log('debug', inspect`Entry had invalid type`);
 						logger.log('debug', inspect`sent:\n${send}`);
 	
@@ -59,7 +59,7 @@ async function asciiLookup(data: Buffer, client: Client) {
 				send += res.port + "\r\n";
 				send += (res.extension || "-") + "\r\n";
 				send += "+++\r\n";
-				client.connection.end(send, function() {
+				client.socket.end(send, function() {
 					logger.log('debug', inspect`Entry found`);
 					logger.log('debug', inspect`sent:\n${send}`);
 
@@ -69,7 +69,7 @@ async function asciiLookup(data: Buffer, client: Client) {
 			logger.log('error', inspect`${err}`);
 		}
 	} else {
-		client.connection.end();
+		client.socket.end();
 	}
 }
 
@@ -90,7 +90,7 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 				ipAddr = address;
 				logger.log('debug', inspect` resolved to ${ipAddr}`);
 			} catch (e) {
-				client.connection.end("error\r\nnot a valid host or ip\r\n");
+				client.socket.end("error\r\nnot a valid host or ip\r\n");
 				logger.log('debug', inspect`${e}`);
 				return;
 			}
@@ -133,18 +133,18 @@ async function checkIp(data: number[] | Buffer, client: Client) {
 				let matches = ipPeers.filter(peer => ip.isEqual(peer.ipaddress, ipAddr)).map(x => x.peer.name);
 				logger.log('debug', inspect`matching peers: ${matches}`);
 				if (matches.length > 0) {
-					client.connection.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
+					client.socket.end(`ok\r\n${matches.join("\r\n")}\r\n+++\r\n`);
 				} else {
-					client.connection.end("fail\r\n+++\r\n");
+					client.socket.end("fail\r\n+++\r\n");
 				}
 			}catch(err){
 				logger.log('error', inspect`${err}`);
 			}
 		} else {
-			client.connection.end("error\r\nnot a valid host or ip\r\n");
+			client.socket.end("error\r\nnot a valid host or ip\r\n");
 		}
 	} else {
-		client.connection.end("error\r\nthis server does not support this function\r\n");
+		client.socket.end("error\r\nthis server does not support this function\r\n");
 	}
 }
 
