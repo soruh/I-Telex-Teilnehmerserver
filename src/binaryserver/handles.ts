@@ -338,9 +338,9 @@ function handlePackage(obj: ITelexCom.Package_decoded, client: Client) {
 			logger.log('warning', inspect`no package to handle`);
 			resolve();
 		} else {
-			logger.log('debug', inspect`state: ${symbolName(client.state)}`);
+			logger.log('debug', inspect`state: ${client.stateName}`);
 			try {
-				logger.log('network', inspect`handling package of type ${constants.PackageNames[obj.type]} (${obj.type}) for ${client.name} in state ${symbolName(client.state)}`);
+				logger.log('network', inspect`handling package of type ${constants.PackageNames[obj.type]} (${obj.type}) for ${client.name} in state ${client.stateName}`);
 				logger.log('verbose network', inspect`handling package: ${obj}`);
 
 				if (typeof handles[obj.type][client.state] === "function") {
@@ -353,7 +353,7 @@ function handlePackage(obj: ITelexCom.Package_decoded, client: Client) {
 						resolve();
 					}
 				} else {
-					logger.log('warning', inspect`client ${client.name} sent a package of type ${constants.PackageNames[obj.type]} (${obj.type}) which is not supported in state ${symbolName(client.state)}`);
+					logger.log('warning', inspect`client ${client.name} sent a package of type ${constants.PackageNames[obj.type]} (${obj.type}) which is not supported in state ${client.stateName}`);
 					resolve();
 				}
 			} catch (e) {

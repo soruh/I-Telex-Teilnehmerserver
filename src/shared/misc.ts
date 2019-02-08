@@ -288,14 +288,15 @@ class Client {
 	public ipAddress: string;
 	public ipFamily: number;
 	public writebuffer: ITelexCom.PackageData_decoded_5[] = [];
-
-	public servernum ?: number;
 	public newEntries ?: number;
-
-	public handleTimeout ?: NodeJS.Timer;
 	public cb ?: () => void;
+
 	constructor(socket: Socket){
 		this.socket = socket;
+	}
+
+	get stateName(){
+		return symbolName(this.state);
 	}
 
 	public sendPackage(pkg:ITelexCom.Package_decoded) {

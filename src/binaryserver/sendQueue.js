@@ -41,7 +41,6 @@ async function sendQueue() {
                 host: serverinf.address,
                 port: serverinf.port,
             }, resolve);
-            client.servernum = server;
             logger.log('verbose network', misc_js_1.inspect `connected to server ${serverinf.uid}: ${serverinf.address} on port ${serverinf.port}`);
             client.writebuffer = [];
             for (let entry of entriesForServer) {

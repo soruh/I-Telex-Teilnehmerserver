@@ -30,13 +30,16 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 			}
 		}
 	};
-	let binaryListener = (pkg: Buffer): void => {
+	let binaryListener = async (pkg: Buffer) => {
 		if(client){
 			logger.log('verbose network', inspect`recieved package: ${pkg}`);
 			logger.log('verbose network', inspect`${pkg.toString().replace(/\u0000/g, '–').replace(/[^ -~–]/g, "·")}`);
 			
-			handlePackage(ITelexCom.decPackage(pkg), client)
-			.catch(err=>{logger.log('error', inspect`${err}`);}); 
+			try {
+				await handlePackage(ITelexCom.decPackage(pkg), client);
+			}catch(err){
+				logger.log('error', inspect`${err}`);
+			} 
 		}
 	};
 	
@@ -82,6 +85,7 @@ let binaryServer = net.createServer(function(socket: net.Socket) {
 			client.socket.destroy();
 		}
 	}
+	
 	logger.log('network', inspect`client ${client.name} connected from ipaddress: ${client.ipAddress}`); // .replace(/^.*:/,'')
 });
 binaryServer.on("error", err => logger.log('error', inspect`server error: ${err}`));

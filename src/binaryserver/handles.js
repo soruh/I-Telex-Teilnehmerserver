@@ -295,9 +295,9 @@ function handlePackage(obj, client) {
             resolve();
         }
         else {
-            logger.log('debug', misc_js_1.inspect `state: ${misc_js_1.symbolName(client.state)}`);
+            logger.log('debug', misc_js_1.inspect `state: ${client.stateName}`);
             try {
-                logger.log('network', misc_js_1.inspect `handling package of type ${constants.PackageNames[obj.type]} (${obj.type}) for ${client.name} in state ${misc_js_1.symbolName(client.state)}`);
+                logger.log('network', misc_js_1.inspect `handling package of type ${constants.PackageNames[obj.type]} (${obj.type}) for ${client.name} in state ${client.stateName}`);
                 logger.log('verbose network', misc_js_1.inspect `handling package: ${obj}`);
                 if (typeof handles[obj.type][client.state] === "function") {
                     try {
@@ -311,7 +311,7 @@ function handlePackage(obj, client) {
                     }
                 }
                 else {
-                    logger.log('warning', misc_js_1.inspect `client ${client.name} sent a package of type ${constants.PackageNames[obj.type]} (${obj.type}) which is not supported in state ${misc_js_1.symbolName(client.state)}`);
+                    logger.log('warning', misc_js_1.inspect `client ${client.name} sent a package of type ${constants.PackageNames[obj.type]} (${obj.type}) which is not supported in state ${client.stateName}`);
                     resolve();
                 }
             }

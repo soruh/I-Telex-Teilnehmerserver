@@ -217,6 +217,9 @@ class Client {
         this.writebuffer = [];
         this.socket = socket;
     }
+    get stateName() {
+        return symbolName(this.state);
+    }
     sendPackage(pkg) {
         return new Promise((resolve, reject) => {
             logger.log('network', inspect `sending package of type ${pkg.type} to ${this.name}`);

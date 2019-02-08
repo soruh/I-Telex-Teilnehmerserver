@@ -13,19 +13,21 @@ import serialEachPromise from '../shared/serialEachPromise';
 async function asciiLookup(data: Buffer, client: Client) {
 	const match = /q([0-9]+)/.exec(data.toString());
 	const number = match[1];
+
+	let fail = "";
+	fail += "fail\r\n";
+	fail += number + "\r\n";
+	fail += "unknown\r\n";
+	fail += "+++\r\n";
+
 	if (number&&(!isNaN(parseInt(number)))) {
 		logger.log('debug', inspect`starting lookup for: ${number}`);
 		try {
 			let result = await SqlGet<teilnehmerRow>(`SELECT * FROM teilnehmer WHERE number=? and disabled!=1 and type!=0;`, [number]);
 			if (!result) {
-				let send = "";
-				send += "fail\r\n";
-				send += number + "\r\n";
-				send += "unknown\r\n";
-				send += "+++\r\n";
-				client.socket.end(send, function() {
+				client.socket.end(fail, function() {
 					logger.log('debug', inspect`Entry not found/visible`);
-					logger.log('debug', inspect`sent:\n${send}`);
+					logger.log('debug', inspect`sent:\n${fail}`);
 				});
 			} else {
 				let send = "";
@@ -69,14 +71,17 @@ async function asciiLookup(data: Buffer, client: Client) {
 			logger.log('error', inspect`${err}`);
 		}
 	} else {
-		client.socket.end();
+		client.socket.end(fail, function() {
+			logger.log('debug', inspect`No number supplied`);
+			logger.log('debug', inspect`sent:\n${fail}`);
+		});
 	}
 }
 
 async function checkIp(data: number[] | Buffer, client: Client) {
 	if (config.doDnsLookups) {
 		const arg:string = data.slice(1).toString().split("\n")[0].split("\r")[0];
-		logger.log('debug', inspect`checking if belongs to any participant`);
+		logger.log('debug', inspect`checking if ${arg} belongs to any participant`);
 
 		let ipAddr = "";
 		if (ip.isV4Format(arg) || ip.isV6Format(arg)) {
