@@ -39,9 +39,20 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 	
 	const {number, pin, port} = pkg.data;
 
+
+	function sendNotAllowed(){
+		let buffer = Buffer.alloc(5);
+
+		buffer[0] = 0x04;
+		buffer[0] = 0x03;
+		buffer.write('n a', 2);
+
+		client.connection.end(buffer);
+	}
+
 	if(client.ipFamily  === 6){
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an ipv6 address`);
-		client.connection.end();
+		sendNotAllowed();
 
 		sendEmail("ipV6DynIpUpdate", {
 			Ip: client.ipAddress,
@@ -54,7 +65,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 	if (number < 10000) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} which is too small(<10000)`);
-		client.connection.end();
+		sendNotAllowed();
 
 		sendEmail("invalidNumber", {
 			Ip: client.ipAddress,
@@ -69,7 +80,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 	if (!entry) {
 		await SqlRun(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-		const result = await SqlRun(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+		const result = await SqlRun(`INSERT INTO teilnehmer (name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
 		if (!(result && result.changes)) {
 			logger.log('error', inspect`could not create entry`);
 			return;
@@ -94,7 +105,7 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 
 	if (entry.type !== 5) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} which is not of DynIp type`);
-		client.connection.end();
+		sendNotAllowed();
 
 		sendEmail("wrongDynIpType", {
 			type: entry.type.toString(),
@@ -112,9 +123,10 @@ handles[1][constants.states.STANDBY] = async (pkg: ITelexCom.Package_decoded_1, 
 			logger.log('warning', inspect`reset pin for ${entry.name} (${entry.number})`);
 			await SqlRun(`UPDATE teilnehmer SET pin = ?, changed=1, timestamp=? WHERE uid=?;`, [pin, timestamp(), entry.uid]);
 		}
-	}else if (entry.pin !== pin) {
+	} else if (entry.pin !== pin) {
 		logger.log('warning', inspect`client ${client.name} tried to update ${number} with an invalid pin`);
-		client.connection.end();
+		sendNotAllowed();
+
 		increaseErrorCounter('client', {
 			clientName:client.name,
 			ip:client.ipAddress,

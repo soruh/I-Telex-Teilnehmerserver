@@ -11,7 +11,11 @@ let db:mysql.Pool;
 
 function testConnection(){
 	return new Promise((resolve, reject) => {
+		let timeout = setTimeout(()=>{
+			reject("timed out");
+		}, 10000);
 		db.query("SELECT * FROM teilnehmer;" , (err, res)=>{
+			clearTimeout(timeout);
 			if (err){
 				reject(err);
 				return;
@@ -23,23 +27,9 @@ function testConnection(){
 }
 
 async function connectToDb():Promise<mysql.Pool>{
-	const retryInt = 10*1000;
-	let maxTries = (60*1000)/retryInt;
-	let tries = -1;
-
-	while(++tries < maxTries){
-		try{
-			db = mysql.createPool(config.mysql);
-			await testConnection();
-			return db;
-		}catch(err){
-			logger.log('debug', inspect`err: ${err}`);
-			logger.log('warning', `couldn't create pool; Retrying in ${retryInt}ms (try ${tries+1}/${maxTries})`);
-			await sleep(retryInt);
-		}
-	}
-
-	throw new Error("timeout in db connection");
+	db = mysql.createPool(config.mysql);
+	await testConnection();
+	return db;
 }
 
 function prepareQuery(query: string, values?: any[], verbose?:boolean):string{

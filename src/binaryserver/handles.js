@@ -32,9 +32,16 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     if (!client)
         return;
     const { number, pin, port } = pkg.data;
+    function sendNotAllowed() {
+        let buffer = Buffer.alloc(5);
+        buffer[0] = 0x04;
+        buffer[0] = 0x03;
+        buffer.write('n a', 2);
+        client.connection.end(buffer);
+    }
     if (client.ipFamily === 6) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an ipv6 address`);
-        client.connection.end();
+        sendNotAllowed();
         misc_js_1.sendEmail("ipV6DynIpUpdate", {
             Ip: client.ipAddress,
             number: number.toString(),
@@ -45,7 +52,7 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     }
     if (number < 10000) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is too small(<10000)`);
-        client.connection.end();
+        sendNotAllowed();
         misc_js_1.sendEmail("invalidNumber", {
             Ip: client.ipAddress,
             number: number.toString(),
@@ -57,7 +64,7 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     const entry = await SQL_1.SqlGet(`SELECT * FROM teilnehmer WHERE number = ? AND type != 0;`, [number]);
     if (!entry) {
         await SQL_1.SqlRun(`DELETE FROM teilnehmer WHERE number=?;`, [number]);
-        const result = await SQL_1.SqlRun(`INSERT INTO teilnehmer(name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', misc_js_1.timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
+        const result = await SQL_1.SqlRun(`INSERT INTO teilnehmer (name, timestamp, type, number, port, pin, hostname, extension, ipaddress, disabled, changed) VALUES (${"?, ".repeat(11).slice(0, -2)});`, ['?', misc_js_1.timestamp(), 5, number, port, pin, "", "", client.ipAddress, 1, 1]);
         if (!(result && result.changes)) {
             logger.log('error', misc_js_1.inspect `could not create entry`);
             return;
@@ -78,7 +85,7 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     }
     if (entry.type !== 5) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} which is not of DynIp type`);
-        client.connection.end();
+        sendNotAllowed();
         misc_js_1.sendEmail("wrongDynIpType", {
             type: entry.type.toString(),
             Ip: client.ipAddress,
@@ -97,7 +104,7 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     }
     else if (entry.pin !== pin) {
         logger.log('warning', misc_js_1.inspect `client ${client.name} tried to update ${number} with an invalid pin`);
-        client.connection.end();
+        sendNotAllowed();
         misc_js_1.increaseErrorCounter('client', {
             clientName: client.name,
             ip: client.ipAddress,

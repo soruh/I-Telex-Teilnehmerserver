@@ -8,7 +8,11 @@ const misc_1 = require("../misc");
 let db;
 function testConnection() {
     return new Promise((resolve, reject) => {
+        let timeout = setTimeout(() => {
+            reject("timed out");
+        }, 10000);
         db.query("SELECT * FROM teilnehmer;", (err, res) => {
+            clearTimeout(timeout);
             if (err) {
                 reject(err);
                 return;
@@ -20,22 +24,9 @@ function testConnection() {
     });
 }
 async function connectToDb() {
-    const retryInt = 10 * 1000;
-    let maxTries = (60 * 1000) / retryInt;
-    let tries = -1;
-    while (++tries < maxTries) {
-        try {
-            db = mysql.createPool(config_1.default.mysql);
-            await testConnection();
-            return db;
-        }
-        catch (err) {
-            logger.log('debug', misc_1.inspect `err: ${err}`);
-            logger.log('warning', `couldn't create pool; Retrying in ${retryInt}ms (try ${tries + 1}/${maxTries})`);
-            await misc_1.sleep(retryInt);
-        }
-    }
-    throw new Error("timeout in db connection");
+    db = mysql.createPool(config_1.default.mysql);
+    await testConnection();
+    return db;
 }
 exports.connectToDb = connectToDb;
 function prepareQuery(query, values, verbose) {
