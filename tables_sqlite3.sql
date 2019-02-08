@@ -1,19 +1,19 @@
 CREATE TABLE queue (
-	uid INTEGER AUTO_INCREMENT PRIMARY KEY,
+	uid INTEGER PRIMARY KEY,
 	server INTEGER NOT NULL,
 	message INTEGER NOT NULL,
 	timestamp int unsigned DEFAULT 0
 );
 
 CREATE TABLE servers (
-	uid INTEGER AUTO_INCREMENT PRIMARY KEY,
+	uid INTEGER PRIMARY KEY,
 	address VARCHAR(40),
 	version tinyint unsigned,
 	port smallint unsigned
 );
 
 CREATE TABLE teilnehmer (
-	uid INTEGER AUTO_INCREMENT PRIMARY KEY,
+	uid INTEGER PRIMARY KEY,
 	number int unsigned NOT NULL UNIQUE,
 	name VARCHAR(40),
 	type tinyint unsigned DEFAULT 0,

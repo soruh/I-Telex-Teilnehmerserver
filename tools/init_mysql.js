@@ -82,7 +82,7 @@ function createGrant(){
 	return sql.run("GRANT ALL ON ?.* TO ?@localhost;", [oldConfig.database, oldConfig.user]);
 }
 function createTables(){
-	return sql.run(fs.readFileSync(path.join(__dirname, '../tables.sql')));
+	return sql.run(fs.readFileSync(path.join(__dirname, '../tables_mysql.sql')));
 }
 
 

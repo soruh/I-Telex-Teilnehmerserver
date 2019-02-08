@@ -23,7 +23,7 @@ if(dbExists){
 
 connectToDb()
 .then(db=>new Promise((resolve, reject)=>{
-	db.exec(fs.readFileSync('./tables.sql').toString(), err=>{
+	db.exec(fs.readFileSync('./tables_sqlite3.sql').toString(), err=>{
 		if(err){
 			reject(err);
 			return;
