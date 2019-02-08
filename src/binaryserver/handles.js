@@ -35,7 +35,7 @@ handles[1][constants.states.STANDBY] = async (pkg, client) => {
     function sendNotAllowed() {
         let buffer = Buffer.alloc(5);
         buffer[0] = 0xff;
-        buffer[0] = 0x03;
+        buffer[1] = 0x03;
         buffer.write('n a', 2);
         client.connection.end(buffer);
     }
