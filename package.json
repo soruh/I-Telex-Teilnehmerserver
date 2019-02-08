@@ -11,19 +11,7 @@
     "stop": "pm2 delete ecosystem.config.js",
     "restart": "pm2 reload ecosystem.config.js",
     "list": "pm2 list",
-    "logs": "pm2 logs",
-    "docker_start": "docker start teilnehmerserver",
-    "docker_stop": "docker stop teilnehmerserver",
-    "docker_restart": "docker restart teilnehmerserver",
-    "docker_init": "npm run docker_build&&npm run docker_run",
-    "docker_build": "tools/compileDocker.sh",
-    "docker_run": "tools/runDocker.sh -d",
-    "docker_run_once": "tools/runDocker.sh",
-    "docker_top": "docker top teilnehmerserver",
-    "docker_stats": "docker stats teilnehmerserver",
-    "docker_list": "docker exec teilnehmerserver pm2 list",
-    "docker_logs": "docker exec teilnehmerserver pm2 logs",
-    "docker_exec": "docker exec teilnehmerserver"
+    "logs": "pm2 logs"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
