@@ -46,10 +46,15 @@ const tls = {
 let collection = {};
 Object.assign(collection, tls);
 Object.assign(collection, { eMail });
-Object.assign(collection, { mysql: require("../../config/mysql.json") });
 Object.assign(collection, require("../../config/logging.json"));
 Object.assign(collection, require("../../config/misc.json"));
 Object.assign(collection, require("../../config/timings.json"));
 Object.assign(collection, require("../../config/serverpin.json"));
+if (collection.useMysql) {
+    Object.assign(collection, { mysql: require("../../config/mysql.json") });
+}
+else {
+    collection.mysql = {};
+}
 const config = collection;
 exports.default = config;
