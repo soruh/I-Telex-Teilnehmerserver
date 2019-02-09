@@ -28,6 +28,11 @@ async function sendQueue() {
     await Promise.all(Object.values(entriesByServer).map((entriesForServer) => (async () => {
         let server = entriesForServer[0].server;
         let serverinf = await SQL_1.SqlGet("SELECT * FROM servers WHERE uid=?;", [server]);
+        if (!serverinf) {
+            logger.log('network', misc_js_1.inspect `server ${server} no longer exists.`);
+            await SQL_1.SqlGet("DELETE FROM queue WHERE server=?;", [server]);
+            return;
+        }
         logger.log('queue', misc_js_1.inspect `sending queue for ${serverinf}`);
         if (serverinf.version !== 2) {
             logger.log('queue', misc_js_1.inspect `entries for server ${serverinf.address}:${serverinf.port} will be ignored, because it's version is ${serverinf.version} not ${2}`);

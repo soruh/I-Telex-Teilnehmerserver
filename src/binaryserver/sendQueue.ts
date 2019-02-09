@@ -43,6 +43,15 @@ async function sendQueue() {
 
 			let serverinf = await SqlGet<serversRow>("SELECT * FROM servers WHERE uid=?;", [server]);
 			
+			
+			if(!serverinf){
+				logger.log('network', inspect`server ${server} no longer exists.`);
+				await SqlGet<serversRow>("DELETE FROM queue WHERE server=?;", [server]);
+				
+				resolve();
+				return;
+			}
+			
 			logger.log('debug', inspect`sending queue for ${serverinf}`);
 
 			if(serverinf.version !== 1){
