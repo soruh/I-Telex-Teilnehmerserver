@@ -12,7 +12,7 @@ import serialEachPromise from '../shared/serialEachPromise';
 
 async function asciiLookup(data: Buffer, client: Client) {
 	const match = /q([0-9]+)/.exec(data.toString());
-	const number = match[1];
+	const number = match?match[1]:'';
 
 	let fail = "";
 	fail += "fail\r\n";

@@ -9,7 +9,7 @@ const SQL_1 = require("../shared/SQL");
 const serialEachPromise_1 = require("../shared/serialEachPromise");
 async function asciiLookup(data, client) {
     const match = /q([0-9]+)/.exec(data.toString());
-    const number = match[1];
+    const number = match ? match[1] : '';
     let fail = "";
     fail += "fail\r\n";
     fail += number + "\r\n";
