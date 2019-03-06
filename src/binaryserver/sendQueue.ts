@@ -55,7 +55,7 @@ async function sendQueue() {
 			logger.log('debug', inspect`sending queue for ${serverinf}`);
 
 			if(serverinf.version !== 1){
-				logger.log('network', inspect`entries for server ${serverinf.address}:${serverinf.port} will be ignored, because it's version is ${serverinf.version} not ${1}`);
+				logger.log('network', inspect`entries for server ${serverinf.address}:${serverinf.port} will be ignored, because its version is ${serverinf.version} not ${1}`);
 				resolve();
 				return;
 			}

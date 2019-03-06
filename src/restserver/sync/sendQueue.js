@@ -35,7 +35,7 @@ async function sendQueue() {
         }
         logger.log('queue', misc_js_1.inspect `sending queue for ${serverinf}`);
         if (serverinf.version !== 2) {
-            logger.log('queue', misc_js_1.inspect `entries for server ${serverinf.address}:${serverinf.port} will be ignored, because it's version is ${serverinf.version} not ${2}`);
+            logger.log('queue', misc_js_1.inspect `entries for server ${serverinf.address}:${serverinf.port} will be ignored, because its version is ${serverinf.version} not ${2}`);
             return;
         }
         let data = await SQL_1.SqlAll(`SELECT ${constants.peerProperties} FROM teilnehmer WHERE uid IN (${entriesForServer.map(x => '?').join(', ')});`, entriesForServer.map(x => x.message));
