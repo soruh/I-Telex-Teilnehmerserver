@@ -25,7 +25,7 @@ const PackageSizes = {
 	10: 41,
 };
 const peerProperties = ["number", "name", "type", "hostname", "ipaddress", "port", "extension", "pin", "disabled", "timestamp"];
-const peerPropertiesPublic = peerProperties.filter(x=>!(x==='pin'||x==='disabled'));
+const peerPropertiesPublic = peerProperties.filter(x => !(x === 'pin' || x === 'disabled'));
 const states = {
 	STANDBY: Symbol("STANDBY"),
 	RESPONDING: Symbol("RESPONDING"),
@@ -36,47 +36,49 @@ const states = {
 
 const loggingLevels = {
 	REST: {
-		levels:{
+		levels: {
 			"error": 0,
 			"warning": 1,
 			"admin": 2,
 			"private": 3,
-			"public": 4,			
+			"public": 4,
 			"others": 5,
-			"sql": 6,
-			"verbose sql": 7,
-			"queue": 8,
-			"debug": 9,
-			"silly": 10,
+			"network": 6,
+			"sql": 7,
+			"verbose sql": 8,
+			"queue": 9,
+			"debug": 10,
+			"silly": 11,
 		},
-		colors:{
+		colors: {
 			"error": "red",
 			"warning": "yellow",
 			"admin": "magenta",
 			"private": "blue",
 			"public": "green",
 			"others": "gray",
+			"network": "bold",
 			"sql": "cyan",
 			"verbose sql": "cyan",
 			"queue": "gray",
 			"debug": "magenta",
-			"silly": 'bold',
+			"silly": 'underline',
 		},
 	},
-	BIN:{
-		levels:{
+	BIN: {
+		levels: {
 			"error": 0,
 			"warning": 1,
 			"sql": 2,
-			"network": 3,			
+			"network": 3,
 			"verbose sql": 4,
 			"verbose network": 5,
 			"debug": 6,
 			"queue": 7,
 			"iTelexCom": 8,
-			"silly":9,
+			"silly": 9,
 		},
-		colors:{
+		colors: {
 			"error": "red",
 			"warning": "yellow",
 			"sql": "green",
@@ -89,18 +91,18 @@ const loggingLevels = {
 			"silly": "bold",
 		},
 	},
-	WEB:{
-		levels:{
+	WEB: {
+		levels: {
 			"error": 0,
 			"warning": 1,
 			"sql": 2,
-			"http": 3,			
+			"http": 3,
 			"verbose sql": 4,
 			"verbose http": 5,
 			"debug": 6,
-			"silly":7,
+			"silly": 7,
 		},
-		colors:{
+		colors: {
 			"error": "red",
 			"warning": "yellow",
 			"sql": "green",
