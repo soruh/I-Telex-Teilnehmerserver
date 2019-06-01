@@ -6,7 +6,7 @@ import { SqlAll, SqlEach, SqlGet, SqlRun, serversRow, teilnehmerRow } from '../.
 import APIcall from './APICall.js';
 import * as constants from '../../shared/constants';
 
-async function getFullQuery(){
+async function getFullQuery() {
 	logger.log('admin', inspect`getting FullQuery`);
 	let servers = await SqlAll<serversRow>('SELECT * from servers WHERE version=2;', []);
 
@@ -20,26 +20,26 @@ async function getFullQuery(){
 		server.address === config.fullQueryServer.split(":")[0]
 	);
 
-	for(let server of servers){
-		try{
-			const endPoint = config.serverPin===null?'public':'admin';
-			const entries:teilnehmerRow[] = await APIcall('GET', server.address, server.port, `/${endPoint}/entries`);
-			for(const entry of entries){
-				let names = constants.peerProperties.filter(name=>entry.hasOwnProperty(name));
-				let values = names.map(name=>entry[name]);
+	for (let server of servers) {
+		try {
+			const endPoint = config.serverPin === null ? 'public' : 'admin';
+			const entries: teilnehmerRow[] = await APIcall('GET', server.address, server.port, `/${endPoint}/entries`);
+			for (const entry of entries) {
+				let names = constants.peerProperties.filter(name => entry.hasOwnProperty(name));
+				let values = names.map(name => entry[name]);
 
-				const existing = await SqlGet<{number:number, timestamp:number}>(`SELECT number, timestamp FROM teilnehmer WHERE number=?;`, [entry.number]);
-				if(existing){
-					if(existing.timestamp < entry.timestamp){
-						await SqlRun(`UPDATE teilnehmer SET ${names.map(name=>name+"=?").join(', ')} WHERE number=?;`, [...values, existing.number]);
-					}else{
+				const existing = await SqlGet<{ number: number, timestamp: number }>(`SELECT number, timestamp FROM teilnehmer WHERE number=?;`, [entry.number]);
+				if (existing) {
+					if (existing.timestamp < entry.timestamp) {
+						await SqlRun(`UPDATE teilnehmer SET ${names.map(name => name + "=?").join(', ')} WHERE number=?;`, [...values, existing.number]);
+					} else {
 						logger.log('debug', inspect`entry ${existing.number} didn't change`);
 					}
-				}else{
-					await SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(()=>'?').join(', ')});`, [...values]);
+				} else {
+					await SqlRun(`INSERT INTO teilnehmer (${names.join(', ')}) VALUES (${values.map(() => '?').join(', ')});`, [...values]);
 				}
 			}
-		}catch(err){
+		} catch (err) {
 			logger.log('error', inspect`${err}`);
 		}
 	}

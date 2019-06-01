@@ -4,6 +4,7 @@ const https = require("https");
 const config_1 = require("../../shared/config");
 const misc_1 = require("../../shared/misc");
 function APIcall(method, host, port, path, data) {
+    const serverkey = host + ':' + port;
     return new Promise((resolve, reject) => {
         logger.log('admin', `making ${method} request to ${host}:${port}${path[0] === '/' ? '' : '/'}${path}`);
         let headers = {};
@@ -56,6 +57,7 @@ function APIcall(method, host, port, path, data) {
                 try {
                     const parsed = JSON.parse(buffer);
                     if (parsed.success) {
+                        misc_1.resetErrorCounter("server", serverkey);
                         resolve(parsed.data);
                     }
                     else {
@@ -78,6 +80,9 @@ function APIcall(method, host, port, path, data) {
         if (stringifiedData)
             req.write(stringifiedData);
         req.end();
+    }).catch(err => {
+        misc_1.increaseErrorCounter("server", serverkey, err.code || err.message || err.toString());
+        return Promise.reject(err);
     });
 }
 exports.default = APIcall;
