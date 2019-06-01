@@ -11,8 +11,38 @@ const timers_js_1 = require("../shared/timers.js");
 const FullQuery_1 = require("./sync/FullQuery");
 const sendQueue_1 = require("./sync/sendQueue");
 const constants_js_1 = require("../shared/constants.js");
+const nodemailer = require("nodemailer");
 createLogger_js_1.default(config_js_1.default.RESTserverLoggingLevel, config_js_1.default.RESTserverLog, config_js_1.default.RESTserverErrorLog, config_js_1.default.logRESTserverToConsole, constants_js_1.loggingLevels.REST);
 SQL_js_1.connectToDb();
+if (config_js_1.default.eMail.useTestAccount) {
+    nodemailer.createTestAccount(function (err, account) {
+        if (err) {
+            logger.log('error', misc_js_1.inspect `${err}`);
+            global.transporter = {
+                sendMail: function sendMail() {
+                    logger.log('error', misc_js_1.inspect `can't send mail after Mail error`);
+                },
+                options: {
+                    host: "Failed to get test Account",
+                },
+            };
+        }
+        else {
+            global.transporter = nodemailer.createTransport({
+                host: 'smtp.ethereal.email',
+                port: 587,
+                secure: false,
+                auth: {
+                    user: account.user,
+                    pass: account.pass,
+                },
+            });
+        }
+    });
+}
+else {
+    global.transporter = nodemailer.createTransport(config_js_1.default.eMail.account);
+}
 timers_js_1.TimeoutWrapper(FullQuery_1.default, config_js_1.default.fullQueryInterval);
 timers_js_1.TimeoutWrapper(sendQueue_1.default, config_js_1.default.queueSendInterval);
 const app_1 = require("./app");
