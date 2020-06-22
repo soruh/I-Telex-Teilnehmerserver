@@ -10,7 +10,7 @@ async function search(req, res, next) {
             res.json({ success: false, error: 'No query' });
             return;
         }
-        const searchWords = pattern.split(" ").map(q => `%${q}%`);
+        const searchWords = pattern.toString().split(" ").map(q => `%${q}%`);
         const entries = await SQL_1.SqlAll(`SELECT ${constants_1.peerPropertiesPublic.join(',')} from teilnehmer where type!=0 AND disabled!=1${" AND name LIKE ?".repeat(searchWords.length)};`, searchWords);
         if (entries.length === 0) {
             res.status(404);

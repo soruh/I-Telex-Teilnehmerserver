@@ -18,23 +18,25 @@ const languages = {
     english,
 };
 $(document).ready(function () {
-    $('#cookie-prompt-buttons').children().click(function () {
+    $("#cookie-prompt-buttons")
+        .children()
+        .click(function () {
         $("#cookie-prompt").hide();
-        setCookieAllowed($(this).hasClass('yes'));
+        setCookieAllowed($(this).hasClass("yes"));
         processCookieQueue();
     });
-    if (getCookie('allow-cookies') === '1') {
-        console.log('cookies are allowed');
+    if (getCookie("allow-cookies") === "1") {
+        console.log("cookies are allowed");
         allowCookies = true;
     }
     setLanguage(getCookie("language") || DEFAULTLANGUAGE);
     /*$.validator.setDefaults({
-          errorLabelContainer: "#errorpop_errmsg",
-          wrapper: "p",
-          invalidHandler: function(form, validator) {
-              showError();
-          }
-      });*/
+            errorLabelContainer: "#errorpop_errmsg",
+            wrapper: "p",
+            invalidHandler: function(form, validator) {
+                showError();
+            }
+        });*/
     $.validator.methods.ipaddress = matchIp;
     $.validator.methods.hostname = matchHn;
     $.validator.methods.unique = checkUnique;
@@ -57,18 +59,22 @@ $(document).ready(function () {
         // tslint:disable-next-line:object-literal-shorthand
         center: function () {
             return this.each(function () {
-                let top = $(window).scrollTop() + (($(window).height() - $(this).outerHeight()) / 2); // (($(window).height() - $(this).outerHeight()) / 2);
-                let left = $(window).scrollLeft() + (($(window).width() - $(this).outerWidth()) / 2);
+                let top = $(window).scrollTop() +
+                    ($(window).height() - $(this).outerHeight()) / 2; // (($(window).height() - $(this).outerHeight()) / 2);
+                let left = $(window).scrollLeft() +
+                    ($(window).width() - $(this).outerWidth()) / 2;
                 $(this).css({
-                    position: 'absolute',
+                    position: "absolute",
                     margin: 0,
-                    top: (top > 0 ? top : 0) + 'px',
-                    left: (left > 0 ? left : 0) + 'px',
+                    top: (top > 0 ? top : 0) + "px",
+                    left: (left > 0 ? left : 0) + "px",
                 });
             });
         },
     });
-    $.ajaxSetup({ /*async: false*/});
+    $.ajaxSetup({
+    /*async: false*/
+    });
     $(document).ajaxStart(() => {
         $("#waitpop").show();
         $("#waitpop").center();
@@ -82,7 +88,8 @@ $(document).ready(function () {
     });
     $("input,select,textarea")
         .bind("checkval", function () {
-        if ($(this).val() !== "" /*||$(this).next("label.validate_error").length==1*/) {
+        if ($(this).val() !==
+            "" /*||$(this).next("label.validate_error").length==1*/) {
             $(this).prev("label").addClass("gl_label_filled");
         }
         else {
@@ -101,7 +108,8 @@ $(document).ready(function () {
     })
         .on("blur", function () {
         $(this).prev("label").removeClass("gl_label_focus");
-        if ($(this).val() !== "" && $(this).parents(".field--wrapper").hasClass("gl_required")) {
+        if ($(this).val() !== "" &&
+            $(this).parents(".field--wrapper").hasClass("gl_required")) {
             $(this).parents(".field--wrapper").addClass("gl_missing");
         }
         else {
@@ -136,10 +144,10 @@ $(document).ready(function () {
         });
     });
     $("#new").click(function () {
-        $("#type_newentry_dialog").trigger('change');
+        $("#type_newentry_dialog").trigger("change");
         showpopup("newentry_dialog");
     });
-    $("#type_newentry_dialog").on('change', function () {
+    $("#type_newentry_dialog").on("change", function () {
         let type = optionType(this);
         if (type === "hostname") {
             $("#hostname_newentry_dialog").parent().show();
@@ -157,7 +165,7 @@ $(document).ready(function () {
             $("#email_newentry_dialog").parent().show();
         }
     });
-    $("#type_edit_dialog").on('change', function () {
+    $("#type_edit_dialog").on("change", function () {
         let type = optionType(this);
         if (type === "hostname") {
             $("#hostname_edit_dialog").parent().show();
@@ -189,13 +197,13 @@ $(document).ready(function () {
             });
         }
         $("#passwordfield").val("");
-        $("#passwordfield").trigger('change');
+        $("#passwordfield").trigger("change");
         // getList(updateTable);
     });
     $("#submit_newentry_dialog").click(function () {
         let formId = "#newentry_form";
         validateNewDialog(formId);
-        $("#type_newentry_dialog").on('change', function () {
+        $("#type_newentry_dialog").on("change", function () {
             $(formId).valid();
         });
         if ($(formId).valid()) {
@@ -210,11 +218,13 @@ $(document).ready(function () {
                 extension: $("#extension_newentry_dialog").val(),
                 timestamp: $("#timestamp_newentry_dialog").val(),
                 pin: $("#pin_newentry_dialog").val(),
-                disabled: $("#disabled_newentry_dialog").prop('checked') ? 1 : 0,
+                disabled: $("#disabled_newentry_dialog").prop("checked") ? 1 : 0,
             };
             switch (optionType(formId + " select[name=type]")) {
                 case "ipaddress":
-                    editParams.ipaddress = $("#ipaddress_newentry_dialog").val().toString();
+                    editParams.ipaddress = $("#ipaddress_newentry_dialog")
+                        .val()
+                        .toString();
                     break;
                 case "hostname":
                     editParams.hostname = $("#hostname_newentry_dialog").val().toString();
@@ -238,21 +248,21 @@ $(document).ready(function () {
     $("#submit_edit_dialog").click(function () {
         let formId = "#edit_form";
         validateEditDialog(formId);
-        $("#type_edit_dialog").on('change', function () {
+        $("#type_edit_dialog").on("change", function () {
             $(formId).valid();
         });
         if ($(formId).valid()) {
-            editOrCopy('edit');
+            editOrCopy("edit");
         }
     });
     $("#copy_edit_dialog").click(function () {
         let formId = "#edit_form";
         validateEditDialog(formId);
-        $("#type_edit_dialog").on('change', function () {
+        $("#type_edit_dialog").on("change", function () {
             $(formId).valid();
         });
         if ($(formId).valid()) {
-            editOrCopy('copy');
+            editOrCopy("copy");
         }
     });
     $("#submit_delete_dialog").click(function () {
@@ -290,14 +300,23 @@ $(document).ready(function () {
         // getList(updateTable);
     });
 });
-const FIELD_ORDER = ["number", "name", "extension", "address", "port", "type", "disabled", "timestamp"];
+const FIELD_ORDER = [
+    "number",
+    "name",
+    "extension",
+    "address",
+    "port",
+    "type",
+    "disabled",
+    "timestamp",
+];
 function sortFields(a, b) {
     return FIELD_ORDER.indexOf(a[0]) - FIELD_ORDER.indexOf(b[0]);
 }
 function checkUnique(number, element /*|HTMLElement*/) {
     console.log("checking if " + number + " is unique");
     let uid = $($(element).parents()[2]).data("uid");
-    console.log('uid: ' + uid);
+    console.log("uid: " + uid);
     for (let entry of global_list) {
         if (
         // tslint:disable:triple-equals
@@ -306,11 +325,11 @@ function checkUnique(number, element /*|HTMLElement*/) {
             entry.uid != uid
         // tslint:enable:triple-equals
         ) {
-            console.log('number is not unique');
+            console.log("number is not unique");
             return false;
         }
     }
-    console.log('number is unique');
+    console.log("number is unique");
     return true;
 }
 function editOrCopy(action) {
@@ -326,7 +345,7 @@ function editOrCopy(action) {
         extension: $("#extension_edit_dialog").val(),
         timestamp: $("#timestamp_edit_dialog").val(),
         pin: $("#pin_edit_dialog").val(),
-        disabled: $("#disabled_edit_dialog").prop('checked') ? 1 : 0,
+        disabled: $("#disabled_edit_dialog").prop("checked") ? 1 : 0,
     };
     switch (optionType("#edit_dialog select[name=type]")) {
         case "ipaddress":
@@ -396,7 +415,9 @@ function showpopup(id, callback) {
             $("#" + id).hide();
             $("#" + id).fadeIn(350);
             setTimeout(function (id) {
-                $($("#" + id).children().find("input")[0]).focus();
+                $($("#" + id)
+                    .children()
+                    .find("input")[0]).focus();
             }, 0, id);
         });
     }
@@ -416,7 +437,7 @@ function login(pwd, callback) {
     edit({
         job: "confirm password",
     }, function (err, res) {
-        pwdcorrect = (res.code === 1);
+        pwdcorrect = res.code === 1;
         refresh(() => {
             if (typeof callback === "function")
                 callback(res.code === 1);
@@ -431,25 +452,39 @@ function logout() {
 function twodigit(n) {
     // n = n.toString();
     // return n.length < 2?"0"+n:n;
-    return n.toString().padStart(2, '0');
+    return n.toString().padStart(2, "0");
 }
 function UNIXTIMEToString(UNIXTIME) {
     let d = new Date(parseInt(UNIXTIME) * 1000);
     if (SHOWALLDATEINFO) {
-        return (d.toString());
+        return d.toString();
     }
     else {
         if (language === "english")
-            return (twodigit(d.getMonth() + 1) + "." + twodigit(d.getDate()) + "." + d.getFullYear() + " " +
-                twodigit(((d.getHours() > 12) ? (d.getHours() - 12) : d.getHours())) +
-                ":" + twodigit(d.getMinutes()) +
-                ((d.getHours() > 12) ? " PM" : "AM"));
-        return (twodigit(d.getDate()) + "." + twodigit(d.getMonth() + 1) + "." + d.getFullYear() + " " + twodigit(d.getHours()) + ":" + twodigit(d.getMinutes()));
+            return (twodigit(d.getMonth() + 1) +
+                "." +
+                twodigit(d.getDate()) +
+                "." +
+                d.getFullYear() +
+                " " +
+                twodigit(d.getHours() > 12 ? d.getHours() - 12 : d.getHours()) +
+                ":" +
+                twodigit(d.getMinutes()) +
+                (d.getHours() > 12 ? " PM" : "AM"));
+        return (twodigit(d.getDate()) +
+            "." +
+            twodigit(d.getMonth() + 1) +
+            "." +
+            d.getFullYear() +
+            " " +
+            twodigit(d.getHours()) +
+            ":" +
+            twodigit(d.getMinutes()));
     }
 }
 function getList(callback) {
-    console.log('getList');
-    getToken('', (token, salt) => {
+    console.log("getList");
+    getToken("", (token, salt) => {
         $.ajax({
             url: "/list",
             type: "POST",
@@ -461,7 +496,8 @@ function getList(callback) {
             success(response) {
                 if (response.successful) {
                     let { result } = response;
-                    for (let key in result) { // combine hostname and ipaddress into address
+                    for (let key in result) {
+                        // combine hostname and ipaddress into address
                         const row = result[key];
                         const address = row.hostname || row.ipaddress;
                         row.address = address;
@@ -516,7 +552,7 @@ function updateTable(list, callback) {
             arrow.attr("id", "table_th_arrow_" + key);
             arrow.click(function () {
                 let clicked = $(this);
-                let [, , , name] = clicked.attr('id').split('_');
+                let [, , , name] = clicked.attr("id").split("_");
                 if (sortby !== name) {
                     $(".table_th_arrow").removeClass("selected rotated");
                     clicked.addClass("selected");
@@ -589,8 +625,8 @@ function updateContent(unSortedList, callback) {
                     case "ipaddress":
                         let link = $("<a></a>");
                         link.text(entry[key]);
-                        link.addClass('link');
-                        link.attr('href', 'http://' + entry[key]);
+                        link.addClass("link");
+                        link.attr("href", "http://" + entry[key]);
                         cell.append(link);
                         break;
                     case "extension":
@@ -638,12 +674,12 @@ function updateContent(unSortedList, callback) {
     $(".remove").click(removeButtonClick);
     updateLoc();
     if (pwdcorrect) {
-        $('body').addClass('admin_mode');
+        $("body").addClass("admin_mode");
         $(".admin_only").show();
         $(".user_only").hide();
     }
     else {
-        $('body').removeClass('admin_mode');
+        $("body").removeClass("admin_mode");
         $(".admin_only").hide();
         $(".user_only").show();
     }
@@ -651,28 +687,30 @@ function updateContent(unSortedList, callback) {
         callback();
 }
 function editButtonClick() {
-    $("#type_edit_dialog").trigger('change');
+    $("#type_edit_dialog").trigger("change");
     $("#edit_dialog").data("uid", $(this).data("uid"));
     let uid = $(this).data("uid");
-    getList(list => {
+    getList((list) => {
         updateTable(list);
         let entry = findByUid(uid);
         if (!entry)
-            return console.error('uid ' + uid + ' not found');
-        $("#number_edit_dialog").val(entry.number).trigger('change');
-        $("#name_edit_dialog").val(entry.name).trigger('change');
-        $("#type_edit_dialog").val(entry.type).trigger('change');
+            return console.error("uid " + uid + " not found");
+        $("#number_edit_dialog").val(entry.number).trigger("change");
+        $("#name_edit_dialog").val(entry.name).trigger("change");
+        $("#type_edit_dialog").val(entry.type).trigger("change");
         if (entry.type === 6) {
-            $("#email_edit_dialog").val(entry.address).trigger('change');
+            $("#email_edit_dialog").val(entry.address).trigger("change");
         }
         else {
-            $("#hostname_edit_dialog").val(entry.address).trigger('change');
+            $("#hostname_edit_dialog").val(entry.address).trigger("change");
         }
-        $("#ipaddress_edit_dialog").val(entry.address).trigger('change');
-        $("#port_edit_dialog").val(entry.port).trigger('change');
-        $("#extension_edit_dialog").val(entry.extension).trigger('change');
+        $("#ipaddress_edit_dialog").val(entry.address).trigger("change");
+        $("#port_edit_dialog").val(entry.port).trigger("change");
+        $("#extension_edit_dialog").val(entry.extension).trigger("change");
         // $("#pin_edit_dialog").val(entry.pin).trigger('change');
-        $("#disabled_edit_dialog").prop('checked', entry.disabled).trigger('change');
+        $("#disabled_edit_dialog")
+            .prop("checked", entry.disabled)
+            .trigger("change");
         showpopup("edit_dialog");
     });
 }
@@ -685,25 +723,25 @@ function removeButtonClick() {
         class: "delete_dialog_label",
         text: languages[language].delete_message,
     };
-    $('<div/>', deleteMessage).appendTo("#delete_dialog_label_container");
-    getList(list => {
+    $("<div/>", deleteMessage).appendTo("#delete_dialog_label_container");
+    getList((list) => {
         updateTable(list);
         let entry = findByUid(uid);
         if (!entry)
-            return console.error('uid ' + uid + ' not found');
+            return console.error("uid " + uid + " not found");
         for (let k in entry) {
             let deleteDialogLabel = {
                 id: k + "_delete_dialog_label",
                 class: "delete_dialog_label",
                 text: null,
             };
-            if (k === "timestamp" && (!UNIXTIMEDATE)) {
+            if (k === "timestamp" && !UNIXTIMEDATE) {
                 deleteDialogLabel.text = k + ": " + UNIXTIMEToString(entry[k]);
             }
             else if (k !== "uid") {
                 deleteDialogLabel.text = k + ": " + entry[k];
             }
-            $('<div/>', deleteDialogLabel).appendTo("#delete_dialog_label_container");
+            $("<div/>", deleteDialogLabel).appendTo("#delete_dialog_label_container");
         }
         showpopup("delete_dialog");
     });
@@ -717,25 +755,25 @@ function resetPinButtonClick() {
         class: "resetPin_dialog_label",
         text: languages[language].resetPinMessage,
     };
-    $('<div/>', resetPinMessage).appendTo("#resetPin_dialog_label_container");
-    getList(list => {
+    $("<div/>", resetPinMessage).appendTo("#resetPin_dialog_label_container");
+    getList((list) => {
         updateTable(list);
         let entry = findByUid(uid);
         if (!entry)
-            return console.error('uid ' + uid + ' not found');
+            return console.error("uid " + uid + " not found");
         for (let k in entry) {
             let resetPinDialogLabel = {
                 id: k + "_resetPin_dialog_label",
                 class: "resetPin_dialog_label",
                 text: null,
             };
-            if (k === "timestamp" && (!UNIXTIMEDATE)) {
+            if (k === "timestamp" && !UNIXTIMEDATE) {
                 resetPinDialogLabel.text = k + ": " + UNIXTIMEToString(entry[k]);
             }
             else if (k !== "uid") {
                 resetPinDialogLabel.text = k + ": " + entry[k];
             }
-            $('<div/>', resetPinDialogLabel).appendTo("#resetPin_dialog_label_container");
+            $("<div/>", resetPinDialogLabel).appendTo("#resetPin_dialog_label_container");
         }
         showpopup("resetPin_dialog");
     });
@@ -743,7 +781,10 @@ function resetPinButtonClick() {
 function validateEditDialog(formId) {
     $(formId).validate({
         highlight(element, errorClass, validClass) {
-            $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+            $(element)
+                .parents("div.control-group")
+                .addClass(errorClass)
+                .removeClass(validClass);
             $(element).trigger("checkval");
         },
         unhighlight(element, errorClass, validClass) {
@@ -802,7 +843,7 @@ function validateEditDialog(formId) {
                 required: {
                     depends(element) {
                         let type = optionType(formId + " select[name=type]");
-                        return (type === "hostname");
+                        return type === "hostname";
                     },
                 },
             },
@@ -811,7 +852,7 @@ function validateEditDialog(formId) {
                 required: {
                     depends(element) {
                         let type = optionType(formId + " select[name=type]");
-                        return (type === "ipaddress");
+                        return type === "ipaddress";
                     },
                 },
             },
@@ -821,7 +862,10 @@ function validateEditDialog(formId) {
 function validateNewDialog(formId) {
     $(formId).validate({
         highlight(element, errorClass, validClass) {
-            $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+            $(element)
+                .parents("div.control-group")
+                .addClass(errorClass)
+                .removeClass(validClass);
             $(element).addClass("bg-danger field_error");
             // $("#newentry_dialog").center();
         },
@@ -845,7 +889,7 @@ function validateNewDialog(formId) {
                 required: {
                     depends(element) {
                         let type = optionType(formId + " select[name=type]");
-                        return (type !== "email");
+                        return type !== "email";
                     },
                 },
                 max: 65535,
@@ -867,7 +911,7 @@ function validateNewDialog(formId) {
                 required: {
                     depends(element) {
                         let type = optionType(formId + " select[name=type]");
-                        return (type === "email");
+                        return type === "email";
                     },
                 },
             },
@@ -877,7 +921,7 @@ function validateNewDialog(formId) {
                 required: {
                     depends(element) {
                         let type = optionType(formId + " select[name=type]");
-                        return (type === "hostname");
+                        return type === "hostname";
                     },
                 },
             },
@@ -886,7 +930,7 @@ function validateNewDialog(formId) {
                 required: {
                     depends(element) {
                         let type = optionType(formId + " select[name=type]");
-                        return (type === "ipaddress");
+                        return type === "ipaddress";
                     },
                 },
             },
@@ -896,7 +940,10 @@ function validateNewDialog(formId) {
 function validatePasswordDialog(formId) {
     $(formId).validate({
         highlight(element, errorClass, validClass) {
-            $(element).parents("div.control-group").addClass(errorClass).removeClass(validClass);
+            $(element)
+                .parents("div.control-group")
+                .addClass(errorClass)
+                .removeClass(validClass);
             $(element).addClass("bg-danger field_error");
         },
         unhighlight(element, errorClass, validClass) {
@@ -913,7 +960,7 @@ function validatePasswordDialog(formId) {
     });
 }
 function refresh(callback) {
-    getList(list => {
+    getList((list) => {
         updateTable(list, () => {
             if (callback)
                 callback();
@@ -921,9 +968,9 @@ function refresh(callback) {
     });
 }
 function edit(values, callback) {
-    console.log('edit', values);
+    console.log("edit", values);
     const data = JSON.stringify(values);
-    console.log('edit data:', data);
+    console.log("edit data:", data);
     getToken(data, (token, salt) => {
         $.ajax({
             url: "/edit",
@@ -934,7 +981,9 @@ function edit(values, callback) {
                 salt,
             },
             success(response) {
-                if ((response.message.code !== 1) && (response.message.code !== -1) && ($("#log").length === 1))
+                if (response.message.code !== 1 &&
+                    response.message.code !== -1 &&
+                    $("#log").length === 1)
                     $("#log").text(JSON.stringify(response.message));
                 if (!response.successful) {
                     console.log(response.message);
@@ -958,14 +1007,14 @@ function search(list, pattern) {
     if (pattern === "")
         return list;
     console.log(`searching for: '${pattern}'`);
-    let result = list
-        .filter(row => {
-        return pattern.split(" ")
-            .map(word => {
+    let result = list.filter((row) => {
+        return pattern
+            .split(" ")
+            .map((word) => {
             for (let [key, value] of Object.entries(row)) {
-                if (new RegExp(word, "gi").test((key === "timestamp") && (!UNIXTIMEDATE) ?
-                    UNIXTIMEToString(row[key]) :
-                    value))
+                if (new RegExp(word, "gi").test(key === "timestamp" && !UNIXTIMEDATE
+                    ? UNIXTIMEToString(row[key])
+                    : value))
                     return true;
             }
             return false;
@@ -976,19 +1025,19 @@ function search(list, pattern) {
     return result;
 }
 function sortFunction(x, y) {
-    x = (x[sortby] || '').toString();
-    y = (y[sortby] || '').toString();
-    return x.localeCompare(y, 'de', {
+    x = (x[sortby] || "").toString();
+    y = (y[sortby] || "").toString();
+    return x.localeCompare(y, "de", {
         numeric: SORTNUMERIC,
     });
 }
 function sort(unSortedList) {
-    if (sortby === '')
+    if (sortby === "")
         return unSortedList;
     console.log(`sorting by ${sortby}`);
     if (!(sortby in unSortedList[0])) {
         console.error(`${sortby} is not a collumn name!`);
-        sortby = '';
+        sortby = "";
         return unSortedList;
     }
     let sortedList = unSortedList.sort(sortFunction);
@@ -1045,7 +1094,7 @@ function updateLoc() {
 }
 function createHash(salt, data) {
     // console.log('creating Hash: salt='+salt+' password='+global_password+' data='+data);
-    const hash = window['forge_sha256'](salt + global_password + data);
+    const hash = window["forge_sha256"](salt + global_password + data);
     // console.log('created Hash: '+hash);
     return hash;
 }
@@ -1083,7 +1132,7 @@ let allowCookies = null;
 function setCookieAllowed(allowed) {
     if (allowed) {
         allowCookies = true;
-        setCookie('allow-cookies', '1', 365 * 10);
+        setCookie("allow-cookies", "1", 365 * 10);
     }
     else {
         allowCookies = false;
@@ -1096,7 +1145,7 @@ const setCookie = function setCookieWrapper(c_name, value, exdays) {
     }
     else if (allowCookies === null) {
         cookieQueue.push([c_name, value, exdays]);
-        $('#cookie-prompt').show();
+        $("#cookie-prompt").show();
     }
     else {
         console.warn(`not setting cookie: "${c_name}"="${value}" exdays:${exdays}`);
@@ -1119,13 +1168,11 @@ function getCookie(c_name) {
 }
 function matchHn(str) {
     console.log("matching hostname:" + str);
-    return (/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
-        .test(str));
+    return /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/.test(str);
 }
 function matchIp(str) {
     console.log("matching ip:" + str);
     return (
     // /(^\s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\s*$)|(^\s*( (([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$)/
-    /(^\s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\s*$)/
-        .test(str));
+    /(^\s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\s*$)/.test(str));
 }

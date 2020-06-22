@@ -7,7 +7,7 @@ import colors from '../shared/colors';
 declare global {
 	namespace NodeJS {
 		interface Global {
-			logger: winston.Logger;
+			logger: winston.Logger<winston.config.NpmConfigSetLevels>;
 		}
 	}
 }
